@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 
 namespace TopStatsWaffle
 {
+    /*
     public class PlayerData
     {
         public long s_steamid;
@@ -160,13 +161,11 @@ namespace TopStatsWaffle
 
             sw.Close();
         }
-    }
+    }*/
 
     class Program
     {
-        static bool ALLTHEDATA = true;
 
-        static List<PlayerData> allPlayers = new List<PlayerData>();
 
         static string STEAM_API_KEY = "";
 
@@ -200,251 +199,12 @@ namespace TopStatsWaffle
                 return;
             }
 
-            string[] demos;
-            demos = System.IO.Directory.GetFiles(System.Environment.CurrentDirectory, "*.dem", System.IO.SearchOption.AllDirectories);
+            Collector c = new Collector("demos", STEAM_API_KEY);
+            c.Process();
 
-            Debug.Success("Found {0} demo files", demos.Count());
-
-
-            for (int i = 0; i < demos.Count();){ //                                                     KB     MB
-                Debug.Blue("{0} - {1}mb\t", Path.GetFileName(demos[i]), new FileInfo(demos[i]).Length / 1024 / 1024);
-                i++;
-
-                if (i % 3 == 0)
-                    Console.Write("\n");
-            }
-
-            Console.Write("\n\n");
-
-            Debug.Info("Press enter to start processing");
-
-            Console.ReadLine();
-
-            //Doing the processing
-
-            Dictionary<int, string> matches = new Dictionary<int, string>();
-            int mId = 0;
-            foreach(string mPath in demos)
-            {
-                matches.Add(mId, demos[mId]);
-                mId++;
-            }
-
-            //Now for each demo
-            foreach(int matchID in matches.Keys)
-            {
-                //Debug.Log("Starting processing match id {0}, demo: {1}", matchID, Path.GetFileName(demos[matchID]));
-                Debug.progressBar(matchID + "/" + demos.Count() + "  |  " + Path.GetFileName(demos[matchID]), 0);
-
-                Dictionary<int, long> playerLookups = new Dictionary<int, long>();
-
-                //Set up recorder settings
-                RecorderSettings rs = new RecorderSettings();
-                rs.matchID = matchID;
-                rs.playerLookups = playerLookups;
-
-                //Create the parser
-                DemoParser dp = new DemoParser(File.OpenRead(matches[matchID]));
-
-                dp.ParseHeader();
-
-                dp.PlayerBind += (object sender, PlayerBindEventArgs e) =>
-                {
-                    if(!playerLookups.ContainsKey(e.Player.EntityID))
-                        if(e.Player.SteamID != 0)
-                            playerLookups.Add(e.Player.EntityID, e.Player.SteamID);
-                };
-
-                int tickCounter = 0;
-
-
-
-
-
-
-
-
-
-
-
-
-
-                /*
-                 * 
-                 * 
-                 * 
-                 *          
-                 *                          EVENT HANDLERS 
-                 * 
-                 * 
-                 * 
-                 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-                dp.TickDone += (object sender, TickDoneEventArgs e) =>
-                {
-                    foreach (Player p in dp.PlayingParticipants)
-                    {
-                        allPlayers.appendValue(p, rs, "Ticks", 1);
-                    }
-
-                    foreach(Player p in dp.Participants)
-                    {
-                        allPlayers.appendValue(p, rs, "Ticks on Server", 1);
-                    }
-
-                    tickCounter++;
-
-                    if(tickCounter > 1000)
-                    {
-                        tickCounter = 0;
-
-                        Debug.updateProgressBar((int)(dp.ParsingProgess * 100));
-                    }
-                };
-
-                dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) =>
-                {
-                    allPlayers.appendValue(e.Killer, rs, "Kills", 1);
-                    if (e.Headshot)
-                        allPlayers.appendValue(e.Killer, rs, "Headshots", 1);
-
-                    allPlayers.appendValue(e.Victim, rs, "Deaths", 1);
-
-                    if (e.Assister != null)
-                        allPlayers.appendValue(e.Assister, rs, "Assists", 1);
-
-                    if (e.Weapon.Class == EquipmentClass.Grenade)
-                        allPlayers.appendValue(e.Killer, rs, "Grenade Kills", 1);
-
-
-                    if (ALLTHEDATA)
-                        allPlayers.appendValue(e.Killer, rs, e.Weapon.Weapon + " Kills", 1);
-                };
-
-                dp.WeaponFired += (object sender, WeaponFiredEventArgs e) =>
-                {
-                    allPlayers.appendValue(e.Shooter, rs, "Shots", 1);
-                };
-
-                dp.SmokeNadeStarted += (object sender, SmokeEventArgs e) => { allPlayers.appendValue(e.ThrownBy, rs, "Smokes", 1); };
-                dp.FlashNadeExploded += (object sender, FlashEventArgs e) => { allPlayers.appendValue(e.ThrownBy, rs, "Flashes", 1); allPlayers.appendValue(e.ThrownBy, rs, "Flashed Players", e.FlashedPlayers.Length); };
-                dp.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) => { allPlayers.appendValue(e.ThrownBy, rs, "Grenades", 1); };
-                dp.FireNadeStarted += (object sender, FireEventArgs e) => { allPlayers.appendValue(e.ThrownBy, rs, "Fires", 1); };
-
-                dp.BombPlanted += (object sender, BombEventArgs e) => { allPlayers.appendValue(e.Player, rs, "Bomb plants", 1); };
-                dp.BombDefused += (object sender, BombEventArgs e) => { allPlayers.appendValue(e.Player, rs, "Bomb defuses", 1); };
-
-
-
-                //End of event handlers
-
-                try
-                {
-                    dp.ParseToEnd();
-                }
-                catch
-                {
-                    Debug.exitProgressBar();
-                    Debug.Error("Attempted to read past end of stream...");
-                }
-                
-                //Output per-game csv data
-                List<string> headers = allPlayers.getAllHeaders(matchID);
-                List<string> outputLines = new List<string>();
-
-                foreach(PlayerData mPlayerDat in allPlayers)
-                {
-                    if(mPlayerDat.collected.ContainsKey(matchID))
-                    {
-                        outputLines.Add(mPlayerDat.collected[matchID].getAttribCSVrow(headers, mPlayerDat.s_steamid));
-                    }
-                }
-
-                if (!Directory.Exists("matches"))
-                    Directory.CreateDirectory("matches");
-
-                string csvfile = "matches/ID" + matchID.ToString() + "-" + Path.GetFileNameWithoutExtension(matches[matchID]) + ".csv";
-
-                outputLines.writeCSVfromStrings(headers, csvfile);
-
-                Debug.exitProgressBar();
-
-                //Debug.Success("Demo {0} complete! CSV: {1} ", matchID, csvfile);
-            }
-
-            Debug.Success("Finished!");
-            Debug.Info("Collecting steam usernames from ID's");
-            List<long> steamIDS = new List<long>();
-            foreach (PlayerData mPlayerDat in allPlayers)
-                steamIDS.Add(mPlayerDat.s_steamid);
-
-            Dictionary<long, string> steamUnameLookup = getSteamUserNamesLookupTable(steamIDS);
-
-            Debug.Info("Generating full CSV data...");
-
-            //Output Final FULL CSV data
-            List<string> final_headers = allPlayers.getAllHeaders();
-            List<string> final_outputLines = new List<string>();
-
-            foreach (PlayerData mPlayerDat in allPlayers)
-            {
-                string name = "UNKOWN";
-                if (steamUnameLookup.ContainsKey(mPlayerDat.s_steamid))
-                    name = steamUnameLookup[mPlayerDat.s_steamid];
-
-                final_outputLines.Add(mPlayerDat.getTotalData().getAttribCSVrow(final_headers, mPlayerDat.s_steamid, name));
-            }
-
-            string final_csvfile = Guid.NewGuid().ToString("N") + "-total.csv";
-
-            final_outputLines.writeCSVfromStrings(final_headers, final_csvfile);
-
-            Debug.Success("Complete!!!");
-
-            Debug.Info("Press enter to exit...");
-            Console.ReadLine();
-        }
-
-        public static Dictionary<long, string> getSteamUserNamesLookupTable(List<long> IDS)
-        {
-            string method = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/";
-
-            string idsList = "";
-            foreach(long id in IDS)
-                idsList += id.ToString() + "_";
-
-            STEAM_RootPlayerObject players = new STEAM_RootPlayerObject();
-
-            Debug.Info("Calling steam " + method);
-            try
-            {
-                players = JsonConvert.DeserializeObject<STEAM_RootPlayerObject>(request.GET(method + "?key=" + STEAM_API_KEY + "&steamids=" + idsList));
-                Debug.Success("Steam returned successfully!");
-            }
-            catch
-            {
-                Debug.Error("Unable to fetch steam info correctly...");
-            }
             
-
-            Dictionary<long, string> output = new Dictionary<long, string>();
-
-            foreach(STEAM_Player player in players.response.players)
-                output.Add(Convert.ToInt64(player.steamid), player.personaname);
-
-            return output;
         }
+
+
     }
 }
