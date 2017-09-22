@@ -88,7 +88,7 @@ namespace TopStatsWaffle
             allPlayers.appendValue(p, currentRS, key, value);
         }
 
-        public void attachPlayerTimers()
+        public void attachAll()
         {
             this.EventSubscription += (EventSubscriptionEventArgs ev) =>
             {
@@ -104,13 +104,7 @@ namespace TopStatsWaffle
                         pushData(p, "Ticks on Server", 1);
                     }
                 };
-            };
-        }
 
-        public void attachKillCounters()
-        {
-            this.EventSubscription += (EventSubscriptionEventArgs ev) =>
-            {
                 ev.parser.PlayerKilled += (object sender, PlayerKilledEventArgs e) =>
                 {
                     pushData(e.Killer, "Kills", 1);
@@ -130,15 +124,6 @@ namespace TopStatsWaffle
                     if (ALLTHEDATA)
                         pushData(e.Killer, e.Weapon.Weapon + " Kills", 1);
                 };
-            };
-        }
-
-        public void attachAll()
-        {
-            this.EventSubscription += (EventSubscriptionEventArgs ev) =>
-            {
-                attachPlayerTimers();
-                attachKillCounters();
 
                 ev.parser.WeaponFired += (object sender, WeaponFiredEventArgs e) =>
                 {
