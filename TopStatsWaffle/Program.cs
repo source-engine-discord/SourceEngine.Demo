@@ -79,6 +79,13 @@ namespace TopStatsWaffle
                 /*Custom event handlers here
                    ...
                 */
+
+                /* Example:
+                 * 
+                 *  ev.parser.PlayerDisconnect += (object sender, PlayerDisconnectEventArgs e) => { c.pushData(e.Player, "Disconnects", 1); };
+                 *           ^ Runs when a player                                                   ^ Pushes data into the log          ^ Increment by this much
+                 *           Disconnects                                                                                 ^ The key                                                                                                             
+                */
             };
 
             c.Process();

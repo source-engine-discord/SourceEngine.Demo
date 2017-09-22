@@ -83,9 +83,9 @@ namespace TopStatsWaffle
             this.TARGET_FOLDER = targetFolder;
         }
 
-        public void pushData(Player p, string setting, int value)
+        public void pushData(Player p, string key, int value)
         {
-            allPlayers.appendValue(p, currentRS, setting, value);
+            allPlayers.appendValue(p, currentRS, key, value);
         }
 
         public void attachPlayerTimers()
