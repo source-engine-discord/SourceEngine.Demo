@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace TopStatsWaffle
 {
@@ -35,5 +36,66 @@ namespace TopStatsWaffle
     public class STEAM_RootPlayerObject
     {
         public STEAM_Response response { get; set; }
+    }
+
+    public static class Steam
+    {
+        private static string api_key;
+
+        public static void setAPIKey(string key)
+        {
+            api_key = key;
+        }
+
+        public static Dictionary<long, string> getSteamUserNamesLookupTable(List<long> IDS)
+        {
+            string method = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/";
+
+            string idsList = "";
+            foreach (long id in IDS)
+                idsList += id.ToString() + "_";
+
+            STEAM_RootPlayerObject players = new STEAM_RootPlayerObject();
+
+            Debug.Info("Calling steam " + method);
+            try
+            {
+                players = JsonConvert.DeserializeObject<STEAM_RootPlayerObject>(request.GET(method + "?key=" + api_key + "&steamids=" + idsList));
+                Debug.Success("Steam returned successfully!");
+            }
+            catch
+            {
+                Debug.Error("Unable to fetch steam info correctly...");
+                return null;
+            }
+
+            Dictionary<long, string> output = new Dictionary<long, string>();
+
+            foreach (STEAM_Player player in players.response.players)
+                output.Add(Convert.ToInt64(player.steamid), player.personaname);
+
+            return output;
+        }
+
+        public static bool isSteamAPIworking()
+        {
+            List<long> testIDS = new List<long>();
+            testIDS.Add(76561198072130043);
+
+            try
+            {
+                Debug.Success("Steam API Running correctly");
+                if (getSteamUserNamesLookupTable(testIDS) != null)
+                    return true;
+            }
+            catch
+            {
+                Debug.Error("Steam API Error - 2 Check the steam api key is correct, tell Harry if this error (2) is shown!!");
+                return false;
+            }
+
+            Debug.Error("Steam API Error - 1 Check the steam api key is correct");
+            return false;
+        }
     }
 }

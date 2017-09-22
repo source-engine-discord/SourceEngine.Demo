@@ -52,125 +52,23 @@ namespace TopStatsWaffle
         public Dictionary<int, long> playerLookups = new Dictionary<int, long>();
     }
 
-    static class EXTMethods
+    public class EventSubscriptionEventArgs : EventArgs
     {
-        public static string getAttribCSVrow(this Dictionary<string, int> block, List<string> headerKeys, long steamid, string name = "")
+        public DemoParser parser { get; }
+
+        public EventSubscriptionEventArgs(DemoParser parser)
         {
-
-            string built = steamid.ToString() + ",";
-
-            if (name != "")
-                built += name + ",";
-
-            //Iterate each header and check if its present in the data block
-            //Then add it to the CSV string
-            foreach (string header in headerKeys)
-            {
-                if (block.ContainsKey(header))
-                    built += block[header] + ",";
-                else
-                    built += "0,";
-            }
-
-            //Cut off the last ,
-            return built.Substring(0, built.Length - 1);
+            this.parser = parser;
         }
-
-        public static PlayerData fromSteamID(this List<PlayerData> players, long steamid)
-        {
-            foreach (PlayerData dat in players)
-                if (dat.s_steamid == steamid)
-                    return dat;
-
-            return null;
-        }
-
-        [Obsolete("Move to new method")]
-        public static void appendValue(this List<PlayerData> players, Player player, RecorderSettings rs, string attrib, int value)
-        {
-            if (player == null)
-                return;
-
-            //Steam ID checks
-            //76561198056991900
-            long steamid = player.SteamID;
-
-            if (steamid == 0)
-                if (rs.playerLookups.ContainsKey(player.EntityID))
-                    steamid = rs.playerLookups[player.EntityID];
-                else
-                    return;
-
-            //Add the player if they don't exist in memory
-            if (players.fromSteamID(steamid) == null)
-                players.Add(new PlayerData(steamid));
-
-            //Create reference to the player
-            PlayerData dat = players.fromSteamID(steamid);
-
-            //If the match doesn't exist on the player then we add it
-            if (!dat.collected.ContainsKey(rs.matchID))
-                dat.collected.Add(rs.matchID, new Dictionary<string, int>());
-
-            //If the attribute doesn't exist on the playerdata's match then we add it
-            if (!dat.collected[rs.matchID].ContainsKey(attrib))
-                dat.collected[rs.matchID].Add(attrib, 0);
-
-            //Add the value onto the total
-            dat.collected[rs.matchID][attrib] += value;
-        }
-
-        public static List<string> getAllHeaders(this List<PlayerData> players, int matchID = -1)
-        {
-            List<string> collected = new List<string>();
-
-            if (matchID == -1)
-                foreach (PlayerData pd in players)
-                    foreach (int match in pd.collected.Keys)
-                        foreach (string key in pd.collected[match].Keys)
-                            collected.Add(key);
-            else
-                foreach (PlayerData pd in players)
-                    if (pd.collected.ContainsKey(matchID))
-                        foreach (string key in pd.collected[matchID].Keys)
-                            collected.Add(key);
-
-            return collected.Distinct().ToList();
-        }
-
-        public static void writeCSVfromStrings(this List<string> lines, List<string> headers, string filename)
-        {
-            StreamWriter sw = new StreamWriter(filename, false);
-
-            //Write header
-            string headerLine = "Steam ID,Steam Name,";
-            foreach (string header in headers)
-            {
-                headerLine += header + ",";
-            }
-
-            sw.WriteLine(headerLine.Substring(0, headerLine.Length - 1));
-
-            //Write data
-            foreach (string line in lines)
-            {
-                sw.WriteLine(line);
-            }
-
-            sw.Close();
-        }
-
-
     }
-
-
 
     public class Collector
     {
         //Settings
-        public string STEAM_API_KEY;
         public string TARGET_FOLDER;
         public bool ALLTHEDATA = true;
+        public bool OUTPUT_CSV_PER_MATCH = false;
+        public bool OUTPUT_TOTAL_CSV = true;
 
         //Runtime
         private List<PlayerData> allPlayers = new List<PlayerData>();
@@ -180,9 +78,8 @@ namespace TopStatsWaffle
 
         private RecorderSettings currentRS;
 
-        public Collector(string targetFolder, string apikey)
+        public Collector(string targetFolder)
         {
-            this.STEAM_API_KEY = apikey;
             this.TARGET_FOLDER = targetFolder;
         }
 
@@ -261,7 +158,7 @@ namespace TopStatsWaffle
         public void Process()
         {
 
-#region detect demos
+            #region detect demos
             string[] demos;
             demos = System.IO.Directory.GetFiles(System.Environment.CurrentDirectory + "/" + TARGET_FOLDER + "/", "*.dem", System.IO.SearchOption.AllDirectories);
 
@@ -285,7 +182,7 @@ namespace TopStatsWaffle
 
             #endregion
 
-#region collect match structure
+            #region collect match structure
             //Doing the processing
             Dictionary<int, string> matches = new Dictionary<int, string>();
             int mId = 0;
@@ -296,7 +193,7 @@ namespace TopStatsWaffle
             }
             #endregion
 
-#region process all demos
+            #region process all demos
             //Now for each demo
             foreach (int matchID in matches.Keys)
             {
@@ -341,13 +238,12 @@ namespace TopStatsWaffle
                         Debug.updateProgressBar((int)(dp.ParsingProgess * 100));
                     }
                 };
-                //----------------------------------------------------------------------------------------
+                // -------------------------------------------------------------------------------------
 
 
 
 
                 //End of event handlers
-
                 try
                 {
                     dp.ParseToEnd();
@@ -357,107 +253,68 @@ namespace TopStatsWaffle
                     Debug.exitProgressBar();
                     Debug.Error("Attempted to read past end of stream...");
                 }
+                #region per match csv
+                if (OUTPUT_CSV_PER_MATCH)
+                {
+                    //Output per-game csv data
+                    List<string> headers = allPlayers.getAllHeaders(matchID);
+                    List<string> outputLines = new List<string>();
 
-                //Output per-game csv data
-                List<string> headers = allPlayers.getAllHeaders(matchID);
-                List<string> outputLines = new List<string>();
+                    foreach (PlayerData mPlayerDat in allPlayers)
+                    {
+                        if (mPlayerDat.collected.ContainsKey(matchID))
+                        {
+                            outputLines.Add(mPlayerDat.collected[matchID].getAttribCSVrow(headers, mPlayerDat.s_steamid));
+                        }
+                    }
+
+                    if (!Directory.Exists("matches"))
+                        Directory.CreateDirectory("matches");
+
+                    string csvfile = "matches/ID" + matchID.ToString() + "-" + Path.GetFileNameWithoutExtension(matches[matchID]) + ".csv";
+
+                    outputLines.writeCSVfromStrings(headers, csvfile);
+                }
+                #endregion
+
+                dp.Dispose();
+
+                Debug.exitProgressBar();
+            }
+            #endregion
+
+            #region output total csv
+            if (OUTPUT_TOTAL_CSV)
+            {
+                Debug.Info("Collecting steam usernames from ID's");
+                List<long> steamIDS = new List<long>();
+                foreach (PlayerData mPlayerDat in allPlayers)
+                    steamIDS.Add(mPlayerDat.s_steamid);
+
+                Dictionary<long, string> steamUnameLookup = Steam.getSteamUserNamesLookupTable(steamIDS);
+
+                Debug.Info("Generating full CSV data...");
+
+                //Output Final FULL CSV data
+                List<string> final_headers = allPlayers.getAllHeaders();
+                List<string> final_outputLines = new List<string>();
 
                 foreach (PlayerData mPlayerDat in allPlayers)
                 {
-                    if (mPlayerDat.collected.ContainsKey(matchID))
-                    {
-                        outputLines.Add(mPlayerDat.collected[matchID].getAttribCSVrow(headers, mPlayerDat.s_steamid));
-                    }
+                    string name = "UNKOWN";
+                    if (steamUnameLookup.ContainsKey(mPlayerDat.s_steamid))
+                        name = steamUnameLookup[mPlayerDat.s_steamid];
+
+                    final_outputLines.Add(mPlayerDat.getTotalData().getAttribCSVrow(final_headers, mPlayerDat.s_steamid, name));
                 }
 
-                if (!Directory.Exists("matches"))
-                    Directory.CreateDirectory("matches");
+                string final_csvfile = Guid.NewGuid().ToString("N") + "-total.csv";
 
-                string csvfile = "matches/ID" + matchID.ToString() + "-" + Path.GetFileNameWithoutExtension(matches[matchID]) + ".csv";
-
-                outputLines.writeCSVfromStrings(headers, csvfile);
-
-                Debug.exitProgressBar();
-
-                //Debug.Success("Demo {0} complete! CSV: {1} ", matchID, csvfile);
+                final_outputLines.writeCSVfromStrings(final_headers, final_csvfile);
             }
-
             #endregion
 
-
-            Debug.Success("Finished!");
-            Debug.Info("Collecting steam usernames from ID's");
-            List<long> steamIDS = new List<long>();
-            foreach (PlayerData mPlayerDat in allPlayers)
-                steamIDS.Add(mPlayerDat.s_steamid);
-
-            Dictionary<long, string> steamUnameLookup = getSteamUserNamesLookupTable(steamIDS, STEAM_API_KEY);
-
-            Debug.Info("Generating full CSV data...");
-
-            //Output Final FULL CSV data
-            List<string> final_headers = allPlayers.getAllHeaders();
-            List<string> final_outputLines = new List<string>();
-
-            foreach (PlayerData mPlayerDat in allPlayers)
-            {
-                string name = "UNKOWN";
-                if (steamUnameLookup.ContainsKey(mPlayerDat.s_steamid))
-                    name = steamUnameLookup[mPlayerDat.s_steamid];
-
-                final_outputLines.Add(mPlayerDat.getTotalData().getAttribCSVrow(final_headers, mPlayerDat.s_steamid, name));
-            }
-
-            string final_csvfile = Guid.NewGuid().ToString("N") + "-total.csv";
-
-            final_outputLines.writeCSVfromStrings(final_headers, final_csvfile);
-
             Debug.Success("Complete!!!");
-
-            Debug.Info("Press enter to exit...");
-            Console.ReadLine();
-
-
-        }
-
-        public static Dictionary<long, string> getSteamUserNamesLookupTable(List<long> IDS, string steam_api_key)
-        {
-            string method = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/";
-
-            string idsList = "";
-            foreach (long id in IDS)
-                idsList += id.ToString() + "_";
-
-            STEAM_RootPlayerObject players = new STEAM_RootPlayerObject();
-
-            Debug.Info("Calling steam " + method);
-            try
-            {
-                players = JsonConvert.DeserializeObject<STEAM_RootPlayerObject>(request.GET(method + "?key=" + steam_api_key + "&steamids=" + idsList));
-                Debug.Success("Steam returned successfully!");
-            }
-            catch
-            {
-                Debug.Error("Unable to fetch steam info correctly...");
-            }
-
-
-            Dictionary<long, string> output = new Dictionary<long, string>();
-
-            foreach (STEAM_Player player in players.response.players)
-                output.Add(Convert.ToInt64(player.steamid), player.personaname);
-
-            return output;
-        }
-    }
-
-    public class EventSubscriptionEventArgs : EventArgs
-    {
-        public DemoParser parser { get; }
-
-        public EventSubscriptionEventArgs(DemoParser parser)
-        {
-            this.parser = parser;
         }
     }
 }

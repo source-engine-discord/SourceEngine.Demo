@@ -11,6 +11,10 @@ using Newtonsoft.Json;
 
 namespace TopStatsWaffle
 {
+    //Config class, currently only holds api key
+
+    //Todo: add some other settings that can be written in a text file
+    //Todo: add a formal config parser
     public class Config
     {
         public string apikey;
@@ -32,23 +36,7 @@ namespace TopStatsWaffle
 
     class Program
     {
-
-        static void Main(string[] args)
-        {
-            ensureConfigExists();
-            Config cfg = new Config("config.cfg");
-            Collector c = new Collector("demos", cfg.apikey);
-
-            c.attachAll();
-
-            c.EventSubscription += (EventSubscriptionEventArgs ev) =>
-            {
-
-            };
-
-            c.Process();
-        }
-
+        //Method to make sure we have a config or we will create one
         static void ensureConfigExists()
         {
             if (!File.Exists("config.cfg"))
@@ -66,6 +54,34 @@ namespace TopStatsWaffle
 
                 Debug.Success("Finished writing config...");
             }
+        }
+
+        //Program entry point
+        static void Main(string[] args)
+        {
+            // SETTINGS AND LOADING CONFIGS ----------------------------
+            ensureConfigExists();
+            Config cfg = new Config("config.cfg");
+            Collector c = new Collector("demos");
+
+            Steam.setAPIKey(cfg.apikey);
+            if (!Steam.isSteamAPIworking())
+            {
+                Console.ReadLine();
+                Environment.Exit(1);
+            }
+
+            //EVENT SUBSCRIPTION ---------------------------------------
+            c.attachAll();
+
+            c.EventSubscription += (EventSubscriptionEventArgs ev) =>
+            {
+                /*Custom event handlers here
+                   ...
+                */
+            };
+
+            c.Process();
         }
     }
 }
