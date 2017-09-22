@@ -85,6 +85,7 @@ namespace TopStatsWaffle
             return null;
         }
 
+        [Obsolete("Move to new method")]
         public static void appendValue(this List<PlayerData> players, Player player, RecorderSettings rs, string attrib, int value)
         {
             if (player == null)
@@ -174,12 +175,87 @@ namespace TopStatsWaffle
         //Runtime
         private List<PlayerData> allPlayers = new List<PlayerData>();
 
-        public delegate void OnEventSubscription(object sender, EventSubscriptionEventArgs e);
+        public delegate void OnEventSubscription(EventSubscriptionEventArgs e);
+        public event OnEventSubscription EventSubscription;
+
+        private RecorderSettings currentRS;
 
         public Collector(string targetFolder, string apikey)
         {
             this.STEAM_API_KEY = apikey;
             this.TARGET_FOLDER = targetFolder;
+        }
+
+        public void pushData(Player p, string setting, int value)
+        {
+            allPlayers.appendValue(p, currentRS, setting, value);
+        }
+
+        public void attachPlayerTimers()
+        {
+            this.EventSubscription += (EventSubscriptionEventArgs ev) =>
+            {
+                ev.parser.TickDone += (object sender, TickDoneEventArgs e) =>
+                {
+                    foreach (Player p in ev.parser.PlayingParticipants)
+                    {
+                        pushData(p, "Ticks", 1);
+                    }
+
+                    foreach (Player p in ev.parser.Participants)
+                    {
+                        pushData(p, "Ticks on Server", 1);
+                    }
+                };
+            };
+        }
+
+        public void attachKillCounters()
+        {
+            this.EventSubscription += (EventSubscriptionEventArgs ev) =>
+            {
+                ev.parser.PlayerKilled += (object sender, PlayerKilledEventArgs e) =>
+                {
+                    pushData(e.Killer, "Kills", 1);
+
+                    if (e.Headshot)
+                        pushData(e.Killer, "Headshots", 1);
+
+                    pushData(e.Victim, "Deaths", 1);
+
+                    if (e.Assister != null)
+                        pushData(e.Assister, "Assists", 1);
+
+                    if (e.Weapon.Class == EquipmentClass.Grenade)
+                        pushData(e.Killer, "Grenade Kills", 1);
+
+
+                    if (ALLTHEDATA)
+                        pushData(e.Killer, e.Weapon.Weapon + " Kills", 1);
+                };
+            };
+        }
+
+        public void attachAll()
+        {
+            this.EventSubscription += (EventSubscriptionEventArgs ev) =>
+            {
+                attachPlayerTimers();
+                attachKillCounters();
+
+                ev.parser.WeaponFired += (object sender, WeaponFiredEventArgs e) =>
+                {
+                    pushData(e.Shooter, "Shots", 1);
+                };
+
+                ev.parser.SmokeNadeStarted += (object sender, SmokeEventArgs e) => { pushData(e.ThrownBy, "Smokes", 1); };
+                ev.parser.FlashNadeExploded += (object sender, FlashEventArgs e) => { pushData(e.ThrownBy, "Flashes", 1); pushData(e.ThrownBy,"Flashed Players", e.FlashedPlayers.Length); };
+                ev.parser.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) => { pushData(e.ThrownBy, "Grenades", 1); };
+                ev.parser.FireNadeStarted += (object sender, FireEventArgs e) => { pushData(e.ThrownBy, "Fires", 1); };
+
+                ev.parser.BombPlanted += (object sender, BombEventArgs e) => { pushData(e.Player, "Bomb plants", 1); };
+                ev.parser.BombDefused += (object sender, BombEventArgs e) => { pushData(e.Player, "Bomb defuses", 1); };
+            };
         }
 
         public void Process()
@@ -234,11 +310,18 @@ namespace TopStatsWaffle
                 rs.matchID = matchID;
                 rs.playerLookups = playerLookups;
 
+                currentRS = rs;
+
                 //Create the parser
                 DemoParser dp = new DemoParser(File.OpenRead(matches[matchID]));
 
                 dp.ParseHeader();
 
+                //Trigger subscription event
+                EventSubscription?.Invoke(new EventSubscriptionEventArgs(dp));
+
+
+                //Hard coded necessary event handlers ---------------------------------------------------
                 dp.PlayerBind += (object sender, PlayerBindEventArgs e) =>
                 {
                     if (!playerLookups.ContainsKey(e.Player.EntityID))
@@ -247,30 +330,8 @@ namespace TopStatsWaffle
                 };
 
                 int tickCounter = 0;
-
-                /*
-                 * 
-                 * 
-                 * 
-                 *          
-                 *                          EVENT HANDLERS 
-                 * 
-                 * 
-                 * 
-                 */
-
                 dp.TickDone += (object sender, TickDoneEventArgs e) =>
                 {
-                    foreach (Player p in dp.PlayingParticipants)
-                    {
-                        allPlayers.appendValue(p, rs, "Ticks", 1);
-                    }
-
-                    foreach (Player p in dp.Participants)
-                    {
-                        allPlayers.appendValue(p, rs, "Ticks on Server", 1);
-                    }
-
                     tickCounter++;
 
                     if (tickCounter > 1000)
@@ -280,38 +341,8 @@ namespace TopStatsWaffle
                         Debug.updateProgressBar((int)(dp.ParsingProgess * 100));
                     }
                 };
+                //----------------------------------------------------------------------------------------
 
-                dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) =>
-                {
-                    allPlayers.appendValue(e.Killer, rs, "Kills", 1);
-                    if (e.Headshot)
-                        allPlayers.appendValue(e.Killer, rs, "Headshots", 1);
-
-                    allPlayers.appendValue(e.Victim, rs, "Deaths", 1);
-
-                    if (e.Assister != null)
-                        allPlayers.appendValue(e.Assister, rs, "Assists", 1);
-
-                    if (e.Weapon.Class == EquipmentClass.Grenade)
-                        allPlayers.appendValue(e.Killer, rs, "Grenade Kills", 1);
-
-
-                    if (ALLTHEDATA)
-                        allPlayers.appendValue(e.Killer, rs, e.Weapon.Weapon + " Kills", 1);
-                };
-
-                dp.WeaponFired += (object sender, WeaponFiredEventArgs e) =>
-                {
-                    allPlayers.appendValue(e.Shooter, rs, "Shots", 1);
-                };
-
-                dp.SmokeNadeStarted += (object sender, SmokeEventArgs e) => { allPlayers.appendValue(e.ThrownBy, rs, "Smokes", 1); };
-                dp.FlashNadeExploded += (object sender, FlashEventArgs e) => { allPlayers.appendValue(e.ThrownBy, rs, "Flashes", 1); allPlayers.appendValue(e.ThrownBy, rs, "Flashed Players", e.FlashedPlayers.Length); };
-                dp.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) => { allPlayers.appendValue(e.ThrownBy, rs, "Grenades", 1); };
-                dp.FireNadeStarted += (object sender, FireEventArgs e) => { allPlayers.appendValue(e.ThrownBy, rs, "Fires", 1); };
-
-                dp.BombPlanted += (object sender, BombEventArgs e) => { allPlayers.appendValue(e.Player, rs, "Bomb plants", 1); };
-                dp.BombDefused += (object sender, BombEventArgs e) => { allPlayers.appendValue(e.Player, rs, "Bomb defuses", 1); };
 
 
 
