@@ -72,7 +72,7 @@ namespace TopStatsWaffle
             updateProgressBar(100);
 
             isProgressBar = false;
-            Console.Write("  COMPLETE");
+            Console.WriteLine("  COMPLETE");
         }
 
         private static void printMsg(string message, ConsoleColor c, DebugLevel lvl = DebugLevel.low, string prefix = "", bool usedate = true, bool bluepost = false)

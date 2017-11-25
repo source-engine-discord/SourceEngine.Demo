@@ -7,7 +7,7 @@
     <ProjectGuid>{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>TopStatsWaffle</RootNamespace>
-    <AssemblyName>TopStatsWaffle</AssemblyName>
+    <AssemblyName>CSGODemoCSV</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -33,6 +33,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>icon_8RJ_icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DemoInfo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=dc7de83c756ec63d, processorArchitecture=MSIL">
@@ -60,6 +63,7 @@
     <Compile Include="requests.cs" />
     <Compile Include="Serialization\Binary.cs" />
     <Compile Include="Steam.cs" />
+    <Compile Include="ProgressViewer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
