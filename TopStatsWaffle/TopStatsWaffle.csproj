@@ -54,9 +54,11 @@
     <Compile Include="Collector.cs" />
     <Compile Include="CollectorMethods.cs" />
     <Compile Include="Debug.cs" />
+    <Compile Include="DemoProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="requests.cs" />
+    <Compile Include="Serialization\Binary.cs" />
     <Compile Include="Steam.cs" />
   </ItemGroup>
   <ItemGroup>

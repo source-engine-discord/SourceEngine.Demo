@@ -59,6 +59,13 @@ namespace TopStatsWaffle
         //Program entry point
         static void Main(string[] args)
         {
+
+            MatchData mdTest = MatchData.fromDemoFile("demos/3_2_2017_de_rooftops_v7_comp.dem");
+            mdTest.Save("Test.dat");
+
+            return;
+
+
             // SETTINGS AND LOADING CONFIGS ----------------------------
             ensureConfigExists();
             Config cfg = new Config("config.cfg");
