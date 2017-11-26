@@ -5,6 +5,8 @@ Latest compiled version 2.0.1 Download: http://harrygodden.com/downloads/CSGODem
 
 ![Program output](https://i.imgur.com/RALmTAR.png)
 
+Demo site in php & javascript: http://harrygodden.com/csgodemocsv/example.php
+
 ## Usage
 
 Example: `CSGODemoCSV -folders "C:/Folder1/" "/relativeFolder/" -recursive -concat`
