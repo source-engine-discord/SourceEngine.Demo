@@ -23,6 +23,8 @@ namespace TopStatsWaffle
         {
             StreamReader sr = new StreamReader(path);
 
+            Debug.Info("Reading config from {0}", path);
+
             string ln;
             while((ln = sr.ReadLine()) != null)
             {
@@ -31,10 +33,19 @@ namespace TopStatsWaffle
                     keyVals.Add(elements[0], elements[1]);
             }
 
-            if (this.keyVals["apikey"] == null || this.keyVals["apikey"] == "")
+            if (!this.keyVals.ContainsKey("apikey"))
             {
-                Debug.Warn("CFG::STEAM_API_KEY::NOT_FOUND SteamID's will not be resolved");
+                Debug.Error("CFG::STEAM_API_KEY::NOT_FOUND");
+                Environment.Exit(-1);
             }
+
+            if(this.keyVals["apikey"] == "" || this.keyVals["apikey"] == null)
+            {
+                Debug.Error("CFG:STEAM_API_KEY::INVALID");
+                Environment.Exit(-1);
+            }
+
+            sr.Close();
         }
     }
 
@@ -43,11 +54,14 @@ namespace TopStatsWaffle
         private static void helpText()
         {
             Debug.White("========= HELP ==========\n" +
-                "-config    \t [path]                    \t Path to config file (Legacy)\n" +
+                "-config    \t [path]                    \t Path to config file\n" +
                 "-folders   \t [paths (space seperated)] \t Processes all demo files in each folder specified\n" +
                 "-demos     \t [paths (space seperated)] \t Processess a list of single demo files at paths\n" +
                 "-recursive                              \t Switch for recursive demo search\n" +
-                "-noguid                                 \t Disables GUID prefix\n"
+                "-noguid                                 \t Disables GUID prefix\n" + 
+                "-concat                                 \t Joins all csv's into one big one\n" +
+                "-steamnames                             \t Takes steam names from steam\n" +
+                "-steamavatars                           \t Takes steam avatars from steam api\n" 
                 );
         }
 
@@ -58,6 +72,8 @@ namespace TopStatsWaffle
 
             bool recursive = false;
             bool noguid = false;
+            bool concat = false;
+            bool steaminfo = false;
 
             List<string> foldersToProcess = new List<string>();
             List<string> demosToProcess = new List<string>();
@@ -108,6 +124,15 @@ namespace TopStatsWaffle
                     i--;
                 }
 
+                if(args[i] == "-steaminfo")
+                {
+                    steaminfo = true;
+                }
+
+                if (args[i] == "-concat")
+                {
+                    concat = true;
+                }
                 if (args[i] == "-recursive")
                     recursive = true;
 
@@ -118,6 +143,19 @@ namespace TopStatsWaffle
                 {
                     helpText();
                     return;
+                }
+            }
+
+            if (steaminfo)
+            {
+                if (File.Exists(cfgPath))
+                {
+                    Config cfg = new Config(cfgPath);
+                    Steam.setAPIKey(cfg.keyVals["apikey"]);
+                }
+                else
+                {
+                    Debug.Error("Config unreadable...");
                 }
             }
 
@@ -174,7 +212,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV("matches/" + (noguid ? Guid.NewGuid().ToString("N") : "") + " " + Path.GetFileNameWithoutExtension(demos[i]) + ".csv", ce);
+                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i]) + ".csv", ce);
                     passCount++;
                 }
             }
@@ -186,6 +224,99 @@ namespace TopStatsWaffle
             Debug.White("Processing took {0} minutes\n", (end - startTime).TotalMinutes);
             Debug.White("Passed: {0}\n", passCount);
             Debug.White("Failed: {0}\n", demos.Count() - passCount);
+
+            if(concat)
+            {
+                Console.CursorVisible = false;
+
+                string[] matches = Directory.GetFiles(Path.GetFullPath("matches"), "*.csv", SearchOption.AllDirectories);
+                Debug.Blue("\n========== JOINING {0} MATCHES ==========\n\n", matches.Count());
+
+                ProgressViewer pv = new ProgressViewer("Reading CSV's (0 of " + matches.Count() + ")");
+
+                Dictionary<long, Dictionary<string, long>> total = new Dictionary<long, Dictionary<string, long>>();
+
+                int num = 0;
+                foreach(string match in matches)
+                {
+                    num++;
+                    List<string> headers = new List<string>();
+
+                    StreamReader sr = new StreamReader(match);
+
+                    headers = sr.ReadLine().Split(',').ToList();
+
+                    string ln;
+                    while ((ln = sr.ReadLine()) != null)
+                    {
+                        string[] elements = ln.Split(',');
+
+                        if (!total.ContainsKey(long.Parse(elements[0])))
+                            total.Add(long.Parse(elements[0]), new Dictionary<string, long>());
+
+                        for (int i = 1; i < elements.Count(); i++)
+                        {
+                            if (!total[long.Parse(elements[0])].ContainsKey(headers[i]))
+                                total[long.Parse(elements[0])].Add(headers[i], 0);
+
+                            total[long.Parse(elements[0])][headers[i]] += long.Parse(elements[i]);
+                        }
+                    }
+
+                    sr.Close();
+
+                    pv.percent = (float)num / (float)matches.Count();
+                    pv.title = "Reading CSV's (" + num + " of " + matches.Count() + ")";
+                    pv.Draw();
+                }
+
+                pv.End();
+
+                string fpath = (noguid ? "" : Guid.NewGuid().ToString("N")) + " all.csv";
+                StreamWriter sw = new StreamWriter(fpath, false);
+
+                List<string> allHeaders = new List<string>();
+                foreach(long p in total.Keys)
+                {
+                    foreach (string catagory in total[p].Keys)
+                        if (!allHeaders.Contains(catagory))
+                            allHeaders.Add(catagory);
+                }
+
+                string header = "SteamID,";
+
+                foreach (string catagory in allHeaders)
+                {
+                    header += catagory + ",";
+                }
+
+                sw.WriteLine(header.Substring(0, header.Length - 1));
+
+
+                foreach (long player in total.Keys)
+                {
+                    string playerLine = player + ",";
+
+                    foreach (string catagory in total[player].Keys)
+                    {
+                        if (total[player].ContainsKey(catagory))
+                            playerLine += total[player][catagory] + ",";
+                        else
+                            playerLine += "0,";
+                    }
+
+                    sw.WriteLine(playerLine.Substring(0, playerLine.Length - 1));
+                }
+
+                sw.Close();
+
+
+
+                Console.CursorVisible = true;
+
+                Debug.Blue("========== CONCATENATION COMPLETE =========\n");
+                Debug.White("Saved to: {0}", fpath);
+            }
 
             return;
         }
