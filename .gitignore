@@ -12,6 +12,9 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+# Steam api key
+WebViewer/secret/steamconfig.php
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

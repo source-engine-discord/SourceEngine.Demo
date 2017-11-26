@@ -16,10 +16,12 @@
       } );
     </script>
 
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="resources/tablestyle.css">
 </head>
 <body>
   <?php
+
+  require ('secret/steamconfig.php');
 
   $rows = array(array());
   $steamids = array();
@@ -39,12 +41,14 @@
 
     fclose($handle);
 
-    $url = file_get_contents("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=934724F3CF2590AE784AF4BAD539F18E&steamids=".join('-', $steamids));
+    $url = file_get_contents("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=".$apikey."&steamids=".join('-', $steamids));
 
     $content = json_decode($url, true);
 
     //Create table
-    echo "<table border='2' id='csv_target' class='display' cellspacing='0' width='100%'>";
+    echo "<table border='2' id='csv_target' class='dataTable cell-border order-column stripe' cellspacing='0' width='100%' style='width: 100%'>";
+
+    //cellspacing="0" width="100%" role="grid" aria-describedby="example_info" style="width: 100%;"
 
     echo "<thead><tr><td>Player</td>";
     for($x=1; $x < count($rows[1]); $x++)
