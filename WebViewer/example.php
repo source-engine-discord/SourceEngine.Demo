@@ -30,8 +30,6 @@
   if(($handle = fopen("data.csv", "r")) !== FALSE){
     while(($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
       $num = count($data);
-      //Steam id 934724F3CF2590AE784AF4BAD539F18E
-
       $row++;
 
       array_push($rows, $data);
@@ -47,8 +45,6 @@
 
     //Create table
     echo "<table border='2' id='csv_target' class='dataTable cell-border order-column stripe' cellspacing='0' width='100%' style='width: 100%'>";
-
-    //cellspacing="0" width="100%" role="grid" aria-describedby="example_info" style="width: 100%;"
 
     echo "<thead><tr><td>Player</td>";
     for($x=1; $x < count($rows[1]); $x++)
@@ -79,9 +75,6 @@
 
     echo "</tbody></table>";
 
-    //for($p=0; $p < sizeof($content['response']['players']); $p++){
-      //echo "<img src=".$content['response']['players'][$p]['avatarmedium']."/>";
-    //}
   }
 
    ?>
