@@ -1,18 +1,21 @@
 # CSGODemoCSV
 Based on DemoInfoGO
 
-Latest compiled version 2.0.0 Download: http://harrygodden.com/downloads/CSGODemoCSV2.0.0.zip
+Latest compiled version 2.0.1 Download: http://harrygodden.com/downloads/CSGODemoCSV2.0.1.zip
 
 ![Program output](https://i.imgur.com/RALmTAR.png)
 
+Demo site in php & javascript: http://harrygodden.com/csgodemocsv/example.php
+
 ## Usage
 
-Example: `CSGODemoCSV -folders "C:/Folder1/" "/relativeFolder/" -recursive`
+Example: `CSGODemoCSV -folders "C:/Folder1/" "/relativeFolder/" -recursive -concat`
 ```
   -folders    [paths (space seperated)]  Processes all demo files in each folder specified
   -demos      [paths (space seperated)]  Processess a list of single demo files at paths
   -recursive                             Switch for recursive demo search
   -noguid                                Disables GUID prefix
+  -concat                                Joins everthing into one big csv. Also makes use of -noguid
 ```
 
 ## Modifying
