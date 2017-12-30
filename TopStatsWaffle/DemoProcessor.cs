@@ -26,6 +26,11 @@ namespace TopStatsWaffle
         public string detectedName = "NOT FOUND";
     }
 
+    public class PlayerWeapon
+    {
+        public string name;
+    }
+
     class MatchData
     {
         public Dictionary<Type, List<object>> events = new Dictionary<Type, List<object>>();
@@ -84,6 +89,11 @@ namespace TopStatsWaffle
                 md.bindPlayer(e.Player);
             };
 
+            // SERVER EVENTS ===================================================
+            dp.RoundEnd += (object sender, RoundEndedEventArgs e) =>
+            {
+                md.addEvent(typeof(RoundEndedEventArgs), e);
+            };
 
             // PLAYER EVENTS ===================================================
             dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) => {
@@ -195,6 +205,9 @@ namespace TopStatsWaffle
                 {
                     //Skip players not in this catagory
                     if (p == null)
+                        continue;
+
+                    if (!playerLookups.ContainsKey(p.EntityID))
                         continue;
 
                     //Add player to collections list if doesnt exist

@@ -76,26 +76,5 @@ namespace TopStatsWaffle
 
             return output;
         }
-
-        public static bool isSteamAPIworking()
-        {
-            List<long> testIDS = new List<long>();
-            testIDS.Add(76561198072130043);
-
-            try
-            {
-                Debug.Success("Steam API Running correctly");
-                if (getSteamUserNamesLookupTable(testIDS) != null)
-                    return true;
-            }
-            catch
-            {
-                Debug.Error("Steam API Error - 2 Check the steam api key is correct, tell Harry if this error (2) is shown!!");
-                return false;
-            }
-
-            Debug.Error("Steam API Error - 1 Check the steam api key is correct");
-            return false;
-        }
     }
 }

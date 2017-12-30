@@ -34,16 +34,10 @@ namespace TopStatsWaffle
             }
 
             if (!this.keyVals.ContainsKey("apikey"))
-            {
-                Debug.Error("CFG::STEAM_API_KEY::NOT_FOUND");
-                Environment.Exit(-1);
-            }
+                throw new Exception("CFG::STEAM_API_KEY::NOT_FOUND");
 
             if(this.keyVals["apikey"] == "" || this.keyVals["apikey"] == null)
-            {
-                Debug.Error("CFG:STEAM_API_KEY::INVALID");
-                Environment.Exit(-1);
-            }
+                throw new Exception("CFG:STEAM_API_KEY::INVALID");
 
             sr.Close();
         }
@@ -53,15 +47,16 @@ namespace TopStatsWaffle
     {
         private static void helpText()
         {
-            Debug.White("========= HELP ==========\n" +
-                "-config    \t [path]                    \t Path to config file\n" +
-                "-folders   \t [paths (space seperated)] \t Processes all demo files in each folder specified\n" +
-                "-demos     \t [paths (space seperated)] \t Processess a list of single demo files at paths\n" +
-                "-recursive                              \t Switch for recursive demo search\n" +
-                "-noguid                                 \t Disables GUID prefix\n" + 
-                "-concat                                 \t Joins all csv's into one big one\n" +
-                "-steamnames                             \t Takes steam names from steam\n" +
-                "-steamavatars                           \t Takes steam avatars from steam api\n" 
+            Debug.White("                             ========= HELP ==========\n\n" +
+                        "Command line parameters:\n\n" +
+                        "-config       [path]                     Path to config file\n\n" +
+                        "-folders      [paths (space seperated)]  Processes all demo files in each folder specified\n" +
+                        "-demos        [paths (space seperated)]  Processess a list of single demo files at paths\n" +
+                        "-recursive                               Switch for recursive demo search\n\n" +
+                        "-noguid                                  Disables GUID prefix on output files\n" + 
+                        "-concat                                  Joins all csv's into one big one\n" +
+                        "-steaminfo                               Takes steam names from steam\n" +
+                        "-noclear                                 Disables clearing the data folder\n"
                 );
         }
 
@@ -74,6 +69,7 @@ namespace TopStatsWaffle
             bool noguid = false;
             bool concat = false;
             bool steaminfo = false;
+            bool clear = true;
 
             List<string> foldersToProcess = new List<string>();
             List<string> demosToProcess = new List<string>();
@@ -124,6 +120,11 @@ namespace TopStatsWaffle
                     i--;
                 }
 
+                if(args[i] == "-noclear")
+                {
+                    clear = false;
+                }
+
                 if(args[i] == "-steaminfo")
                 {
                     steaminfo = true;
@@ -150,18 +151,41 @@ namespace TopStatsWaffle
             {
                 if (File.Exists(cfgPath))
                 {
-                    Config cfg = new Config(cfgPath);
-                    Steam.setAPIKey(cfg.keyVals["apikey"]);
+                    try
+                    {
+                        Config cfg = new Config(cfgPath);
+
+                        Steam.setAPIKey(cfg.keyVals["apikey"]);
+
+                        if(Steam.getSteamUserNamesLookupTable(new List<long>() { 76561198072130043 }) == null)
+                        {
+                            throw new Exception("CONFIG::STEAM_API_KEY::INVALID");
+                        }
+                        
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Error("CONFIG ERROR... INFO:: {0}\nSteam names will not be retrieved!!!", e.Message);
+                        steaminfo = false;
+                    }
                 }
                 else
                 {
-                    Debug.Error("Config unreadable...");
+                    Debug.Error("Config unreadable... Steam names will not be retrieved!!!");
+                    steaminfo = false;
                 }
             }
 
 
             if (!Directory.Exists("matches"))
                 Directory.CreateDirectory("matches");
+
+            //Clear by recreating folder
+            if (clear)
+            {
+                Directory.Delete("matches", true);
+                Directory.CreateDirectory("matches");
+            }
 
             List<string> demos = new List<string>();
             foreach(string folder in foldersToProcess)
@@ -216,6 +240,7 @@ namespace TopStatsWaffle
                     passCount++;
                 }
             }
+
             Console.CursorVisible = true;
 
             Debug.Blue("========== PROCESSING COMPLETE =========\n");
@@ -249,7 +274,7 @@ namespace TopStatsWaffle
                     string ln;
                     while ((ln = sr.ReadLine()) != null)
                     {
-                        string[] elements = ln.Split(',');
+                        string[] elements = ln.Split(','); 
 
                         if (!total.ContainsKey(long.Parse(elements[0])))
                             total.Add(long.Parse(elements[0]), new Dictionary<string, long>());
@@ -284,7 +309,13 @@ namespace TopStatsWaffle
                 }
 
                 string header = "SteamID,";
+                Dictionary<long, string> lookup = new Dictionary<long, string>();
+                if (steaminfo)
+                {
+                    header += "Name,";
 
+                    lookup = Steam.getSteamUserNamesLookupTable(total.Keys.ToList());
+                }
                 foreach (string catagory in allHeaders)
                 {
                     header += catagory + ",";
@@ -292,10 +323,12 @@ namespace TopStatsWaffle
 
                 sw.WriteLine(header.Substring(0, header.Length - 1));
 
-
                 foreach (long player in total.Keys)
                 {
                     string playerLine = player + ",";
+
+                    if (steaminfo)
+                        playerLine += lookup[player] + ",";
 
                     foreach (string catagory in total[player].Keys)
                     {
@@ -309,8 +342,6 @@ namespace TopStatsWaffle
                 }
 
                 sw.Close();
-
-
 
                 Console.CursorVisible = true;
 
