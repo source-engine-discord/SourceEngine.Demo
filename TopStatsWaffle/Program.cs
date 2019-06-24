@@ -187,16 +187,34 @@ namespace TopStatsWaffle
                 Directory.CreateDirectory("matches");
             }
 
-            List<string> demos = new List<string>();
+            List<List<string>> demos = new List<List<string>>();
+
             foreach(string folder in foldersToProcess)
             {
                 string[] subDemos = Directory.GetFiles(Path.GetFullPath(folder), "*.dem", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
                 foreach (string demo in subDemos)
-                    demos.Add(demo);
+                {
+                    string[] split1 = demo.Split('\\');
+                    string[] split2 = split1[split1.Count()-1].Split('_', '.');
+
+                    string mapDate = $"{ split2[0] }/{ split2[1] }/{ split2[2] }";
+                    string mapname = $"{ split2[3] }_{ split2[4] }";
+                    string testType = $"{ split2[5] }";
+
+                    demos.Add(new List<string>() { demo, mapname, mapDate, testType });
+                }
             }
 
             foreach (string demo in demosToProcess)
-                demos.Add(demo);
+            {
+                string[] filenameSplit = demo.Split('_', '.');
+
+                string mapDate = $"{ filenameSplit[0] }/{ filenameSplit[1] }/{ filenameSplit[2] }";
+                string mapname = $"{ filenameSplit[3] }_{ filenameSplit[4] }";
+                string testType = $"{ filenameSplit[5] }";
+
+                demos.Add(new List<string>() { demo, mapname, mapDate, testType });
+            }
 
             Debug.Info("Starting processing of {0} demos", demos.Count());
             DateTime startTime = DateTime.Now;
@@ -207,7 +225,7 @@ namespace TopStatsWaffle
             //Process all the found demos
             for (int i = 0; i < demos.Count(); i++)
             {
-                MatchData mdTest = MatchData.fromDemoFile(demos[i]);
+                MatchData mdTest = MatchData.fromDemoFile(demos[i][0]);
 
                 Dictionary<string, IEnumerable<Player>> ce = new Dictionary<string, IEnumerable<Player>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
@@ -236,6 +254,9 @@ namespace TopStatsWaffle
                 ce.Add("Plants", from player in mdTest.getEvents<BombEventArgs>()
                                     select (player as BombEventArgs).Player);
 
+                /*ce.Add("Disconnected", from player in mdTest.getEvents<PlayerDisconnectEventArgs>()
+                                    select (player as PlayerDisconnectEventArgs).Player);*/
+
                 te.Add("RoundsWonTeams", from team in mdTest.getEvents<RoundEndedEventArgs>()
                                        select (team as RoundEndedEventArgs).Winner);
 
@@ -244,7 +265,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i]) + ".csv", ce, te, re);
+                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i][0]) + ".csv", demos[i], ce, te, re);
                     passCount++;
                 }
             }

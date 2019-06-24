@@ -181,14 +181,24 @@ namespace TopStatsWaffle
         }
 
         public void SaveCSV(
-            string path, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Team>> teamValues,
+            string path, List<string> demo, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Team>> teamValues,
             Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, bool writeTicks = true
         )
         {
             StreamWriter sw = new StreamWriter(path, false);
 
+            /* map info */
+            string header = "Mapname,Date,Type";
+
+            sw.WriteLine(header);
+
+            sw.WriteLine($"{ demo[1] },{ demo[2] },{ demo[3] }");
+            /* map info end */
+
             /* player stats */
-            string header = "SteamID,";
+            sw.WriteLine(string.Empty);
+
+            header = "SteamID,";
 
             foreach(string catagory in playerValues.Keys)
             {
@@ -271,7 +281,7 @@ namespace TopStatsWaffle
             const string tName = "Terrorist", ctName = "CounterTerrorist";
             const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused";
 
-            header = "Round,Winners";
+            header = "Round,Winners,Reason";
             sw.WriteLine(header);
 
             for (int i=0; i < roundsWonTeams.Count(); i++)
