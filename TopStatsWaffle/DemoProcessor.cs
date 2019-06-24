@@ -180,7 +180,10 @@ namespace TopStatsWaffle
             return md;
         }
 
-        public void SaveCSV(string path, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Team>> teamValues, bool writeTicks = true)
+        public void SaveCSV(
+            string path, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Team>> teamValues,
+            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, bool writeTicks = true
+        )
         {
             StreamWriter sw = new StreamWriter(path, false);
 
@@ -258,27 +261,49 @@ namespace TopStatsWaffle
 
                 sw.WriteLine(playerLine.Substring(0, playerLine.Length - 1));
             }
+            /* player stats end */
 
-            /* round wins team stats */
+            /* round wins team and reason stats */
             sw.WriteLine(string.Empty);
             
-            var roundsWonResults = teamValues["RoundWinners"].ToList();
-            string tName = "Terrorist";
-            string ctName = "CounterTerrorist";
+            var roundsWonTeams = teamValues["RoundsWonTeams"].ToList();
+            var roundsWonReasons = roundEndReasonValues["RoundsWonReasons"].ToList();
+            const string tName = "Terrorist", ctName = "CounterTerrorist";
+            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused";
 
             header = "Round,Winners";
-            sw.WriteLine(header.Substring(0, header.Length - 1));
+            sw.WriteLine(header);
 
-            for (int i=0; i < roundsWonResults.Count(); i++)
+            for (int i=0; i < roundsWonTeams.Count(); i++)
             {
-                if (roundsWonResults[i].ToString().Equals(tName) || roundsWonResults[i].ToString().Equals(ctName))
+                if (roundsWonTeams[i].ToString().Equals(tName) || roundsWonTeams[i].ToString().Equals(ctName))
                 {
+                    string reason = string.Empty;
+
+                    switch (roundsWonReasons[i].ToString())
+                    {
+                        case tKills:
+                            reason = "T Kills";
+                            break;
+                        case ctKills:
+                            reason = "CT Kills";
+                            break;
+                        case bombed:
+                            reason = "Bombed";
+                            break;
+                        case defused:
+                            reason = "Defused";
+                            break;
+                    }
+
+
                     var rounds = string.Empty;
-                    rounds += $"Round{i},{roundsWonResults[i].ToString()},";
+                    rounds += $"Round{i},{roundsWonTeams[i].ToString()},{reason},";
 
                     sw.WriteLine(rounds.Substring(0, rounds.Length - 1));
                 }
             }
+            /* round wins team and reason stats end */
 
             sw.Close();
         }

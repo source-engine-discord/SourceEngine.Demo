@@ -211,6 +211,7 @@ namespace TopStatsWaffle
 
                 Dictionary<string, IEnumerable<Player>> ce = new Dictionary<string, IEnumerable<Player>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
+                Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
 
                 ce.Add("Deaths", (from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                     select (player as PlayerKilledEventArgs).Killer));
@@ -235,12 +236,15 @@ namespace TopStatsWaffle
                 ce.Add("Plants", from player in mdTest.getEvents<BombEventArgs>()
                                     select (player as BombEventArgs).Player);
 
-                te.Add("RoundWinners", from team in mdTest.getEvents<RoundEndedEventArgs>()
+                te.Add("RoundsWonTeams", from team in mdTest.getEvents<RoundEndedEventArgs>()
                                        select (team as RoundEndedEventArgs).Winner);
+
+                re.Add("RoundsWonReasons", from reason in mdTest.getEvents<RoundEndedEventArgs>()
+                                       select (reason as RoundEndedEventArgs).Reason);
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i]) + ".csv", ce, te);
+                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i]) + ".csv", ce, te, re);
                     passCount++;
                 }
             }
@@ -265,6 +269,7 @@ namespace TopStatsWaffle
 
                 Dictionary<long, Dictionary<string, long>> totalPlayer = new Dictionary<long, Dictionary<string, long>>();
                 Dictionary<string, string> totalTeam = new Dictionary<string, string>();
+                Dictionary<string, string> totalRoundEndReason = new Dictionary<string, string>();
 
                 int num = 0;
                 foreach(string match in matches)
@@ -293,16 +298,29 @@ namespace TopStatsWaffle
                             totalPlayer[long.Parse(elements[0])][headers[i]] += long.Parse(elements[i]);
                         }
                     }
+                    /* player stats end */
 
                     /* round wins team stats */
                     headers = sr.ReadLine().Split(',').ToList();
-                    while ((ln = sr.ReadLine()) != null) // != string.Empty if adding another stats group below
+                    while ((ln = sr.ReadLine()) != string.Empty)
                     {
                         string[] elements = ln.Split(',');
 
                         if (!totalTeam.ContainsKey(elements[0]))
                             totalTeam.Add(elements[0], elements[1]);
                     }
+                    /* round wins team stats end*/
+
+                    /* round end reason stats */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != null) // != string.Empty if adding another stats group below
+                    {
+                        string[] elements = ln.Split(',');
+
+                        if (!totalRoundEndReason.ContainsKey(elements[0]))
+                            totalRoundEndReason.Add(elements[0], elements[1]);
+                    }
+                    /* round end reason stats end */
 
                     sr.Close();
 
@@ -357,8 +375,6 @@ namespace TopStatsWaffle
                     sw.WriteLine(playerLine.Substring(0, playerLine.Length - 1));
                 }
 
-
-
                 foreach (string round in totalTeam.Keys)
                 {
                     string teamLine = round + ",";
@@ -369,6 +385,18 @@ namespace TopStatsWaffle
                         teamLine += "0,";
 
                     sw.WriteLine(teamLine.Substring(0, teamLine.Length - 1));
+                }
+
+                foreach (string round in totalRoundEndReason.Keys)
+                {
+                    string roundEndReasonLine = round + ",";
+
+                    if (totalRoundEndReason[round].ToString() != null && totalRoundEndReason[round].ToString() != string.Empty)
+                        roundEndReasonLine += totalRoundEndReason[round] + ",";
+                    else
+                        roundEndReasonLine += "0,";
+
+                    sw.WriteLine(roundEndReasonLine.Substring(0, roundEndReasonLine.Length - 1));
                 }
 
                 sw.Close();
