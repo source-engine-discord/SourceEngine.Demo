@@ -180,14 +180,14 @@ namespace TopStatsWaffle
             return md;
         }
 
-        public void SaveCSV(string path, Dictionary<string, IEnumerable<Player>> values, bool writeTicks = true)
+        public void SaveCSV(string path, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Team>> teamValues, bool writeTicks = true)
         {
             StreamWriter sw = new StreamWriter(path, false);
 
-            //Write header
+            /* player stats */
             string header = "SteamID,";
 
-            foreach(string catagory in values.Keys)
+            foreach(string catagory in playerValues.Keys)
             {
                 header += catagory + ",";
             }
@@ -199,9 +199,9 @@ namespace TopStatsWaffle
 
             Dictionary<long, Dictionary<string, long>> data = new Dictionary<long, Dictionary<string, long>>();
 
-            foreach(string catagory in values.Keys)
+            foreach(string catagory in playerValues.Keys)
             {
-                foreach(Player p in values[catagory])
+                foreach(Player p in playerValues[catagory])
                 {
                     //Skip players not in this catagory
                     if (p == null)
@@ -227,7 +227,7 @@ namespace TopStatsWaffle
             {
                 string playerLine = player + ",";
 
-                foreach (string catagory in values.Keys)
+                foreach (string catagory in playerValues.Keys)
                 {
                     if (data[player].ContainsKey(catagory))
                         playerLine += data[player][catagory] + ",";
@@ -257,6 +257,27 @@ namespace TopStatsWaffle
                 }
 
                 sw.WriteLine(playerLine.Substring(0, playerLine.Length - 1));
+            }
+
+            /* round wins team stats */
+            sw.WriteLine(string.Empty);
+            
+            var roundsWonResults = teamValues["RoundWinners"].ToList();
+            string tName = "Terrorist";
+            string ctName = "CounterTerrorist";
+
+            header = "Round,Winners";
+            sw.WriteLine(header.Substring(0, header.Length - 1));
+
+            for (int i=0; i < roundsWonResults.Count(); i++)
+            {
+                if (roundsWonResults[i].ToString().Equals(tName) || roundsWonResults[i].ToString().Equals(ctName))
+                {
+                    var rounds = string.Empty;
+                    rounds += $"Round{i},{roundsWonResults[i].ToString()},";
+
+                    sw.WriteLine(rounds.Substring(0, rounds.Length - 1));
+                }
             }
 
             sw.Close();

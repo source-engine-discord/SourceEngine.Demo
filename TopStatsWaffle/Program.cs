@@ -210,6 +210,7 @@ namespace TopStatsWaffle
                 MatchData mdTest = MatchData.fromDemoFile(demos[i]);
 
                 Dictionary<string, IEnumerable<Player>> ce = new Dictionary<string, IEnumerable<Player>>();
+                Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
 
                 ce.Add("Deaths", (from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                     select (player as PlayerKilledEventArgs).Killer));
@@ -234,9 +235,12 @@ namespace TopStatsWaffle
                 ce.Add("Plants", from player in mdTest.getEvents<BombEventArgs>()
                                     select (player as BombEventArgs).Player);
 
+                te.Add("RoundWinners", from team in mdTest.getEvents<RoundEndedEventArgs>()
+                                       select (team as RoundEndedEventArgs).Winner);
+
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i]) + ".csv", ce);
+                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i]) + ".csv", ce, te);
                     passCount++;
                 }
             }
@@ -259,7 +263,8 @@ namespace TopStatsWaffle
 
                 ProgressViewer pv = new ProgressViewer("Reading CSV's (0 of " + matches.Count() + ")");
 
-                Dictionary<long, Dictionary<string, long>> total = new Dictionary<long, Dictionary<string, long>>();
+                Dictionary<long, Dictionary<string, long>> totalPlayer = new Dictionary<long, Dictionary<string, long>>();
+                Dictionary<string, string> totalTeam = new Dictionary<string, string>();
 
                 int num = 0;
                 foreach(string match in matches)
@@ -269,23 +274,34 @@ namespace TopStatsWaffle
 
                     StreamReader sr = new StreamReader(match);
 
-                    headers = sr.ReadLine().Split(',').ToList();
-
                     string ln;
-                    while ((ln = sr.ReadLine()) != null)
-                    {
-                        string[] elements = ln.Split(','); 
 
-                        if (!total.ContainsKey(long.Parse(elements[0])))
-                            total.Add(long.Parse(elements[0]), new Dictionary<string, long>());
+                    /* player stats */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != string.Empty)
+                    {
+                        string[] elements = ln.Split(',');
+
+                        if (!totalPlayer.ContainsKey(long.Parse(elements[0])))
+                            totalPlayer.Add(long.Parse(elements[0]), new Dictionary<string, long>());
 
                         for (int i = 1; i < elements.Count(); i++)
                         {
-                            if (!total[long.Parse(elements[0])].ContainsKey(headers[i]))
-                                total[long.Parse(elements[0])].Add(headers[i], 0);
+                            if (!totalPlayer[long.Parse(elements[0])].ContainsKey(headers[i]))
+                                totalPlayer[long.Parse(elements[0])].Add(headers[i], 0);
 
-                            total[long.Parse(elements[0])][headers[i]] += long.Parse(elements[i]);
+                            totalPlayer[long.Parse(elements[0])][headers[i]] += long.Parse(elements[i]);
                         }
+                    }
+
+                    /* round wins team stats */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != null) // != string.Empty if adding another stats group below
+                    {
+                        string[] elements = ln.Split(',');
+
+                        if (!totalTeam.ContainsKey(elements[0]))
+                            totalTeam.Add(elements[0], elements[1]);
                     }
 
                     sr.Close();
@@ -300,12 +316,12 @@ namespace TopStatsWaffle
                 string fpath = (noguid ? "" : Guid.NewGuid().ToString("N")) + " all.csv";
                 StreamWriter sw = new StreamWriter(fpath, false);
 
-                List<string> allHeaders = new List<string>();
-                foreach(long p in total.Keys)
+                List<string> allPlayerHeaders = new List<string>();
+                foreach(long p in totalPlayer.Keys)
                 {
-                    foreach (string catagory in total[p].Keys)
-                        if (!allHeaders.Contains(catagory))
-                            allHeaders.Add(catagory);
+                    foreach (string catagory in totalPlayer[p].Keys)
+                        if (!allPlayerHeaders.Contains(catagory))
+                            allPlayerHeaders.Add(catagory);
                 }
 
                 string header = "SteamID,";
@@ -314,31 +330,45 @@ namespace TopStatsWaffle
                 {
                     header += "Name,";
 
-                    lookup = Steam.getSteamUserNamesLookupTable(total.Keys.ToList());
+                    lookup = Steam.getSteamUserNamesLookupTable(totalPlayer.Keys.ToList());
                 }
-                foreach (string catagory in allHeaders)
+                foreach (string catagory in allPlayerHeaders)
                 {
                     header += catagory + ",";
                 }
 
                 sw.WriteLine(header.Substring(0, header.Length - 1));
 
-                foreach (long player in total.Keys)
+                foreach (long player in totalPlayer.Keys)
                 {
                     string playerLine = player + ",";
 
                     if (steaminfo)
                         playerLine += lookup[player] + ",";
 
-                    foreach (string catagory in total[player].Keys)
+                    foreach (string catagory in totalPlayer[player].Keys)
                     {
-                        if (total[player].ContainsKey(catagory))
-                            playerLine += total[player][catagory] + ",";
+                        if (totalPlayer[player].ContainsKey(catagory))
+                            playerLine += totalPlayer[player][catagory] + ",";
                         else
                             playerLine += "0,";
                     }
 
                     sw.WriteLine(playerLine.Substring(0, playerLine.Length - 1));
+                }
+
+
+
+                foreach (string round in totalTeam.Keys)
+                {
+                    string teamLine = round + ",";
+
+                    if (totalTeam[round].ToString() != null && totalTeam[round].ToString() != string.Empty)
+                        teamLine += totalTeam[round] + ",";
+                    else
+                        teamLine += "0,";
+
+                    sw.WriteLine(teamLine.Substring(0, teamLine.Length - 1));
                 }
 
                 sw.Close();
