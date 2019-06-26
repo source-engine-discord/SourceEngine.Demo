@@ -181,11 +181,11 @@ namespace TopStatsWaffle
                 Directory.CreateDirectory("matches");
 
             //Clear by recreating folder
-            if (clear)
+            /*if (clear)
             {
                 Directory.Delete("matches", true);
                 Directory.CreateDirectory("matches");
-            }
+            }*/
 
             List<List<string>> demos = new List<List<string>>();
 
@@ -227,32 +227,39 @@ namespace TopStatsWaffle
             {
                 MatchData mdTest = MatchData.fromDemoFile(demos[i][0]);
 
-                Dictionary<string, IEnumerable<Player>> ce = new Dictionary<string, IEnumerable<Player>>();
+                Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
+                Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
                 Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
 
-                ce.Add("Deaths", (from player in mdTest.getEvents<PlayerKilledEventArgs>()
-                                    select (player as PlayerKilledEventArgs).Killer));
+                pe.Add("Deaths", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                                 select (player as PlayerKilledEventArgs).Killer);
 
-                ce.Add("Kills", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                pe.Add("Kills", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                 select (player as PlayerKilledEventArgs).Victim);
 
-                ce.Add("Headshots", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                pe.Add("Headshots", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                     where (player as PlayerKilledEventArgs).Headshot
                                     select (player as PlayerKilledEventArgs).Killer);
 
-                ce.Add("Assists", from player in mdTest.getEvents<PlayerKilledEventArgs>()
-                                    where (player as PlayerKilledEventArgs).Assister != null
-                                    select (player as PlayerKilledEventArgs).Assister);
+                pe.Add("Assists", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                                  where (player as PlayerKilledEventArgs).Assister != null
+                                  select (player as PlayerKilledEventArgs).Assister);
 
-                ce.Add("Shots", from player in mdTest.getEvents<WeaponFiredEventArgs>()
+                pe.Add("Shots", from player in mdTest.getEvents<WeaponFiredEventArgs>()
                                 select (player as WeaponFiredEventArgs).Shooter);
 
-                ce.Add("Defuses", from player in mdTest.getEvents<BombDefuseEventArgs>()
-                                    select (player as BombEventArgs).Player);
+                pe.Add("Plants", from player in mdTest.getEvents<BombEventArgs>()
+                                 select (player as BombEventArgs).Player);
 
-                ce.Add("Plants", from player in mdTest.getEvents<BombEventArgs>()
-                                    select (player as BombEventArgs).Player);
+                pe.Add("Defuses", from player in mdTest.getEvents<BombDefuseEventArgs>()
+                                  select (player as BombEventArgs).Player);
+
+                be.Add("PlantsSites", from site in mdTest.getEvents<BombEventArgs>()
+                                      select (site as BombEventArgs).Site);
+
+                be.Add("DefusesSites", from site in mdTest.getEvents<BombDefuseEventArgs>()
+                                  select (site as BombEventArgs).Site);
 
                 /*ce.Add("Disconnected", from player in mdTest.getEvents<PlayerDisconnectEventArgs>()
                                     select (player as PlayerDisconnectEventArgs).Player);*/
@@ -265,7 +272,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i][0]) + ".csv", demos[i], ce, te, re);
+                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i][0]) + ".csv", demos[i], pe, be, te, re);
                     passCount++;
                 }
             }
@@ -291,6 +298,7 @@ namespace TopStatsWaffle
                 Dictionary<long, Dictionary<string, long>> totalPlayer = new Dictionary<long, Dictionary<string, long>>();
                 Dictionary<string, string> totalTeam = new Dictionary<string, string>();
                 Dictionary<string, string> totalRoundEndReason = new Dictionary<string, string>();
+                Dictionary<string, List<int>> totalBombsite = new Dictionary<string, List<int>>();
 
                 int num = 0;
                 foreach(string match in matches)
@@ -334,7 +342,7 @@ namespace TopStatsWaffle
 
                     /* round end reason stats */
                     headers = sr.ReadLine().Split(',').ToList();
-                    while ((ln = sr.ReadLine()) != null) // != string.Empty if adding another stats group below
+                    while ((ln = sr.ReadLine()) != string.Empty)
                     {
                         string[] elements = ln.Split(',');
 
@@ -342,6 +350,19 @@ namespace TopStatsWaffle
                             totalRoundEndReason.Add(elements[0], elements[1]);
                     }
                     /* round end reason stats end */
+
+                    /* bombsite stats */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != null) // != string.Empty if adding another stats group below
+                    {
+                        string[] elements = ln.Split(',');
+
+                        if (!totalBombsite.ContainsKey(elements[0]))
+                            totalBombsite.Add("A", new List<int>() { elements[0][0], elements[0][1] });
+                        if (!totalBombsite.ContainsKey(elements[1]))
+                            totalBombsite.Add("B", new List<int>() { elements[1][0], elements[1][1] });
+                    }
+                    /* bombsite stats end */
 
                     sr.Close();
 

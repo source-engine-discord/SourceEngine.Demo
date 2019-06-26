@@ -102,11 +102,11 @@ namespace TopStatsWaffle
 
             // BOMB EVENTS =====================================================
             dp.BombPlanted += (object sender, BombEventArgs e) => {
-                md.addEvent(typeof(BombDefuseEventArgs), e);
+                md.addEvent(typeof(BombEventArgs), e);
             };
 
             dp.BombDefused += (object sender, BombEventArgs e) => {
-                md.addEvent(typeof(BombEventArgs), e);
+                md.addEvent(typeof(BombDefuseEventArgs), e);
             };
 
             // WEAPON EVENTS ===================================================
@@ -181,8 +181,8 @@ namespace TopStatsWaffle
         }
 
         public void SaveCSV(
-            string path, List<string> demo, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Team>> teamValues,
-            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, bool writeTicks = true
+            string path, List<string> demo, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
+            Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, bool writeTicks = true
         )
         {
             StreamWriter sw = new StreamWriter(path, false);
@@ -279,9 +279,9 @@ namespace TopStatsWaffle
             var roundsWonTeams = teamValues["RoundsWonTeams"].ToList();
             var roundsWonReasons = roundEndReasonValues["RoundsWonReasons"].ToList();
             const string tName = "Terrorist", ctName = "CounterTerrorist";
-            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused";
+            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", saved = "TargetSaved";
 
-            header = "Round,Winners,Reason";
+            header = "Round,Winners,Win Method";
             sw.WriteLine(header);
 
             for (int i=0; i < roundsWonTeams.Count(); i++)
@@ -304,16 +304,29 @@ namespace TopStatsWaffle
                         case defused:
                             reason = "Defused";
                             break;
+                        case saved:
+                            reason = "T Saved";
+                            break;
                     }
 
-
-                    var rounds = string.Empty;
-                    rounds += $"Round{i},{roundsWonTeams[i].ToString()},{reason},";
-
-                    sw.WriteLine(rounds.Substring(0, rounds.Length - 1));
+                    sw.WriteLine($"Round{ i },{ roundsWonTeams[i].ToString() },{ reason }");
                 }
             }
             /* round wins team and reason stats end */
+
+            /* bombsite stats */
+            sw.WriteLine(string.Empty);
+
+            List<char> bombsitePlants = new List<char>(bombsiteValues.ElementAt(0).Value);
+            List<char> bombsiteDefuses = new List<char>(bombsiteValues.ElementAt(1).Value);
+
+            header = "Bombsite,Plants,Defuses";
+            sw.WriteLine(header);
+
+            sw.WriteLine($"A,{ bombsitePlants.Where(b => b.ToString().Equals("A")).Count() },{ bombsiteDefuses.Where(b => b.ToString().Equals("A")).Count() }");
+            sw.WriteLine($"B,{ bombsitePlants.Where(b => b.ToString().Equals("B")).Count() },{ bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count() }");
+
+            /* bombsite stats end */
 
             sw.Close();
         }
