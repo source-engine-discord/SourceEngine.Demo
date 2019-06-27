@@ -273,13 +273,38 @@ namespace TopStatsWaffle
             }
             /* player stats end */
 
-            /* round wins team and reason stats */
+            /* winning team stats, round wins team and reason stats */
             sw.WriteLine(string.Empty);
-            
-            var roundsWonTeams = teamValues["RoundsWonTeams"].ToList();
-            var roundsWonReasons = roundEndReasonValues["RoundsWonReasons"].ToList();
+
             const string tName = "Terrorist", ctName = "CounterTerrorist";
-            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", saved = "TargetSaved";
+            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", timeout = "TargetSaved";
+
+            var roundsWonTeams = teamValues["RoundsWonTeams"].ToList();
+            roundsWonTeams.RemoveAll(r => !r.ToString().Equals(tName)
+                                       && !r.ToString().Equals(ctName)
+            );
+
+            var roundsWonReasons = roundEndReasonValues["RoundsWonReasons"].ToList();
+            roundsWonReasons.RemoveAll(r => !r.ToString().Equals(tKills)
+                                         && !r.ToString().Equals(ctKills)
+                                         && !r.ToString().Equals(bombed)
+                                         && !r.ToString().Equals(defused)
+                                         && !r.ToString().Equals(timeout)
+            );
+
+            int numRoundsWonTeamA = roundsWonTeams.Take(10).Where(r => r.ToString().Equals(tName)).Count()
+                                  + roundsWonTeams.Skip(10).Where(r => r.ToString().Equals(ctName)).Count();
+
+            int numRoundsWonTeamB = roundsWonTeams.Take(10).Where(r => r.ToString().Equals(ctName)).Count()
+                                  + roundsWonTeams.Skip(10).Where(r => r.ToString().Equals(tName)).Count();
+
+            string winningTeam = (numRoundsWonTeamA >= numRoundsWonTeamB) ? (numRoundsWonTeamA > numRoundsWonTeamB) ? "Team Alpha" : "Draw" : "Team Bravo";
+
+            header = "Winning Team, Team Alpha Rounds, Team Bravo Rounds";
+            sw.WriteLine(header);
+            sw.WriteLine($"{ winningTeam },{ numRoundsWonTeamA },{ numRoundsWonTeamB }");
+
+            sw.WriteLine(string.Empty);
 
             header = "Round,Winners,Win Method";
             sw.WriteLine(header);
@@ -304,15 +329,15 @@ namespace TopStatsWaffle
                         case defused:
                             reason = "Defused";
                             break;
-                        case saved:
-                            reason = "T Saved";
+                        case timeout:
+                            reason = "Timeout";
                             break;
                     }
 
                     sw.WriteLine($"Round{ i },{ roundsWonTeams[i].ToString() },{ reason }");
                 }
             }
-            /* round wins team and reason stats end */
+            /* winning team stats, round wins team and reason stats end */
 
             /* bombsite stats */
             sw.WriteLine(string.Empty);

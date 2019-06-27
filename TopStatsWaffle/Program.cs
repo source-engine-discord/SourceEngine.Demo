@@ -197,7 +197,7 @@ namespace TopStatsWaffle
                     string[] split1 = demo.Split('\\');
                     string[] split2 = split1[split1.Count()-1].Split('_', '.');
 
-                    string mapDate = $"{ split2[0] }/{ split2[1] }/{ split2[2] }";
+                    string mapDate = $"{ split2[1] }/{ split2[0] }/{ split2[2] }";
                     string mapname = $"{ split2[3] }_{ split2[4] }";
                     string testType = $"{ split2[5] }";
 
@@ -209,7 +209,7 @@ namespace TopStatsWaffle
             {
                 string[] filenameSplit = demo.Split('_', '.');
 
-                string mapDate = $"{ filenameSplit[0] }/{ filenameSplit[1] }/{ filenameSplit[2] }";
+                string mapDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
                 string mapname = $"{ filenameSplit[3] }_{ filenameSplit[4] }";
                 string testType = $"{ filenameSplit[5] }";
 
