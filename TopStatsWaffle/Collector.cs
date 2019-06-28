@@ -134,6 +134,7 @@ namespace TopStatsWaffle
                 ev.parser.FlashNadeExploded += (object sender, FlashEventArgs e) => { pushData(e.ThrownBy, "Flashes", 1); pushData(e.ThrownBy,"Flashed Players", e.FlashedPlayers.Length); };
                 ev.parser.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) => { pushData(e.ThrownBy, "Grenades", 1); };
                 ev.parser.FireNadeStarted += (object sender, FireEventArgs e) => { pushData(e.ThrownBy, "Fires", 1); };
+                ev.parser.DecoyNadeStarted += (object sender, DecoyEventArgs e) => { pushData(e.ThrownBy, "Decoys", 1); };
 
                 ev.parser.BombPlanted += (object sender, BombEventArgs e) => { pushData(e.Player, "Bomb plants", 1); };
                 ev.parser.BombDefused += (object sender, BombEventArgs e) => { pushData(e.Player, "Bomb defuses", 1); };

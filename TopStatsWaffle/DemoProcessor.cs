@@ -117,18 +117,27 @@ namespace TopStatsWaffle
             // GRENADE EVENTS ==================================================
             dp.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) => {
                 md.addEvent(typeof(GrenadeEventArgs), e);
+                md.addEvent(typeof(NadeEventArgs), e);
             };
 
             dp.FireNadeStarted += (object sender, FireEventArgs e) => {
+                md.addEvent(typeof(FireEventArgs), e);
                 md.addEvent(typeof(NadeEventArgs), e);
             };
 
             dp.SmokeNadeStarted += (object sender, SmokeEventArgs e) => {
                 md.addEvent(typeof(SmokeEventArgs), e);
+                md.addEvent(typeof(NadeEventArgs), e);
             };
 
             dp.FlashNadeExploded += (object sender, FlashEventArgs e) => {
                 md.addEvent(typeof(FlashEventArgs), e);
+                md.addEvent(typeof(NadeEventArgs), e);
+            };
+
+            dp.DecoyNadeStarted += (object sender, DecoyEventArgs e) => {
+                md.addEvent(typeof(DecoyEventArgs), e);
+                md.addEvent(typeof(NadeEventArgs), e);
             };
 
             // PLAYER TICK HANDLER ============================================
@@ -182,7 +191,7 @@ namespace TopStatsWaffle
 
         public void SaveCSV(
             string path, List<string> demo, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
-            Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, bool writeTicks = true
+            Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
         )
         {
             StreamWriter sw = new StreamWriter(path, false);
@@ -198,7 +207,7 @@ namespace TopStatsWaffle
             /* player stats */
             sw.WriteLine(string.Empty);
 
-            header = "SteamID,";
+            header = "Player Name,SteamID,";
 
             foreach(string catagory in playerValues.Keys)
             {
@@ -211,8 +220,9 @@ namespace TopStatsWaffle
             sw.WriteLine(header.Substring(0, header.Length - 1));
 
             Dictionary<long, Dictionary<string, long>> data = new Dictionary<long, Dictionary<string, long>>();
+            Dictionary<long, Dictionary<string, string>> playerNames = new Dictionary<long, Dictionary<string, string>>();
 
-            foreach(string catagory in playerValues.Keys)
+            foreach (string catagory in playerValues.Keys)
             {
                 foreach(Player p in playerValues[catagory])
                 {
@@ -224,10 +234,16 @@ namespace TopStatsWaffle
                         continue;
 
                     //Add player to collections list if doesnt exist
+                    if (!playerNames.ContainsKey(playerLookups[p.EntityID]))
+                        playerNames.Add(playerLookups[p.EntityID], new Dictionary<string, string>());
+
                     if (!data.ContainsKey(playerLookups[p.EntityID]))
                         data.Add(playerLookups[p.EntityID], new Dictionary<string, long>());
 
                     //Add catagory to dictionary if doesnt exist
+                    if (!playerNames[playerLookups[p.EntityID]].ContainsKey("Name"))
+                        playerNames[playerLookups[p.EntityID]].Add("Name", p.Name);
+
                     if (!data[playerLookups[p.EntityID]].ContainsKey(catagory))
                         data[playerLookups[p.EntityID]].Add(catagory, 0);
 
@@ -236,9 +252,14 @@ namespace TopStatsWaffle
                 }
             }
 
+            int counter = 0;
             foreach (long player in data.Keys)
             {
-                string playerLine = player + ",";
+                var match = playerNames.Where(p => p.Key.ToString() == player.ToString());
+                var playerName = match.ElementAt(0).Value.ElementAt(0).Value;
+
+
+                string playerLine = $"{ playerName },{ player },";
 
                 foreach (string catagory in playerValues.Keys)
                 {
@@ -270,6 +291,8 @@ namespace TopStatsWaffle
                 }
 
                 sw.WriteLine(playerLine.Substring(0, playerLine.Length - 1));
+
+                counter++;
             }
             /* player stats end */
 
@@ -350,8 +373,65 @@ namespace TopStatsWaffle
 
             sw.WriteLine($"A,{ bombsitePlants.Where(b => b.ToString().Equals("A")).Count() },{ bombsiteDefuses.Where(b => b.ToString().Equals("A")).Count() }");
             sw.WriteLine($"B,{ bombsitePlants.Where(b => b.ToString().Equals("B")).Count() },{ bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count() }");
-
             /* bombsite stats end */
+
+            /* Grenades total stats */
+            sw.WriteLine(string.Empty);
+
+            string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
+
+            List<NadeEventArgs> nades = new List<NadeEventArgs>(grenadeValues.ElementAt(0).Value);
+            var flashes = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[0]));
+            var smokes = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[1]));
+            var hegrenades = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[2]));
+            var incendiaries = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[3]));
+            var decoys = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[4]));
+
+            List<IEnumerable<NadeEventArgs>> nadeGroups = new List<IEnumerable<NadeEventArgs>>() { flashes, smokes, hegrenades, incendiaries, decoys };
+
+            header = "Nade Type,Amount Used";
+            sw.WriteLine(header);
+
+            for (int i=0; i < nadeTypes.Count(); i++)
+            {
+                sw.WriteLine($"{ nadeTypes[i] },{ nadeGroups.ElementAt(i).Count() }");
+            }
+            /* Grenades total stats end */
+
+            /* Grenades specific stats */
+            sw.WriteLine(string.Empty);
+
+            header = "Nade Type,SteamID,X Position,Y Position,Z Position,Num Players Flashed";
+
+            sw.WriteLine(header);
+
+            foreach (var nadeGroup in nadeGroups)
+            {
+                if (nadeGroup.Count() > 0)
+                {
+                    bool flashGroup = nadeGroup.ElementAt(0).NadeType.ToString() == nadeTypes[0] ? true : false; //check if in flash group
+
+                    foreach (var nade in nadeGroup)
+                    {
+                        string[] positionSplit = nade.Position.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+                        string positions = $"{ positionSplit[1] },{ positionSplit[2] },{ positionSplit[3] }";
+
+
+                        if (flashGroup)
+                        {
+                            var flash = nade as FlashEventArgs;
+                            int numOfPlayersFlashed = flash.FlashedPlayers.Count();
+
+                            sw.WriteLine($"{ nade.NadeType.ToString() },{ nade.ThrownBy.SteamID.ToString() },{ positions },{ numOfPlayersFlashed }");
+                        }
+                        else
+                        {
+                            sw.WriteLine($"{ nade.NadeType.ToString() },{ nade.ThrownBy.SteamID.ToString() },{ positions }");
+                        }
+                    }
+                }
+            }
+            /* Grenades specific stats end */
 
             sw.Close();
         }

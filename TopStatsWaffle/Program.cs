@@ -231,6 +231,12 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
                 Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
+                Dictionary<string, IEnumerable<NadeEventArgs>> ge = new Dictionary<string, IEnumerable<NadeEventArgs>>();
+                Dictionary<string, IEnumerable<SmokeEventArgs>> gse = new Dictionary<string, IEnumerable<SmokeEventArgs>>();
+                Dictionary<string, IEnumerable<FlashEventArgs>> gfe = new Dictionary<string, IEnumerable<FlashEventArgs>>();
+                Dictionary<string, IEnumerable<GrenadeEventArgs>> gge = new Dictionary<string, IEnumerable<GrenadeEventArgs>>();
+                Dictionary<string, IEnumerable<FireEventArgs>> gie = new Dictionary<string, IEnumerable<FireEventArgs>>();
+                Dictionary<string, IEnumerable<DecoyEventArgs>> gde = new Dictionary<string, IEnumerable<DecoyEventArgs>>();
 
                 pe.Add("Deaths", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                  select (player as PlayerKilledEventArgs).Killer);
@@ -270,9 +276,29 @@ namespace TopStatsWaffle
                 re.Add("RoundsWonReasons", from reason in mdTest.getEvents<RoundEndedEventArgs>()
                                        select (reason as RoundEndedEventArgs).Reason);
 
+                ge.Add("AllNadesThrown", from f in mdTest.getEvents<NadeEventArgs>()
+                                  select (f as NadeEventArgs));
+
+                /*
+                gfe.Add("Flashes", from ss in mdTest.getEvents<FlashEventArgs>()
+                                      select (ss as FlashEventArgs));
+                gse.Add("Smokes", from ss in mdTest.getEvents<SmokeEventArgs>()
+                                      select (ss as SmokeEventArgs));
+                gge.Add("Grenades", from ss in mdTest.getEvents<GrenadeEventArgs>()
+                                      select (ss as GrenadeEventArgs));
+                gie.Add("Incendiaries", from dd in mdTest.getEvents<FireEventArgs>()
+                                       select (dd as FireEventArgs));
+                gde.Add("Decoys", from ss in mdTest.getEvents<DecoyEventArgs>()
+                                      select (ss as DecoyEventArgs));
+                */
+
+
+                /* PlayerTeamEventArgs */
+
+
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i][0]) + ".csv", demos[i], pe, be, te, re);
+                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i][0]) + ".csv", demos[i], pe, be, te, re, ge);
                     passCount++;
                 }
             }
@@ -295,10 +321,14 @@ namespace TopStatsWaffle
 
                 ProgressViewer pv = new ProgressViewer("Reading CSV's (0 of " + matches.Count() + ")");
 
+                Dictionary<string, List<string>> totalMap = new Dictionary<string, List<string>>();
+                Dictionary<string, Dictionary<string, string>> totalPlayerName = new Dictionary<string, Dictionary<string, string>>();
                 Dictionary<long, Dictionary<string, long>> totalPlayer = new Dictionary<long, Dictionary<string, long>>();
-                Dictionary<string, string> totalTeam = new Dictionary<string, string>();
-                Dictionary<string, string> totalRoundEndReason = new Dictionary<string, string>();
+                Dictionary<string, List<string>> totalTeam = new Dictionary<string, List<string>> ();
+                Dictionary<string, List<string>> totalRoundEndReason = new Dictionary<string, List<string>>();
                 Dictionary<string, List<int>> totalBombsite = new Dictionary<string, List<int>>();
+                Dictionary<string, int> totalGrenadesTotal = new Dictionary<string, int>();
+                Dictionary<string, Dictionary<string, string>> totalGrenadesSpecific = new Dictionary<string, Dictionary<string, string>>();
 
                 int num = 0;
                 foreach(string match in matches)
@@ -310,21 +340,32 @@ namespace TopStatsWaffle
 
                     string ln;
 
+                    /* map info */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != string.Empty)
+                    {
+                        string[] elements = ln.Split(',');
+
+                        if (!totalMap.ContainsKey(elements[0]))
+                            totalMap.Add(elements[0], new List<string>() { elements[1], elements[2] });
+                    }
+                    /* map info end */
+
                     /* player stats */
                     headers = sr.ReadLine().Split(',').ToList();
                     while ((ln = sr.ReadLine()) != string.Empty)
                     {
                         string[] elements = ln.Split(',');
 
-                        if (!totalPlayer.ContainsKey(long.Parse(elements[0])))
-                            totalPlayer.Add(long.Parse(elements[0]), new Dictionary<string, long>());
+                        if (!totalPlayerName.ContainsKey(elements[0]))
+                            totalPlayerName.Add(elements[0], new Dictionary<string, string>());
 
                         for (int i = 1; i < elements.Count(); i++)
                         {
-                            if (!totalPlayer[long.Parse(elements[0])].ContainsKey(headers[i]))
-                                totalPlayer[long.Parse(elements[0])].Add(headers[i], 0);
+                            if (!totalPlayerName[elements[0]].ContainsKey(headers[i]))
+                                totalPlayerName[elements[0]].Add(headers[i], "");
 
-                            totalPlayer[long.Parse(elements[0])][headers[i]] += long.Parse(elements[i]);
+                            totalPlayerName[elements[0]][headers[i]] += long.Parse(elements[i]);
                         }
                     }
                     /* player stats end */
@@ -336,7 +377,7 @@ namespace TopStatsWaffle
                         string[] elements = ln.Split(',');
 
                         if (!totalTeam.ContainsKey(elements[0]))
-                            totalTeam.Add(elements[0], elements[1]);
+                            totalTeam.Add(elements[0], new List<string>() { elements[1], elements[2] });
                     }
                     /* round wins team stats end*/
 
@@ -347,22 +388,65 @@ namespace TopStatsWaffle
                         string[] elements = ln.Split(',');
 
                         if (!totalRoundEndReason.ContainsKey(elements[0]))
-                            totalRoundEndReason.Add(elements[0], elements[1]);
+                            totalRoundEndReason.Add(elements[0], new List<string>() { elements[1], elements[2] });
                     }
                     /* round end reason stats end */
 
                     /* bombsite stats */
                     headers = sr.ReadLine().Split(',').ToList();
-                    while ((ln = sr.ReadLine()) != null) // != string.Empty if adding another stats group below
+                    while ((ln = sr.ReadLine()) != string.Empty)
                     {
                         string[] elements = ln.Split(',');
 
                         if (!totalBombsite.ContainsKey(elements[0]))
-                            totalBombsite.Add("A", new List<int>() { elements[0][0], elements[0][1] });
-                        if (!totalBombsite.ContainsKey(elements[1]))
-                            totalBombsite.Add("B", new List<int>() { elements[1][0], elements[1][1] });
+                            totalBombsite.Add(elements[0], new List<int>() { int.Parse(elements[1]), int.Parse(elements[2]) });
                     }
                     /* bombsite stats end */
+
+                    /* Grenades total stats */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != string.Empty)
+                    {
+                        string[] elements = ln.Split(',');
+
+                        if (!totalGrenadesTotal.ContainsKey(elements[0]))
+                            totalGrenadesTotal.Add(elements[0], int.Parse(elements[1]));
+                    }
+                    /* Grenades total stats end */
+
+                    /* Grenades specific stats */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != null) // != string.Empty if adding another stats group below
+                    {
+                        /*
+                        string[] elements = ln.Split(',');
+
+                        if (!totalGrenadesSpecific.ContainsKey(elements[0]))
+                            totalGrenadesSpecific.Add(elements[0], new Dictionary<string, string>());
+
+                        for (int i = 1; i < elements.Count(); i++)
+                        {
+                            if (!totalGrenadesSpecific[elements[0]].ContainsKey(headers[i]))
+                                totalGrenadesSpecific[elements[0]].Add(headers[i], string.Empty);
+
+                            totalGrenadesSpecific[elements[0]][headers[i]] += elements[i];
+                        }
+                        */
+
+                        string[] elements = ln.Split(',');
+
+                        Guid id = new Guid();
+
+                        totalGrenadesSpecific.Add(id.ToString(), new Dictionary<string, string>());
+
+                        for (int i = 0; i < elements.Count(); i++)
+                        {
+                            totalGrenadesSpecific[id.ToString()].Add(headers[i], string.Empty);
+
+                            totalGrenadesSpecific[id.ToString()][headers[i]] += elements[i];
+                        }
+                    }
+                    /* Grenades specific stats end */
 
                     sr.Close();
 
