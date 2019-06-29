@@ -370,11 +370,13 @@ namespace TopStatsWaffle
                                          && !r.ToString().Equals(timeout)
             );
 
-            int numRoundsWonTeamA = roundsWonTeams.Take(10).Where(r => r.ToString().Equals(tName)).Count()
-                                  + roundsWonTeams.Skip(10).Where(r => r.ToString().Equals(ctName)).Count();
+            int roundsUntilSwapSides = Convert.ToInt32(roundsWonTeams.Count() / 2);
 
-            int numRoundsWonTeamB = roundsWonTeams.Take(10).Where(r => r.ToString().Equals(ctName)).Count()
-                                  + roundsWonTeams.Skip(10).Where(r => r.ToString().Equals(tName)).Count();
+            int numRoundsWonTeamA = roundsWonTeams.Take(roundsUntilSwapSides).Where(r => r.ToString().Equals(tName)).Count()
+                                  + roundsWonTeams.Skip(roundsUntilSwapSides).Where(r => r.ToString().Equals(ctName)).Count();
+
+            int numRoundsWonTeamB = roundsWonTeams.Take(roundsUntilSwapSides).Where(r => r.ToString().Equals(ctName)).Count()
+                                  + roundsWonTeams.Skip(roundsUntilSwapSides).Where(r => r.ToString().Equals(tName)).Count();
 
             string winningTeam = (numRoundsWonTeamA >= numRoundsWonTeamB) ? (numRoundsWonTeamA > numRoundsWonTeamB) ? "Team Alpha" : "Draw" : "Team Bravo";
 
@@ -386,7 +388,7 @@ namespace TopStatsWaffle
 
             sw.WriteLine(string.Empty);
 
-            header = "Round,Winners,Win Method";
+            header = "Round,Half,Winners,Win Method";
             sw.WriteLine(header);
 
             for (int i=0; i < roundsWonTeams.Count(); i++)
@@ -414,7 +416,9 @@ namespace TopStatsWaffle
                             break;
                     }
 
-                    sw.WriteLine($"Round{ i },{ roundsWonTeams[i].ToString() },{ reason }");
+                    string half = i < roundsUntilSwapSides ? "First" : "Second";
+
+                    sw.WriteLine($"Round{ i },{ half },{ roundsWonTeams[i].ToString() },{ reason }");
                     roundsStats.Add(new RoundsStats() { Round = $"Round{ i }", Winners = roundsWonTeams[i].ToString(), WinMethod = reason });
                     }
             }
