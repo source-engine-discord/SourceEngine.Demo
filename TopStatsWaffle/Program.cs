@@ -210,8 +210,13 @@ namespace TopStatsWaffle
                 string[] filenameSplit = demo.Split('_', '.');
 
                 string mapDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                string mapname = $"{ filenameSplit[3] }_{ filenameSplit[4] }";
-                string testType = $"{ filenameSplit[5] }";
+                string testType = $"{ filenameSplit[filenameSplit.Count()-1] }";
+                string mapname = $"{ filenameSplit[3] }";
+
+                for (int i=3; i < filenameSplit.Count()-2; i++)
+                {
+                    mapname += $"_{ filenameSplit[i] }";
+                }
 
                 demos.Add(new List<string>() { demo, mapname, mapDate, testType });
             }
@@ -251,6 +256,9 @@ namespace TopStatsWaffle
                 pe.Add("Assists", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                   where (player as PlayerKilledEventArgs).Assister != null
                                   select (player as PlayerKilledEventArgs).Assister);
+
+                /*pe.Add("MVPs", from player in mdTest.getEvents<RoundMVPEventArgs>()
+                                select (player as RoundMVPEventArgs).Player);*/
 
                 pe.Add("Shots", from player in mdTest.getEvents<WeaponFiredEventArgs>()
                                 select (player as WeaponFiredEventArgs).Shooter);
@@ -298,7 +306,9 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV("matches/" + (noguid ? "" : Guid.NewGuid().ToString("N")) + " " + Path.GetFileNameWithoutExtension(demos[i][0]) + ".csv", demos[i], pe, be, te, re, ge);
+                    string newFilename = $"matches/{ Path.GetFileNameWithoutExtension(demos[i][0]) }";
+                    
+                    mdTest.SaveCSV(newFilename, demos[i], pe, be, te, re, ge);
                     passCount++;
                 }
             }
@@ -435,7 +445,7 @@ namespace TopStatsWaffle
 
                         string[] elements = ln.Split(',');
 
-                        Guid id = new Guid();
+                        Guid id = Guid.NewGuid();
 
                         totalGrenadesSpecific.Add(id.ToString(), new Dictionary<string, string>());
 

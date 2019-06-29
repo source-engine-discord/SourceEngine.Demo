@@ -7,6 +7,9 @@ using System.IO;
 
 using TopStatsWaffle.Serialization;
 using DemoInfo;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using TopStatsWaffle.Models;
 
 namespace TopStatsWaffle
 {
@@ -190,21 +193,29 @@ namespace TopStatsWaffle
         }
 
         public void SaveCSV(
-            string path, List<string> demo, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
+            string newFilepath, List<string> demo, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
             Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
         )
         {
+            string path = newFilepath += ".csv";
+            if (File.Exists(path))
+                File.Delete(path);
+
             StreamWriter sw = new StreamWriter(path, false);
 
             /* map info */
-            string header = "Mapname,Date,Type";
+            MapInfo mapInfo = new MapInfo() { MapName = demo[1], Date = demo[2], TestType = demo[3] };
+
+            string header = "Mapname,Date,Test Type";
+            string[] headerSplit = header.Split(',');
 
             sw.WriteLine(header);
-
             sw.WriteLine($"{ demo[1] },{ demo[2] },{ demo[3] }");
             /* map info end */
 
             /* player stats */
+            List<PlayerStats> playerStats = new List<PlayerStats>();
+
             sw.WriteLine(string.Empty);
 
             header = "Player Name,SteamID,";
@@ -257,18 +268,26 @@ namespace TopStatsWaffle
             {
                 var match = playerNames.Where(p => p.Key.ToString() == player.ToString());
                 var playerName = match.ElementAt(0).Value.ElementAt(0).Value;
-
+                var steamID = match.ElementAt(0).Key;
 
                 string playerLine = $"{ playerName },{ player },";
 
+                List<int> statsList1 = new List<int>();
                 foreach (string catagory in playerValues.Keys)
                 {
                     if (data[player].ContainsKey(catagory))
+                    {
                         playerLine += data[player][catagory] + ",";
+                        statsList1.Add((int)data[player][catagory]);
+                    }
                     else
+                    {
                         playerLine += "0,";
+                        statsList1.Add(0);
+                    }
                 }
 
+                List<long> statsList2 = new List<long>();
                 if (writeTicks)
                 {
                     if (playerLookups.ContainsValue(player))
@@ -278,8 +297,14 @@ namespace TopStatsWaffle
                             if (playerLookups[entid] == player)
                             {
                                 playerLine += this.playerTicks[entid].ticksAlive + ",";
+                                statsList2.Add(this.playerTicks[entid].ticksAlive);
+
                                 playerLine += this.playerTicks[entid].ticksOnServer + ",";
+                                statsList2.Add(this.playerTicks[entid].ticksOnServer);
+
                                 playerLine += this.playerTicks[entid].ticksPlaying + ",";
+                                statsList2.Add(this.playerTicks[entid].ticksPlaying);
+
                                 break;
                             }
                         }
@@ -290,6 +315,24 @@ namespace TopStatsWaffle
                     }
                 }
 
+                string[] stats = playerLine.Split(',');
+
+                playerStats.Add(new PlayerStats() {
+                    PlayerName = playerName,
+                    SteamID = steamID,
+                    Deaths = statsList1.ElementAt(0),
+                    Kills = statsList1.ElementAt(1),
+                    Headshots = statsList1.ElementAt(2),
+                    Assists = statsList1.ElementAt(3),
+                    //MVPs = statsList1.ElementAt(999999),
+                    Shots = statsList1.ElementAt(4),
+                    Plants = statsList1.ElementAt(5),
+                    Defuses = statsList1.ElementAt(6),
+                    TicksAlive = statsList2.ElementAt(0),
+                    TicksOnServer = statsList2.ElementAt(1),
+                    TicksPlaying = statsList2.ElementAt(2),
+                });
+
                 sw.WriteLine(playerLine.Substring(0, playerLine.Length - 1));
 
                 counter++;
@@ -297,6 +340,9 @@ namespace TopStatsWaffle
             /* player stats end */
 
             /* winning team stats, round wins team and reason stats */
+            WinnersStats winnersStats;
+            List<RoundsStats> roundsStats = new List<RoundsStats>();
+
             sw.WriteLine(string.Empty);
 
             const string tName = "Terrorist", ctName = "CounterTerrorist";
@@ -326,6 +372,8 @@ namespace TopStatsWaffle
             header = "Winning Team, Team Alpha Rounds, Team Bravo Rounds";
             sw.WriteLine(header);
             sw.WriteLine($"{ winningTeam },{ numRoundsWonTeamA },{ numRoundsWonTeamB }");
+
+            winnersStats = new WinnersStats() { WinningTeam = winningTeam, TeamAlphaRounds = numRoundsWonTeamA, TeamBetaRounds = numRoundsWonTeamB };
 
             sw.WriteLine(string.Empty);
 
@@ -358,11 +406,14 @@ namespace TopStatsWaffle
                     }
 
                     sw.WriteLine($"Round{ i },{ roundsWonTeams[i].ToString() },{ reason }");
-                }
+                    roundsStats.Add(new RoundsStats() { Round = $"Round{ i }", Winners = roundsWonTeams[i].ToString(), WinMethod = reason });
+                    }
             }
             /* winning team stats, round wins team and reason stats end */
 
             /* bombsite stats */
+            List<BombsiteStats> bombsiteStats = new List<BombsiteStats>();
+
             sw.WriteLine(string.Empty);
 
             List<char> bombsitePlants = new List<char>(bombsiteValues.ElementAt(0).Value);
@@ -373,9 +424,14 @@ namespace TopStatsWaffle
 
             sw.WriteLine($"A,{ bombsitePlants.Where(b => b.ToString().Equals("A")).Count() },{ bombsiteDefuses.Where(b => b.ToString().Equals("A")).Count() }");
             sw.WriteLine($"B,{ bombsitePlants.Where(b => b.ToString().Equals("B")).Count() },{ bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count() }");
+
+            bombsiteStats.Add(new BombsiteStats() { Bombsite = 'A', Plants = bombsitePlants.Where(b => b.ToString().Equals("A")).Count(), Defuses = bombsiteDefuses.Where(b => b.ToString().Equals("A")).Count() });
+            bombsiteStats.Add(new BombsiteStats() { Bombsite = 'B', Plants = bombsitePlants.Where(b => b.ToString().Equals("B")).Count(), Defuses = bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count() });
             /* bombsite stats end */
 
             /* Grenades total stats */
+            List<GrenadesTotalStats> grenadesTotalStats = new List<GrenadesTotalStats>();
+
             sw.WriteLine(string.Empty);
 
             string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
@@ -395,10 +451,14 @@ namespace TopStatsWaffle
             for (int i=0; i < nadeTypes.Count(); i++)
             {
                 sw.WriteLine($"{ nadeTypes[i] },{ nadeGroups.ElementAt(i).Count() }");
+
+                grenadesTotalStats.Add(new GrenadesTotalStats() { NadeType = nadeTypes[i], AmountUsed = nadeGroups.ElementAt(i).Count() });
             }
             /* Grenades total stats end */
 
             /* Grenades specific stats */
+            List<GrenadesSpecificStats> grenadesSpecificStats = new List<GrenadesSpecificStats>();
+
             sw.WriteLine(string.Empty);
 
             header = "Nade Type,SteamID,X Position,Y Position,Z Position,Num Players Flashed";
@@ -423,10 +483,14 @@ namespace TopStatsWaffle
                             int numOfPlayersFlashed = flash.FlashedPlayers.Count();
 
                             sw.WriteLine($"{ nade.NadeType.ToString() },{ nade.ThrownBy.SteamID.ToString() },{ positions },{ numOfPlayersFlashed }");
+
+                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = nade.ThrownBy.SteamID, XPosition = positions[0], YPosition = positions[1], ZPosition = positions[2], NumPlayersFlashed = numOfPlayersFlashed });
                         }
                         else
                         {
                             sw.WriteLine($"{ nade.NadeType.ToString() },{ nade.ThrownBy.SteamID.ToString() },{ positions }");
+
+                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = nade.ThrownBy.SteamID, XPosition = positions[0], YPosition = positions[1], ZPosition = positions[2] });
                         }
                     }
                 }
@@ -434,6 +498,41 @@ namespace TopStatsWaffle
             /* Grenades specific stats end */
 
             sw.Close();
+
+            /* JSON creation */
+            path = newFilepath += ".json";
+            if (File.Exists(path))
+                File.Delete(path);
+
+            StreamWriter sw2 = new StreamWriter(path, false);
+
+            AllStats allStats = new AllStats() {
+                MapInfo = mapInfo,
+                PlayerStats = playerStats,
+                WinnersStats = winnersStats,
+                RoundsStats = roundsStats,
+                BombsiteStats = bombsiteStats,
+                GrenadesTotalStats = grenadesTotalStats,
+                GrenadesSpecificStats = grenadesSpecificStats,
+            };
+            
+            string json = JsonConvert.SerializeObject(new
+            {
+                mapInfo,
+                playerStats,
+                winnersStats,
+                roundsStats,
+                bombsiteStats,
+                grenadesTotalStats,
+                grenadesSpecificStats,
+            },
+                Formatting.Indented
+            );
+
+            sw2.WriteLine(json);
+            /* JSON creation end*/
+
+            sw2.Close();
         }
 
         public IEnumerable<object> selectWeaponsEventsByName(string name)
