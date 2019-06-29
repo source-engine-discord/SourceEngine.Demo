@@ -194,12 +194,17 @@ namespace TopStatsWaffle
                 string[] subDemos = Directory.GetFiles(Path.GetFullPath(folder), "*.dem", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
                 foreach (string demo in subDemos)
                 {
-                    string[] split1 = demo.Split('\\');
-                    string[] split2 = split1[split1.Count()-1].Split('_', '.');
+                    string[] pathSplit = demo.Split('\\');
+                    string[] filenameSplit = pathSplit[pathSplit.Count()-1].Split('_', '.');
 
-                    string mapDate = $"{ split2[1] }/{ split2[0] }/{ split2[2] }";
-                    string mapname = $"{ split2[3] }_{ split2[4] }";
-                    string testType = $"{ split2[5] }";
+                    string mapDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
+                    string testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
+                    string mapname = $"{ filenameSplit[3] }";
+
+                    for (int i=4; i < filenameSplit.Count() - 2; i++)
+                    {
+                        mapname += $"_{ filenameSplit[i] }";
+                    }
 
                     demos.Add(new List<string>() { demo, mapname, mapDate, testType });
                 }
@@ -210,10 +215,10 @@ namespace TopStatsWaffle
                 string[] filenameSplit = demo.Split('_', '.');
 
                 string mapDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                string testType = $"{ filenameSplit[filenameSplit.Count()-1] }";
+                string testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
                 string mapname = $"{ filenameSplit[3] }";
 
-                for (int i=3; i < filenameSplit.Count()-2; i++)
+                for (int i = 4; i < filenameSplit.Count() - 2; i++)
                 {
                     mapname += $"_{ filenameSplit[i] }";
                 }

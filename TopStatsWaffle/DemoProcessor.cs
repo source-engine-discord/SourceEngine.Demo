@@ -209,6 +209,15 @@ namespace TopStatsWaffle
             string header = "Mapname,Date,Test Type";
             string[] headerSplit = header.Split(',');
 
+
+
+
+
+
+
+
+
+
             sw.WriteLine(header);
             sw.WriteLine($"{ demo[1] },{ demo[2] },{ demo[3] }");
             /* map info end */
