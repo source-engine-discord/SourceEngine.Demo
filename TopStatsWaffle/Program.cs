@@ -311,9 +311,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    string newFilename = $"matches/{ Path.GetFileNameWithoutExtension(demos[i][0]) }";
-                    
-                    mdTest.SaveCSV(newFilename, demos[i], pe, be, te, re, ge);
+                    mdTest.SaveCSV(demos[i], noguid, pe, be, te, re, ge);
                     passCount++;
                 }
             }

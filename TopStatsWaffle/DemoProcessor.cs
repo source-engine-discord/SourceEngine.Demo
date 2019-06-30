@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -197,11 +197,11 @@ namespace TopStatsWaffle
         }
 
         public void SaveCSV(
-            string newFilepath, List<string> demo, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
+            List<string> demo, bool noguid, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
             Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
         )
         {
-            string path = newFilepath += ".csv";
+            string path = "matches/" + demo[1] + "_" + (noguid ? "" : Guid.NewGuid().ToString("N")) + ".csv";
             if (File.Exists(path))
                 File.Delete(path);
 
@@ -492,13 +492,13 @@ namespace TopStatsWaffle
 
                             sw.WriteLine($"{ nade.NadeType.ToString() },{ nade.ThrownBy.SteamID.ToString() },{ positions },{ numOfPlayersFlashed }");
 
-                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = nade.ThrownBy.SteamID, XPosition = positions[0], YPosition = positions[1], ZPosition = positions[2], NumPlayersFlashed = numOfPlayersFlashed });
+                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = nade.ThrownBy.SteamID, XPosition = double.Parse(positionSplit[1]), YPosition = double.Parse(positionSplit[2]), ZPosition = double.Parse(positionSplit[3]), NumPlayersFlashed = numOfPlayersFlashed });
                         }
                         else
                         {
                             sw.WriteLine($"{ nade.NadeType.ToString() },{ nade.ThrownBy.SteamID.ToString() },{ positions }");
 
-                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = nade.ThrownBy.SteamID, XPosition = positions[0], YPosition = positions[1], ZPosition = positions[2] });
+                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = nade.ThrownBy.SteamID, XPosition = double.Parse(positionSplit[1]), YPosition = double.Parse(positionSplit[2]), ZPosition = double.Parse(positionSplit[3]) });
                         }
                     }
                 }
@@ -508,7 +508,7 @@ namespace TopStatsWaffle
             sw.Close();
 
             /* JSON creation */
-            path = newFilepath += ".json";
+            path = "matches/" + demo[1] + "_" + (noguid ? "" : Guid.NewGuid().ToString("N")) + ".json";
             if (File.Exists(path))
                 File.Delete(path);
 
