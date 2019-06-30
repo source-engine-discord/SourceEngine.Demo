@@ -262,8 +262,8 @@ namespace TopStatsWaffle
                                   where (player as PlayerKilledEventArgs).Assister != null
                                   select (player as PlayerKilledEventArgs).Assister);
 
-                /*pe.Add("MVPs", from player in mdTest.getEvents<RoundMVPEventArgs>()
-                                select (player as RoundMVPEventArgs).Player);*/
+                pe.Add("MVPs", from player in mdTest.getEvents<RoundMVPEventArgs>()
+                                select (player as RoundMVPEventArgs).Player);
 
                 pe.Add("Shots", from player in mdTest.getEvents<WeaponFiredEventArgs>()
                                 select (player as WeaponFiredEventArgs).Shooter);

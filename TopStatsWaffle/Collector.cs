@@ -130,6 +130,11 @@ namespace TopStatsWaffle
                     pushData(e.Shooter, "Shots", 1);
                 };
 
+                ev.parser.RoundMVP += (object sender, RoundMVPEventArgs e) =>
+                {
+                    pushData(e.Player, "MVPs", 1);
+                };
+
                 ev.parser.SmokeNadeStarted += (object sender, SmokeEventArgs e) => { pushData(e.ThrownBy, "Smokes", 1); };
                 ev.parser.FlashNadeExploded += (object sender, FlashEventArgs e) => { pushData(e.ThrownBy, "Flashes", 1); pushData(e.ThrownBy,"Flashed Players", e.FlashedPlayers.Length); };
                 ev.parser.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) => { pushData(e.ThrownBy, "Grenades", 1); };

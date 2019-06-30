@@ -102,6 +102,10 @@ namespace TopStatsWaffle
             dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) => {
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
+            
+            dp.RoundMVP += (object sender, RoundMVPEventArgs e) => {
+                md.addEvent(typeof(RoundMVPEventArgs), e);
+            };
 
             // BOMB EVENTS =====================================================
             dp.BombPlanted += (object sender, BombEventArgs e) => {
@@ -208,15 +212,6 @@ namespace TopStatsWaffle
 
             string header = "Mapname,Date,Test Type";
             string[] headerSplit = header.Split(',');
-
-
-
-
-
-
-
-
-
 
             sw.WriteLine(header);
             sw.WriteLine($"{ demo[1] },{ demo[2] },{ demo[3] }");
@@ -333,10 +328,10 @@ namespace TopStatsWaffle
                     Kills = statsList1.ElementAt(1),
                     Headshots = statsList1.ElementAt(2),
                     Assists = statsList1.ElementAt(3),
-                    //MVPs = statsList1.ElementAt(999999),
-                    Shots = statsList1.ElementAt(4),
-                    Plants = statsList1.ElementAt(5),
-                    Defuses = statsList1.ElementAt(6),
+                    MVPs = statsList1.ElementAt(4),
+                    Shots = statsList1.ElementAt(5),
+                    Plants = statsList1.ElementAt(6),
+                    Defuses = statsList1.ElementAt(7),
                     TicksAlive = statsList2.ElementAt(0),
                     TicksOnServer = statsList2.ElementAt(1),
                     TicksPlaying = statsList2.ElementAt(2),
