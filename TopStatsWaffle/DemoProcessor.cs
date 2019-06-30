@@ -414,7 +414,7 @@ namespace TopStatsWaffle
                     string half = i < roundsUntilSwapSides ? "First" : "Second";
 
                     sw.WriteLine($"Round{ i },{ half },{ roundsWonTeams[i].ToString() },{ reason }");
-                    roundsStats.Add(new RoundsStats() { Round = $"Round{ i }", Winners = roundsWonTeams[i].ToString(), WinMethod = reason });
+                    roundsStats.Add(new RoundsStats() { Round = $"Round{ i }", Half = half, Winners = roundsWonTeams[i].ToString(), WinMethod = reason });
                     }
             }
             /* winning team stats, round wins team and reason stats end */

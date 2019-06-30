@@ -9,6 +9,7 @@ namespace TopStatsWaffle.Models
     public class RoundsStats
     {
         public string Round { get; set; }
+        public string Half { get; set; }
         public string Winners { get; set; }
         public string WinMethod { get; set; }
 
