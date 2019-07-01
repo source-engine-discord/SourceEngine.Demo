@@ -555,7 +555,7 @@ namespace TopStatsWaffle
 
         private static TanookiStats tanookiStatsCreator(Dictionary<string, IEnumerable<TeamPlayers>> tpe, Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe)
         {
-            TanookiStats tanookiStats = new TanookiStats() { Joined = false, Left = false, RoundJoined = 0, RoundLeft = 0, RoundsLasted = 0 };
+            TanookiStats tanookiStats = new TanookiStats() { Joined = false, Left = false, RoundJoined = -1, RoundLeft = -1, RoundsLasted = -1 };
             long tanookiId = 76561198123165941;
 
             if (tpe["TeamPlayers"].Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId)) || tpe["TeamPlayers"].Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
@@ -584,7 +584,7 @@ namespace TopStatsWaffle
                 {
                     tanookiStats.Left = true;
 
-                    foreach (var disconnection in dpe["DisconnectedPlayers"])
+                    foreach (var disconnection in dpe["DisconnectedPlayers"].Reverse())
                     {
                         if (disconnection.PlayerDisconnectEventArgs.Player.SteamID == tanookiId)
                         {
@@ -598,6 +598,8 @@ namespace TopStatsWaffle
 
             TanookiRoundsLastedGoto:
             tanookiStats.RoundsLasted = tanookiStats.RoundLeft - tanookiStats.RoundJoined;
+            if (tanookiStats.RoundsLasted < 0)
+                tanookiStats.RoundsLasted = 0;
 
             return tanookiStats;
         }

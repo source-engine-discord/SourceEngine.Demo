@@ -243,7 +243,7 @@ namespace TopStatsWaffle
             header = "Tanooki Joined, Tanooki Left, Tanooki Round Joined, Tanooki Round Left, Tanooki Rounds Lasted";
 
             sw.WriteLine(header);
-            sw.WriteLine($"{ tanookiStats.Joined },{ tanookiStats.Left },{ tanookiStats.RoundLeft },{ tanookiStats.RoundLeft },{ tanookiStats.RoundsLasted },");
+            sw.WriteLine($"{ tanookiStats.Joined },{ tanookiStats.Left },{ tanookiStats.RoundJoined },{ tanookiStats.RoundLeft },{ tanookiStats.RoundsLasted },");
             /* tanooki leave stats end */
 
             /* player stats */
