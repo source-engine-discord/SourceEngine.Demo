@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -96,6 +96,18 @@ namespace TopStatsWaffle
             dp.RoundEnd += (object sender, RoundEndedEventArgs e) =>
             {
                 md.addEvent(typeof(RoundEndedEventArgs), e);
+
+                //work out teams at current round
+                var rounds = md.getEvents<RoundEndedEventArgs>();
+                var players = dp.Participants;
+
+                TeamPlayers teamsEachRound = new TeamPlayers() {
+                    Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
+                    CounterTerrorists = players.Where(p => p.Team.ToString().Equals("CounterTerrorist")).ToList(),
+                    Round = rounds.Count() - 1 //takes into account 1 warmup round
+                };
+
+                md.addEvent(typeof(TeamPlayers), teamsEachRound);
             };
 
             // PLAYER EVENTS ===================================================
@@ -105,6 +117,14 @@ namespace TopStatsWaffle
             
             dp.RoundMVP += (object sender, RoundMVPEventArgs e) => {
                 md.addEvent(typeof(RoundMVPEventArgs), e);
+            };
+
+            dp.PlayerDisconnect += (object sender, PlayerDisconnectEventArgs e) => {
+                var rounds = md.getEvents<RoundEndedEventArgs>();
+
+                DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer() { PlayerDisconnectEventArgs = e, Round = rounds.Count() - 1 };
+
+                md.addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
             };
 
             // BOMB EVENTS =====================================================
@@ -197,7 +217,7 @@ namespace TopStatsWaffle
         }
 
         public void SaveCSV(
-            List<string> demo, bool noguid, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
+            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
             Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
         )
         {
@@ -216,6 +236,15 @@ namespace TopStatsWaffle
             sw.WriteLine(header);
             sw.WriteLine($"{ demo[1] },{ demo[2] },{ demo[3] }");
             /* map info end */
+
+            /* tanooki leave stats */
+            sw.WriteLine(string.Empty);
+
+            header = "Tanooki Joined, Tanooki Left, Tanooki Round Joined, Tanooki Round Left, Tanooki Rounds Lasted";
+
+            sw.WriteLine(header);
+            sw.WriteLine($"{ tanookiStats.Joined },{ tanookiStats.Left },{ tanookiStats.RoundLeft },{ tanookiStats.RoundLeft },{ tanookiStats.RoundsLasted },");
+            /* tanooki leave stats end */
 
             /* player stats */
             List<PlayerStats> playerStats = new List<PlayerStats>();
@@ -516,6 +545,7 @@ namespace TopStatsWaffle
 
             AllStats allStats = new AllStats() {
                 MapInfo = mapInfo,
+                TanookiStats = tanookiStats,
                 PlayerStats = playerStats,
                 WinnersStats = winnersStats,
                 RoundsStats = roundsStats,
@@ -527,6 +557,7 @@ namespace TopStatsWaffle
             string json = JsonConvert.SerializeObject(new
             {
                 mapInfo,
+                tanookiStats,
                 playerStats,
                 winnersStats,
                 roundsStats,

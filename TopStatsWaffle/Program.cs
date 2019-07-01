@@ -8,6 +8,7 @@ using System.Diagnostics;
 using DemoInfo;
 using System.Threading;
 using Newtonsoft.Json;
+using TopStatsWaffle.Models;
 
 namespace TopStatsWaffle
 {
@@ -237,8 +238,10 @@ namespace TopStatsWaffle
             {
                 MatchData mdTest = MatchData.fromDemoFile(demos[i][0]);
 
+                Dictionary<string, IEnumerable<TeamPlayers>> tpe = new Dictionary<string, IEnumerable<TeamPlayers>>();
                 Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
                 Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
+                Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
                 Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
                 Dictionary<string, IEnumerable<NadeEventArgs>> ge = new Dictionary<string, IEnumerable<NadeEventArgs>>();
@@ -247,6 +250,9 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<GrenadeEventArgs>> gge = new Dictionary<string, IEnumerable<GrenadeEventArgs>>();
                 Dictionary<string, IEnumerable<FireEventArgs>> gie = new Dictionary<string, IEnumerable<FireEventArgs>>();
                 Dictionary<string, IEnumerable<DecoyEventArgs>> gde = new Dictionary<string, IEnumerable<DecoyEventArgs>>();
+
+                tpe.Add("TeamPlayers", from change in mdTest.getEvents<TeamPlayers>()
+                                 select (change as TeamPlayers));
 
                 pe.Add("Deaths", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                  select (player as PlayerKilledEventArgs).Killer);
@@ -280,8 +286,8 @@ namespace TopStatsWaffle
                 be.Add("DefusesSites", from site in mdTest.getEvents<BombDefuseEventArgs>()
                                   select (site as BombEventArgs).Site);
 
-                /*ce.Add("Disconnected", from player in mdTest.getEvents<PlayerDisconnectEventArgs>()
-                                    select (player as PlayerDisconnectEventArgs).Player);*/
+                dpe.Add("DisconnectedPlayers", from disconnection in mdTest.getEvents<DisconnectedPlayer>()
+                                    select (disconnection as DisconnectedPlayer));
 
                 te.Add("RoundsWonTeams", from team in mdTest.getEvents<RoundEndedEventArgs>()
                                        select (team as RoundEndedEventArgs).Winner);
@@ -292,26 +298,12 @@ namespace TopStatsWaffle
                 ge.Add("AllNadesThrown", from f in mdTest.getEvents<NadeEventArgs>()
                                   select (f as NadeEventArgs));
 
-                /*
-                gfe.Add("Flashes", from ss in mdTest.getEvents<FlashEventArgs>()
-                                      select (ss as FlashEventArgs));
-                gse.Add("Smokes", from ss in mdTest.getEvents<SmokeEventArgs>()
-                                      select (ss as SmokeEventArgs));
-                gge.Add("Grenades", from ss in mdTest.getEvents<GrenadeEventArgs>()
-                                      select (ss as GrenadeEventArgs));
-                gie.Add("Incendiaries", from dd in mdTest.getEvents<FireEventArgs>()
-                                       select (dd as FireEventArgs));
-                gde.Add("Decoys", from ss in mdTest.getEvents<DecoyEventArgs>()
-                                      select (ss as DecoyEventArgs));
-                */
-
-
-                /* PlayerTeamEventArgs */
+                TanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
 
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV(demos[i], noguid, pe, be, te, re, ge);
+                    mdTest.SaveCSV(demos[i], noguid, tanookiStats, tpe, pe, be, te, re, ge);
                     passCount++;
                 }
             }
@@ -335,6 +327,7 @@ namespace TopStatsWaffle
                 ProgressViewer pv = new ProgressViewer("Reading CSV's (0 of " + matches.Count() + ")");
 
                 Dictionary<string, List<string>> totalMap = new Dictionary<string, List<string>>();
+                Dictionary<string, List<string>> totalTanooki = new Dictionary<string, List<string>>();
                 Dictionary<string, Dictionary<string, string>> totalPlayerName = new Dictionary<string, Dictionary<string, string>>();
                 Dictionary<long, Dictionary<string, long>> totalPlayer = new Dictionary<long, Dictionary<string, long>>();
                 Dictionary<string, List<string>> totalTeam = new Dictionary<string, List<string>> ();
@@ -363,6 +356,17 @@ namespace TopStatsWaffle
                             totalMap.Add(elements[0], new List<string>() { elements[1], elements[2] });
                     }
                     /* map info end */
+
+                    /* tanooki leave stats */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != string.Empty)
+                    {
+                        string[] elements = ln.Split(',');
+
+                        if (!totalTanooki.ContainsKey(elements[0]))
+                            totalTanooki.Add(elements[0], new List<string>() { elements[1], elements[2], elements[3], elements[4] });
+                    }
+                    /* tanooki leave stats end */
 
                     /* player stats */
                     headers = sr.ReadLine().Split(',').ToList();
@@ -547,6 +551,55 @@ namespace TopStatsWaffle
             }
 
             return;
+        }
+
+        private static TanookiStats tanookiStatsCreator(Dictionary<string, IEnumerable<TeamPlayers>> tpe, Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe)
+        {
+            TanookiStats tanookiStats = new TanookiStats() { Joined = false, Left = false, RoundJoined = 0, RoundLeft = 0, RoundsLasted = 0 };
+            long tanookiId = 76561198123165941;
+
+            if (tpe["TeamPlayers"].Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId)) || tpe["TeamPlayers"].Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
+            {
+                tanookiStats.Joined = true;
+
+                foreach (var round in tpe["TeamPlayers"])
+                {
+                    foreach (var player in round.Terrorists)
+                        if (player.SteamID == tanookiId)
+                        {
+                            tanookiStats.RoundJoined = round.Round;
+                            goto TanookiLeftGoto;
+                        }
+
+                    foreach (var player in round.Terrorists)
+                        if (player.SteamID == tanookiId)
+                        {
+                            tanookiStats.RoundJoined = round.Round;
+                            goto TanookiLeftGoto;
+                        }
+                }
+
+                TanookiLeftGoto:
+                if (dpe["DisconnectedPlayers"].Any(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId))
+                {
+                    tanookiStats.Left = true;
+
+                    foreach (var disconnection in dpe["DisconnectedPlayers"])
+                    {
+                        if (disconnection.PlayerDisconnectEventArgs.Player.SteamID == tanookiId)
+                        {
+                            tanookiStats.Left = true;
+                            tanookiStats.RoundLeft = disconnection.Round;
+                            goto TanookiRoundsLastedGoto;
+                        }
+                    }
+                }
+            }
+
+            TanookiRoundsLastedGoto:
+            tanookiStats.RoundsLasted = tanookiStats.RoundLeft - tanookiStats.RoundJoined;
+
+            return tanookiStats;
         }
     }
 }
