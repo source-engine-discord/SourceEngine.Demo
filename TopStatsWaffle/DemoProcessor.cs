@@ -99,7 +99,7 @@ namespace TopStatsWaffle
 
                 //work out teams at current round
                 var rounds = md.getEvents<RoundEndedEventArgs>();
-                var players = dp.Participants;
+                var players = dp.PlayingParticipants;
 
                 TeamPlayers teamsEachRound = new TeamPlayers() {
                     Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
@@ -108,6 +108,38 @@ namespace TopStatsWaffle
                 };
 
                 md.addEvent(typeof(TeamPlayers), teamsEachRound);
+            };
+
+            dp.FreezetimeEnded += (object sender, FreezetimeEndedEventArgs e) => {
+                var rounds = md.getEvents<RoundEndedEventArgs>();
+
+                var players = dp.PlayingParticipants;
+
+                TeamPlayers teamsEachRound = new TeamPlayers()
+                {
+                    Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
+                    CounterTerrorists = players.Where(p => p.Team.ToString().Equals("CounterTerrorist")).ToList(),
+                    Round = rounds.Count() - 1 //takes into account 1 warmup round
+                };
+
+                int tEquipValue = 0, ctEquipValue = 0;
+                int tExpenditure = 0, ctExpenditure = 0;
+
+                foreach (var player in teamsEachRound.Terrorists)
+                {
+                    tEquipValue += player.CurrentEquipmentValue; // player.FreezetimeEndEquipmentValue = 0 ???
+                    tExpenditure += (player.CurrentEquipmentValue - player.RoundStartEquipmentValue); // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
+                }
+
+                foreach (var player in teamsEachRound.CounterTerrorists)
+                {
+                    ctEquipValue += player.CurrentEquipmentValue; // player.FreezetimeEndEquipmentValue = 0 ???
+                    ctExpenditure += (player.CurrentEquipmentValue - player.RoundStartEquipmentValue); // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
+                }
+
+                TeamEquipmentStats teamEquipmentStats = new TeamEquipmentStats() { Round = rounds.Count() - 1, TEquipValue = tEquipValue, CTEquipValue = ctEquipValue, TExpenditure = tExpenditure, CTExpenditure = ctExpenditure };
+ 
+                md.addEvent(typeof(TeamEquipmentStats), teamEquipmentStats);
             };
 
             // PLAYER EVENTS ===================================================
@@ -219,7 +251,8 @@ namespace TopStatsWaffle
         public void SaveCSV(
             List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<Player>> playerValues,
             Dictionary<string, IEnumerable<Vector>> playerPositionValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues,
-            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
+            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues,
+            Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
         )
         {
             string path = "matches/" + demo[1] + "_" + (noguid ? "" : Guid.NewGuid().ToString("N")) + ".csv";
@@ -232,7 +265,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.1";
+            string version = "0.0.2";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -427,7 +460,7 @@ namespace TopStatsWaffle
 
             sw.WriteLine(string.Empty);
 
-            header = "Round,Half,Winners,Win Method";
+            header = "Round,Half,Winners,Win Method,Alpha Equip Value,Bravo Equip Value,Alpha Expenditure,Bravo Expenditure";
             sw.WriteLine(header);
 
             for (int i=0; i < roundsWonTeams.Count(); i++)
@@ -436,6 +469,10 @@ namespace TopStatsWaffle
                 {
                     string reason = string.Empty;
 
+                    //half
+                    string half = i < roundsUntilSwapSides ? "First" : "Second";
+
+                    //win method
                     switch (roundsWonReasons[i].ToString())
                     {
                         case tKills:
@@ -455,11 +492,25 @@ namespace TopStatsWaffle
                             break;
                     }
 
-                    string half = i < roundsUntilSwapSides ? "First" : "Second";
+                    //equip values
+                    var teamEquipValues  = teamEquipmentValues["TeamEquipmentStats"].ElementAt(i+1);
+                    int equipValueTeamA = i < roundsUntilSwapSides ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue;
+                    int equipValueTeamB = i < roundsUntilSwapSides ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue;
+                    int expenditureTeamA = i < roundsUntilSwapSides ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure;
+                    int expenditureTeamB = i < roundsUntilSwapSides ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure;
 
-                    sw.WriteLine($"Round{ i },{ half },{ roundsWonTeams[i].ToString() },{ reason }");
-                    roundsStats.Add(new RoundsStats() { Round = $"Round{ i }", Half = half, Winners = roundsWonTeams[i].ToString(), WinMethod = reason });
-                    }
+                    sw.WriteLine($"Round{ i+1 },{ half },{ roundsWonTeams[i].ToString() },{ reason },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB },");
+                    roundsStats.Add(new RoundsStats() {
+                        Round = $"Round{ i+1 }",
+                        Half = half,
+                        Winners = roundsWonTeams[i].ToString(),
+                        WinMethod = reason,
+                        TeamAlphaEquipValue = equipValueTeamA,
+                        TeamBetaEquipValue = equipValueTeamB,
+                        TeamAlphaExpenditure = expenditureTeamA,
+                        TeamBetaExpenditure = expenditureTeamB,
+                    });
+                }
             }
             /* winning team stats, round wins team and reason stats end */
 
