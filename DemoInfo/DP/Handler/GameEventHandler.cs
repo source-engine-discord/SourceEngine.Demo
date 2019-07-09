@@ -90,11 +90,11 @@ namespace DemoInfo.DP.Handler
 			if (eventDescriptor.Name == "round_mvp") {
 				data = MapData (eventDescriptor, rawEvent);
 			
-				RoundMVPEventArgs roundMVPArgs = new RoundMVPEventArgs();
-                roundMVPArgs.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				roundMVPArgs.Reason = (RoundMVPReason)data["reason"];
+				RoundMVPEventArgs roundMVPEvent = new RoundMVPEventArgs();
+                roundMVPEvent.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+                roundMVPEvent.Reason = (RoundMVPReason)data["reason"];
 				
-				parser.RaiseRoundMVP (roundMVPArgs);
+				parser.RaiseRoundMVP (roundMVPEvent);
 			}
 
 			if (eventDescriptor.Name == "bot_takeover")
@@ -114,7 +114,7 @@ namespace DemoInfo.DP.Handler
 				parser.RaiseRoundAnnounceMatchStarted();
 
 			if (eventDescriptor.Name == "round_freeze_end")
-				parser.RaiseFreezetimeEnded ();
+                parser.RaiseFreezetimeEnded();
 
 			//if (eventDescriptor.Name != "player_footstep" && eventDescriptor.Name != "weapon_fire" && eventDescriptor.Name != "player_jump") {
 			//	Console.WriteLine (eventDescriptor.Name);
@@ -158,10 +158,12 @@ namespace DemoInfo.DP.Handler
 					kill.Weapon = kill.Killer.ActiveWeapon;
 				}
 
-
 				kill.PenetratedObjects = (int)data["penetrated"];
 
-				parser.RaisePlayerKilled(kill);
+                kill.VictimPosition = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]].LastAlivePosition : null;
+                kill.KillerPosition = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]].Position : null;
+
+                parser.RaisePlayerKilled(kill);
 				break;
 			case "player_hurt":
 				data = MapData (eventDescriptor, rawEvent);

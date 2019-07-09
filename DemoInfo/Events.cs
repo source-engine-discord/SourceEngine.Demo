@@ -98,7 +98,11 @@ namespace DemoInfo
 
 		public Player Victim { get; internal set; }
 
+        public Vector VictimPosition { get; internal set; }
+
 		public Player Killer { get; internal set; }
+
+        public Vector KillerPosition { get; internal set; }
 
 		public Player Assister { get; internal set; }
 
