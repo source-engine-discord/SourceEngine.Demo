@@ -59,6 +59,7 @@
     <Compile Include="Models\AllStats.cs" />
     <Compile Include="Models\BombsiteStats.cs" />
     <Compile Include="Models\DisconnectedPlayer.cs" />
+    <Compile Include="Models\PlayerPositionStats.cs" />
     <Compile Include="Models\RoundsStats.cs" />
     <Compile Include="Models\GrenadesSpecificStats.cs" />
     <Compile Include="Models\GrenadesTotalStats.cs" />

@@ -217,8 +217,9 @@ namespace TopStatsWaffle
         }
 
         public void SaveCSV(
-            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
-            Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
+            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<Player>> playerValues,
+            Dictionary<string, IEnumerable<Vector>> playerPositionValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues,
+            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
         )
         {
             string path = "matches/" + demo[1] + "_" + (noguid ? "" : Guid.NewGuid().ToString("N")) + ".csv";
@@ -534,6 +535,38 @@ namespace TopStatsWaffle
             }
             /* Grenades specific stats end */
 
+            /* Player Kills/Death Positions */
+            List<PlayerPositionStats> playerPositionStats = new List<PlayerPositionStats>();
+
+            sw.WriteLine(string.Empty);
+
+            header = "Kill X Position,Kill Y Position,Kill Z Position,Death X Position,Death Y Position,Death Z Position";
+            sw.WriteLine(header);
+
+            List<Vector> killVectors = new List<Vector>(playerPositionValues["KillPositions"].ToList());
+            List<Vector> deathVectors = new List<Vector>(playerPositionValues["DeathPositions"].ToList());
+
+            for (int i = 0; i < killVectors.Count(); i++)
+            {
+                string[] killPositionSplit = killVectors.ElementAt(i).ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+                string killPositions = $"{ killPositionSplit[1] },{ killPositionSplit[2] },{ killPositionSplit[3] }";
+
+                string[] deathPositionSplit = deathVectors.ElementAt(i).ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+                string deathPositions = $"{ deathPositionSplit[1] },{ deathPositionSplit[2] },{ deathPositionSplit[3] }";
+
+                sw.WriteLine($"{ killPositions },{ deathPositions }");
+
+                playerPositionStats.Add(new PlayerPositionStats() {
+                    XPositionKill = double.Parse(killPositionSplit[1]),
+                    YPositionKill = double.Parse(killPositionSplit[2]),
+                    ZPositionKill = double.Parse(killPositionSplit[3]),
+                    XPositionDeath = double.Parse(deathPositionSplit[1]),
+                    YPositionDeath = double.Parse(deathPositionSplit[2]),
+                    ZPositionDeath = double.Parse(deathPositionSplit[3]),
+                });
+            }
+            /* Player Kills/Death Positions end */
+
             sw.Close();
 
             /* JSON creation */
@@ -552,6 +585,7 @@ namespace TopStatsWaffle
                 BombsiteStats = bombsiteStats,
                 GrenadesTotalStats = grenadesTotalStats,
                 GrenadesSpecificStats = grenadesSpecificStats,
+                PlayerPositionStats = playerPositionStats,
             };
             
             string json = JsonConvert.SerializeObject(new
@@ -564,6 +598,7 @@ namespace TopStatsWaffle
                 bombsiteStats,
                 grenadesTotalStats,
                 grenadesSpecificStats,
+                playerPositionStats,
             },
                 Formatting.Indented
             );

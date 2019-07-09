@@ -240,6 +240,7 @@ namespace TopStatsWaffle
 
                 Dictionary<string, IEnumerable<TeamPlayers>> tpe = new Dictionary<string, IEnumerable<TeamPlayers>>();
                 Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
+                Dictionary<string, IEnumerable<Vector>> ve = new Dictionary<string, IEnumerable<Vector>>();
                 Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
@@ -254,11 +255,17 @@ namespace TopStatsWaffle
                 tpe.Add("TeamPlayers", from change in mdTest.getEvents<TeamPlayers>()
                                  select (change as TeamPlayers));
 
-                pe.Add("Deaths", from player in mdTest.getEvents<PlayerKilledEventArgs>()
-                                 select (player as PlayerKilledEventArgs).Killer);
-
                 pe.Add("Kills", from player in mdTest.getEvents<PlayerKilledEventArgs>()
-                                select (player as PlayerKilledEventArgs).Victim);
+                                select (player as PlayerKilledEventArgs).Killer);
+
+                ve.Add("KillPositions", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                                select (player as PlayerKilledEventArgs).KillerPosition);
+
+                pe.Add("Deaths", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                                 select (player as PlayerKilledEventArgs).Victim);
+
+                ve.Add("DeathPositions", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                                 select (player as PlayerKilledEventArgs).VictimPosition);
 
                 pe.Add("Headshots", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                     where (player as PlayerKilledEventArgs).Headshot
@@ -303,7 +310,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV(demos[i], noguid, tanookiStats, tpe, pe, be, te, re, ge);
+                    mdTest.SaveCSV(demos[i], noguid, tanookiStats, tpe, pe, ve, be, te, re, ge);
                     passCount++;
                 }
             }
@@ -335,6 +342,7 @@ namespace TopStatsWaffle
                 Dictionary<string, List<int>> totalBombsite = new Dictionary<string, List<int>>();
                 Dictionary<string, int> totalGrenadesTotal = new Dictionary<string, int>();
                 Dictionary<string, Dictionary<string, string>> totalGrenadesSpecific = new Dictionary<string, Dictionary<string, string>>();
+                Dictionary<string, Dictionary<string, string>> totalPlayerPositions = new Dictionary<string, Dictionary<string, string>>();
 
                 int num = 0;
                 foreach(string match in matches)
@@ -433,7 +441,7 @@ namespace TopStatsWaffle
 
                     /* Grenades specific stats */
                     headers = sr.ReadLine().Split(',').ToList();
-                    while ((ln = sr.ReadLine()) != null) // != string.Empty if adding another stats group below
+                    while ((ln = sr.ReadLine()) != string.Empty)
                     {
                         /*
                         string[] elements = ln.Split(',');
@@ -458,12 +466,27 @@ namespace TopStatsWaffle
 
                         for (int i = 0; i < elements.Count(); i++)
                         {
-                            totalGrenadesSpecific[id.ToString()].Add(headers[i], string.Empty);
-
-                            totalGrenadesSpecific[id.ToString()][headers[i]] += elements[i];
+                            totalGrenadesSpecific[id.ToString()].Add(headers[i], elements[i]);
                         }
                     }
                     /* Grenades specific stats end */
+
+                    /* Player Kills/Death Positions */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != null) // != string.Empty if adding another stats group below
+                    {
+                        string[] elements = ln.Split(',');
+
+                        Guid id = Guid.NewGuid();
+
+                        totalPlayerPositions.Add(id.ToString(), new Dictionary<string, string>());
+
+                        for (int i = 0; i < elements.Count(); i++)
+                        {
+                            totalPlayerPositions[id.ToString()].Add(headers[i], elements[i]);
+                        }
+                    }
+                    /* Player Kills/Death Positions end */
 
                     sr.Close();
 

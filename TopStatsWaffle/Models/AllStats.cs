@@ -16,6 +16,7 @@ namespace TopStatsWaffle.Models
         public List<BombsiteStats> BombsiteStats { get; set; }
         public List<GrenadesTotalStats> GrenadesTotalStats { get; set; }
         public List<GrenadesSpecificStats> GrenadesSpecificStats { get; set; }
+        public List<PlayerPositionStats> PlayerPositionStats { get; set; }
 
         public AllStats() { }
     }
