@@ -67,6 +67,7 @@
     <Compile Include="Models\PlayerStats.cs" />
     <Compile Include="Models\TanookiStats.cs" />
     <Compile Include="Models\TeamPlayers.cs" />
+    <Compile Include="Models\VersionNumber.cs" />
     <Compile Include="Models\WinnersStats.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

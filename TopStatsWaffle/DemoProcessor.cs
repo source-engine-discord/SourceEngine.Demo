@@ -228,10 +228,24 @@ namespace TopStatsWaffle
 
             StreamWriter sw = new StreamWriter(path, false);
 
+            /* demo parser version */
+            VersionNumber versionNumber = new VersionNumber();
+
+            string header = "Version Number";
+            string version = "0.0.1";
+
+            sw.WriteLine(header);
+            sw.WriteLine(version);
+
+            versionNumber.Version = version;
+            /* demo parser version end */
+
             /* map info */
             MapInfo mapInfo = new MapInfo() { MapName = demo[1], Date = demo[2], TestType = demo[3] };
 
-            string header = "Mapname,Date,Test Type";
+            sw.WriteLine(string.Empty);
+
+            header = "Mapname,Date,Test Type";
             string[] headerSplit = header.Split(',');
 
             sw.WriteLine(header);
@@ -569,14 +583,9 @@ namespace TopStatsWaffle
 
             sw.Close();
 
-            /* JSON creation */
-            path = "matches/" + demo[1] + "_" + (noguid ? "" : Guid.NewGuid().ToString("N")) + ".json";
-            if (File.Exists(path))
-                File.Delete(path);
-
-            StreamWriter sw2 = new StreamWriter(path, false);
-
-            AllStats allStats = new AllStats() {
+            AllStats allStats = new AllStats()
+            {
+                VersionNumber = versionNumber,
                 MapInfo = mapInfo,
                 TanookiStats = tanookiStats,
                 PlayerStats = playerStats,
@@ -587,9 +596,17 @@ namespace TopStatsWaffle
                 GrenadesSpecificStats = grenadesSpecificStats,
                 PlayerPositionStats = playerPositionStats,
             };
+
+            /* JSON creation */
+            path = "matches/" + demo[1] + "_" + (noguid ? "" : Guid.NewGuid().ToString("N")) + ".json";
+            if (File.Exists(path))
+                File.Delete(path);
+
+            StreamWriter sw2 = new StreamWriter(path, false);
             
             string json = JsonConvert.SerializeObject(new
             {
+                versionNumber,
                 mapInfo,
                 tanookiStats,
                 playerStats,

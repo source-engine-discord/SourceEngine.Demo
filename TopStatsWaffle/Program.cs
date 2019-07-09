@@ -333,6 +333,7 @@ namespace TopStatsWaffle
 
                 ProgressViewer pv = new ProgressViewer("Reading CSV's (0 of " + matches.Count() + ")");
 
+                string totalVersionNumber;
                 Dictionary<string, List<string>> totalMap = new Dictionary<string, List<string>>();
                 Dictionary<string, List<string>> totalTanooki = new Dictionary<string, List<string>>();
                 Dictionary<string, Dictionary<string, string>> totalPlayerName = new Dictionary<string, Dictionary<string, string>>();
@@ -353,6 +354,14 @@ namespace TopStatsWaffle
                     StreamReader sr = new StreamReader(match);
 
                     string ln;
+
+                    /* version number */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != string.Empty)
+                    {
+                        totalVersionNumber = ln;
+                    }
+                    /* version number end */
 
                     /* map info */
                     headers = sr.ReadLine().Split(',').ToList();

@@ -8,6 +8,7 @@ namespace TopStatsWaffle.Models
 {
     public class AllStats
     {
+        public VersionNumber VersionNumber { get; set; }
         public MapInfo MapInfo { get; set; }
         public TanookiStats TanookiStats { get; set; }
         public List<PlayerStats> PlayerStats { get; set; }
