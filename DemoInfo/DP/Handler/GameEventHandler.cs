@@ -145,23 +145,21 @@ namespace DemoInfo.DP.Handler
 				kill.Assister = parser.Players.ContainsKey((int)data["assister"]) ? parser.Players[(int)data["assister"]] : null;
 				kill.Headshot = (bool)data["headshot"];
 				kill.Weapon = new Equipment((string)data["weapon"], (string)data["weapon_itemid"]);
+
+                /*if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade
+                        && kill.Weapon.Weapon != EquipmentElement.Revolver
+                        && kill.Killer.Weapons.Any() && kill.Weapon.Weapon != EquipmentElement.World) {
+                    #if DEBUG
+                    if(kill.Weapon.Weapon != kill.Killer.ActiveWeapon.Weapon)
+                        throw new InvalidDataException();
+                    #endif
+                    kill.Weapon = kill.Killer.ActiveWeapon;
+                }*/
+
                 if (data.ContainsKey("assistedflash"))
-                    kill.AssistedFlash = (bool)data["assistedflash"];    
+                    kill.AssistedFlash = (bool)data["assistedflash"];
 
-				if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade
-						&& kill.Weapon.Weapon != EquipmentElement.Revolver
-						&& kill.Killer.Weapons.Any() && kill.Weapon.Weapon != EquipmentElement.World) {
-					#if DEBUG
-					if(kill.Weapon.Weapon != kill.Killer.ActiveWeapon.Weapon)
-						throw new InvalidDataException();
-					#endif
-					kill.Weapon = kill.Killer.ActiveWeapon;
-				}
-
-				kill.PenetratedObjects = (int)data["penetrated"];
-
-                kill.VictimPosition = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]].LastAlivePosition : null;
-                kill.KillerPosition = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]].Position : null;
+                kill.PenetratedObjects = (int)data["penetrated"];
 
                 parser.RaisePlayerKilled(kill);
 				break;
