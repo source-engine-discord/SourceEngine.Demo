@@ -15,6 +15,7 @@ namespace TopStatsWaffle.Models
         public double XPositionDeath { get; set; }
         public double YPositionDeath { get; set; }
         public double ZPositionDeath { get; set; }
+        public string Weapon { get; set; }
 
         public PlayerPositionStats() { }
     }
