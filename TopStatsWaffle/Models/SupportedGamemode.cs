@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace TopStatsWaffle.Models
 {
-    public class SupportedGamemodes
+    public class SupportedGamemode
     {
-        public string Gamemodes { get; set; }
+        public string Gamemode { get; set; }
 
-        public SupportedGamemodes() { }
+        public SupportedGamemode() { }
     }
 }

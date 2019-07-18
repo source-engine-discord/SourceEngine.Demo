@@ -93,6 +93,10 @@ namespace TopStatsWaffle
             };
 
             // SERVER EVENTS ===================================================
+            dp.SayText2 += (object sender, SayText2EventArgs e) => {
+                md.addEvent(typeof(SayText2EventArgs), e);
+            };
+
             dp.RoundEnd += (object sender, RoundEndedEventArgs e) =>
             {
                 md.addEvent(typeof(RoundEndedEventArgs), e);
@@ -249,13 +253,14 @@ namespace TopStatsWaffle
         }
 
         public void SaveCSV(
-            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<Player>> playerValues,
-            Dictionary<string, IEnumerable<Vector>> playerPositionValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues,
-            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues,
-            Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
+            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<SayText2EventArgs>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues,
+            Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues,
+            Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
+            Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
         )
         {
-            string path = "matches/" + demo[1] + "_" + (noguid ? "" : Guid.NewGuid().ToString("N")) + ".csv";
+            Guid guid = Guid.NewGuid();
+            string path = "matches/" + demo[1] + "_" + (noguid ? "" : guid.ToString("N")) + ".csv";
             if (File.Exists(path))
                 File.Delete(path);
 
@@ -265,7 +270,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.3";
+            string version = "0.0.4";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -274,15 +279,18 @@ namespace TopStatsWaffle
             /* demo parser version end */
 
             /* Supported gamemodes */
-            SupportedGamemodes supportedGamemodes = new SupportedGamemodes();
+            List<SupportedGamemode> supportedGamemodes = new List<SupportedGamemode>();
 
             header = "Supported Gamemodes";
-            string gamemodes = "Defuse";
+            List<string> gamemodes = new List<string>() { "Defuse" };
 
             sw.WriteLine(header);
             sw.WriteLine($"{ gamemodes }");
 
-            supportedGamemodes.Gamemodes = gamemodes;
+            foreach (var gamemode in gamemodes)
+            {
+                supportedGamemodes.Add(new SupportedGamemode() { Gamemode = gamemode });
+            }
             /* Supported gamemodes end */
 
             /* map info */
@@ -620,21 +628,27 @@ namespace TopStatsWaffle
             header = "Kill X Position,Kill Y Position,Kill Z Position,Death X Position,Death Y Position,Death Z Position,Weapon";
             sw.WriteLine(header);
 
-            List<Vector> killVectors = new List<Vector>(playerPositionValues["KillPositions"].ToList());
-            List<Vector> deathVectors = new List<Vector>(playerPositionValues["DeathPositions"].ToList());
+            List<Player> kills = new List<Player>(playerValues["Kills"].ToList());
+            List<Player> deaths = new List<Player>(playerValues["Deaths"].ToList());
+
             List<Equipment> weaponKillers = new List<Equipment>(weaponValues["WeaponKillers"].ToList());
 
-            for (int i = 0; i < killVectors.Count(); i++)
+            for (int i = 0; i < deaths.Count(); i++)
             {
-                if (killVectors.ElementAt(i) != null && deathVectors.ElementAt(i) != null)
+                if (kills.ElementAt(i) != null && kills.ElementAt(i).Position != null && deaths.ElementAt(i) != null && deaths.ElementAt(i).Position != null)
                 {
-                    string[] killPositionSplit = killVectors.ElementAt(i).ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+                    string[] killPositionSplit = kills.ElementAt(i).Position.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
                     string killPositions = $"{ killPositionSplit[1] },{ killPositionSplit[2] },{ killPositionSplit[3] }";
 
-                    string[] deathPositionSplit = deathVectors.ElementAt(i).ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+                    string[] deathPositionSplit = deaths.ElementAt(i).Position.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
                     string deathPositions = $"{ deathPositionSplit[1] },{ deathPositionSplit[2] },{ deathPositionSplit[3] }";
 
                     var weaponUsed = weaponKillers.ElementAt(i).Weapon.ToString();
+
+                    if (weaponUsed == null || weaponUsed == string.Empty)
+                    {
+                        weaponUsed = weaponKillers.ElementAt(i).OriginalString.ToString();
+                    }
 
                     sw.WriteLine($"{ killPositions },{ deathPositions },{ weaponUsed }");
 
@@ -652,6 +666,28 @@ namespace TopStatsWaffle
             }
             /* Player Kills/Death Positions end */
 
+            /* Feedback Messages */
+            List<FeedbackMessage> feedbackMessages = new List<FeedbackMessage>();
+
+            sw.WriteLine(string.Empty);
+
+            header = "Player,Message";
+
+            sw.WriteLine(header);
+
+            foreach (var message in messagesValues["Messages"])
+            {
+                var text = message.Text.ToString();
+
+                if (text.ToLower().Contains(">fb ") || text.ToLower().Contains(">feedback "))
+                {
+                    sw.WriteLine($"{ message.Sender.Name.ToString() },{ text }");
+
+                    feedbackMessages.Add(new FeedbackMessage() { PlayerName = message.Sender.Name.ToString(), Message = text });
+                }
+            }
+            /* Feedback Messages end */
+
             sw.Close();
 
             AllStats allStats = new AllStats()
@@ -667,10 +703,11 @@ namespace TopStatsWaffle
                 GrenadesTotalStats = grenadesTotalStats,
                 GrenadesSpecificStats = grenadesSpecificStats,
                 PlayerPositionStats = playerPositionStats,
+                FeedbackMessages = feedbackMessages,
             };
 
             /* JSON creation */
-            path = "matches/" + demo[1] + "_" + (noguid ? "" : Guid.NewGuid().ToString("N")) + ".json";
+            path = "matches/" + demo[1] + "_" + (noguid ? "" : guid.ToString("N")) + ".json";
             if (File.Exists(path))
                 File.Delete(path);
 
@@ -689,6 +726,7 @@ namespace TopStatsWaffle
                 grenadesTotalStats,
                 grenadesSpecificStats,
                 playerPositionStats,
+                feedbackMessages,
             },
                 Formatting.Indented
             );

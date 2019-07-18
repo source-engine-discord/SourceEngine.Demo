@@ -9,7 +9,7 @@ namespace TopStatsWaffle.Models
     public class AllStats
     {
         public VersionNumber VersionNumber { get; set; }
-        public SupportedGamemodes SupportedGamemodes { get; set; }
+        public List<SupportedGamemode> SupportedGamemodes { get; set; }
         public MapInfo MapInfo { get; set; }
         public TanookiStats TanookiStats { get; set; }
         public List<PlayerStats> PlayerStats { get; set; }
@@ -19,6 +19,7 @@ namespace TopStatsWaffle.Models
         public List<GrenadesTotalStats> GrenadesTotalStats { get; set; }
         public List<GrenadesSpecificStats> GrenadesSpecificStats { get; set; }
         public List<PlayerPositionStats> PlayerPositionStats { get; set; }
+        public List<FeedbackMessage> FeedbackMessages { get; set; }
 
         public AllStats() { }
     }

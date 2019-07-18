@@ -238,9 +238,9 @@ namespace TopStatsWaffle
             {
                 MatchData mdTest = MatchData.fromDemoFile(demos[i][0]);
 
+                Dictionary<string, IEnumerable<SayText2EventArgs>> st2e = new Dictionary<string, IEnumerable<SayText2EventArgs>>();
                 Dictionary<string, IEnumerable<TeamPlayers>> tpe = new Dictionary<string, IEnumerable<TeamPlayers>>();
                 Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
-                Dictionary<string, IEnumerable<Vector>> ve = new Dictionary<string, IEnumerable<Vector>>();
                 Dictionary<string, IEnumerable<Equipment>> we = new Dictionary<string, IEnumerable<Equipment>>();
                 Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
@@ -254,20 +254,17 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<FireEventArgs>> gie = new Dictionary<string, IEnumerable<FireEventArgs>>();
                 Dictionary<string, IEnumerable<DecoyEventArgs>> gde = new Dictionary<string, IEnumerable<DecoyEventArgs>>();
 
+                st2e.Add("Messages", from message in mdTest.getEvents<SayText2EventArgs>()
+                                 select (message as SayText2EventArgs));
+
                 tpe.Add("TeamPlayers", from change in mdTest.getEvents<TeamPlayers>()
                                  select (change as TeamPlayers));
 
                 pe.Add("Kills", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                 select (player as PlayerKilledEventArgs).Killer);
 
-                ve.Add("KillPositions", from player in mdTest.getEvents<PlayerKilledEventArgs>()
-                                select (player as PlayerKilledEventArgs).Killer.Position);
-
                 pe.Add("Deaths", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                  select (player as PlayerKilledEventArgs).Victim);
-
-                ve.Add("DeathPositions", from player in mdTest.getEvents<PlayerKilledEventArgs>()
-                                 select (player as PlayerKilledEventArgs).Victim.Position);
 
                 pe.Add("Headshots", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                     where (player as PlayerKilledEventArgs).Headshot
@@ -277,8 +274,8 @@ namespace TopStatsWaffle
                                   where (player as PlayerKilledEventArgs).Assister != null
                                   select (player as PlayerKilledEventArgs).Assister);
 
-                we.Add("WeaponKillers", from player in mdTest.getEvents<PlayerKilledEventArgs>()
-                                         select (player as PlayerKilledEventArgs).Weapon);
+                we.Add("WeaponKillers", from weapon in mdTest.getEvents<PlayerKilledEventArgs>()
+                                         select (weapon as PlayerKilledEventArgs).Weapon);
 
                 pe.Add("MVPs", from player in mdTest.getEvents<RoundMVPEventArgs>()
                                 select (player as RoundMVPEventArgs).Player);
@@ -318,7 +315,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV(demos[i], noguid, tanookiStats, tpe, pe, ve, we, be, te, re, tes, ge);
+                    mdTest.SaveCSV(demos[i], noguid, tanookiStats, st2e, tpe, pe, we, be, te, re, tes, ge);
                     passCount++;
                 }
             }

@@ -59,13 +59,14 @@
     <Compile Include="Models\AllStats.cs" />
     <Compile Include="Models\BombsiteStats.cs" />
     <Compile Include="Models\DisconnectedPlayer.cs" />
+    <Compile Include="Models\FeedbackMessage.cs" />
     <Compile Include="Models\PlayerPositionStats.cs" />
     <Compile Include="Models\RoundsStats.cs" />
     <Compile Include="Models\GrenadesSpecificStats.cs" />
     <Compile Include="Models\GrenadesTotalStats.cs" />
     <Compile Include="Models\MapInfo.cs" />
     <Compile Include="Models\PlayerStats.cs" />
-    <Compile Include="Models\SupportedGamemodes.cs" />
+    <Compile Include="Models\SupportedGamemode.cs" />
     <Compile Include="Models\TanookiStats.cs" />
     <Compile Include="Models\TeamEquipmentStats.cs" />
     <Compile Include="Models\TeamPlayers.cs" />
