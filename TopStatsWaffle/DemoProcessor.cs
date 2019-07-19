@@ -95,17 +95,28 @@ namespace TopStatsWaffle
             // SERVER EVENTS ===================================================
             dp.SayText2 += (object sender, SayText2EventArgs e) => {
                 md.addEvent(typeof(SayText2EventArgs), e);
+
+                var rounds = md.getEvents<RoundEndedEventArgs>();
+                var text = e.Text.ToString();
+
+                if (text.ToLower().Contains(">fb ") || text.ToLower().Contains(">feedback "))
+                {
+                    var round = "Round" + (rounds.Count() - 1);
+                    FeedbackMessage feedbackMessage = new FeedbackMessage() { Round = round, PlayerName = e.Sender.Name.ToString(), Message = text };
+
+                    md.addEvent(typeof(FeedbackMessage), feedbackMessage);
+                }
             };
 
-            dp.RoundEnd += (object sender, RoundEndedEventArgs e) =>
-            {
+            dp.RoundEnd += (object sender, RoundEndedEventArgs e) => {
                 md.addEvent(typeof(RoundEndedEventArgs), e);
 
                 //work out teams at current round
                 var rounds = md.getEvents<RoundEndedEventArgs>();
                 var players = dp.PlayingParticipants;
 
-                TeamPlayers teamsEachRound = new TeamPlayers() {
+                TeamPlayers teamsEachRound = new TeamPlayers()
+                {
                     Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
                     CounterTerrorists = players.Where(p => p.Team.ToString().Equals("CounterTerrorist")).ToList(),
                     Round = rounds.Count() - 1 //takes into account 1 warmup round
@@ -115,8 +126,9 @@ namespace TopStatsWaffle
             };
 
             dp.FreezetimeEnded += (object sender, FreezetimeEndedEventArgs e) => {
-                var rounds = md.getEvents<RoundEndedEventArgs>();
+                md.addEvent(typeof(FreezetimeEndedEventArgs), e);
 
+                var rounds = md.getEvents<RoundEndedEventArgs>();
                 var players = dp.PlayingParticipants;
 
                 TeamPlayers teamsEachRound = new TeamPlayers()
@@ -253,7 +265,7 @@ namespace TopStatsWaffle
         }
 
         public void SaveCSV(
-            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<SayText2EventArgs>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues,
+            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues,
             Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues,
             Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
             Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
@@ -270,7 +282,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.4";
+            string version = "0.0.5";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -279,17 +291,15 @@ namespace TopStatsWaffle
             /* demo parser version end */
 
             /* Supported gamemodes */
-            List<SupportedGamemode> supportedGamemodes = new List<SupportedGamemode>();
+            List<string> supportedGamemodes = new List<string>() { "Defuse", "Wingman" };
 
             header = "Supported Gamemodes";
-            List<string> gamemodes = new List<string>() { "Defuse" };
 
             sw.WriteLine(header);
-            sw.WriteLine($"{ gamemodes }");
 
-            foreach (var gamemode in gamemodes)
+            foreach (var gamemode in supportedGamemodes)
             {
-                supportedGamemodes.Add(new SupportedGamemode() { Gamemode = gamemode });
+                sw.WriteLine($"{ gamemode }");
             }
             /* Supported gamemodes end */
 
@@ -677,14 +687,9 @@ namespace TopStatsWaffle
 
             foreach (var message in messagesValues["Messages"])
             {
-                var text = message.Text.ToString();
+                sw.WriteLine($"{ message.Round },{ message.PlayerName },{ message.Message }");
 
-                if (text.ToLower().Contains(">fb ") || text.ToLower().Contains(">feedback "))
-                {
-                    sw.WriteLine($"{ message.Sender.Name.ToString() },{ text }");
-
-                    feedbackMessages.Add(new FeedbackMessage() { PlayerName = message.Sender.Name.ToString(), Message = text });
-                }
+                feedbackMessages.Add(message);
             }
             /* Feedback Messages end */
 

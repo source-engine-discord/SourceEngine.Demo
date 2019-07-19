@@ -238,7 +238,7 @@ namespace TopStatsWaffle
             {
                 MatchData mdTest = MatchData.fromDemoFile(demos[i][0]);
 
-                Dictionary<string, IEnumerable<SayText2EventArgs>> st2e = new Dictionary<string, IEnumerable<SayText2EventArgs>>();
+                Dictionary<string, IEnumerable<FeedbackMessage>> fme = new Dictionary<string, IEnumerable<FeedbackMessage>>();
                 Dictionary<string, IEnumerable<TeamPlayers>> tpe = new Dictionary<string, IEnumerable<TeamPlayers>>();
                 Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
                 Dictionary<string, IEnumerable<Equipment>> we = new Dictionary<string, IEnumerable<Equipment>>();
@@ -254,8 +254,8 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<FireEventArgs>> gie = new Dictionary<string, IEnumerable<FireEventArgs>>();
                 Dictionary<string, IEnumerable<DecoyEventArgs>> gde = new Dictionary<string, IEnumerable<DecoyEventArgs>>();
 
-                st2e.Add("Messages", from message in mdTest.getEvents<SayText2EventArgs>()
-                                 select (message as SayText2EventArgs));
+                fme.Add("Messages", from message in mdTest.getEvents<FeedbackMessage>()
+                                 select (message as FeedbackMessage));
 
                 tpe.Add("TeamPlayers", from change in mdTest.getEvents<TeamPlayers>()
                                  select (change as TeamPlayers));
@@ -315,7 +315,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV(demos[i], noguid, tanookiStats, st2e, tpe, pe, we, be, te, re, tes, ge);
+                    mdTest.SaveCSV(demos[i], noguid, tanookiStats, fme, tpe, pe, we, be, te, re, tes, ge);
                     passCount++;
                 }
             }

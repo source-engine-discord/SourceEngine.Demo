@@ -9,6 +9,7 @@ namespace TopStatsWaffle.Models
 {
     public class FeedbackMessage
     {
+        public string Round { get; set; }
         public string PlayerName { get; set; }
         public string Message { get; set; }
 
