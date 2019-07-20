@@ -282,7 +282,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.6";
+            string version = "0.0.7";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -678,13 +678,15 @@ namespace TopStatsWaffle
 
             foreach (var message in messagesValues["Messages"])
             {
-                var firstRoundTeams = teamPlayersValues["TeamPlayers"].ElementAt(1);
+                int roundNum = int.Parse(message.Round.Remove(0, 5));
 
-                if (firstRoundTeams.Terrorists.Any(p => p.SteamID == message.SteamID))
+                var currentRoundTeams = teamPlayersValues["TeamPlayers"].ElementAt(roundNum);
+
+                if (currentRoundTeams.Terrorists.Any(p => p.SteamID == message.SteamID))
                 {
                     message.TeamName = "Terrorist";
                 }
-                else if (firstRoundTeams.CounterTerrorists.Any(p => p.SteamID == message.SteamID))
+                else if (currentRoundTeams.CounterTerrorists.Any(p => p.SteamID == message.SteamID))
                 {
                     message.TeamName = "CounterTerrorist";
                 }
