@@ -66,7 +66,6 @@
     <Compile Include="Models\GrenadesTotalStats.cs" />
     <Compile Include="Models\MapInfo.cs" />
     <Compile Include="Models\PlayerStats.cs" />
-    <Compile Include="Models\SupportedGamemode.cs" />
     <Compile Include="Models\TanookiStats.cs" />
     <Compile Include="Models\TeamEquipmentStats.cs" />
     <Compile Include="Models\TeamPlayers.cs" />

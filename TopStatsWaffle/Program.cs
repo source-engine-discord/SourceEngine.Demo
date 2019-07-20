@@ -315,7 +315,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.SaveCSV(demos[i], noguid, tanookiStats, fme, tpe, pe, we, be, te, re, tes, ge);
+                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, fme, tpe, pe, we, be, te, re, tes, ge);
                     passCount++;
                 }
             }
@@ -339,6 +339,7 @@ namespace TopStatsWaffle
                 ProgressViewer pv = new ProgressViewer("Reading CSV's (0 of " + matches.Count() + ")");
 
                 string totalVersionNumber;
+                List<string> totalSupportedGamemodes = new List<string>();
                 Dictionary<string, List<string>> totalMap = new Dictionary<string, List<string>>();
                 Dictionary<string, List<string>> totalTanooki = new Dictionary<string, List<string>>();
                 Dictionary<string, Dictionary<string, string>> totalPlayerName = new Dictionary<string, Dictionary<string, string>>();
@@ -367,6 +368,14 @@ namespace TopStatsWaffle
                         totalVersionNumber = ln;
                     }
                     /* version number end */
+
+                    /* supported gamemodes */
+                    headers = sr.ReadLine().Split(',').ToList();
+                    while ((ln = sr.ReadLine()) != string.Empty)
+                    {
+                        totalSupportedGamemodes.Add(ln);
+                    }
+                    /* supported gamemodes end */
 
                     /* map info */
                     headers = sr.ReadLine().Split(',').ToList();

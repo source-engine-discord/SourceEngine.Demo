@@ -102,7 +102,7 @@ namespace TopStatsWaffle
                 if (text.ToLower().Contains(">fb ") || text.ToLower().Contains(">feedback "))
                 {
                     var round = "Round" + (rounds.Count() - 1);
-                    FeedbackMessage feedbackMessage = new FeedbackMessage() { Round = round, PlayerName = e.Sender.Name.ToString(), Message = text };
+                    FeedbackMessage feedbackMessage = new FeedbackMessage() { Round = round, SteamID = e.Sender.SteamID, TeamName = null, Message = text }; // works out TeamName in SaveFiles()
 
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
                 }
@@ -264,7 +264,7 @@ namespace TopStatsWaffle
             return md;
         }
 
-        public void SaveCSV(
+        public void CreateFiles(
             List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues,
             Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues,
             Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
@@ -282,7 +282,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.5";
+            string version = "0.0.6";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -292,6 +292,8 @@ namespace TopStatsWaffle
 
             /* Supported gamemodes */
             List<string> supportedGamemodes = new List<string>() { "Defuse", "Wingman" };
+
+            sw.WriteLine(string.Empty);
 
             header = "Supported Gamemodes";
 
@@ -459,30 +461,19 @@ namespace TopStatsWaffle
             const string tName = "Terrorist", ctName = "CounterTerrorist";
             const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", timeout = "TargetSaved";
 
-            var roundsWonTeams = teamValues["RoundsWonTeams"].ToList();
-            roundsWonTeams.RemoveAll(r => !r.ToString().Equals(tName)
-                                       && !r.ToString().Equals(ctName)
-            );
+            var roundsWonTeams = getRoundsWonTeams(teamValues);
 
-            var roundsWonReasons = roundEndReasonValues["RoundsWonReasons"].ToList();
-            roundsWonReasons.RemoveAll(r => !r.ToString().Equals(tKills)
-                                         && !r.ToString().Equals(ctKills)
-                                         && !r.ToString().Equals(bombed)
-                                         && !r.ToString().Equals(defused)
-                                         && !r.ToString().Equals(timeout)
-            );
+            int roundsUntilSwapSides = getRoundsUntilSwapSides(roundsWonTeams);
 
-            int roundsUntilSwapSides = Convert.ToInt32(roundsWonTeams.Count() / 2);
+            int numRoundsWonTeamA = getNumRoundsTeamWon(roundsWonTeams, roundsUntilSwapSides, tName, ctName);
 
-            int numRoundsWonTeamA = roundsWonTeams.Take(roundsUntilSwapSides).Where(r => r.ToString().Equals(tName)).Count()
-                                  + roundsWonTeams.Skip(roundsUntilSwapSides).Where(r => r.ToString().Equals(ctName)).Count();
+            int numRoundsWonTeamB = getNumRoundsTeamWon(roundsWonTeams, roundsUntilSwapSides, ctName, tName);
 
-            int numRoundsWonTeamB = roundsWonTeams.Take(roundsUntilSwapSides).Where(r => r.ToString().Equals(ctName)).Count()
-                                  + roundsWonTeams.Skip(roundsUntilSwapSides).Where(r => r.ToString().Equals(tName)).Count();
+            var roundsWonReasons = getRoundsWonReasons(roundEndReasonValues);
 
             string winningTeam = (numRoundsWonTeamA >= numRoundsWonTeamB) ? (numRoundsWonTeamA > numRoundsWonTeamB) ? "Team Alpha" : "Draw" : "Team Bravo";
 
-            header = "Winning Team, Team Alpha Rounds, Team Bravo Rounds";
+            header = "Winning Team,Team Alpha Rounds,Team Bravo Rounds";
             sw.WriteLine(header);
             sw.WriteLine($"{ winningTeam },{ numRoundsWonTeamA },{ numRoundsWonTeamB }");
 
@@ -529,7 +520,7 @@ namespace TopStatsWaffle
                     int expenditureTeamA = i < roundsUntilSwapSides ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure;
                     int expenditureTeamB = i < roundsUntilSwapSides ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure;
 
-                    sw.WriteLine($"Round{ i+1 },{ half },{ roundsWonTeams[i].ToString() },{ reason },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB },");
+                    sw.WriteLine($"Round{ i+1 },{ half },{ roundsWonTeams[i].ToString() },{ reason },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
                     roundsStats.Add(new RoundsStats() {
                         Round = $"Round{ i+1 }",
                         Half = half,
@@ -687,7 +678,18 @@ namespace TopStatsWaffle
 
             foreach (var message in messagesValues["Messages"])
             {
-                sw.WriteLine($"{ message.Round },{ message.PlayerName },{ message.Message }");
+                var firstRoundTeams = teamPlayersValues["TeamPlayers"].ElementAt(1);
+
+                if (firstRoundTeams.Terrorists.Any(p => p.SteamID == message.SteamID))
+                {
+                    message.TeamName = "Terrorist";
+                }
+                else if (firstRoundTeams.CounterTerrorists.Any(p => p.SteamID == message.SteamID))
+                {
+                    message.TeamName = "CounterTerrorist";
+                }
+
+                sw.WriteLine($"{ message.Round },{ message.SteamID },{ message.TeamName },{ message.Message }");
 
                 feedbackMessages.Add(message);
             }
@@ -759,6 +761,46 @@ namespace TopStatsWaffle
                 return this.events[t];
 
             return new List<object>();
+        }
+
+        public List<Team> getRoundsWonTeams(Dictionary<string, IEnumerable<Team>> teamValues)
+        {
+            const string tName = "Terrorist", ctName = "CounterTerrorist";
+
+            var roundsWonTeams = teamValues["RoundsWonTeams"].ToList();
+            roundsWonTeams.RemoveAll(r => !r.ToString().Equals(tName)
+                                       && !r.ToString().Equals(ctName)
+            );
+
+            return roundsWonTeams;
+        }
+
+        public int getRoundsUntilSwapSides(List<Team> roundsWonTeams)
+        {
+            return Convert.ToInt32(roundsWonTeams.Count() / 2);
+        }
+
+        public int getNumRoundsTeamWon(List<Team> roundsWonTeams, int roundsUntilSwapSides, string firstHalfTeam, string secondHalfTeam)
+        {
+            int numRoundsTeamWon = roundsWonTeams.Take(roundsUntilSwapSides).Where(r => r.ToString().Equals(firstHalfTeam)).Count()
+                                  + roundsWonTeams.Skip(roundsUntilSwapSides).Where(r => r.ToString().Equals(secondHalfTeam)).Count();
+
+            return numRoundsTeamWon;
+        }
+
+        public List<RoundEndReason> getRoundsWonReasons(Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues)
+        {
+            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", timeout = "TargetSaved";
+
+            var roundsWonReasons = roundEndReasonValues["RoundsWonReasons"].ToList();
+            roundsWonReasons.RemoveAll(r => !r.ToString().Equals(tKills)
+                                         && !r.ToString().Equals(ctKills)
+                                         && !r.ToString().Equals(bombed)
+                                         && !r.ToString().Equals(defused)
+                                         && !r.ToString().Equals(timeout)
+            );
+
+            return roundsWonReasons;
         }
     }
 }
