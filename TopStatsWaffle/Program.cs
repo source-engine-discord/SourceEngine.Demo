@@ -196,35 +196,87 @@ namespace TopStatsWaffle
                 foreach (string demo in subDemos)
                 {
                     string[] pathSplit = demo.Split('\\');
-                    string[] filenameSplit = pathSplit[pathSplit.Count()-1].Split('_', '.');
+                    string testDate, testType, mapname;
 
-                    string mapDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                    string testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
-                    string mapname = $"{ filenameSplit[3] }";
+                    Guid guid;
+                    string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
+                    bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out guid);
 
-                    for (int i=4; i < filenameSplit.Count() - 2; i++)
+                    if (isFaceitDemo)
                     {
-                        mapname += $"_{ filenameSplit[i] }";
+                        testDate = "unknown";
+                        testType = "unknown";
+                        mapname = "unknown";
+                    }
+                    else
+                    {
+                        filenameSplit = pathSplit[pathSplit.Count() - 1].Split('_', '.');
+
+                        bool isSEDiscordDemo = filenameSplit.Count() > 5 ? true : false;
+
+                        if (isSEDiscordDemo)
+                        {
+                            testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
+                            testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
+                            mapname = $"{ filenameSplit[3] }";
+
+                            for (int i = 4; i < filenameSplit.Count() - 2; i++)
+                            {
+                                mapname += $"_{ filenameSplit[i] }";
+                            }
+                        }
+                        else //cannot determine demo name format
+                        {
+                            testDate = "unknown";
+                            testType = "unknown";
+                            mapname = "unknown";
+                        }
                     }
 
-                    demos.Add(new List<string>() { demo, mapname, mapDate, testType });
+                    demos.Add(new List<string>() { demo, mapname, testDate, testType });
                 }
             }
 
             foreach (string demo in demosToProcess)
             {
-                string[] filenameSplit = demo.Split('_', '.');
+                string testDate, testType, mapname;
 
-                string mapDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                string testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
-                string mapname = $"{ filenameSplit[3] }";
+                Guid guid;
+                string[] filenameSplit = demo.Split('.');
+                bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out guid);
 
-                for (int i = 4; i < filenameSplit.Count() - 2; i++)
+                if (isFaceitDemo)
                 {
-                    mapname += $"_{ filenameSplit[i] }";
+                    testDate = "unknown";
+                    testType = "unknown";
+                    mapname = "unknown";
+                }
+                else
+                {
+                    filenameSplit = demo.Split('_', '.');
+
+                    bool isSEDiscordDemo = filenameSplit.Count() > 5 ? true : false;
+
+                    if (isSEDiscordDemo)
+                    {
+                        testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
+                        testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
+                        mapname = $"{ filenameSplit[3] }";
+
+                        for (int i = 4; i < filenameSplit.Count() - 2; i++)
+                        {
+                            mapname += $"_{ filenameSplit[i] }";
+                        }
+                    }
+                    else //cannot determine demo name format
+                    {
+                        testDate = "unknown";
+                        testType = "unknown";
+                        mapname = "unknown";
+                    }
                 }
 
-                demos.Add(new List<string>() { demo, mapname, mapDate, testType });
+                demos.Add(new List<string>() { demo, mapname, testDate, testType });
             }
 
             Debug.Info("Starting processing of {0} demos", demos.Count());

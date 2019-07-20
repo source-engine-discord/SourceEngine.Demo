@@ -282,7 +282,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.7";
+            string version = "0.0.8";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -306,11 +306,11 @@ namespace TopStatsWaffle
             /* Supported gamemodes end */
 
             /* map info */
-            MapInfo mapInfo = new MapInfo() { MapName = demo[1], Date = demo[2], TestType = demo[3] };
+            MapInfo mapInfo = new MapInfo() { MapName = demo[1], TestDate = demo[2], TestType = demo[3] };
 
             sw.WriteLine(string.Empty);
 
-            header = "Mapname,Date,Test Type";
+            header = "Mapname,Test Date,Test Type";
             string[] headerSplit = header.Split(',');
 
             sw.WriteLine(header);
