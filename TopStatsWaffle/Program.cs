@@ -290,10 +290,13 @@ namespace TopStatsWaffle
             {
                 MatchData mdTest = MatchData.fromDemoFile(demos[i][0]);
 
+                Dictionary<string, IEnumerable<MatchStartedEventArgs>> mse = new Dictionary<string, IEnumerable<MatchStartedEventArgs>>();
+                Dictionary<string, IEnumerable<SwitchSidesEventArgs>> sse = new Dictionary<string, IEnumerable<SwitchSidesEventArgs>>();
                 Dictionary<string, IEnumerable<FeedbackMessage>> fme = new Dictionary<string, IEnumerable<FeedbackMessage>>();
                 Dictionary<string, IEnumerable<TeamPlayers>> tpe = new Dictionary<string, IEnumerable<TeamPlayers>>();
+                Dictionary<string, IEnumerable<PlayerKilledEventArgs>> pke = new Dictionary<string, IEnumerable<PlayerKilledEventArgs>>();
                 Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
-                Dictionary<string, IEnumerable<Equipment>> we = new Dictionary<string, IEnumerable<Equipment>>();
+                Dictionary<string, IEnumerable<Equipment>> pwe = new Dictionary<string, IEnumerable<Equipment>>();
                 Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
@@ -306,11 +309,20 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<FireEventArgs>> gie = new Dictionary<string, IEnumerable<FireEventArgs>>();
                 Dictionary<string, IEnumerable<DecoyEventArgs>> gde = new Dictionary<string, IEnumerable<DecoyEventArgs>>();
 
+                mse.Add("MatchStarts", from start in mdTest.getEvents<MatchStartedEventArgs>()
+                                    select (start as MatchStartedEventArgs));
+
+                sse.Add("SwitchSides", from switchSide in mdTest.getEvents<SwitchSidesEventArgs>()
+                                       select (switchSide as SwitchSidesEventArgs));
+
                 fme.Add("Messages", from message in mdTest.getEvents<FeedbackMessage>()
-                                 select (message as FeedbackMessage));
+                                    select (message as FeedbackMessage));
 
                 tpe.Add("TeamPlayers", from change in mdTest.getEvents<TeamPlayers>()
                                  select (change as TeamPlayers));
+
+                pke.Add("PlayerKilledEvents", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                                                select (player as PlayerKilledEventArgs));
 
                 pe.Add("Kills", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                 select (player as PlayerKilledEventArgs).Killer);
@@ -326,7 +338,7 @@ namespace TopStatsWaffle
                                   where (player as PlayerKilledEventArgs).Assister != null
                                   select (player as PlayerKilledEventArgs).Assister);
 
-                we.Add("WeaponKillers", from weapon in mdTest.getEvents<PlayerKilledEventArgs>()
+                pwe.Add("WeaponKillers", from weapon in mdTest.getEvents<PlayerKilledEventArgs>()
                                          select (weapon as PlayerKilledEventArgs).Weapon);
 
                 pe.Add("MVPs", from player in mdTest.getEvents<RoundMVPEventArgs>()
@@ -367,7 +379,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, fme, tpe, pe, we, be, te, re, tes, ge);
+                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, be, te, re, tes, ge);
                     passCount++;
                 }
             }
@@ -672,7 +684,7 @@ namespace TopStatsWaffle
                             goto TanookiLeftGoto;
                         }
 
-                    foreach (var player in round.Terrorists)
+                    foreach (var player in round.CounterTerrorists)
                         if (player.SteamID == tanookiId)
                         {
                             tanookiStats.RoundJoined = round.Round;

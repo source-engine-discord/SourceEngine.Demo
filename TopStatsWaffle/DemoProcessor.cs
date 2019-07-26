@@ -45,6 +45,10 @@ namespace TopStatsWaffle
 
         void addEvent(Type type, object ev)
         {
+            //Resets stats if match is restarted
+            if (ev.GetType() == typeof(MatchStartedEventArgs))
+                this.events = new Dictionary<Type, List<object>>();
+
             //Create if doesnt exist
             if (!this.events.ContainsKey(type))
                 this.events.Add(type, new List<object>());
@@ -58,7 +62,7 @@ namespace TopStatsWaffle
                 playerTicks.Add(p.EntityID, new TickCounter());
 
             if (!playerLookups.ContainsKey(p.EntityID))
-                if(p.SteamID != 0)
+                if (p.SteamID != 0)
                     playerLookups.Add(p.EntityID, p.SteamID);
 
             if (playerTicks[p.EntityID].detectedName == "NOT FOUND" && p.Name != "" && p.Name != null)
@@ -69,7 +73,7 @@ namespace TopStatsWaffle
         {
             bindPlayer(p);
 
-            if(status == PSTATUS.ONSERVER)
+            if (status == PSTATUS.ONSERVER)
                 playerTicks[p.EntityID].ticksOnServer++;
 
             if (status == PSTATUS.ALIVE)
@@ -93,6 +97,26 @@ namespace TopStatsWaffle
             };
 
             // SERVER EVENTS ===================================================
+            dp.MatchStarted += (object sender, MatchStartedEventArgs e) => {
+                //prints blank space out to console
+                Console.WriteLine();
+
+                if (dp.Map.ToString() != null && dp.Map.ToString() != string.Empty)
+                {
+                    e.Mapname = dp.Map.ToString();
+                }
+                else if (dp.Header.MapName.ToString() != null && dp.Header.MapName.ToString() != string.Empty)
+                {
+                    e.Mapname = dp.Header.MapName.ToString();
+                }
+                else
+                {
+                    e.Mapname = "unknown";
+                }
+
+                md.addEvent(typeof(MatchStartedEventArgs), e);
+            };
+
             dp.SayText2 += (object sender, SayText2EventArgs e) => {
                 md.addEvent(typeof(SayText2EventArgs), e);
 
@@ -111,6 +135,10 @@ namespace TopStatsWaffle
             dp.RoundEnd += (object sender, RoundEndedEventArgs e) => {
                 md.addEvent(typeof(RoundEndedEventArgs), e);
 
+                //print rounds complete out to console
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+                Console.WriteLine("Round " + roundsCount + " complete.");
+
                 //work out teams at current round
                 var rounds = md.getEvents<RoundEndedEventArgs>();
                 var players = dp.PlayingParticipants;
@@ -123,6 +151,14 @@ namespace TopStatsWaffle
                 };
 
                 md.addEvent(typeof(TeamPlayers), teamsEachRound);
+            };
+
+            dp.SwitchSides += (object sender, SwitchSidesEventArgs e) => {
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+
+                SwitchSidesEventArgs switchSidesEventArgs = new SwitchSidesEventArgs() { RoundBeforeSwitch = roundsCount };
+
+                md.addEvent(typeof(SwitchSidesEventArgs), switchSidesEventArgs);
             };
 
             dp.FreezetimeEnded += (object sender, FreezetimeEndedEventArgs e) => {
@@ -153,8 +189,8 @@ namespace TopStatsWaffle
                     ctExpenditure += (player.CurrentEquipmentValue - player.RoundStartEquipmentValue); // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
                 }
 
-                TeamEquipmentStats teamEquipmentStats = new TeamEquipmentStats() { Round = rounds.Count() - 1, TEquipValue = tEquipValue, CTEquipValue = ctEquipValue, TExpenditure = tExpenditure, CTExpenditure = ctExpenditure };
- 
+                TeamEquipmentStats teamEquipmentStats = new TeamEquipmentStats() { Round = rounds.Count(), TEquipValue = tEquipValue, CTEquipValue = ctEquipValue, TExpenditure = tExpenditure, CTExpenditure = ctExpenditure };
+
                 md.addEvent(typeof(TeamEquipmentStats), teamEquipmentStats);
             };
 
@@ -162,7 +198,7 @@ namespace TopStatsWaffle
             dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) => {
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
-            
+
             dp.RoundMVP += (object sender, RoundMVPEventArgs e) => {
                 md.addEvent(typeof(RoundMVPEventArgs), e);
             };
@@ -217,15 +253,17 @@ namespace TopStatsWaffle
 
             // PLAYER TICK HANDLER ============================================
             dp.TickDone += (object sender, TickDoneEventArgs e) => {
-                foreach(Player p in dp.PlayingParticipants){
+                foreach (Player p in dp.PlayingParticipants)
+                {
                     md.addTick(p, PSTATUS.PLAYING);
 
                     if (p.IsAlive)
                         md.addTick(p, PSTATUS.ALIVE);
                 }
 
-                foreach(Player p in dp.Participants){
-                    if(!p.Disconnected)
+                foreach (Player p in dp.Participants)
+                {
+                    if (!p.Disconnected)
                         md.addTick(p, PSTATUS.ONSERVER);
                 }
             };
@@ -265,10 +303,11 @@ namespace TopStatsWaffle
         }
 
         public void CreateFiles(
-            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues,
-            Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues,
-            Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
-            Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
+            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues, Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues,
+            Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues,
+            Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues,
+            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues,
+            Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
         )
         {
             Guid guid = Guid.NewGuid();
@@ -282,7 +321,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.8";
+            string version = "0.0.9";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -308,6 +347,13 @@ namespace TopStatsWaffle
             /* map info */
             MapInfo mapInfo = new MapInfo() { MapName = demo[1], TestDate = demo[2], TestType = demo[3] };
 
+            if (mapInfo.MapName == null || mapInfo.MapName == string.Empty)
+            {
+                var mapNameSplit = matchStartValues["MatchStarts"].ElementAt(0).Mapname.Split('/');
+
+                mapInfo.MapName = mapNameSplit[2];
+            }
+
             sw.WriteLine(string.Empty);
 
             header = "Mapname,Test Date,Test Type";
@@ -320,7 +366,7 @@ namespace TopStatsWaffle
             /* tanooki leave stats */
             sw.WriteLine(string.Empty);
 
-            header = "Tanooki Joined, Tanooki Left, Tanooki Round Joined, Tanooki Round Left, Tanooki Rounds Lasted";
+            header = "Tanooki Joined,Tanooki Left,Tanooki Round Joined,Tanooki Round Left,Tanooki Rounds Lasted";
 
             sw.WriteLine(header);
             sw.WriteLine($"{ tanookiStats.Joined },{ tanookiStats.Left },{ tanookiStats.RoundJoined },{ tanookiStats.RoundLeft },{ tanookiStats.RoundsLasted },");
@@ -333,12 +379,12 @@ namespace TopStatsWaffle
 
             header = "Player Name,SteamID,";
 
-            foreach(string catagory in playerValues.Keys)
+            foreach (string catagory in playerValues.Keys)
             {
                 header += catagory + ",";
             }
 
-            if(writeTicks)
+            if (writeTicks)
                 header += "Ticks Alive,Ticks on Server,Ticks playing,";
 
             sw.WriteLine(header.Substring(0, header.Length - 1));
@@ -348,7 +394,7 @@ namespace TopStatsWaffle
 
             foreach (string catagory in playerValues.Keys)
             {
-                foreach(Player p in playerValues[catagory])
+                foreach (Player p in playerValues[catagory])
                 {
                     //Skip players not in this catagory
                     if (p == null)
@@ -373,6 +419,19 @@ namespace TopStatsWaffle
 
                     //Increment it
                     data[playerLookups[p.EntityID]][catagory]++;
+                }
+            }
+
+            // remove teamkills and suicides from kills (easy messy implementation)
+            foreach (var kill in playerKilledEventsValues["PlayerKilledEvents"])
+            {
+                if (kill.Suicide)
+                {
+                    data[playerLookups[kill.Killer.EntityID]]["Kills"] -= 1;
+                }
+                else if (kill.TeamKill)
+                {
+                    data[playerLookups[kill.Killer.EntityID]]["Kills"] -= 2;
                 }
             }
 
@@ -430,11 +489,17 @@ namespace TopStatsWaffle
 
                 string[] stats = playerLine.Split(',');
 
-                playerStats.Add(new PlayerStats() {
+                int numOfKillsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Killer.Name.ToString() == playerName.ToString()) && (k.KillerBotTakeover)).Count();
+                int numOfDeathsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Victim.Name.ToString() == playerName.ToString()) && (k.VictimBotTakeover)).Count();
+
+                playerStats.Add(new PlayerStats()
+                {
                     PlayerName = playerName,
                     SteamID = steamID,
-                    Deaths = statsList1.ElementAt(0),
-                    Kills = statsList1.ElementAt(1),
+                    Kills = statsList1.ElementAt(0) - numOfKillsAsBot,
+                    KillsIncludingBots = statsList1.ElementAt(0),
+                    Deaths = statsList1.ElementAt(1) - numOfDeathsAsBot,
+                    DeathsIncludingBots = statsList1.ElementAt(1),
                     Headshots = statsList1.ElementAt(2),
                     Assists = statsList1.ElementAt(3),
                     MVPs = statsList1.ElementAt(4),
@@ -456,82 +521,129 @@ namespace TopStatsWaffle
             WinnersStats winnersStats;
             List<RoundsStats> roundsStats = new List<RoundsStats>();
 
-            sw.WriteLine(string.Empty);
-
-            const string tName = "Terrorist", ctName = "CounterTerrorist";
-            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", timeout = "TargetSaved";
-
-            var roundsWonTeams = getRoundsWonTeams(teamValues);
-
-            int roundsUntilSwapSides = getRoundsUntilSwapSides(roundsWonTeams);
-
-            int numRoundsWonTeamA = getNumRoundsTeamWon(roundsWonTeams, roundsUntilSwapSides, tName, ctName);
-
-            int numRoundsWonTeamB = getNumRoundsTeamWon(roundsWonTeams, roundsUntilSwapSides, ctName, tName);
-
+            // winning team & total rounds stats
+            IEnumerable<SwitchSidesEventArgs> switchSides = switchSidesValues["SwitchSides"];
             var roundsWonReasons = getRoundsWonReasons(roundEndReasonValues);
+            var roundsWonTeams = getRoundsWonTeams(teamValues);
+            int totalRoundsWonTeamAlpha = 0, totalRoundsWonTeamBeta = 0;
 
-            string winningTeam = (numRoundsWonTeamA >= numRoundsWonTeamB) ? (numRoundsWonTeamA > numRoundsWonTeamB) ? "Team Alpha" : "Draw" : "Team Bravo";
+            List<string> roundStatsStrings = new List<string>();
+
+            for (int i = 0; i < roundsWonTeams.Count(); i++)
+            {
+                string reason = string.Empty;
+                string half = string.Empty;
+                bool isOvertime = ((switchSides.Count() >= 2) && (i >= switchSides.ElementAt(1).RoundBeforeSwitch)) ? true : false;
+                int overtimeNum = 0;
+
+                // determines which half / side it is
+                if (isOvertime)
+                {
+                    int lastNormalTimeRound = switchSides.ElementAt(1).RoundBeforeSwitch;
+                    int roundsPerOTHalf = (switchSides.Count() >= 3) ? (switchSides.ElementAt(2).RoundBeforeSwitch - lastNormalTimeRound) : 3; // just assume 3 rounds per OT half if it cannot be checked
+                    int roundsPerOT = roundsPerOTHalf * 2;
+
+                    int roundsIntoOT = (i + 1) - lastNormalTimeRound;
+                    overtimeNum = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOT);
+
+                    double currentOTHalf = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOTHalf);
+                    half = currentOTHalf % 2 == 1 ? "First" : "Second";
+                }
+                else
+                {
+                    half = (i < switchSides.ElementAt(0).RoundBeforeSwitch) ? "First" : "Second";
+                }
+
+                // total rounds calculation
+                if (half == "First")
+                {
+                    if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
+                    {
+                        totalRoundsWonTeamAlpha++;
+                    }
+                    else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
+                    {
+                        totalRoundsWonTeamBeta++;
+                    }
+                }
+                else if (half == "Second")
+                {
+                    if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
+                    {
+                        totalRoundsWonTeamBeta++;
+                    }
+                    else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
+                    {
+                        totalRoundsWonTeamAlpha++;
+                    }
+                }
+
+                //win method
+                const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", timeout = "TargetSaved";
+
+                switch (roundsWonReasons[i].ToString())
+                {
+                    case tKills:
+                        reason = "T Kills";
+                        break;
+                    case ctKills:
+                        reason = "CT Kills";
+                        break;
+                    case bombed:
+                        reason = "Bombed";
+                        break;
+                    case defused:
+                        reason = "Defused";
+                        break;
+                    case timeout:
+                        reason = "Timeout";
+                        break;
+                }
+
+                //equip values
+                var teamEquipValues = teamEquipmentValues["TeamEquipmentStats"].ElementAt(i);
+                int equipValueTeamA = (half == "First") ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue;
+                int equipValueTeamB = (half == "First") ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue;
+                int expenditureTeamA = (half == "First") ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure;
+                int expenditureTeamB = (half == "First") ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure;
+
+                roundStatsStrings.Add($"Round{ i + 1 },{ half },{ overtimeNum },{ roundsWonTeams[i].ToString() },{ reason },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
+
+                roundsStats.Add(new RoundsStats()
+                {
+                    Round = $"Round{ i + 1 }",
+                    Half = half,
+                    Overtime = overtimeNum,
+                    Winners = roundsWonTeams[i].ToString(),
+                    WinMethod = reason,
+                    TeamAlphaEquipValue = equipValueTeamA,
+                    TeamBetaEquipValue = equipValueTeamB,
+                    TeamAlphaExpenditure = expenditureTeamA,
+                    TeamBetaExpenditure = expenditureTeamB,
+                });
+            }
+
+            // work out winning team
+            string winningTeam = (totalRoundsWonTeamAlpha >= totalRoundsWonTeamBeta) ? (totalRoundsWonTeamAlpha > totalRoundsWonTeamBeta) ? "Team Alpha" : "Draw" : "Team Bravo";
+
+            // winners stats
+            sw.WriteLine(string.Empty);
 
             header = "Winning Team,Team Alpha Rounds,Team Bravo Rounds";
             sw.WriteLine(header);
-            sw.WriteLine($"{ winningTeam },{ numRoundsWonTeamA },{ numRoundsWonTeamB }");
+            sw.WriteLine($"{ winningTeam },{ totalRoundsWonTeamAlpha },{ totalRoundsWonTeamBeta }");
 
-            winnersStats = new WinnersStats() { WinningTeam = winningTeam, TeamAlphaRounds = numRoundsWonTeamA, TeamBetaRounds = numRoundsWonTeamB };
+            winnersStats = new WinnersStats() { WinningTeam = winningTeam, TeamAlphaRounds = totalRoundsWonTeamAlpha, TeamBetaRounds = totalRoundsWonTeamBeta };
 
+            // rounds stats
             sw.WriteLine(string.Empty);
 
-            header = "Round,Half,Winners,Win Method,Alpha Equip Value,Bravo Equip Value,Alpha Expenditure,Bravo Expenditure";
+            header = "Round,Half,Overtime,Winners,Win Method,Alpha Equip Value,Bravo Equip Value,Alpha Expenditure,Bravo Expenditure";
             sw.WriteLine(header);
 
-            for (int i=0; i < roundsWonTeams.Count(); i++)
+            foreach (var roundString in roundStatsStrings)
             {
-                if (roundsWonTeams[i].ToString().Equals(tName) || roundsWonTeams[i].ToString().Equals(ctName))
-                {
-                    string reason = string.Empty;
-
-                    //half
-                    string half = i < roundsUntilSwapSides ? "First" : "Second";
-
-                    //win method
-                    switch (roundsWonReasons[i].ToString())
-                    {
-                        case tKills:
-                            reason = "T Kills";
-                            break;
-                        case ctKills:
-                            reason = "CT Kills";
-                            break;
-                        case bombed:
-                            reason = "Bombed";
-                            break;
-                        case defused:
-                            reason = "Defused";
-                            break;
-                        case timeout:
-                            reason = "Timeout";
-                            break;
-                    }
-
-                    //equip values
-                    var teamEquipValues  = teamEquipmentValues["TeamEquipmentStats"].ElementAt(i+1);
-                    int equipValueTeamA = i < roundsUntilSwapSides ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue;
-                    int equipValueTeamB = i < roundsUntilSwapSides ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue;
-                    int expenditureTeamA = i < roundsUntilSwapSides ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure;
-                    int expenditureTeamB = i < roundsUntilSwapSides ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure;
-
-                    sw.WriteLine($"Round{ i+1 },{ half },{ roundsWonTeams[i].ToString() },{ reason },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
-                    roundsStats.Add(new RoundsStats() {
-                        Round = $"Round{ i+1 }",
-                        Half = half,
-                        Winners = roundsWonTeams[i].ToString(),
-                        WinMethod = reason,
-                        TeamAlphaEquipValue = equipValueTeamA,
-                        TeamBetaEquipValue = equipValueTeamB,
-                        TeamAlphaExpenditure = expenditureTeamA,
-                        TeamBetaExpenditure = expenditureTeamB,
-                    });
-                }
+                sw.WriteLine(roundString);
             }
             /* winning team stats, round wins team and reason stats end */
 
@@ -572,7 +684,7 @@ namespace TopStatsWaffle
             header = "Nade Type,Amount Used";
             sw.WriteLine(header);
 
-            for (int i=0; i < nadeTypes.Count(); i++)
+            for (int i = 0; i < nadeTypes.Count(); i++)
             {
                 sw.WriteLine($"{ nadeTypes[i] },{ nadeGroups.ElementAt(i).Count() }");
 
@@ -721,7 +833,7 @@ namespace TopStatsWaffle
                 File.Delete(path);
 
             StreamWriter sw2 = new StreamWriter(path, false);
-            
+
             string json = JsonConvert.SerializeObject(new
             {
                 versionNumber,
@@ -749,8 +861,8 @@ namespace TopStatsWaffle
         public IEnumerable<object> selectWeaponsEventsByName(string name)
         {
             var shots = (from shot in getEvents<WeaponFiredEventArgs>()
-                           where (shot as WeaponFiredEventArgs).Weapon.Weapon.ToString() == name
-                           select shot);
+                         where (shot as WeaponFiredEventArgs).Weapon.Weapon.ToString() == name
+                         select shot);
 
             return shots;
         }
@@ -759,7 +871,7 @@ namespace TopStatsWaffle
         {
             Type t = typeof(T);
 
-            if(this.events.ContainsKey(t))
+            if (this.events.ContainsKey(t))
                 return this.events[t];
 
             return new List<object>();
@@ -767,27 +879,12 @@ namespace TopStatsWaffle
 
         public List<Team> getRoundsWonTeams(Dictionary<string, IEnumerable<Team>> teamValues)
         {
-            const string tName = "Terrorist", ctName = "CounterTerrorist";
-
             var roundsWonTeams = teamValues["RoundsWonTeams"].ToList();
-            roundsWonTeams.RemoveAll(r => !r.ToString().Equals(tName)
-                                       && !r.ToString().Equals(ctName)
+            roundsWonTeams.RemoveAll(r => !r.ToString().Equals("Terrorist")
+                                       && !r.ToString().Equals("CounterTerrorist")
             );
 
             return roundsWonTeams;
-        }
-
-        public int getRoundsUntilSwapSides(List<Team> roundsWonTeams)
-        {
-            return Convert.ToInt32(roundsWonTeams.Count() / 2);
-        }
-
-        public int getNumRoundsTeamWon(List<Team> roundsWonTeams, int roundsUntilSwapSides, string firstHalfTeam, string secondHalfTeam)
-        {
-            int numRoundsTeamWon = roundsWonTeams.Take(roundsUntilSwapSides).Where(r => r.ToString().Equals(firstHalfTeam)).Count()
-                                  + roundsWonTeams.Skip(roundsUntilSwapSides).Where(r => r.ToString().Equals(secondHalfTeam)).Count();
-
-            return numRoundsTeamWon;
         }
 
         public List<RoundEndReason> getRoundsWonReasons(Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues)

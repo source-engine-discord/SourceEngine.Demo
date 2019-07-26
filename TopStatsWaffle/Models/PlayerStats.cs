@@ -10,8 +10,10 @@ namespace TopStatsWaffle.Models
     {
         public string PlayerName { get; set; }
         public long SteamID { get; set; }
-        public int Deaths { get; set; }
         public int Kills { get; set; }
+        public int KillsIncludingBots { get; set; }
+        public int Deaths { get; set; }
+        public int DeathsIncludingBots { get; set; }
         public int Headshots { get; set; }
         public int Assists { get; set; }
         public int MVPs { get; set; }
