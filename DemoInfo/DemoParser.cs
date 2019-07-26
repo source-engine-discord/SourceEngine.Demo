@@ -56,10 +56,15 @@ namespace DemoInfo
 		/// </summary>
 		public event EventHandler<RoundEndedEventArgs> RoundEnd;
 
-		/// <summary>
-		/// Occurs at the end of the match, when the scoreboard is shown
-		/// </summary>
-		public event EventHandler<WinPanelMatchEventArgs> WinPanelMatch;
+        /// <summary>
+        /// Occurs when round ends
+        /// </summary>
+        public event EventHandler<SwitchSidesEventArgs> SwitchSides;
+
+        /// <summary>
+        /// Occurs at the end of the match, when the scoreboard is shown
+        /// </summary>
+        public event EventHandler<WinPanelMatchEventArgs> WinPanelMatch;
 
 		/// <summary>
 		/// Occurs when it's the last round of a match
@@ -568,6 +573,12 @@ namespace DemoInfo
 					continue;
 
 				var rawPlayer = RawPlayers[i];
+
+				if (rawPlayer.GUID.Equals("BOT") && !rawPlayer.Name.Equals("GOTV"))
+				{
+						rawPlayer.Name = PlayerInformations[i].Name;
+						rawPlayer.GUID = "Unknown";
+				}
 
 				int id = rawPlayer.UserID;
 
@@ -1234,7 +1245,13 @@ namespace DemoInfo
 
 		}
 
-		internal void RaiseRoundOfficiallyEnd()
+        internal void RaiseSwitchSides()
+        {
+            if (SwitchSides != null)
+                SwitchSides(this, new SwitchSidesEventArgs());
+        }
+
+        internal void RaiseRoundOfficiallyEnd()
 		{
 			if (RoundOfficiallyEnd != null)
 				RoundOfficiallyEnd(this, new RoundOfficiallyEndedEventArgs());

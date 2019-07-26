@@ -23,6 +23,7 @@ namespace DemoInfo
 
 	public class MatchStartedEventArgs : EventArgs
 	{
+        public string Mapname { get; set; }
 	}
 
 	public class RoundAnnounceMatchStartedEventArgs : EventArgs
@@ -40,9 +41,14 @@ namespace DemoInfo
 		/// </summary>
 		public Team Winner;
 
-	}
+    }
 
-	public class RoundOfficiallyEndedEventArgs : EventArgs
+    public class SwitchSidesEventArgs : EventArgs
+    {
+        public int RoundBeforeSwitch { get; set; }
+    }
+
+    public class RoundOfficiallyEndedEventArgs : EventArgs
 	{
 	}
 
@@ -91,6 +97,10 @@ namespace DemoInfo
 
 	public class PlayerKilledEventArgs : EventArgs
 	{
+        public bool Suicide { get; internal set; }
+
+        public bool TeamKill { get; internal set; }
+
 		public Equipment Weapon { get; internal set; }
 
 		[Obsolete("Use \"Victim\" instead. This will be removed soon™", false)]
@@ -98,9 +108,13 @@ namespace DemoInfo
 
 		public Player Victim { get; internal set; }
 
-		public Player Killer { get; internal set; }
+        public bool VictimBotTakeover { get; internal set; }
 
-		public Player Assister { get; internal set; }
+        public Player Killer { get; internal set; }
+
+        public bool KillerBotTakeover { get; internal set; }
+
+        public Player Assister { get; internal set; }
 
 		public int PenetratedObjects { get; internal set; }
 

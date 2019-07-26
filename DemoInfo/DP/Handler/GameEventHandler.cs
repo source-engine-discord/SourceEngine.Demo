@@ -14,7 +14,8 @@ namespace DemoInfo.DP.Handler
 	/// </summary>
 	public static class GameEventHandler
 	{
-		public static void HandleGameEventList(IEnumerable<GameEventList.Descriptor> gel, DemoParser parser)
+        static List<Player> currentRoundBotTakeovers = new List<Player>();
+        public static void HandleGameEventList(IEnumerable<GameEventList.Descriptor> gel, DemoParser parser)
 		{
 			parser.GEH_Descriptors = new Dictionary<int, GameEventList.Descriptor>();
 			foreach (var d in gel)
@@ -64,7 +65,10 @@ namespace DemoInfo.DP.Handler
 				parser.RaiseLastRoundHalf();
 
 			if (eventDescriptor.Name == "round_end") {
-				data = MapData (eventDescriptor, rawEvent);
+                // resets the list of players that have taken over bots in the round
+                currentRoundBotTakeovers = new List<Player>();
+
+                data = MapData (eventDescriptor, rawEvent);
 
 				Team t = Team.Spectate;
 
@@ -84,7 +88,10 @@ namespace DemoInfo.DP.Handler
 				parser.RaiseRoundEnd (roundEnd);
 			}
 
-			if (eventDescriptor.Name == "round_officially_ended")
+            if (eventDescriptor.Name == "announce_phase_end")
+                parser.RaiseSwitchSides();
+
+            if (eventDescriptor.Name == "round_officially_ended")
 				parser.RaiseRoundOfficiallyEnd ();
 
 			if (eventDescriptor.Name == "round_mvp") {
@@ -103,6 +110,9 @@ namespace DemoInfo.DP.Handler
 
 				BotTakeOverEventArgs botTakeOverArgs = new BotTakeOverEventArgs();
 				botTakeOverArgs.Taker = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+
+                //adds the player who took over the bot to currentRoundBotTakeovers
+                currentRoundBotTakeovers.Add(botTakeOverArgs.Taker);
 
 				parser.RaiseBotTakeOver(botTakeOverArgs);
 			}
@@ -146,20 +156,50 @@ namespace DemoInfo.DP.Handler
 				kill.Headshot = (bool)data["headshot"];
 				kill.Weapon = new Equipment((string)data["weapon"], (string)data["weapon_itemid"]);
 
-                /*if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade
-                        && kill.Weapon.Weapon != EquipmentElement.Revolver
-                        && kill.Killer.Weapons.Any() && kill.Weapon.Weapon != EquipmentElement.World) {
-                    #if DEBUG
-                    if(kill.Weapon.Weapon != kill.Killer.ActiveWeapon.Weapon)
-                        throw new InvalidDataException();
-                    #endif
-                    kill.Weapon = kill.Killer.ActiveWeapon;
-                }*/
+                // works out if the kill and death were teamkills or suicides
+                kill.TeamKill = false;
+                kill.Suicide = false;
+
+                if (kill.Victim != null && kill.Killer != null)
+                {
+                    if (kill.Victim.SteamID != 0 && kill.Victim.SteamID == kill.Killer.SteamID)
+                    {
+                        kill.Suicide = true;
+                    }
+                    else if (kill.Victim.Team == kill.Killer.Team)
+                    {
+                        kill.TeamKill = true;
+                    }
+                }
+
+                // works out if either the killer or victim have taken over bots
+                kill.KillerBotTakeover = false;
+                kill.VictimBotTakeover = false;
+
+                if (currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
+                {
+                    kill.KillerBotTakeover = true;
+                }
+                if (currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
+                {
+                    kill.VictimBotTakeover = true;
+                }
+                
 
                 if (data.ContainsKey("assistedflash"))
-                    kill.AssistedFlash = (bool)data["assistedflash"];
+                kill.AssistedFlash = (bool)data["assistedflash"];
 
                 kill.PenetratedObjects = (int)data["penetrated"];
+
+                /*if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade
+                    && kill.Weapon.Weapon != EquipmentElement.Revolver
+                    && kill.Killer.Weapons.Any() && kill.Weapon.Weapon != EquipmentElement.World) {
+                #if DEBUG
+                if(kill.Weapon.Weapon != kill.Killer.ActiveWeapon.Weapon)
+                    throw new InvalidDataException();
+                #endif
+                kill.Weapon = kill.Killer.ActiveWeapon;
+                }*/
 
                 parser.RaisePlayerKilled(kill);
 				break;
