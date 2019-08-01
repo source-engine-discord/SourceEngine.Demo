@@ -576,7 +576,7 @@ namespace DemoInfo
 
 				if (rawPlayer.GUID.Equals("BOT") && !rawPlayer.Name.Equals("GOTV"))
 				{
-						rawPlayer.Name = PlayerInformations[i].Name;
+						rawPlayer.Name = PlayerInformations[i] != null ? PlayerInformations[i].Name != null ? PlayerInformations[i].Name : rawPlayer.Name : rawPlayer.Name;
 						rawPlayer.GUID = "Unknown";
 				}
 
