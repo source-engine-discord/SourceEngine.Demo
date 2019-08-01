@@ -101,11 +101,11 @@ namespace TopStatsWaffle
                 //prints blank space out to console
                 Console.WriteLine();
 
-                if (dp.Map.ToString() != null && dp.Map.ToString() != string.Empty)
+                if (dp.Map != null && dp.Map.ToString() != string.Empty)
                 {
                     e.Mapname = dp.Map.ToString();
                 }
-                else if (dp.Header.MapName.ToString() != null && dp.Header.MapName.ToString() != string.Empty)
+                else if (dp.Header.MapName != null && dp.Header.MapName.ToString() != string.Empty)
                 {
                     e.Mapname = dp.Header.MapName.ToString();
                 }
@@ -310,8 +310,14 @@ namespace TopStatsWaffle
             Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
         )
         {
+            var mapDateSplit = (!string.IsNullOrWhiteSpace(demo[2]) && demo[2] != "unknown") ? demo[2].Split('/')  : null;
+            var mapDateString = (mapDateSplit != null && mapDateSplit.Count() >= 3) ? (mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]) : "unknownDate";
+
+            var mapNameSplit = matchStartValues["MatchStarts"].ElementAt(0).Mapname.Split('/');
+            var mapNameString = mapNameSplit[2];
+
             Guid guid = Guid.NewGuid();
-            string path = "matches/" + demo[1] + "_" + (noguid ? "" : guid.ToString("N")) + ".csv";
+            string path = "matches/" + mapDateString + "_" + mapNameString + "_" + (noguid ? "" : guid.ToString("N")) + ".csv";
             if (File.Exists(path))
                 File.Delete(path);
 
@@ -321,7 +327,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.9";
+            string version = "0.0.10";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -345,13 +351,14 @@ namespace TopStatsWaffle
             /* Supported gamemodes end */
 
             /* map info */
-            MapInfo mapInfo = new MapInfo() { MapName = demo[1], TestDate = demo[2], TestType = demo[3] };
+            MapInfo mapInfo = new MapInfo() { MapName = matchStartValues["MatchStarts"].ElementAt(0).Mapname, TestDate = demo[2], TestType = demo[3] };
 
-            if (mapInfo.MapName == null || mapInfo.MapName == string.Empty)
+            mapNameSplit = matchStartValues["MatchStarts"].ElementAt(0).Mapname.Split('/');
+
+            var mapNameInDemo = mapNameSplit[mapNameSplit.Count() - 1];
+            if (mapNameInDemo != null && mapNameInDemo != string.Empty)
             {
-                var mapNameSplit = matchStartValues["MatchStarts"].ElementAt(0).Mapname.Split('/');
-
-                mapInfo.MapName = mapNameSplit[2];
+                mapInfo.MapName = mapNameInDemo;
             }
 
             sw.WriteLine(string.Empty);
@@ -489,8 +496,8 @@ namespace TopStatsWaffle
 
                 string[] stats = playerLine.Split(',');
 
-                int numOfKillsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Killer.Name.ToString() == playerName.ToString()) && (k.KillerBotTakeover)).Count();
-                int numOfDeathsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Victim.Name.ToString() == playerName.ToString()) && (k.VictimBotTakeover)).Count();
+                int numOfKillsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Killer != null) && (k.Killer.Name.ToString() == playerName.ToString()) && (k.KillerBotTakeover)).Count();
+                int numOfDeathsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Victim != null) && (k.Victim.Name.ToString() == playerName.ToString()) && (k.VictimBotTakeover)).Count();
 
                 playerStats.Add(new PlayerStats()
                 {
@@ -828,7 +835,7 @@ namespace TopStatsWaffle
             };
 
             /* JSON creation */
-            path = "matches/" + demo[1] + "_" + (noguid ? "" : guid.ToString("N")) + ".json";
+            path = "matches/" + mapDateString + "_" + mapNameString + "_" + (noguid ? "" : guid.ToString("N")) + ".json";
             if (File.Exists(path))
                 File.Delete(path);
 
