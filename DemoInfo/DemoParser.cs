@@ -1265,7 +1265,7 @@ namespace DemoInfo
 
 		}
 
-		internal void RaiseFreezetimeEnded ()
+		public void RaiseFreezetimeEnded ()
 		{
 			if (FreezetimeEnded != null)
 				FreezetimeEnded(this, new FreezetimeEndedEventArgs());
