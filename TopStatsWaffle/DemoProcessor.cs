@@ -45,10 +45,6 @@ namespace TopStatsWaffle
 
         void addEvent(Type type, object ev)
         {
-            //Resets stats if match is restarted
-            if (ev.GetType() == typeof(MatchStartedEventArgs))
-                this.events = new Dictionary<Type, List<object>>();
-
             //Create if doesnt exist
             if (!this.events.ContainsKey(type))
                 this.events.Add(type, new List<object>());
@@ -114,7 +110,29 @@ namespace TopStatsWaffle
                     e.Mapname = "unknown";
                 }
 
+                List<FeedbackMessage> currentFeedbackMessages = new List<FeedbackMessage>();
+
+                //stores all fb messages so that they aren't lost when stats are reset
+                if (md.events.Count() > 0 && md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
+                {
+                    foreach (FeedbackMessage message in md.events.Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value).ElementAt(0))
+                    {
+                        if (message.Message.ToLower().Contains(">fb ") || message.Message.ToLower().Contains(">feedback "))
+                        {
+                            currentFeedbackMessages.Add(new FeedbackMessage() { Round = message.Round, SteamID = message.SteamID, TeamName = message.TeamName, Message = message.Message });
+                        }
+                    }
+                }
+
+                md.events = new Dictionary<Type, List<object>>(); //resets all stats stored
+
                 md.addEvent(typeof(MatchStartedEventArgs), e);
+
+                //adds all stored fb messages back
+                foreach (var feedbackMessage in currentFeedbackMessages)
+                {
+                    md.addEvent(typeof(FeedbackMessage), feedbackMessage);
+                }
             };
 
             dp.SayText2 += (object sender, SayText2EventArgs e) => {
@@ -125,7 +143,7 @@ namespace TopStatsWaffle
 
                 if (text.ToLower().Contains(">fb ") || text.ToLower().Contains(">feedback "))
                 {
-                    var round = "Round" + (rounds.Count() - 1);
+                    var round = "Round" + (rounds.Count());
                     FeedbackMessage feedbackMessage = new FeedbackMessage() { Round = round, SteamID = e.Sender.SteamID, TeamName = null, Message = text }; // works out TeamName in SaveFiles()
 
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
@@ -133,6 +151,19 @@ namespace TopStatsWaffle
             };
 
             dp.RoundEnd += (object sender, RoundEndedEventArgs e) => {
+                var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
+                var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
+
+                int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
+                int numOfFreezetimesEnded = freezetimesEndedEvents.Count() > 0 ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+
+                // if round_freeze_end event did not get fired in this round due to error
+                while (numOfFreezetimesEnded <= numOfRoundsEnded)
+                {
+                    dp.RaiseFreezetimeEnded();
+                    numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count();
+                }
+
                 md.addEvent(typeof(RoundEndedEventArgs), e);
 
                 //print rounds complete out to console
@@ -189,7 +220,7 @@ namespace TopStatsWaffle
                     ctExpenditure += (player.CurrentEquipmentValue - player.RoundStartEquipmentValue); // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
                 }
 
-                TeamEquipmentStats teamEquipmentStats = new TeamEquipmentStats() { Round = rounds.Count(), TEquipValue = tEquipValue, CTEquipValue = ctEquipValue, TExpenditure = tExpenditure, CTExpenditure = ctExpenditure };
+                TeamEquipmentStats teamEquipmentStats = new TeamEquipmentStats() { Round = rounds.Count() + 1, TEquipValue = tEquipValue, CTEquipValue = ctEquipValue, TExpenditure = tExpenditure, CTExpenditure = ctExpenditure };
 
                 md.addEvent(typeof(TeamEquipmentStats), teamEquipmentStats);
             };
@@ -327,7 +358,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.10";
+            string version = "0.0.11";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -608,11 +639,11 @@ namespace TopStatsWaffle
                 }
 
                 //equip values
-                var teamEquipValues = teamEquipmentValues["TeamEquipmentStats"].ElementAt(i);
-                int equipValueTeamA = (half == "First") ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue;
-                int equipValueTeamB = (half == "First") ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue;
-                int expenditureTeamA = (half == "First") ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure;
-                int expenditureTeamB = (half == "First") ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure;
+                var teamEquipValues = teamEquipmentValues["TeamEquipmentStats"].Count() >= i ? teamEquipmentValues["TeamEquipmentStats"].ElementAt(i) : null;
+                int equipValueTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue) : 0;
+                int equipValueTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue) : 0;
+                int expenditureTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure) : 0;
+                int expenditureTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure) : 0;
 
                 roundStatsStrings.Add($"Round{ i + 1 },{ half },{ overtimeNum },{ roundsWonTeams[i].ToString() },{ reason },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
 
