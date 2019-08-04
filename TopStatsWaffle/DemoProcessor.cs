@@ -143,8 +143,19 @@ namespace TopStatsWaffle
 
                 if (text.ToLower().Contains(">fb ") || text.ToLower().Contains(">feedback "))
                 {
-                    var round = "Round" + (rounds.Count());
-                    FeedbackMessage feedbackMessage = new FeedbackMessage() { Round = round, SteamID = e.Sender.SteamID, TeamName = null, Message = text }; // works out TeamName in SaveFiles()
+                    var round = string.Empty;
+                    if (rounds.Count() > 0)
+                    {
+                        round = "Round" + (rounds.Count());
+                    }
+                    else
+                    {
+                        round = "Warmup";
+                    }
+
+                    long steamId = e.Sender == null ? 0 : e.Sender.SteamID;
+
+                    FeedbackMessage feedbackMessage = new FeedbackMessage() { Round = round, SteamID = steamId, TeamName = null, Message = text }; // works out TeamName in SaveFiles()
 
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
                 }
@@ -178,7 +189,7 @@ namespace TopStatsWaffle
                 {
                     Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
                     CounterTerrorists = players.Where(p => p.Team.ToString().Equals("CounterTerrorist")).ToList(),
-                    Round = rounds.Count() - 1 //takes into account 1 warmup round
+                    Round = rounds.Count()
                 };
 
                 md.addEvent(typeof(TeamPlayers), teamsEachRound);
@@ -324,7 +335,7 @@ namespace TopStatsWaffle
 
                 md.passed = true;
             }
-            catch
+            catch (Exception e)
             {
                 pv.Error();
             }
@@ -358,7 +369,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.11";
+            string version = "0.0.12";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -828,9 +839,13 @@ namespace TopStatsWaffle
 
             foreach (var message in messagesValues["Messages"])
             {
-                int roundNum = int.Parse(message.Round.Remove(0, 5));
+                int roundNum = 0;
+                if (message.Round != "Warmup")
+                {
+                    roundNum = int.Parse(message.Round.Remove(0, 5));
+                }
 
-                var currentRoundTeams = teamPlayersValues["TeamPlayers"].ElementAt(roundNum);
+                var currentRoundTeams = (roundNum == 0) ? teamPlayersValues["TeamPlayers"].ElementAt(0) : teamPlayersValues["TeamPlayers"].ElementAt(roundNum - 1);
 
                 if (currentRoundTeams.Terrorists.Any(p => p.SteamID == message.SteamID))
                 {
