@@ -348,18 +348,24 @@ namespace TopStatsWaffle
             List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues, Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues,
             Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues,
             Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues,
-            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues,
-            Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, bool writeTicks = true
+            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues,
+            Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, bool writeTicks = true
         )
         {
             var mapDateSplit = (!string.IsNullOrWhiteSpace(demo[2]) && demo[2] != "unknown") ? demo[2].Split('/')  : null;
-            var mapDateString = (mapDateSplit != null && mapDateSplit.Count() >= 3) ? (mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]) : "unknownDate";
+            var mapDateString = (mapDateSplit != null && mapDateSplit.Count() >= 3) ? (mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]) : string.Empty;
 
             var mapNameSplit = matchStartValues["MatchStarts"].ElementAt(0).Mapname.Split('/');
-            var mapNameString = mapNameSplit[2];
+            var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             Guid guid = Guid.NewGuid();
-            string path = "matches/" + mapDateString + "_" + mapNameString + "_" + (noguid ? "" : guid.ToString("N")) + ".csv";
+            string path = "matches/";
+            if (mapDateString != string.Empty)
+            {
+                path += mapDateString + "_";
+            }
+            path += mapNameString + "_" + (noguid ? "" : guid.ToString("N")) + ".csv";
+
             if (File.Exists(path))
                 File.Delete(path);
 
@@ -862,6 +868,19 @@ namespace TopStatsWaffle
             }
             /* Feedback Messages end */
 
+            /* chickens killed stats */
+            ChickenStats chickenStats = new ChickenStats();
+
+            sw.WriteLine(string.Empty);
+
+            chickenStats.Killed = chickenValues.Count();
+
+            header = "Killed";
+            sw.WriteLine(header);
+
+            sw.WriteLine($"{ chickenStats.KilledTotal }");
+            /* chickens killed stats end */
+
             sw.Close();
 
             AllStats allStats = new AllStats()
@@ -878,10 +897,17 @@ namespace TopStatsWaffle
                 GrenadesSpecificStats = grenadesSpecificStats,
                 PlayerPositionStats = playerPositionStats,
                 FeedbackMessages = feedbackMessages,
+                ChickenStats = chickenStats,
             };
 
             /* JSON creation */
-            path = "matches/" + mapDateString + "_" + mapNameString + "_" + (noguid ? "" : guid.ToString("N")) + ".json";
+            path = "matches/";
+            if (mapDateString != string.Empty)
+            {
+                path += mapDateString + "_";
+            }
+            path += mapNameString + "_" + (noguid ? "" : guid.ToString("N")) + ".json";
+
             if (File.Exists(path))
                 File.Delete(path);
 
@@ -901,6 +927,7 @@ namespace TopStatsWaffle
                 grenadesSpecificStats,
                 playerPositionStats,
                 feedbackMessages,
+                chickenStats,
             },
                 Formatting.Indented
             );

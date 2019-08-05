@@ -308,6 +308,7 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<GrenadeEventArgs>> gge = new Dictionary<string, IEnumerable<GrenadeEventArgs>>();
                 Dictionary<string, IEnumerable<FireEventArgs>> gie = new Dictionary<string, IEnumerable<FireEventArgs>>();
                 Dictionary<string, IEnumerable<DecoyEventArgs>> gde = new Dictionary<string, IEnumerable<DecoyEventArgs>>();
+                Dictionary<string, IEnumerable<ChickenKilledEventArgs>> cke = new Dictionary<string, IEnumerable<ChickenKilledEventArgs>>();
 
                 mse.Add("MatchStarts", from start in mdTest.getEvents<MatchStartedEventArgs>()
                                     select (start as MatchStartedEventArgs));
@@ -374,12 +375,15 @@ namespace TopStatsWaffle
                 ge.Add("AllNadesThrown", from f in mdTest.getEvents<NadeEventArgs>()
                                   select (f as NadeEventArgs));
 
+                cke.Add("ChickensKilled", from c in mdTest.getEvents<ChickenKilledEventArgs>()
+                                  select (c as ChickenKilledEventArgs));
+
                 TanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
 
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, be, te, re, tes, ge);
+                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, be, te, re, tes, ge, cke);
                     passCount++;
                 }
             }
