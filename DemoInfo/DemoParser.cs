@@ -102,15 +102,25 @@ namespace DemoInfo
 		public event EventHandler<TickDoneEventArgs> TickDone;
 
 		/// <summary>
-		/// This is raised when a player is killed. Not that the killer might be dead by the time is raised (e.g. nade-kills),
-		/// also note that the killed player is still alive when this is killed
+		/// This is raised when an entity is killed.
 		/// </summary>
-		public event EventHandler<PlayerKilledEventArgs> PlayerKilled;
+		public event EventHandler<OtherKilledEventArgs> OtherKilled;
 
-		/// <summary>
-		/// Occurs when a player select a team
-		/// </summary>
-		public event EventHandler<PlayerTeamEventArgs> PlayerTeam;
+        /// <summary>
+        /// This is raised when an entity that is killed is a chicken.
+        /// </summary>
+        public event EventHandler<ChickenKilledEventArgs> ChickenKilled;
+
+        /// <summary>
+        /// This is raised when a player is killed. Not that the killer might be dead by the time is raised (e.g. nade-kills),
+        /// also note that the killed player is still alive when this is killed
+        /// </summary>
+        public event EventHandler<PlayerKilledEventArgs> PlayerKilled;
+
+        /// <summary>
+        /// Occurs when a player select a team
+        /// </summary>
+        public event EventHandler<PlayerTeamEventArgs> PlayerTeam;
 
 		/// <summary>
 		/// Occurs when a weapon is fired.
@@ -1269,6 +1279,18 @@ namespace DemoInfo
 		{
 			if (FreezetimeEnded != null)
 				FreezetimeEnded(this, new FreezetimeEndedEventArgs());
+		}
+
+		internal void RaiseOtherKilled()
+		{
+			if (OtherKilled != null)
+                OtherKilled(this, new OtherKilledEventArgs());
+		}
+
+		internal void RaiseChickenKilled()
+		{
+			if (ChickenKilled != null)
+				ChickenKilled(this, new ChickenKilledEventArgs());
 		}
 
 		internal void RaisePlayerKilled(PlayerKilledEventArgs kill)

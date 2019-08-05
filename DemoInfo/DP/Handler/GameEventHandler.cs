@@ -22,18 +22,27 @@ namespace DemoInfo.DP.Handler
 				parser.GEH_Descriptors[d.EventId] = d;
 		}
 
-		/// <summary>
-		/// Apply the specified rawEvent to the parser.
-		/// </summary>
-		/// <param name="rawEvent">The raw event.</param>
-		/// <param name="parser">The parser to mutate.</param>
-		public static void Apply(GameEvent rawEvent, DemoParser parser)
+        private static int numOfChickensAliveExpected = 0;
+        private static bool firstEventFired = true;
+
+        /// <summary>
+        /// Apply the specified rawEvent to the parser.
+        /// </summary>
+        /// <param name="rawEvent">The raw event.</param>
+        /// <param name="parser">The parser to mutate.</param>
+        public static void Apply(GameEvent rawEvent, DemoParser parser, int numOfChickensAlive)
 		{
-			var descriptors = parser.GEH_Descriptors;
+            if (firstEventFired)
+            {
+                numOfChickensAliveExpected = numOfChickensAlive;
+                firstEventFired = false;
+            }
+
+            var descriptors = parser.GEH_Descriptors;
 			//previous blind implementation
 			var blindPlayers = parser.GEH_BlindPlayers;
 
-			if (descriptors == null)
+            if (descriptors == null)
 				return;
 
 			Dictionary<string, object> data;
@@ -53,7 +62,8 @@ namespace DemoInfo.DP.Handler
 
 				parser.RaiseRoundStart (rs);
 
-			}
+                numOfChickensAliveExpected = numOfChickensAlive; //sets expected number of chickens at start of a new round
+            }
 
 			if (eventDescriptor.Name == "cs_win_panel_match")
 				parser.RaiseWinPanelMatch();
@@ -86,7 +96,17 @@ namespace DemoInfo.DP.Handler
 				};
 
 				parser.RaiseRoundEnd (roundEnd);
-			}
+
+                numOfChickensAliveExpected = 0; //sets expected number of chickens to 0 until the start of the next round to avoid edge cases
+            }
+            else //checks for killed chickens
+            {
+                while (numOfChickensAlive < numOfChickensAliveExpected)
+                {
+                    parser.RaiseChickenKilled();
+                    numOfChickensAliveExpected--;
+                }
+            }
 
             if (eventDescriptor.Name == "announce_phase_end")
                 parser.RaiseSwitchSides();
@@ -145,7 +165,26 @@ namespace DemoInfo.DP.Handler
 
 				parser.RaiseWeaponFired(fire);
 				break;
-			case "player_death":
+            /* doesn't seem to trigger this event currently */
+            /*
+                case "other_death":
+                data = MapData(eventDescriptor, rawEvent);
+
+                string entityType = data["othertype"].ToString();
+
+                if (entityType == "chicken")
+                {
+                    ChickenKilledEventArgs chickenKill = new ChickenKilledEventArgs();
+                    //long deathLocationX = rawEvent.Keys.
+
+                    parser.RaiseChickenKilled(chickenKill);
+                }
+
+                parser.RaiseOtherKilled();
+
+                break;
+            */
+            case "player_death":
 				data = MapData(eventDescriptor, rawEvent);
 
 				PlayerKilledEventArgs kill = new PlayerKilledEventArgs();

@@ -95,7 +95,15 @@ namespace DemoInfo
 		public bool IsBot { get; internal set; }
 	}
 
-	public class PlayerKilledEventArgs : EventArgs
+    public class OtherKilledEventArgs : EventArgs
+    {
+    }
+
+    public class ChickenKilledEventArgs : EventArgs
+    {
+    }
+
+    public class PlayerKilledEventArgs : EventArgs
 	{
         public bool Suicide { get; internal set; }
 
