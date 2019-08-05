@@ -878,7 +878,7 @@ namespace TopStatsWaffle
             header = "Killed";
             sw.WriteLine(header);
 
-            sw.WriteLine($"{ chickenStats.KilledTotal }");
+            sw.WriteLine($"{ chickenStats.Killed }");
             /* chickens killed stats end */
 
             sw.Close();

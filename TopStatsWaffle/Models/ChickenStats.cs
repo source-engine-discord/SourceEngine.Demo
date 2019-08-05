@@ -8,7 +8,7 @@ namespace TopStatsWaffle.Models
 {
     public class ChickenStats
     {
-        public int KilledTotal { get; set; }
+        public int Killed { get; set; }
 
         public ChickenStats() { }
     }
