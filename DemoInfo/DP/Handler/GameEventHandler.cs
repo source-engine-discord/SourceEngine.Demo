@@ -26,17 +26,38 @@ namespace DemoInfo.DP.Handler
         private static bool firstEventFired = true;
 
         /// <summary>
-        /// Apply the specified rawEvent to the parser.
+        /// Counts the number of chickens currently alive
         /// </summary>
-        /// <param name="rawEvent">The raw event.</param>
-        /// <param name="parser">The parser to mutate.</param>
-        public static void Apply(GameEvent rawEvent, DemoParser parser, int numOfChickensAlive)
-		{
+        /// <param name="parser">The parser to get the entity list from.</param>
+        private static int CountChickensAlive(DemoParser parser)
+        {
+            int numOfChickensAlive = 0;
+
+            for (int i = 0; i < parser.Entities.Count(); i++)
+            {
+                if (parser.Entities.ElementAt(i) != null && parser.Entities.ElementAt(i).ServerClass.Name == "CChicken")
+                {
+                    numOfChickensAlive++;
+                }
+            }
+
             if (firstEventFired)
             {
                 numOfChickensAliveExpected = numOfChickensAlive;
                 firstEventFired = false;
             }
+
+            return numOfChickensAlive;
+        }
+
+        /// <summary>
+        /// Apply the specified rawEvent to the parser.
+        /// </summary>
+        /// <param name="rawEvent">The raw event.</param>
+        /// <param name="parser">The parser to mutate.</param>
+        public static void Apply(GameEvent rawEvent, DemoParser parser)
+        {
+            int numOfChickensAlive = CountChickensAlive(parser); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
 
             var descriptors = parser.GEH_Descriptors;
 			//previous blind implementation

@@ -14,16 +14,6 @@ namespace DemoInfo
 
 		public void Parse(IBitStream bitstream, DemoParser parser)
 		{
-            //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
-            int numOfChickensAlive = 0;
-            for (int i=0; i < parser.Entities.Count(); i++)
-            {
-                if (parser.Entities.ElementAt(i) != null && parser.Entities.ElementAt(i).ServerClass.Name == "CChicken")
-                {
-                    numOfChickensAlive++;
-                }
-            }
-
             Keys = new List<object>();
 			while (!bitstream.ChunkFinished) {
 				var desc = bitstream.ReadProtobufVarInt();
@@ -88,7 +78,7 @@ namespace DemoInfo
 					throw new InvalidDataException();
 			}
 
-			GameEventHandler.Apply(this, parser, numOfChickensAlive);
+			GameEventHandler.Apply(this, parser);
 		}
 	}
 }
