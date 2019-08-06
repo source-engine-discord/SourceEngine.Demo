@@ -135,6 +135,10 @@ namespace TopStatsWaffle
                 }
             };
 
+            dp.ChickenKilled += (object sender, ChickenKilledEventArgs e) => {
+                md.addEvent(typeof(ChickenKilledEventArgs), e);
+            };
+
             dp.SayText2 += (object sender, SayText2EventArgs e) => {
                 md.addEvent(typeof(SayText2EventArgs), e);
 
@@ -375,7 +379,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.13";
+            string version = "0.0.14";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
