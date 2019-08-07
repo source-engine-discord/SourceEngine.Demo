@@ -379,7 +379,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.14";
+            string version = "0.0.15";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
