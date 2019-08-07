@@ -352,7 +352,7 @@ namespace TopStatsWaffle
             List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues, Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues,
             Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues,
             Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues,
-            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues,
+            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<int>> roundLengthValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues,
             Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, bool writeTicks = true
         )
         {
@@ -594,6 +594,7 @@ namespace TopStatsWaffle
                 string half = string.Empty;
                 bool isOvertime = ((switchSides.Count() >= 2) && (i >= switchSides.ElementAt(1).RoundBeforeSwitch)) ? true : false;
                 int overtimeNum = 0;
+                int roundLength = roundLengthValues["RoundsLengths"].ElementAt(i);
 
                 // determines which half / side it is
                 if (isOvertime)
@@ -666,13 +667,14 @@ namespace TopStatsWaffle
                 int expenditureTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure) : 0;
                 int expenditureTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure) : 0;
 
-                roundStatsStrings.Add($"Round{ i + 1 },{ half },{ overtimeNum },{ roundsWonTeams[i].ToString() },{ reason },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
+                roundStatsStrings.Add($"Round{ i + 1 },{ half },{ overtimeNum }, { roundLength } { roundsWonTeams[i].ToString() },{ reason },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
 
                 roundsStats.Add(new RoundsStats()
                 {
                     Round = $"Round{ i + 1 }",
                     Half = half,
                     Overtime = overtimeNum,
+                    Length = roundLength,
                     Winners = roundsWonTeams[i].ToString(),
                     WinMethod = reason,
                     TeamAlphaEquipValue = equipValueTeamA,
@@ -697,7 +699,7 @@ namespace TopStatsWaffle
             // rounds stats
             sw.WriteLine(string.Empty);
 
-            header = "Round,Half,Overtime,Winners,Win Method,Alpha Equip Value,Bravo Equip Value,Alpha Expenditure,Bravo Expenditure";
+            header = "Round,Half,Overtime,Length,Winners,Win Method,Alpha Equip Value,Bravo Equip Value,Alpha Expenditure,Bravo Expenditure";
             sw.WriteLine(header);
 
             foreach (var roundString in roundStatsStrings)

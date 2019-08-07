@@ -301,6 +301,7 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
                 Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
+                Dictionary<string, IEnumerable<int>> le = new Dictionary<string, IEnumerable<int>>();
                 Dictionary<string, IEnumerable<TeamEquipmentStats>> tes = new Dictionary<string, IEnumerable<TeamEquipmentStats>>();
                 Dictionary<string, IEnumerable<NadeEventArgs>> ge = new Dictionary<string, IEnumerable<NadeEventArgs>>();
                 Dictionary<string, IEnumerable<SmokeEventArgs>> gse = new Dictionary<string, IEnumerable<SmokeEventArgs>>();
@@ -369,6 +370,9 @@ namespace TopStatsWaffle
                 re.Add("RoundsWonReasons", from reason in mdTest.getEvents<RoundEndedEventArgs>()
                                        select (reason as RoundEndedEventArgs).Reason);
 
+                le.Add("RoundsLengths", from length in mdTest.getEvents<RoundEndedEventArgs>()
+                                           select (length as RoundEndedEventArgs).Length);
+
                 tes.Add("TeamEquipmentStats", from round in mdTest.getEvents<TeamEquipmentStats>()
                                            select (round as TeamEquipmentStats));
 
@@ -383,7 +387,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, be, te, re, tes, ge, cke);
+                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, be, te, re, le, tes, ge, cke);
                     passCount++;
                 }
             }
