@@ -41,6 +41,7 @@ namespace DemoInfo
 		/// </summary>
 		public Team Winner;
 
+        public int Length { get; set; }
     }
 
     public class SwitchSidesEventArgs : EventArgs

@@ -15,15 +15,18 @@ namespace DemoInfo.DP.Handler
 	public static class GameEventHandler
 	{
         static List<Player> currentRoundBotTakeovers = new List<Player>();
+
+        private static double timestampPreviousRoundEnd = 0; //the total number of seconds passed by the end of the last round
+        private static int numOfChickensAliveExpected = 0;
+        private static bool firstEventFired = true;
+
+
         public static void HandleGameEventList(IEnumerable<GameEventList.Descriptor> gel, DemoParser parser)
 		{
 			parser.GEH_Descriptors = new Dictionary<int, GameEventList.Descriptor>();
 			foreach (var d in gel)
 				parser.GEH_Descriptors[d.EventId] = d;
 		}
-
-        private static int numOfChickensAliveExpected = 0;
-        private static bool firstEventFired = true;
 
         /// <summary>
         /// Counts the number of chickens currently alive
@@ -110,13 +113,19 @@ namespace DemoInfo.DP.Handler
 				else if (winner == parser.ctID)
 					t = Team.CounterTerrorist;
 
-				RoundEndedEventArgs roundEnd = new RoundEndedEventArgs () {
-					Reason = (RoundEndReason)data["reason"],
-					Winner = t,
-					Message = (string)data["message"],
-				};
+                //round length
+                int roundLength = Convert.ToInt32(Math.Floor(parser.CurrentTime - timestampPreviousRoundEnd));
+                timestampPreviousRoundEnd = parser.CurrentTime;
 
-				parser.RaiseRoundEnd (roundEnd);
+
+                RoundEndedEventArgs roundEnd = new RoundEndedEventArgs() {
+                    Reason = (RoundEndReason)data["reason"],
+                    Winner = t,
+                    Message = (string)data["message"],
+                    Length = roundLength,
+                };
+
+				parser.RaiseRoundEnd(roundEnd);
 
                 numOfChickensAliveExpected = 0; //sets expected number of chickens to 0 until the start of the next round to avoid edge cases
             }
