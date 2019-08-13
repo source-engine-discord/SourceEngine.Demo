@@ -14,6 +14,9 @@ namespace TopStatsWaffle.Models
         public int Length { get; set; }
         public string Winners { get; set; }
         public string WinMethod { get; set; }
+        public string BombsitePlantedAt { get; set; }
+        public int TeamAlphaPlayerCount { get; set; }
+        public int TeamBetaPlayerCount { get; set; }
         public int TeamAlphaEquipValue { get; set; }
         public int TeamBetaEquipValue { get; set; }
         public int TeamAlphaExpenditure { get; set; }

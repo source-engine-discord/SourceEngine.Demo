@@ -57,6 +57,7 @@
     <Compile Include="Debug.cs" />
     <Compile Include="DemoProcessor.cs" />
     <Compile Include="Models\AllStats.cs" />
+    <Compile Include="Models\BombsitePlant.cs" />
     <Compile Include="Models\BombsiteStats.cs" />
     <Compile Include="Models\ChickenStats.cs" />
     <Compile Include="Models\DisconnectedPlayer.cs" />

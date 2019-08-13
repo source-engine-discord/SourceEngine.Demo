@@ -298,6 +298,7 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
                 Dictionary<string, IEnumerable<Equipment>> pwe = new Dictionary<string, IEnumerable<Equipment>>();
                 Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
+                Dictionary<string, IEnumerable<BombsitePlant>> bpe = new Dictionary<string, IEnumerable<BombsitePlant>>();
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
                 Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
@@ -361,6 +362,9 @@ namespace TopStatsWaffle
                 be.Add("DefusesSites", from site in mdTest.getEvents<BombDefuseEventArgs>()
                                   select (site as BombEventArgs).Site);
 
+                bpe.Add("BombsitePlants", from plant in mdTest.getEvents<BombsitePlant>()
+                                       select (plant as BombsitePlant));
+
                 dpe.Add("DisconnectedPlayers", from disconnection in mdTest.getEvents<DisconnectedPlayer>()
                                     select (disconnection as DisconnectedPlayer));
 
@@ -387,7 +391,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, be, te, re, le, tes, ge, cke);
+                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, be, bpe, te, re, le, tes, ge, cke);
                     passCount++;
                 }
             }
