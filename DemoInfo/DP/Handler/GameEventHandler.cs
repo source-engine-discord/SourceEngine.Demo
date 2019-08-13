@@ -16,7 +16,7 @@ namespace DemoInfo.DP.Handler
 	{
         static List<Player> currentRoundBotTakeovers = new List<Player>();
 
-        private static double timestampPreviousRoundEnd = 0; //the total number of seconds passed by the end of the last round
+        private static double timestampFreezetimeEnded = 0; //the total number of seconds passed by the end of the last round
         private static int numOfChickensAliveExpected = 0;
         private static bool firstEventFired = true;
 
@@ -60,7 +60,7 @@ namespace DemoInfo.DP.Handler
         /// <param name="parser">The parser to mutate.</param>
         public static void Apply(GameEvent rawEvent, DemoParser parser)
         {
-            int numOfChickensAlive = CountChickensAlive(parser); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
+			int numOfChickensAlive = CountChickensAlive(parser); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
 
             var descriptors = parser.GEH_Descriptors;
 			//previous blind implementation
@@ -114,9 +114,7 @@ namespace DemoInfo.DP.Handler
 					t = Team.CounterTerrorist;
 
                 //round length
-                int roundLength = Convert.ToInt32(Math.Floor(parser.CurrentTime - timestampPreviousRoundEnd));
-                timestampPreviousRoundEnd = parser.CurrentTime;
-
+                int roundLength = Convert.ToInt32(Math.Floor(parser.CurrentTime - timestampFreezetimeEnded));
 
                 RoundEndedEventArgs roundEnd = new RoundEndedEventArgs() {
                     Reason = (RoundEndReason)data["reason"],
@@ -173,8 +171,13 @@ namespace DemoInfo.DP.Handler
 			if (eventDescriptor.Name == "round_announce_match_start")
 				parser.RaiseRoundAnnounceMatchStarted();
 
-			if (eventDescriptor.Name == "round_freeze_end")
+            if (eventDescriptor.Name == "round_freeze_end")
+            {
+                //round length
+                timestampFreezetimeEnded = parser.CurrentTime;
+
                 parser.RaiseFreezetimeEnded();
+            }
 
 			//if (eventDescriptor.Name != "player_footstep" && eventDescriptor.Name != "weapon_fire" && eventDescriptor.Name != "player_jump") {
 			//	Console.WriteLine (eventDescriptor.Name);
