@@ -189,14 +189,14 @@ namespace TopStatsWaffle
                 var rounds = md.getEvents<RoundEndedEventArgs>();
                 var players = dp.PlayingParticipants;
 
-                TeamPlayers teamsEachRound = new TeamPlayers()
+                TeamPlayers teams = new TeamPlayers()
                 {
                     Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
                     CounterTerrorists = players.Where(p => p.Team.ToString().Equals("CounterTerrorist")).ToList(),
                     Round = rounds.Count()
                 };
 
-                md.addEvent(typeof(TeamPlayers), teamsEachRound);
+                md.addEvent(typeof(TeamPlayers), teams);
             };
 
             dp.SwitchSides += (object sender, SwitchSidesEventArgs e) => {
@@ -379,7 +379,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.15";
+            string version = "0.0.16";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -773,21 +773,23 @@ namespace TopStatsWaffle
                         string[] positionSplit = nade.Position.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
                         string positions = $"{ positionSplit[1] },{ positionSplit[2] },{ positionSplit[3] }";
 
+                        //retrieve steam ID using player name if the event does not return it correctly
+                        long steamId = (nade.ThrownBy.SteamID == 0) ? getSteamIdByPlayerName(playerNames, nade.ThrownBy.Name) : nade.ThrownBy.SteamID;
 
                         if (flashGroup)
                         {
                             var flash = nade as FlashEventArgs;
                             int numOfPlayersFlashed = flash.FlashedPlayers.Count();
 
-                            sw.WriteLine($"{ nade.NadeType.ToString() },{ nade.ThrownBy.SteamID.ToString() },{ positions },{ numOfPlayersFlashed }");
+                            sw.WriteLine($"{ nade.NadeType.ToString() },{ steamId.ToString() },{ positions },{ numOfPlayersFlashed }");
 
-                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = nade.ThrownBy.SteamID, XPosition = double.Parse(positionSplit[1]), YPosition = double.Parse(positionSplit[2]), ZPosition = double.Parse(positionSplit[3]), NumPlayersFlashed = numOfPlayersFlashed });
+                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positionSplit[1]), YPosition = double.Parse(positionSplit[2]), ZPosition = double.Parse(positionSplit[3]), NumPlayersFlashed = numOfPlayersFlashed });
                         }
                         else
                         {
-                            sw.WriteLine($"{ nade.NadeType.ToString() },{ nade.ThrownBy.SteamID.ToString() },{ positions }");
+                            sw.WriteLine($"{ nade.NadeType.ToString() },{ steamId.ToString() },{ positions }");
 
-                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = nade.ThrownBy.SteamID, XPosition = double.Parse(positionSplit[1]), YPosition = double.Parse(positionSplit[2]), ZPosition = double.Parse(positionSplit[3]) });
+                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positionSplit[1]), YPosition = double.Parse(positionSplit[2]), ZPosition = double.Parse(positionSplit[3]) });
                         }
                     }
                 }
@@ -845,7 +847,7 @@ namespace TopStatsWaffle
 
             sw.WriteLine(string.Empty);
 
-            header = "Player,Message";
+            header = "Round,SteamID,Team Name,Message";
 
             sw.WriteLine(header);
 
@@ -859,6 +861,16 @@ namespace TopStatsWaffle
 
                 var currentRoundTeams = (roundNum == 0) ? teamPlayersValues["TeamPlayers"].ElementAt(0) : teamPlayersValues["TeamPlayers"].ElementAt(roundNum - 1);
 
+                //retrieve steam ID using player name if the event does not return it correctly
+                foreach (var player in currentRoundTeams.Terrorists)
+                {
+                    player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
+                }
+                foreach (var player in currentRoundTeams.CounterTerrorists)
+                {
+                    player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
+                }
+
                 if (currentRoundTeams.Terrorists.Any(p => p.SteamID == message.SteamID))
                 {
                     message.TeamName = "Terrorist";
@@ -866,6 +878,10 @@ namespace TopStatsWaffle
                 else if (currentRoundTeams.CounterTerrorists.Any(p => p.SteamID == message.SteamID))
                 {
                     message.TeamName = "CounterTerrorist";
+                }
+                else
+                {
+                    message.TeamName = "Spectator";
                 }
 
                 sw.WriteLine($"{ message.Round },{ message.SteamID },{ message.TeamName },{ message.Message }");
@@ -879,9 +895,9 @@ namespace TopStatsWaffle
 
             sw.WriteLine(string.Empty);
 
-            chickenStats.Killed = chickenValues.Count();
+            chickenStats.Killed = chickenValues["ChickensKilled"].Count();
 
-            header = "Killed";
+            header = "Chickens Killed";
             sw.WriteLine(header);
 
             sw.WriteLine($"{ chickenStats.Killed }");
@@ -942,6 +958,12 @@ namespace TopStatsWaffle
             /* JSON creation end*/
 
             sw2.Close();
+        }
+
+        public long getSteamIdByPlayerName(Dictionary<long, Dictionary<string, string>> playerNames, string name)
+        {
+            var player = playerNames.Where(p => p.Value.Values.ElementAt(0) == name);
+            return player.ElementAt(0).Key;
         }
 
         public IEnumerable<object> selectWeaponsEventsByName(string name)
