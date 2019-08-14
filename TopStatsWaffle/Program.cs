@@ -297,6 +297,7 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<PlayerKilledEventArgs>> pke = new Dictionary<string, IEnumerable<PlayerKilledEventArgs>>();
                 Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
                 Dictionary<string, IEnumerable<Equipment>> pwe = new Dictionary<string, IEnumerable<Equipment>>();
+                Dictionary<string, IEnumerable<int>> poe = new Dictionary<string, IEnumerable<int>>();
                 Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
                 Dictionary<string, IEnumerable<BombsitePlant>> bpe = new Dictionary<string, IEnumerable<BombsitePlant>>();
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
@@ -343,6 +344,9 @@ namespace TopStatsWaffle
 
                 pwe.Add("WeaponKillers", from weapon in mdTest.getEvents<PlayerKilledEventArgs>()
                                          select (weapon as PlayerKilledEventArgs).Weapon);
+
+                poe.Add("PenetratedObjects", from penetration in mdTest.getEvents<PlayerKilledEventArgs>()
+                                         select (penetration as PlayerKilledEventArgs).PenetratedObjects);
 
                 pe.Add("MVPs", from player in mdTest.getEvents<RoundMVPEventArgs>()
                                 select (player as RoundMVPEventArgs).Player);
@@ -391,7 +395,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, be, bpe, te, re, le, tes, ge, cke);
+                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, be, bpe, te, re, le, tes, ge, cke);
                     passCount++;
                 }
             }

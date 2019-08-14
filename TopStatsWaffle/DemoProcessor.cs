@@ -346,10 +346,10 @@ namespace TopStatsWaffle
         public void CreateFiles(
             List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues, Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues,
             Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues,
-            Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<BombsitePlant>> bombsitePlantValues,
-            Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<int>> roundLengthValues,
-            Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues,
-            bool writeTicks = true
+            Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<int>> penetrationValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
+            Dictionary<string, IEnumerable<BombsitePlant>> bombsitePlantValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
+            Dictionary<string, IEnumerable<int>> roundLengthValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues,
+            Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, bool writeTicks = true
         )
         {
             var mapDateSplit = (!string.IsNullOrWhiteSpace(demo[2]) && demo[2] != "unknown") ? demo[2].Split('/')  : null;
@@ -375,7 +375,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.17";
+            string version = "0.0.18";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -812,13 +812,14 @@ namespace TopStatsWaffle
 
             sw.WriteLine(string.Empty);
 
-            header = "Kill X Position,Kill Y Position,Kill Z Position,Death X Position,Death Y Position,Death Z Position,Weapon";
+            header = "Killer SteamID,Kill X Position,Kill Y Position,Kill Z Position,Victim SteamID,Death X Position,Death Y Position,Death Z Position,Weapon,Penetrations Count ";
             sw.WriteLine(header);
 
             List<Player> kills = new List<Player>(playerValues["Kills"].ToList());
             List<Player> deaths = new List<Player>(playerValues["Deaths"].ToList());
 
             List<Equipment> weaponKillers = new List<Equipment>(weaponValues["WeaponKillers"].ToList());
+            List<int> penetrations = new List<int>(penetrationValues["PenetratedObjects"].ToList());
 
             for (int i = 0; i < deaths.Count(); i++)
             {
@@ -830,24 +831,32 @@ namespace TopStatsWaffle
                     string[] deathPositionSplit = deaths.ElementAt(i).Position.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
                     string deathPositions = $"{ deathPositionSplit[1] },{ deathPositionSplit[2] },{ deathPositionSplit[3] }";
 
+                    //retrieve steam ID using player name if the event does not return it correctly
+                    long killerSteamId = (kills.ElementAt(i).SteamID == 0) ? getSteamIdByPlayerName(playerNames, kills.ElementAt(i).Name) : kills.ElementAt(i).SteamID;
+                    long victimSteamId = (deaths.ElementAt(i).SteamID == 0) ? getSteamIdByPlayerName(playerNames, deaths.ElementAt(i).Name) : deaths.ElementAt(i).SteamID;
+
                     var weaponUsed = weaponKillers.ElementAt(i).Weapon.ToString();
+                    var numOfPenetrations = penetrations.ElementAt(i);
 
                     if (weaponUsed == null || weaponUsed == string.Empty)
                     {
                         weaponUsed = weaponKillers.ElementAt(i).OriginalString.ToString();
                     }
 
-                    sw.WriteLine($"{ killPositions },{ deathPositions },{ weaponUsed }");
+                    sw.WriteLine($"{ killerSteamId },{ killPositions },{ victimSteamId },{ deathPositions },{ weaponUsed }, { numOfPenetrations }");
 
                     playerPositionStats.Add(new PlayerPositionStats()
                     {
+                        KillerSteamID = killerSteamId,
                         XPositionKill = double.Parse(killPositionSplit[1]),
                         YPositionKill = double.Parse(killPositionSplit[2]),
                         ZPositionKill = double.Parse(killPositionSplit[3]),
+                        VictimSteamID = victimSteamId,
                         XPositionDeath = double.Parse(deathPositionSplit[1]),
                         YPositionDeath = double.Parse(deathPositionSplit[2]),
                         ZPositionDeath = double.Parse(deathPositionSplit[3]),
                         Weapon = weaponUsed,
+                        PenetrationsCount = numOfPenetrations,
                     });
                 }
             }
