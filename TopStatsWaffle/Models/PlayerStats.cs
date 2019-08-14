@@ -16,6 +16,7 @@ namespace TopStatsWaffle.Models
         public int DeathsIncludingBots { get; set; }
         public int Headshots { get; set; }
         public int Assists { get; set; }
+        public int AssistsIncludingBots { get; set; }
         public int MVPs { get; set; }
         public int Shots { get; set; }
         public int Plants { get; set; }

@@ -375,7 +375,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.18";
+            string version = "0.0.19";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -543,6 +543,7 @@ namespace TopStatsWaffle
 
                 int numOfKillsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Killer != null) && (k.Killer.Name.ToString() == playerName.ToString()) && (k.KillerBotTakeover)).Count();
                 int numOfDeathsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Victim != null) && (k.Victim.Name.ToString() == playerName.ToString()) && (k.VictimBotTakeover)).Count();
+                int numOfAssistsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Assister != null) && (k.Assister.Name.ToString() == playerName.ToString()) && (k.AssisterBotTakeover)).Count();
 
                 playerStats.Add(new PlayerStats()
                 {
@@ -553,7 +554,8 @@ namespace TopStatsWaffle
                     Deaths = statsList1.ElementAt(1) - numOfDeathsAsBot,
                     DeathsIncludingBots = statsList1.ElementAt(1),
                     Headshots = statsList1.ElementAt(2),
-                    Assists = statsList1.ElementAt(3),
+                    Assists = statsList1.ElementAt(3) - numOfAssistsAsBot,
+                    AssistsIncludingBots = statsList1.ElementAt(3),
                     MVPs = statsList1.ElementAt(4),
                     Shots = statsList1.ElementAt(5),
                     Plants = statsList1.ElementAt(6),
@@ -583,116 +585,119 @@ namespace TopStatsWaffle
 
             for (int i = 0; i < roundsWonTeams.Count(); i++)
             {
-                string reason = string.Empty;
-                string half = string.Empty;
-                bool isOvertime = ((switchSides.Count() >= 2) && (i >= switchSides.ElementAt(1).RoundBeforeSwitch)) ? true : false;
-                int overtimeNum = 0;
-                int roundLength = roundLengthValues["RoundsLengths"].ElementAt(i);
-
-                // determines which half / side it is
-                if (isOvertime)
+                if (roundsWonReasons.Count() > i) // game was abandoned early
                 {
-                    int lastNormalTimeRound = switchSides.ElementAt(1).RoundBeforeSwitch;
-                    int roundsPerOTHalf = (switchSides.Count() >= 3) ? (switchSides.ElementAt(2).RoundBeforeSwitch - lastNormalTimeRound) : 3; // just assume 3 rounds per OT half if it cannot be checked
-                    int roundsPerOT = roundsPerOTHalf * 2;
+                    string reason = string.Empty;
+                    string half = string.Empty;
+                    bool isOvertime = ((switchSides.Count() >= 2) && (i >= switchSides.ElementAt(1).RoundBeforeSwitch)) ? true : false;
+                    int overtimeNum = 0;
+                    int roundLength = roundLengthValues["RoundsLengths"].ElementAt(i);
 
-                    int roundsIntoOT = (i + 1) - lastNormalTimeRound;
-                    overtimeNum = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOT);
-
-                    double currentOTHalf = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOTHalf);
-                    half = currentOTHalf % 2 == 1 ? "First" : "Second";
-                }
-                else
-                {
-                    half = (i < switchSides.ElementAt(0).RoundBeforeSwitch) ? "First" : "Second";
-                }
-
-                // total rounds calculation
-                if (half == "First")
-                {
-                    if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
+                    // determines which half / side it is
+                    if (isOvertime)
                     {
-                        totalRoundsWonTeamAlpha++;
+                        int lastNormalTimeRound = switchSides.ElementAt(1).RoundBeforeSwitch;
+                        int roundsPerOTHalf = (switchSides.Count() >= 3) ? (switchSides.ElementAt(2).RoundBeforeSwitch - lastNormalTimeRound) : 3; // just assume 3 rounds per OT half if it cannot be checked
+                        int roundsPerOT = roundsPerOTHalf * 2;
+
+                        int roundsIntoOT = (i + 1) - lastNormalTimeRound;
+                        overtimeNum = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOT);
+
+                        double currentOTHalf = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOTHalf);
+                        half = currentOTHalf % 2 == 1 ? "First" : "Second";
                     }
-                    else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
+                    else
                     {
-                        totalRoundsWonTeamBeta++;
+                        half = (i < switchSides.ElementAt(0).RoundBeforeSwitch) ? "First" : "Second";
                     }
-                }
-                else if (half == "Second")
-                {
-                    if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
+
+                    // total rounds calculation
+                    if (half == "First")
                     {
-                        totalRoundsWonTeamBeta++;
+                        if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
+                        {
+                            totalRoundsWonTeamAlpha++;
+                        }
+                        else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
+                        {
+                            totalRoundsWonTeamBeta++;
+                        }
                     }
-                    else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
+                    else if (half == "Second")
                     {
-                        totalRoundsWonTeamAlpha++;
+                        if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
+                        {
+                            totalRoundsWonTeamBeta++;
+                        }
+                        else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
+                        {
+                            totalRoundsWonTeamAlpha++;
+                        }
                     }
+
+                    //win method
+                    const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", timeout = "TargetSaved";
+
+                    switch (roundsWonReasons[i].ToString())
+                    {
+                        case tKills:
+                            reason = "T Kills";
+                            break;
+                        case ctKills:
+                            reason = "CT Kills";
+                            break;
+                        case bombed:
+                            reason = "Bombed";
+                            break;
+                        case defused:
+                            reason = "Defused";
+                            break;
+                        case timeout:
+                            reason = "Timeout";
+                            break;
+                    }
+
+                    //team count values
+                    int roundNum = i + 1;
+                    var currentRoundTeams = teamPlayersValues["TeamPlayers"].ElementAt(roundNum - 1);
+
+                    int playerCountTeamA = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.Terrorists.Count() : currentRoundTeams.CounterTerrorists.Count()) : 0;
+                    int playerCountTeamB = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.CounterTerrorists.Count() : currentRoundTeams.Terrorists.Count()) : 0;
+
+                    //equip values
+                    var teamEquipValues = teamEquipmentValues["TeamEquipmentStats"].Count() >= i ? teamEquipmentValues["TeamEquipmentStats"].ElementAt(i) : null;
+                    int equipValueTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue) : 0;
+                    int equipValueTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue) : 0;
+                    int expenditureTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure) : 0;
+                    int expenditureTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure) : 0;
+
+                    //bombsite planted at
+                    string bombsite = null;
+                    if (bombsitePlantValues["BombsitePlants"].Any(p => p.Round == roundNum))
+                    {
+                        var bombsitePlantedAt = bombsitePlantValues["BombsitePlants"].Where(p => p.Round == roundNum);
+                        bombsite = bombsitePlantedAt.ElementAt(0).Bombsite.ToString();
+                    }
+
+                    roundStatsStrings.Add($"Round{ i + 1 },{ half },{ overtimeNum },{ roundLength },{ roundsWonTeams[i].ToString() },{ reason },{ bombsite },{ playerCountTeamA },{ playerCountTeamB },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
+
+                    roundsStats.Add(new RoundsStats()
+                    {
+                        Round = $"Round{ i + 1 }",
+                        Half = half,
+                        Overtime = overtimeNum,
+                        Length = roundLength,
+                        Winners = roundsWonTeams[i].ToString(),
+                        WinMethod = reason,
+                        BombsitePlantedAt = bombsite,
+                        TeamAlphaPlayerCount = playerCountTeamA,
+                        TeamBetaPlayerCount = playerCountTeamB,
+                        TeamAlphaEquipValue = equipValueTeamA,
+                        TeamBetaEquipValue = equipValueTeamB,
+                        TeamAlphaExpenditure = expenditureTeamA,
+                        TeamBetaExpenditure = expenditureTeamB,
+                    });
                 }
-
-                //win method
-                const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", timeout = "TargetSaved";
-
-                switch (roundsWonReasons[i].ToString())
-                {
-                    case tKills:
-                        reason = "T Kills";
-                        break;
-                    case ctKills:
-                        reason = "CT Kills";
-                        break;
-                    case bombed:
-                        reason = "Bombed";
-                        break;
-                    case defused:
-                        reason = "Defused";
-                        break;
-                    case timeout:
-                        reason = "Timeout";
-                        break;
-                }
-
-                //team count values
-                int roundNum = i + 1;
-                var currentRoundTeams = teamPlayersValues["TeamPlayers"].ElementAt(roundNum - 1);
-
-                int playerCountTeamA = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.Terrorists.Count() : currentRoundTeams.CounterTerrorists.Count()) : 0;
-                int playerCountTeamB = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.CounterTerrorists.Count() : currentRoundTeams.Terrorists.Count()) : 0;
-
-                //equip values
-                var teamEquipValues = teamEquipmentValues["TeamEquipmentStats"].Count() >= i ? teamEquipmentValues["TeamEquipmentStats"].ElementAt(i) : null;
-                int equipValueTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue) : 0;
-                int equipValueTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue) : 0;
-                int expenditureTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure) : 0;
-                int expenditureTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure) : 0;
-
-                //bombsite planted at
-                string bombsite = null;
-                if (bombsitePlantValues["BombsitePlants"].Any(p => p.Round == roundNum))
-                {
-                    var bombsitePlantedAt = bombsitePlantValues["BombsitePlants"].Where(p => p.Round == roundNum);
-                    bombsite = bombsitePlantedAt.ElementAt(0).Bombsite.ToString();
-                }
-
-                roundStatsStrings.Add($"Round{ i + 1 },{ half },{ overtimeNum },{ roundLength },{ roundsWonTeams[i].ToString() },{ reason },{ bombsite },{ playerCountTeamA },{ playerCountTeamB },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
-
-                roundsStats.Add(new RoundsStats()
-                {
-                    Round = $"Round{ i + 1 }",
-                    Half = half,
-                    Overtime = overtimeNum,
-                    Length = roundLength,
-                    Winners = roundsWonTeams[i].ToString(),
-                    WinMethod = reason,
-                    BombsitePlantedAt = bombsite,
-                    TeamAlphaPlayerCount = playerCountTeamA,
-                    TeamBetaPlayerCount = playerCountTeamB,
-                    TeamAlphaEquipValue = equipValueTeamA,
-                    TeamBetaEquipValue = equipValueTeamB,
-                    TeamAlphaExpenditure = expenditureTeamA,
-                    TeamBetaExpenditure = expenditureTeamB,
-                });
             }
 
             // work out winning team
