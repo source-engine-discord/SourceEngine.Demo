@@ -75,7 +75,7 @@ namespace DemoInfo.DP.Handler
 			if (parser.Players.Count == 0 && eventDescriptor.Name != "player_connect")
 				return;
 
-			if (eventDescriptor.Name == "round_start") {
+            if (eventDescriptor.Name == "round_start") {
 				data = MapData (eventDescriptor, rawEvent);
 
 				RoundStartedEventArgs rs = new RoundStartedEventArgs () { 
@@ -247,14 +247,19 @@ namespace DemoInfo.DP.Handler
                 // works out if either the killer or victim have taken over bots
                 kill.KillerBotTakeover = false;
                 kill.VictimBotTakeover = false;
+                kill.AssisterBotTakeover = false;
 
-                if (currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
+                if (kill.Killer != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
                 {
                     kill.KillerBotTakeover = true;
                 }
-                if (currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
+                if (kill.Victim != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
                 {
                     kill.VictimBotTakeover = true;
+                }
+                if (kill.Assister != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name.ToString()))
+                {
+                    kill.AssisterBotTakeover = true;
                 }
                 
 

@@ -125,6 +125,8 @@ namespace DemoInfo
 
         public Player Assister { get; internal set; }
 
+        public bool AssisterBotTakeover { get; internal set; }
+
 		public int PenetratedObjects { get; internal set; }
 
 		public bool Headshot { get; internal set; }
