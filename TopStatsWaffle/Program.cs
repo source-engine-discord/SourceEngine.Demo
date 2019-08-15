@@ -690,45 +690,27 @@ namespace TopStatsWaffle
             if (tpe["TeamPlayers"].Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId)) || tpe["TeamPlayers"].Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
             {
                 tanookiStats.Joined = true;
+                tanookiStats.RoundJoined = 0; // set incase he joined in warmup but does not play any rounds
 
-                foreach (var round in tpe["TeamPlayers"])
-                {
-                    foreach (var player in round.Terrorists)
-                        if (player.SteamID == tanookiId)
-                        {
-                            tanookiStats.RoundJoined = round.Round;
-                            goto TanookiLeftGoto;
-                        }
+                IEnumerable<int> playedRoundsT = tpe["TeamPlayers"].Where(t => t.Round > 0 && t.Terrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
+                IEnumerable<int> playedRoundsCT = tpe["TeamPlayers"].Where(t => t.Round > 0 && t.CounterTerrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
 
-                    foreach (var player in round.CounterTerrorists)
-                        if (player.SteamID == tanookiId)
-                        {
-                            tanookiStats.RoundJoined = round.Round;
-                            goto TanookiLeftGoto;
-                        }
-                }
+                tanookiStats.RoundsLasted = playedRoundsT.Count() + playedRoundsCT.Count();
 
-                TanookiLeftGoto:
-                if (dpe["DisconnectedPlayers"].Any(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId))
-                {
-                    tanookiStats.Left = true;
+                bool playedTSide = (playedRoundsT.Count() > 0) ? true : false;
+                bool playedCTSide = (playedRoundsCT.Count() > 0) ? true : false;
 
-                    foreach (var disconnection in dpe["DisconnectedPlayers"].Reverse())
-                    {
-                        if (disconnection.PlayerDisconnectEventArgs.Player.SteamID == tanookiId)
-                        {
-                            tanookiStats.Left = true;
-                            tanookiStats.RoundLeft = disconnection.Round;
-                            goto TanookiRoundsLastedGoto;
-                        }
-                    }
-                }
+                tanookiStats.RoundJoined = playedTSide ? (playedCTSide ? ((playedRoundsT.First() < playedRoundsCT.First()) ? playedRoundsT.First() : playedRoundsCT.First()) : playedRoundsT.First()) : (playedCTSide ? playedRoundsCT.First() : tanookiStats.RoundJoined);
             }
 
-            TanookiRoundsLastedGoto:
-            tanookiStats.RoundsLasted = tanookiStats.RoundLeft - tanookiStats.RoundJoined;
-            if (tanookiStats.RoundsLasted < 0)
-                tanookiStats.RoundsLasted = 0;
+            if (dpe["DisconnectedPlayers"].Any(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId))
+            {
+                // checks if he played a round later on than his last disconnect (he left and joined back)
+                int finalDisconnectRound = dpe["DisconnectedPlayers"].Where(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId).Reverse().Select(r => r.Round).First();
+                tanookiStats.RoundLeft = (finalDisconnectRound > tanookiStats.RoundsLasted) ? finalDisconnectRound : tanookiStats.RoundLeft;
+
+                tanookiStats.Left = (tanookiStats.RoundLeft > -1) ? true : false;
+            }
 
             return tanookiStats;
         }
