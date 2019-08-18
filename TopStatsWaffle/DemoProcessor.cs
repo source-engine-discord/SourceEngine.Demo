@@ -368,7 +368,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.20";
+            string version = "0.0.21";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -976,7 +976,11 @@ namespace TopStatsWaffle
 
         public long getSteamIdByPlayerName(Dictionary<long, Dictionary<string, string>> playerNames, string name)
         {
+            if (name == "unconnected") return 0;
+
             var player = playerNames.Where(p => p.Value.Values.ElementAt(0) == name);
+            if (player == null) return 0;
+
             return player.ElementAt(0).Key;
         }
 
