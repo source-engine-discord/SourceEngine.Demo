@@ -198,7 +198,7 @@ namespace TopStatsWaffle
                 {
                     Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
                     CounterTerrorists = players.Where(p => p.Team.ToString().Equals("CounterTerrorist")).ToList(),
-                    Round = rounds.Count(),
+                    Round = rounds.Count() + 1,
                 };
 
                 md.addEvent(typeof(TeamPlayers), teams);
@@ -368,7 +368,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.21";
+            string version = "0.0.22";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -873,7 +873,7 @@ namespace TopStatsWaffle
             {
                 int roundNum = int.Parse(message.Round.Remove(0, 5));
 
-                var currentRoundTeams = teamPlayersValues["TeamPlayers"].ElementAt(roundNum);
+                var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == roundNum).FirstOrDefault();
 
                 //retrieve steam ID using player name if the event does not return it correctly
                 foreach (var player in currentRoundTeams.Terrorists)
