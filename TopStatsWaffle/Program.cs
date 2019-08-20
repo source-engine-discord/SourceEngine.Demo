@@ -322,9 +322,6 @@ namespace TopStatsWaffle
                 fme.Add("Messages", from message in mdTest.getEvents<FeedbackMessage>()
                                     select (message as FeedbackMessage));
 
-                tpe.Add("TeamPlayers", from change in mdTest.getEvents<TeamPlayers>()
-                                 select (change as TeamPlayers));
-
                 pke.Add("PlayerKilledEvents", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                                 select (player as PlayerKilledEventArgs));
 
@@ -380,6 +377,10 @@ namespace TopStatsWaffle
 
                 le.Add("RoundsLengths", from length in mdTest.getEvents<RoundEndedEventArgs>()
                                            select (length as RoundEndedEventArgs).Length);
+
+                tpe.Add("TeamPlayers", from teamPlayers in mdTest.getEvents<TeamPlayers>()
+                                       where (teamPlayers as TeamPlayers).Round <= te["RoundsWonTeams"].Count() // removes extra TeamPlayers if freezetime_end event triggers once a playtest is finished
+                                       select (teamPlayers as TeamPlayers));
 
                 tes.Add("TeamEquipmentStats", from round in mdTest.getEvents<TeamEquipmentStats>()
                                            select (round as TeamEquipmentStats));

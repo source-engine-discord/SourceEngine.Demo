@@ -54,15 +54,45 @@ namespace TopStatsWaffle
 
         void bindPlayer(Player p)
         {
-            if (!playerTicks.ContainsKey(p.EntityID))
-                playerTicks.Add(p.EntityID, new TickCounter());
+            if (!playerTicks.ContainsKey(p.UserID))
+            {
+                // check if player has been added twice with different UserIDs
+                var duplicate = playerTicks.Where(x => x.Value.detectedName == p.Name).FirstOrDefault();
 
-            if (!playerLookups.ContainsKey(p.EntityID))
-                if (p.SteamID != 0)
-                    playerLookups.Add(p.EntityID, p.SteamID);
+                if (duplicate.Key != 0)
+                {
+                    // copy duplicate's information across
+                    playerTicks.Add(p.UserID, new TickCounter()
+                    {
+                        detectedName = duplicate.Value.detectedName,
+                        ticksAlive = duplicate.Value.ticksAlive,
+                        ticksOnServer = duplicate.Value.ticksOnServer,
+                        ticksPlaying = duplicate.Value.ticksPlaying,
+                    });
 
-            if (playerTicks[p.EntityID].detectedName == "NOT FOUND" && p.Name != "" && p.Name != null)
-                playerTicks[p.EntityID].detectedName = p.Name;
+                    // remove duplicate
+                    playerTicks.Remove(duplicate.Key);
+                }
+                else
+                {
+                    playerTicks.Add(p.UserID, new TickCounter());
+                }
+            }
+
+            if (!playerLookups.ContainsKey(p.UserID) && p.SteamID != 0)
+            {
+                // check if player has been added twice with different UserIDs
+                var duplicate = playerLookups.Where(x => x.Value == p.SteamID).FirstOrDefault();
+
+                playerLookups.Add(p.UserID, p.SteamID);
+
+                // remove duplicate
+                if (duplicate.Key != 0)
+                    playerLookups.Remove(duplicate.Key);
+            }
+
+            if (playerTicks[p.UserID].detectedName == "NOT FOUND" && p.Name != "" && p.Name != null)
+                playerTicks[p.UserID].detectedName = p.Name;
         }
 
         void addTick(Player p, PSTATUS status)
@@ -70,13 +100,13 @@ namespace TopStatsWaffle
             bindPlayer(p);
 
             if (status == PSTATUS.ONSERVER)
-                playerTicks[p.EntityID].ticksOnServer++;
+                playerTicks[p.UserID].ticksOnServer++;
 
             if (status == PSTATUS.ALIVE)
-                playerTicks[p.EntityID].ticksAlive++;
+                playerTicks[p.UserID].ticksAlive++;
 
             if (status == PSTATUS.PLAYING)
-                playerTicks[p.EntityID].ticksPlaying++;
+                playerTicks[p.UserID].ticksPlaying++;
         }
 
         public static MatchData fromDemoFile(string file)
@@ -148,11 +178,42 @@ namespace TopStatsWaffle
 
                 if (text.ToLower().Contains(">fb") || text.ToLower().Contains(">feedback") || text.ToLower().Contains("> fb") || text.ToLower().Contains("> feedback"))
                 {
-                    var round = "Round" + (rounds.Count());
+                    var teamPlayersList = md.getEvents<TeamPlayers>();
+
+                    var round = "";
+                    if (teamPlayersList.Count() > 0)
+                    {
+                        TeamPlayers teamPlayers = teamPlayersList.ElementAt(0) as TeamPlayers;
+                        if (teamPlayers.Round <= 1 && teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
+                        {
+                            round = $"Round{ rounds.Count() + 1 }";
+                        }
+                        else
+                        {
+                            round = "Round0";
+                        }
+                    }
+                    else
+                    {
+                        round = "Round0";
+                    }
 
                     long steamId = e.Sender == null ? 0 : e.Sender.SteamID;
 
-                    FeedbackMessage feedbackMessage = new FeedbackMessage() { Round = round, SteamID = steamId, TeamName = null, Message = text }; // works out TeamName in SaveFiles()
+                    Player player = null;
+                    if (steamId != 0)
+                    {
+                        player = dp.Participants.Where(p => p.SteamID == steamId).FirstOrDefault();
+                    }
+                    else
+                    {
+                        player = null;
+                    }
+
+                    var teamName = (player != null) ? player.Team.ToString() : null;
+                    teamName = (teamName == "Spectate") ? "Spectator" : teamName;
+
+                    FeedbackMessage feedbackMessage = new FeedbackMessage() { Round = round, SteamID = steamId, TeamName = teamName, Message = text }; // works out TeamName in SaveFiles() if it is null
 
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
                 }
@@ -368,7 +429,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.22";
+            string version = "0.0.23";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -445,25 +506,25 @@ namespace TopStatsWaffle
                     if (p == null)
                         continue;
 
-                    if (!playerLookups.ContainsKey(p.EntityID))
+                    if (!playerLookups.ContainsKey(p.UserID))
                         continue;
 
                     //Add player to collections list if doesnt exist
-                    if (!playerNames.ContainsKey(playerLookups[p.EntityID]))
-                        playerNames.Add(playerLookups[p.EntityID], new Dictionary<string, string>());
+                    if (!playerNames.ContainsKey(playerLookups[p.UserID]))
+                        playerNames.Add(playerLookups[p.UserID], new Dictionary<string, string>());
 
-                    if (!data.ContainsKey(playerLookups[p.EntityID]))
-                        data.Add(playerLookups[p.EntityID], new Dictionary<string, long>());
+                    if (!data.ContainsKey(playerLookups[p.UserID]))
+                        data.Add(playerLookups[p.UserID], new Dictionary<string, long>());
 
                     //Add catagory to dictionary if doesnt exist
-                    if (!playerNames[playerLookups[p.EntityID]].ContainsKey("Name"))
-                        playerNames[playerLookups[p.EntityID]].Add("Name", p.Name);
+                    if (!playerNames[playerLookups[p.UserID]].ContainsKey("Name"))
+                        playerNames[playerLookups[p.UserID]].Add("Name", p.Name);
 
-                    if (!data[playerLookups[p.EntityID]].ContainsKey(catagory))
-                        data[playerLookups[p.EntityID]].Add(catagory, 0);
+                    if (!data[playerLookups[p.UserID]].ContainsKey(catagory))
+                        data[playerLookups[p.UserID]].Add(catagory, 0);
 
                     //Increment it
-                    data[playerLookups[p.EntityID]][catagory]++;
+                    data[playerLookups[p.UserID]][catagory]++;
                 }
             }
 
@@ -472,11 +533,11 @@ namespace TopStatsWaffle
             {
                 if (kill.Suicide)
                 {
-                    data[playerLookups[kill.Killer.EntityID]]["Kills"] -= 1;
+                    data[playerLookups[kill.Killer.UserID]]["Kills"] -= 1;
                 }
                 else if (kill.TeamKill)
                 {
-                    data[playerLookups[kill.Killer.EntityID]]["Kills"] -= 2;
+                    data[playerLookups[kill.Killer.UserID]]["Kills"] -= 2;
                 }
             }
 
@@ -507,20 +568,20 @@ namespace TopStatsWaffle
                 List<long> statsList2 = new List<long>();
                 if (writeTicks)
                 {
-                    if (playerLookups.ContainsValue(player))
+                    if (playerLookups.Any(p => p.Value == player))
                     {
-                        foreach (int entid in playerLookups.Keys)
+                        foreach (int userid in playerLookups.Keys)
                         {
-                            if (playerLookups[entid] == player)
+                            if (playerLookups[userid] == player)
                             {
-                                playerLine += this.playerTicks[entid].ticksAlive + ",";
-                                statsList2.Add(this.playerTicks[entid].ticksAlive);
+                                playerLine += this.playerTicks[userid].ticksAlive + ",";
+                                statsList2.Add(this.playerTicks[userid].ticksAlive);
 
-                                playerLine += this.playerTicks[entid].ticksOnServer + ",";
-                                statsList2.Add(this.playerTicks[entid].ticksOnServer);
+                                playerLine += this.playerTicks[userid].ticksOnServer + ",";
+                                statsList2.Add(this.playerTicks[userid].ticksOnServer);
 
-                                playerLine += this.playerTicks[entid].ticksPlaying + ",";
-                                statsList2.Add(this.playerTicks[entid].ticksPlaying);
+                                playerLine += this.playerTicks[userid].ticksPlaying + ",";
+                                statsList2.Add(this.playerTicks[userid].ticksPlaying);
 
                                 break;
                             }
@@ -652,7 +713,7 @@ namespace TopStatsWaffle
 
                     //team count values
                     int roundNum = i + 1;
-                    var currentRoundTeams = teamPlayersValues["TeamPlayers"].ElementAt(roundNum);
+                    var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == roundNum).FirstOrDefault();
 
                     int playerCountTeamA = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.Terrorists.Count() : currentRoundTeams.CounterTerrorists.Count()) : 0;
                     int playerCountTeamB = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.CounterTerrorists.Count() : currentRoundTeams.Terrorists.Count()) : 0;
@@ -875,27 +936,30 @@ namespace TopStatsWaffle
 
                 var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == roundNum).FirstOrDefault();
 
-                //retrieve steam ID using player name if the event does not return it correctly
-                foreach (var player in currentRoundTeams.Terrorists)
+                if (currentRoundTeams != null && (message.SteamID == 0 || message.TeamName == null)) // excludes warmup round
                 {
-                    player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
-                }
-                foreach (var player in currentRoundTeams.CounterTerrorists)
-                {
-                    player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
-                }
+                    // retrieve steam ID using player name if the event does not return it correctly
+                    foreach (var player in currentRoundTeams.Terrorists)
+                    {
+                        player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
+                    }
+                    foreach (var player in currentRoundTeams.CounterTerrorists)
+                    {
+                        player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
+                    }
 
-                if (currentRoundTeams.Terrorists.Any(p => p.SteamID == message.SteamID))
-                {
-                    message.TeamName = "Terrorist";
-                }
-                else if (currentRoundTeams.CounterTerrorists.Any(p => p.SteamID == message.SteamID))
-                {
-                    message.TeamName = "CounterTerrorist";
-                }
-                else
-                {
-                    message.TeamName = "Spectator";
+                    if (currentRoundTeams.Terrorists.Any(p => p.SteamID == message.SteamID))
+                    {
+                        message.TeamName = "Terrorist";
+                    }
+                    else if (currentRoundTeams.CounterTerrorists.Any(p => p.SteamID == message.SteamID))
+                    {
+                        message.TeamName = "CounterTerrorist";
+                    }
+                    else
+                    {
+                        message.TeamName = "Spectator";
+                    }
                 }
 
                 sw.WriteLine($"{ message.Round },{ message.SteamID },{ message.TeamName },{ message.Message }");
