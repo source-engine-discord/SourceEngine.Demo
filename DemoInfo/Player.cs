@@ -16,6 +16,7 @@ namespace DemoInfo
 		public Vector Position { get; set; }
 
 		public int EntityID { get; set; }
+        public int UserID { get; set; }
 
 		public int HP { get; set; }
 

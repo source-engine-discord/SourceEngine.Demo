@@ -602,6 +602,8 @@ namespace DemoInfo
 					Player p = Players[id];
 					p.Name = rawPlayer.Name;
 					p.SteamID = rawPlayer.XUID;
+					
+                    p.UserID = id;
 
 					p.AdditionaInformations = additionalInformations [p.EntityID];
 
@@ -610,8 +612,7 @@ namespace DemoInfo
 					}
 
 					if (newplayer && p.SteamID != 0){
-						PlayerBindEventArgs bind = new PlayerBindEventArgs();
-						bind.Player = p;
+                        PlayerBindEventArgs bind = new PlayerBindEventArgs() { Player = p };
 						RaisePlayerBind(bind);
 					}
 				}
