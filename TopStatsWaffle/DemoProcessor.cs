@@ -150,7 +150,7 @@ namespace TopStatsWaffle
                         if (message.Message.ToLower().Contains(">fb ") || message.Message.ToLower().Contains(">feedback "))
                         {
                             //Sets round to 0 as anything before a match start event should always be classed as warmup
-                            currentFeedbackMessages.Add(new FeedbackMessage() { Round = "Round0", SteamID = message.SteamID, TeamName = message.TeamName, Message = message.Message });
+                            currentFeedbackMessages.Add(new FeedbackMessage() { Round = 0, SteamID = message.SteamID, TeamName = message.TeamName, Message = message.Message });
                         }
                     }
                 }
@@ -173,30 +173,11 @@ namespace TopStatsWaffle
             dp.SayText2 += (object sender, SayText2EventArgs e) => {
                 md.addEvent(typeof(SayText2EventArgs), e);
 
-                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
                 var text = e.Text.ToString();
 
                 if (text.ToLower().Contains(">fb") || text.ToLower().Contains(">feedback") || text.ToLower().Contains("> fb") || text.ToLower().Contains("> feedback"))
                 {
-                    List<TeamPlayers> teamPlayersList = md.getEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
-
-                    var round = "";
-                    if (teamPlayersList.Count() > 0 && teamPlayersList.Any(t => t.Round == 1))
-                    {
-                        var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
-                        if (teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
-                        {
-                            round = $"Round{ roundsCount + 1 }";
-                        }
-                        else
-                        {
-                            round = "Round0";
-                        }
-                    }
-                    else
-                    {
-                        round = "Round0";
-                    }
+                    int round = getCurrentRoundNum(md);
 
                     long steamId = e.Sender == null ? 0 : e.Sender.SteamID;
 
@@ -286,27 +267,8 @@ namespace TopStatsWaffle
             // PLAYER EVENTS ===================================================
             dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) => {
                 int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
-                List<TeamPlayers> teamPlayersList = md.getEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
 
-                var round = 0;
-                if (teamPlayersList.Count() > 0 && teamPlayersList.Any(t => t.Round == 1))
-                {
-                    var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
-                    if (teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
-                    {
-                        round = roundsCount + 1;
-                    }
-                    else
-                    {
-                        round = 0;
-                    }
-                }
-                else
-                {
-                    round = 0;
-                }
-
-                e.Round = round;
+                e.Round = getCurrentRoundNum(md);
 
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
@@ -352,26 +314,7 @@ namespace TopStatsWaffle
             dp.WeaponFired += (object sender, WeaponFiredEventArgs e) => {
                 md.addEvent(typeof(WeaponFiredEventArgs), e);
 
-                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
-                List<TeamPlayers> teamPlayersList = md.getEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
-
-                var round = 0;
-                if (teamPlayersList.Count() > 0 && teamPlayersList.Any(t => t.Round == 1))
-                {
-                    var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
-                    if (teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
-                    {
-                        round = roundsCount + 1;
-                    }
-                    else
-                    {
-                        round = 0;
-                    }
-                }
-                else
-                {
-                    round = 0;
-                }
+                var round = getCurrentRoundNum(md);
 
                 ShotFired shotFired = new ShotFired() { Round = round, Shooter = e.Shooter, Weapon = e.Weapon };
 
@@ -487,7 +430,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.24";
+            string version = "0.0.25";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -791,11 +734,11 @@ namespace TopStatsWaffle
                         bombsite = bombsitePlantedAt.ElementAt(0).Bombsite.ToString();
                     }
 
-                    roundStatsStrings.Add($"Round{ i + 1 },{ half },{ overtimeNum },{ roundLength },{ roundsWonTeams[i].ToString() },{ reason },{ bombsite },{ playerCountTeamA },{ playerCountTeamB },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
+                    roundStatsStrings.Add($"{ i + 1 },{ half },{ overtimeNum },{ roundLength },{ roundsWonTeams[i].ToString() },{ reason },{ bombsite },{ playerCountTeamA },{ playerCountTeamB },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
 
                     roundsStats.Add(new RoundsStats()
                     {
-                        Round = $"Round{ i + 1 }",
+                        Round = i + 1,
                         Half = half,
                         Overtime = overtimeNum,
                         Length = roundLength,
@@ -1002,9 +945,7 @@ namespace TopStatsWaffle
 
             foreach (var message in messagesValues["Messages"])
             {
-                int roundNum = int.Parse(message.Round.Remove(0, 5));
-
-                var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == roundNum).FirstOrDefault();
+                var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == message.Round).FirstOrDefault();
 
                 if (currentRoundTeams != null && (message.SteamID == 0 || message.TeamName == null)) // excludes warmup round
                 {
@@ -1361,6 +1302,24 @@ namespace TopStatsWaffle
             );
 
             return roundsWonReasons;
+        }
+
+        public static int getCurrentRoundNum(MatchData md)
+        {
+            int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+            List<TeamPlayers> teamPlayersList = md.getEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
+
+            int round = 0;
+            if (teamPlayersList.Count() > 0 && teamPlayersList.Any(t => t.Round == 1))
+            {
+                var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
+                if (teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
+                {
+                    round = roundsCount + 1;
+                }
+            }
+
+            return round;
         }
     }
 }
