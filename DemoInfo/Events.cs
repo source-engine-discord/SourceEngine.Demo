@@ -106,6 +106,7 @@ namespace DemoInfo
 
     public class PlayerKilledEventArgs : EventArgs
 	{
+        public int Round { get; set; }
         public bool Suicide { get; internal set; }
 
         public bool TeamKill { get; internal set; }
