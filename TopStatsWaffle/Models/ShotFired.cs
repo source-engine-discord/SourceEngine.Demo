@@ -7,12 +7,14 @@ using System.Threading.Tasks;
 
 namespace TopStatsWaffle.Models
 {
-    public class TeamPlayers
+    public class ShotFired
     {
         public int Round { get; set; }
-        public List<Player> Terrorists { get; set; }
-        public List<Player> CounterTerrorists { get; set; }
 
-        public TeamPlayers() { }
+        public Equipment Weapon { get; set; }
+
+        public Player Shooter { get; set; }
+
+        public ShotFired() { }
     }
 }

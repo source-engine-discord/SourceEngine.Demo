@@ -21,6 +21,7 @@ namespace TopStatsWaffle.Models
         public List<PlayerPositionStats> PlayerPositionStats { get; set; }
         public List<FeedbackMessage> FeedbackMessages { get; set; }
         public ChickenStats ChickenStats { get; set; }
+        public List<TeamStats> TeamStats { get; set; }
 
         public AllStats() { }
     }

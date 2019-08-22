@@ -299,7 +299,7 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<Equipment>> pwe = new Dictionary<string, IEnumerable<Equipment>>();
                 Dictionary<string, IEnumerable<int>> poe = new Dictionary<string, IEnumerable<int>>();
                 Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
-                Dictionary<string, IEnumerable<BombsitePlant>> bpe = new Dictionary<string, IEnumerable<BombsitePlant>>();
+                Dictionary<string, IEnumerable<BombPlanted>> bpe = new Dictionary<string, IEnumerable<BombPlanted>>();
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
                 Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
@@ -312,9 +312,10 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<FireEventArgs>> gie = new Dictionary<string, IEnumerable<FireEventArgs>>();
                 Dictionary<string, IEnumerable<DecoyEventArgs>> gde = new Dictionary<string, IEnumerable<DecoyEventArgs>>();
                 Dictionary<string, IEnumerable<ChickenKilledEventArgs>> cke = new Dictionary<string, IEnumerable<ChickenKilledEventArgs>>();
+                Dictionary<string, IEnumerable<ShotFired>> sfe = new Dictionary<string, IEnumerable<ShotFired>>();
 
                 mse.Add("MatchStarts", from start in mdTest.getEvents<MatchStartedEventArgs>()
-                                    select (start as MatchStartedEventArgs));
+                                       select (start as MatchStartedEventArgs));
 
                 sse.Add("SwitchSides", from switchSide in mdTest.getEvents<SwitchSidesEventArgs>()
                                        select (switchSide as SwitchSidesEventArgs));
@@ -323,7 +324,7 @@ namespace TopStatsWaffle
                                     select (message as FeedbackMessage));
 
                 pke.Add("PlayerKilledEvents", from player in mdTest.getEvents<PlayerKilledEventArgs>()
-                                                select (player as PlayerKilledEventArgs));
+                                              select (player as PlayerKilledEventArgs));
 
                 pe.Add("Kills", from player in mdTest.getEvents<PlayerKilledEventArgs>()
                                 select (player as PlayerKilledEventArgs).Killer);
@@ -343,60 +344,74 @@ namespace TopStatsWaffle
                                          select (weapon as PlayerKilledEventArgs).Weapon);
 
                 poe.Add("PenetratedObjects", from penetration in mdTest.getEvents<PlayerKilledEventArgs>()
-                                         select (penetration as PlayerKilledEventArgs).PenetratedObjects);
+                                             select (penetration as PlayerKilledEventArgs).PenetratedObjects);
 
                 pe.Add("MVPs", from player in mdTest.getEvents<RoundMVPEventArgs>()
-                                select (player as RoundMVPEventArgs).Player);
+                               select (player as RoundMVPEventArgs).Player);
 
                 pe.Add("Shots", from player in mdTest.getEvents<WeaponFiredEventArgs>()
                                 select (player as WeaponFiredEventArgs).Shooter);
 
-                pe.Add("Plants", from player in mdTest.getEvents<BombEventArgs>()
-                                 select (player as BombEventArgs).Player);
+                pe.Add("Plants", from player in mdTest.getEvents<BombPlanted>()
+                                 select (player as BombPlanted).Player);
 
-                pe.Add("Defuses", from player in mdTest.getEvents<BombDefuseEventArgs>()
-                                  select (player as BombEventArgs).Player);
+                pe.Add("Defuses", from player in mdTest.getEvents<BombDefused>()
+                                  select (player as BombDefused).Player);
 
-                be.Add("PlantsSites", from site in mdTest.getEvents<BombEventArgs>()
-                                      select (site as BombEventArgs).Site);
+                bpe.Add("BombsitePlants", (from plant in mdTest.getEvents<BombPlanted>()
+                                           select plant as BombPlanted)
+                                          .GroupBy(p => p.Round)
+                                          .Select(p => p.FirstOrDefault()));
 
-                be.Add("DefusesSites", from site in mdTest.getEvents<BombDefuseEventArgs>()
-                                  select (site as BombEventArgs).Site);
+                be.Add("PlantsSites", (from plant in mdTest.getEvents<BombPlanted>()
+                                       select plant as BombPlanted)
+                                      .GroupBy(p => p.Round)
+                                      .Select(p => p.FirstOrDefault().Bombsite));
 
-                bpe.Add("BombsitePlants", from plant in mdTest.getEvents<BombsitePlant>()
-                                       select (plant as BombsitePlant));
+                be.Add("ExplosionsSites", (from explosion in mdTest.getEvents<BombExploded>()
+                                           select explosion as BombExploded)
+                                           .GroupBy(p => p.Round)
+                                           .Select(p => p.FirstOrDefault().Bombsite));
+
+                be.Add("DefusesSites", (from defuse in mdTest.getEvents<BombDefused>()
+                                        select defuse as BombDefused)
+                                        .GroupBy(p => p.Round)
+                                        .Select(p => p.FirstOrDefault().Bombsite));
 
                 dpe.Add("DisconnectedPlayers", from disconnection in mdTest.getEvents<DisconnectedPlayer>()
-                                    select (disconnection as DisconnectedPlayer));
+                                               select (disconnection as DisconnectedPlayer));
 
                 te.Add("RoundsWonTeams", from team in mdTest.getEvents<RoundEndedEventArgs>()
-                                       select (team as RoundEndedEventArgs).Winner);
+                                         select (team as RoundEndedEventArgs).Winner);
 
                 re.Add("RoundsWonReasons", from reason in mdTest.getEvents<RoundEndedEventArgs>()
-                                       select (reason as RoundEndedEventArgs).Reason);
+                                           select (reason as RoundEndedEventArgs).Reason);
 
                 le.Add("RoundsLengths", from length in mdTest.getEvents<RoundEndedEventArgs>()
-                                           select (length as RoundEndedEventArgs).Length);
+                                        select (length as RoundEndedEventArgs).Length);
 
                 tpe.Add("TeamPlayers", from teamPlayers in mdTest.getEvents<TeamPlayers>()
                                        where (teamPlayers as TeamPlayers).Round <= te["RoundsWonTeams"].Count() // removes extra TeamPlayers if freezetime_end event triggers once a playtest is finished
                                        select (teamPlayers as TeamPlayers));
 
                 tes.Add("TeamEquipmentStats", from round in mdTest.getEvents<TeamEquipmentStats>()
-                                           select (round as TeamEquipmentStats));
+                                              select (round as TeamEquipmentStats));
 
-                ge.Add("AllNadesThrown", from f in mdTest.getEvents<NadeEventArgs>()
-                                  select (f as NadeEventArgs));
+                ge.Add("AllNadesThrown", from nade in mdTest.getEvents<NadeEventArgs>()
+                                         select (nade as NadeEventArgs));
 
-                cke.Add("ChickensKilled", from c in mdTest.getEvents<ChickenKilledEventArgs>()
-                                  select (c as ChickenKilledEventArgs));
+                cke.Add("ChickensKilled", from chickenKill in mdTest.getEvents<ChickenKilledEventArgs>()
+                                          select (chickenKill as ChickenKilledEventArgs));
+
+                sfe.Add("ShotsFired", from shot in mdTest.getEvents<ShotFired>()
+                                      select (shot as ShotFired));
 
                 TanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
 
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, be, bpe, te, re, le, tes, ge, cke);
+                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, be, te, re, le, tes, ge, cke, sfe);
                     passCount++;
                 }
             }

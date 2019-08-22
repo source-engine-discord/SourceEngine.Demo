@@ -173,20 +173,20 @@ namespace TopStatsWaffle
             dp.SayText2 += (object sender, SayText2EventArgs e) => {
                 md.addEvent(typeof(SayText2EventArgs), e);
 
-                var rounds = md.getEvents<RoundEndedEventArgs>();
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
                 var text = e.Text.ToString();
 
                 if (text.ToLower().Contains(">fb") || text.ToLower().Contains(">feedback") || text.ToLower().Contains("> fb") || text.ToLower().Contains("> feedback"))
                 {
-                    var teamPlayersList = md.getEvents<TeamPlayers>();
+                    List<TeamPlayers> teamPlayersList = md.getEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
 
                     var round = "";
-                    if (teamPlayersList.Count() > 0)
+                    if (teamPlayersList.Count() > 0 && teamPlayersList.Any(t => t.Round == 1))
                     {
-                        TeamPlayers teamPlayers = teamPlayersList.ElementAt(0) as TeamPlayers;
-                        if (teamPlayers.Round <= 1 && teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
+                        var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
+                        if (teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
                         {
-                            round = $"Round{ rounds.Count() + 1 }";
+                            round = $"Round{ roundsCount + 1 }";
                         }
                         else
                         {
@@ -252,14 +252,14 @@ namespace TopStatsWaffle
                 md.addEvent(typeof(FreezetimeEndedEventArgs), e);
 
                 //work out teams at current round
-                var rounds = md.getEvents<RoundEndedEventArgs>();
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
                 var players = dp.PlayingParticipants;
 
                 TeamPlayers teams = new TeamPlayers()
                 {
                     Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
                     CounterTerrorists = players.Where(p => p.Team.ToString().Equals("CounterTerrorist")).ToList(),
-                    Round = rounds.Count() + 1,
+                    Round = roundsCount + 1,
                 };
 
                 md.addEvent(typeof(TeamPlayers), teams);
@@ -278,13 +278,36 @@ namespace TopStatsWaffle
                     ctExpenditure += (player.CurrentEquipmentValue - player.RoundStartEquipmentValue); // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
                 }
 
-                TeamEquipmentStats teamEquipmentStats = new TeamEquipmentStats() { Round = rounds.Count() + 1, TEquipValue = tEquipValue, CTEquipValue = ctEquipValue, TExpenditure = tExpenditure, CTExpenditure = ctExpenditure };
+                TeamEquipmentStats teamEquipmentStats = new TeamEquipmentStats() { Round = roundsCount + 1, TEquipValue = tEquipValue, CTEquipValue = ctEquipValue, TExpenditure = tExpenditure, CTExpenditure = ctExpenditure };
 
                 md.addEvent(typeof(TeamEquipmentStats), teamEquipmentStats);
             };
 
             // PLAYER EVENTS ===================================================
             dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) => {
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+                List<TeamPlayers> teamPlayersList = md.getEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
+
+                var round = 0;
+                if (teamPlayersList.Count() > 0 && teamPlayersList.Any(t => t.Round == 1))
+                {
+                    var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
+                    if (teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
+                    {
+                        round = roundsCount + 1;
+                    }
+                    else
+                    {
+                        round = 0;
+                    }
+                }
+                else
+                {
+                    round = 0;
+                }
+
+                e.Round = round;
+
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
 
@@ -293,31 +316,66 @@ namespace TopStatsWaffle
             };
 
             dp.PlayerDisconnect += (object sender, PlayerDisconnectEventArgs e) => {
-                var rounds = md.getEvents<RoundEndedEventArgs>();
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
 
-                DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer() { PlayerDisconnectEventArgs = e, Round = rounds.Count() - 1 };
+                DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer() { PlayerDisconnectEventArgs = e, Round = roundsCount - 1 };
 
                 md.addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
             };
 
             // BOMB EVENTS =====================================================
             dp.BombPlanted += (object sender, BombEventArgs e) => {
-                md.addEvent(typeof(BombEventArgs), e);
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
 
-                var rounds = md.getEvents<RoundEndedEventArgs>();
+                BombPlanted bombPlanted = new BombPlanted() { Round = roundsCount + 1, Player = e.Player, Bombsite = e.Site };
 
-                BombsitePlant bombsitePlant = new BombsitePlant() { Bombsite = e.Site, SteamID = e.Player.SteamID, Round = rounds.Count() + 1 };
+                md.addEvent(typeof(BombPlanted), bombPlanted);
+            };
 
-                md.addEvent(typeof(BombsitePlant), bombsitePlant);
+            dp.BombExploded += (object sender, BombEventArgs e) => {
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+
+                BombExploded bombExploded = new BombExploded() { Round = roundsCount + 1, Player = e.Player, Bombsite = e.Site };
+
+                md.addEvent(typeof(BombExploded), bombExploded);
             };
 
             dp.BombDefused += (object sender, BombEventArgs e) => {
-                md.addEvent(typeof(BombDefuseEventArgs), e);
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+
+                BombDefused bombDefused = new BombDefused() { Round = roundsCount + 1, Player = e.Player, Bombsite = e.Site, HasKit = e.Player.HasDefuseKit };
+
+                md.addEvent(typeof(BombDefused), bombDefused);
             };
 
             // WEAPON EVENTS ===================================================
             dp.WeaponFired += (object sender, WeaponFiredEventArgs e) => {
                 md.addEvent(typeof(WeaponFiredEventArgs), e);
+
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+                List<TeamPlayers> teamPlayersList = md.getEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
+
+                var round = 0;
+                if (teamPlayersList.Count() > 0 && teamPlayersList.Any(t => t.Round == 1))
+                {
+                    var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
+                    if (teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
+                    {
+                        round = roundsCount + 1;
+                    }
+                    else
+                    {
+                        round = 0;
+                    }
+                }
+                else
+                {
+                    round = 0;
+                }
+
+                ShotFired shotFired = new ShotFired() { Round = round, Shooter = e.Shooter, Weapon = e.Weapon };
+
+                md.addEvent(typeof(ShotFired), shotFired);
             };
 
             // GRENADE EVENTS ==================================================
@@ -400,10 +458,10 @@ namespace TopStatsWaffle
         public void CreateFiles(
             List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues, Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues,
             Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues,
-            Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<int>> penetrationValues, Dictionary<string, IEnumerable<char>> bombsiteValues,
-            Dictionary<string, IEnumerable<BombsitePlant>> bombsitePlantValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
+            Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<int>> penetrationValues, Dictionary<string, IEnumerable<BombPlanted>> bombsitePlantValues,
+            Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
             Dictionary<string, IEnumerable<int>> roundLengthValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues,
-            Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, bool writeTicks = true
+            Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, Dictionary<string, IEnumerable<ShotFired>> shotsFiredValues, bool writeTicks = true
         )
         {
             var mapDateSplit = (!string.IsNullOrWhiteSpace(demo[2]) && demo[2] != "unknown") ? demo[2].Split('/')  : null;
@@ -429,7 +487,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.23";
+            string version = "0.0.24";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -783,17 +841,26 @@ namespace TopStatsWaffle
 
             sw.WriteLine(string.Empty);
 
-            List<char> bombsitePlants = new List<char>(bombsiteValues.ElementAt(0).Value);
-            List<char> bombsiteDefuses = new List<char>(bombsiteValues.ElementAt(1).Value);
+            List<char> bombsitePlants = new List<char>(bombsiteValues["PlantsSites"]);
+            List<char> bombsiteExplosions = new List<char>(bombsiteValues["ExplosionsSites"]);
+            List<char> bombsiteDefuses = new List<char>(bombsiteValues["DefusesSites"]);
 
-            header = "Bombsite,Plants,Defuses";
+            header = "Bombsite,Plants,Explosions,Defuses";
             sw.WriteLine(header);
 
-            sw.WriteLine($"A,{ bombsitePlants.Where(b => b.ToString().Equals("A")).Count() },{ bombsiteDefuses.Where(b => b.ToString().Equals("A")).Count() }");
-            sw.WriteLine($"B,{ bombsitePlants.Where(b => b.ToString().Equals("B")).Count() },{ bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count() }");
+            int plantsA = bombsitePlants.Where(b => b.ToString().Equals("A")).Count();
+            int explosionsA = bombsiteExplosions.Where(b => b.ToString().Equals("A")).Count();
+            int defusesA = bombsiteDefuses.Where(b => b.ToString().Equals("A")).Count();
 
-            bombsiteStats.Add(new BombsiteStats() { Bombsite = 'A', Plants = bombsitePlants.Where(b => b.ToString().Equals("A")).Count(), Defuses = bombsiteDefuses.Where(b => b.ToString().Equals("A")).Count() });
-            bombsiteStats.Add(new BombsiteStats() { Bombsite = 'B', Plants = bombsitePlants.Where(b => b.ToString().Equals("B")).Count(), Defuses = bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count() });
+            int plantsB = bombsitePlants.Where(b => b.ToString().Equals("B")).Count();
+            int explosionsB = bombsiteExplosions.Where(b => b.ToString().Equals("B")).Count();
+            int defusesB = bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count();
+
+            sw.WriteLine($"A,{ plantsA },{ explosionsA },{ defusesA }");
+            sw.WriteLine($"B,{ plantsB },{ explosionsB },{ defusesB }");
+
+            bombsiteStats.Add(new BombsiteStats() { Bombsite = 'A', Plants = plantsA, Explosions = explosionsA, Defuses = defusesA });
+            bombsiteStats.Add(new BombsiteStats() { Bombsite = 'B', Plants = plantsB, Explosions = explosionsB, Defuses = defusesB });
             /* bombsite stats end */
 
             /* Grenades total stats */
@@ -871,7 +938,7 @@ namespace TopStatsWaffle
 
             sw.WriteLine(string.Empty);
 
-            header = "Killer SteamID,Kill X Position,Kill Y Position,Kill Z Position,Victim SteamID,Death X Position,Death Y Position,Death Z Position,Weapon,Penetrations Count ";
+            header = "Round,Killer SteamID,Kill X Position,Kill Y Position,Kill Z Position,Victim SteamID,Death X Position,Death Y Position,Death Z Position,Weapon,Penetrations Count ";
             sw.WriteLine(header);
 
             List<Player> kills = new List<Player>(playerValues["Kills"].ToList());
@@ -884,6 +951,8 @@ namespace TopStatsWaffle
             {
                 if (kills.ElementAt(i) != null && kills.ElementAt(i).Position != null && deaths.ElementAt(i) != null && deaths.ElementAt(i).Position != null)
                 {
+                    int round = playerKilledEventsValues["PlayerKilledEvents"].ElementAt(i).Round;
+
                     string[] killPositionSplit = kills.ElementAt(i).Position.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
                     string killPositions = $"{ killPositionSplit[1] },{ killPositionSplit[2] },{ killPositionSplit[3] }";
 
@@ -902,10 +971,11 @@ namespace TopStatsWaffle
                         weaponUsed = weaponKillers.ElementAt(i).OriginalString.ToString();
                     }
 
-                    sw.WriteLine($"{ killerSteamId },{ killPositions },{ victimSteamId },{ deathPositions },{ weaponUsed }, { numOfPenetrations }");
+                    sw.WriteLine($"{ round },{ killerSteamId },{ killPositions },{ victimSteamId },{ deathPositions },{ weaponUsed }, { numOfPenetrations }");
 
                     playerPositionStats.Add(new PlayerPositionStats()
                     {
+                        Round = round,
                         KillerSteamID = killerSteamId,
                         XPositionKill = double.Parse(killPositionSplit[1]),
                         YPositionKill = double.Parse(killPositionSplit[2]),
@@ -981,6 +1051,205 @@ namespace TopStatsWaffle
             sw.WriteLine($"{ chickenStats.Killed }");
             /* chickens killed stats end */
 
+            /* team stats */
+            List<TeamStats> teamStats = new List<TeamStats>();
+
+            sw.WriteLine(string.Empty);
+
+            header = "Round,Team,Kills,Deaths,Assists,Flash Assists,Headshots,Teamkills,Suicides,Wallbang Kills,Wallbangs Total For All Kills,Wallbangs Most In One Kill,Shots Fired";
+
+            var firstHalf = true;
+            int swappedSidesCount = 0;
+            int currentRoundChecking = 1;
+            
+            foreach (var teamPlayers in teamPlayersValues["TeamPlayers"])
+            {
+                // players in each team per round
+                swappedSidesCount = (switchSides.ElementAt(swappedSidesCount).RoundBeforeSwitch == currentRoundChecking - 1) ? swappedSidesCount + 1 : swappedSidesCount;
+                firstHalf = (swappedSidesCount % 2 == 0) ? true : false;
+
+                var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == teamPlayers.Round).FirstOrDefault();
+
+                var alphaPlayers = (currentRoundTeams != null) ? (firstHalf ? currentRoundTeams.Terrorists : currentRoundTeams.CounterTerrorists) : null;
+                var bravoPlayers = (currentRoundTeams != null) ? (firstHalf ? currentRoundTeams.CounterTerrorists : currentRoundTeams.Terrorists) : null;
+
+                var alphaSteamIds = alphaPlayers.Select(p => p.SteamID);
+                var bravoSteamIds = bravoPlayers.Select(p => p.SteamID);
+
+                // kills/death stats this round
+                var deathsThisRound = playerKilledEventsValues["PlayerKilledEvents"].Where(k => k.Round == teamPlayers.Round);
+
+                // kills this round
+                int alphaKills = deathsThisRound.Where(d => d.Killer != null
+                                                            && alphaSteamIds.Contains(d.Killer.SteamID))
+                                                            .Count();
+                int bravoKills = deathsThisRound.Where(d => d.Killer != null
+                                                            && bravoSteamIds.Contains(d.Killer.SteamID))
+                                                            .Count();
+
+                // deaths this round
+                int alphaDeaths = deathsThisRound.Where(d => d.Victim != null
+                                                            && alphaSteamIds.Contains(d.Victim.SteamID))
+                                                            .Count();
+                int bravoDeaths = deathsThisRound.Where(d => d.Victim != null
+                                                            && bravoSteamIds.Contains(d.Victim.SteamID))
+                                                            .Count();
+
+                // assists this round
+                int alphaAssists = deathsThisRound.Where(d => d.Assister != null
+                                                                && alphaSteamIds.Contains(d.Assister.SteamID))
+                                                                .Count();
+                int bravoAssists = deathsThisRound.Where(d => d.Assister != null
+                                                                && bravoSteamIds.Contains(d.Assister.SteamID))
+                                                                .Count();
+
+                // flash assists this round
+                int alphaFlashAssists = deathsThisRound.Where(d => d.Assister != null
+                                                                    && alphaSteamIds.Contains(d.Assister.SteamID)
+                                                                    && d.AssistedFlash)
+                                                                    .Count();
+                int bravoFlashAssists = deathsThisRound.Where(d => d.Assister != null
+                                                                    && bravoSteamIds.Contains(d.Assister.SteamID)
+                                                                    && d.AssistedFlash)
+                                                                    .Count();
+
+                // headshots this round
+                int alphaHeadshots = deathsThisRound.Where(d => d.Killer != null
+                                                                && alphaSteamIds.Contains(d.Killer.SteamID)
+                                                                && d.Headshot)
+                                                                .Count();
+                int bravoHeadshots = deathsThisRound.Where(d => d.Killer != null
+                                                                && bravoSteamIds.Contains(d.Killer.SteamID)
+                                                                && d.Headshot)
+                                                                .Count();
+
+                // teamkills this round
+                int alphaTeamkills = deathsThisRound.Where(d => d.Killer != null
+                                                            && d.Victim != null
+                                                            && alphaSteamIds.Contains(d.Killer.SteamID)
+                                                            && alphaSteamIds.Contains(d.Victim.SteamID)
+                                                            && d.Killer.SteamID != d.Victim.SteamID)
+                                                            .Count();
+                int bravoTeamkills = deathsThisRound.Where(d => d.Killer != null
+                                                            && d.Victim != null
+                                                            && bravoSteamIds.Contains(d.Killer.SteamID)
+                                                            && bravoSteamIds.Contains(d.Victim.SteamID)
+                                                            && d.Killer.SteamID != d.Victim.SteamID)
+                                                            .Count();
+
+                // suicides this round
+                int alphaSuicides = deathsThisRound.Where(d => d.Killer != null
+                                                            && d.Victim != null
+                                                            && alphaSteamIds.Contains(d.Killer.SteamID)
+                                                            && d.Killer.SteamID != 0
+                                                            && d.Suicide)
+                                                            .Count();
+                int bravoSuicides = deathsThisRound.Where(d => d.Killer != null
+                                                            && d.Victim != null
+                                                            && bravoSteamIds.Contains(d.Killer.SteamID)
+                                                            && d.Killer.SteamID != 0
+                                                            && d.Suicide)
+                                                            .Count();
+
+                // wallbang kills this round
+                int alphaWallbangKills = deathsThisRound.Where(d => d.Killer != null
+                                                                && alphaSteamIds.Contains(d.Killer.SteamID)
+                                                                && d.PenetratedObjects > 0)
+                                                                .Count();
+                int bravoWallbangKills = deathsThisRound.Where(d => d.Killer != null
+                                                                && bravoSteamIds.Contains(d.Killer.SteamID)
+                                                                && d.PenetratedObjects > 0)
+                                                                .Count();
+
+                // total number of walls penetrated through for kills this round
+                int alphaWallbangsTotalForAllKills = deathsThisRound.Where(d => d.Killer != null
+                                                                            && alphaSteamIds.Contains(d.Killer.SteamID))
+                                                                            .Sum(d => d.PenetratedObjects);
+
+
+                int bravoWallbangsTotalForAllKills = deathsThisRound.Where(d => d.Killer != null
+                                                                            && bravoSteamIds.Contains(d.Killer.SteamID))
+                                                                            .Sum(d => d.PenetratedObjects);
+
+                // most number of walls penetrated through in a single kill this round
+                int alphaWallbangsMostInOneKill = deathsThisRound.Where(d => d.Killer != null
+                                                                            && alphaSteamIds.Contains(d.Killer.SteamID))
+                                                                            .Max(d => d.PenetratedObjects);
+                int bravoWallbangsMostInOneKill = deathsThisRound.Where(d => d.Killer != null
+                                                                            && bravoSteamIds.Contains(d.Killer.SteamID))
+                                                                            .Max(d => d.PenetratedObjects);
+
+                // shots fired this round
+                var shotsFiredThisRound = shotsFiredValues["ShotsFired"].Where(s => s.Round == teamPlayers.Round);
+
+                int alphaShotsFired = shotsFiredThisRound.Where(s => s.Shooter != null && alphaSteamIds.Contains(s.Shooter.SteamID)).Count();
+                int bravoShotsFired = shotsFiredThisRound.Where(s => s.Shooter != null && bravoSteamIds.Contains(s.Shooter.SteamID)).Count();
+
+                teamStats.Add(new TeamStats() {
+                    Round = teamPlayers.Round,
+                    TeamAlpha = alphaSteamIds,
+                    TeamAlphaKills = alphaKills - (alphaTeamkills + alphaSuicides),
+                    TeamAlphaDeaths = alphaDeaths,
+                    TeamAlphaAssists = alphaAssists,
+                    TeamAlphaFlashAssists = alphaFlashAssists,
+                    TeamAlphaHeadshots = alphaHeadshots,
+                    TeamAlphaTeamkills = alphaTeamkills,
+                    TeamAlphaSuicides = alphaSuicides,
+                    TeamAlphaWallbangKills = alphaWallbangKills,
+                    TeamAlphaWallbangsTotalForAllKills = alphaWallbangsTotalForAllKills,
+                    TeamAlphaWallbangsMostInOneKill = alphaWallbangsMostInOneKill,
+                    TeamAlphaShotsFired = alphaShotsFired,
+                    TeamBravo = bravoSteamIds,
+                    TeamBravoKills = bravoKills - (bravoTeamkills + bravoSuicides),
+                    TeamBravoDeaths = bravoDeaths,
+                    TeamBravoAssists = bravoAssists,
+                    TeamBravoFlashAssists = bravoFlashAssists,
+                    TeamBravoHeadshots = bravoHeadshots,
+                    TeamBravoTeamkills = bravoTeamkills,
+                    TeamBravoSuicides = bravoSuicides,
+                    TeamBravoWallbangKills = bravoWallbangKills,
+                    TeamBravoWallbangsTotalForAllKills = bravoWallbangsTotalForAllKills,
+                    TeamBravoWallbangsMostInOneKill = bravoWallbangsMostInOneKill,
+                    TeamBravoShotsFired = bravoShotsFired,
+                });
+                
+                currentRoundChecking++;
+            }
+
+            // prints "Player X" the max number of times needed in the csv file
+            int mostPlayersT = teamPlayersValues["TeamPlayers"].Max(x => x.Terrorists.Count());
+            int mostPlayersCT = teamPlayersValues["TeamPlayers"].Max(x => x.CounterTerrorists.Count());
+
+            int mostPlayersOnOneTeam = (mostPlayersT > mostPlayersCT) ? mostPlayersT : mostPlayersCT;
+            for (int i = 0; i < mostPlayersOnOneTeam; i++)
+            {
+                header += $",Player{ i + 1 }";
+            }
+
+            sw.WriteLine(header);
+
+            foreach (var team in teamStats)
+            {
+                // write team alpha player's steamIDs
+                sw.Write($"{ team.Round },Team Alpha,{ team.TeamAlphaKills }, { team.TeamAlphaDeaths },{ team.TeamAlphaAssists },{ team.TeamAlphaFlashAssists },{ team.TeamAlphaHeadshots },{ team.TeamAlphaTeamkills }," +
+                         $"{ team.TeamAlphaSuicides },{ team.TeamAlphaWallbangKills },{ team.TeamAlphaWallbangsTotalForAllKills },{ team.TeamAlphaWallbangsMostInOneKill },{ team.TeamAlphaShotsFired }");
+                for (int i = 0; i < team.TeamAlpha.Count(); i++)
+                {
+                    sw.Write($",{ team.TeamAlpha.ElementAt(i) }");
+                }
+                sw.WriteLine();
+
+                // write team bravo player's steamIDs
+                sw.Write($"{ team.Round },Team Bravo,{ team.TeamBravoKills }, { team.TeamBravoDeaths },{ team.TeamBravoAssists },{ team.TeamBravoFlashAssists },{ team.TeamBravoHeadshots },{ team.TeamBravoTeamkills }," +
+                         $"{ team.TeamBravoSuicides },{ team.TeamBravoWallbangKills },{ team.TeamBravoWallbangsTotalForAllKills },{ team.TeamBravoWallbangsMostInOneKill },{ team.TeamBravoShotsFired }");
+                for (int i = 0; i < team.TeamBravo.Count(); i++)
+                {
+                    sw.Write($",{ team.TeamBravo.ElementAt(i) }");
+                }
+                sw.WriteLine();
+            }
+            /* team stats end */
+
             sw.Close();
 
             AllStats allStats = new AllStats()
@@ -998,6 +1267,7 @@ namespace TopStatsWaffle
                 PlayerPositionStats = playerPositionStats,
                 FeedbackMessages = feedbackMessages,
                 ChickenStats = chickenStats,
+                TeamStats = teamStats,
             };
 
             /* JSON creation */
@@ -1028,6 +1298,7 @@ namespace TopStatsWaffle
                 playerPositionStats,
                 feedbackMessages,
                 chickenStats,
+                teamStats,
             },
                 Formatting.Indented
             );

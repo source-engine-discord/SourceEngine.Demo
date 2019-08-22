@@ -9,6 +9,7 @@ namespace TopStatsWaffle.Models
 {
     public class PlayerPositionStats
     {
+        public int Round { get; set; }
         public long KillerSteamID { get; set; }
         public double XPositionKill { get; set; }
         public double YPositionKill { get; set; }
