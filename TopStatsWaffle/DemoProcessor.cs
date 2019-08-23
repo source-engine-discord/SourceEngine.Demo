@@ -473,7 +473,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.26";
+            string version = "0.0.27";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -1157,20 +1157,28 @@ namespace TopStatsWaffle
                 // total number of walls penetrated through for kills this round
                 int alphaWallbangsTotalForAllKills = deathsThisRound.Where(d => d.Killer != null
                                                                             && alphaSteamIds.Contains(d.Killer.SteamID))
-                                                                            .Sum(d => d.PenetratedObjects);
+                                                                            .Select(d => d.PenetratedObjects)
+                                                                            .DefaultIfEmpty()
+                                                                            .Sum();
 
 
                 int bravoWallbangsTotalForAllKills = deathsThisRound.Where(d => d.Killer != null
                                                                             && bravoSteamIds.Contains(d.Killer.SteamID))
-                                                                            .Sum(d => d.PenetratedObjects);
+                                                                            .Select(d => d.PenetratedObjects)
+                                                                            .DefaultIfEmpty()
+                                                                            .Sum();
 
                 // most number of walls penetrated through in a single kill this round
                 int alphaWallbangsMostInOneKill = deathsThisRound.Where(d => d.Killer != null
                                                                             && alphaSteamIds.Contains(d.Killer.SteamID))
-                                                                            .Max(d => d.PenetratedObjects);
+                                                                            .Select(d => d.PenetratedObjects)
+                                                                            .DefaultIfEmpty()
+                                                                            .Max();
                 int bravoWallbangsMostInOneKill = deathsThisRound.Where(d => d.Killer != null
                                                                             && bravoSteamIds.Contains(d.Killer.SteamID))
-                                                                            .Max(d => d.PenetratedObjects);
+                                                                            .Select(d => d.PenetratedObjects)
+                                                                            .DefaultIfEmpty()
+                                                                            .Max();
 
                 // shots fired this round
                 var shotsFiredThisRound = shotsFiredValues["ShotsFired"].Where(s => s.Round == teamPlayers.Round);
