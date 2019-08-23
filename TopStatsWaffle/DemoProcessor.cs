@@ -52,61 +52,104 @@ namespace TopStatsWaffle
             events[type].Add(ev);
         }
 
-        void bindPlayer(Player p)
+        /// <summary>
+        /// Adds new player lookups and tick values
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns>Whether or not the userID given has newly been / was previously stored</returns>
+        bool bindPlayer(Player p)
         {
-            if (!playerTicks.ContainsKey(p.UserID))
-            {
-                // check if player has been added twice with different UserIDs
-                var duplicate = playerTicks.Where(x => x.Value.detectedName == p.Name).FirstOrDefault();
+            if (p.SteamID == 0 && (p.Name == "Slimek" || p.UserID == 128)) {
+                bool asd = true;
+            }
+            int duplicateIdToRemoveTicks = 0;
+            int duplicateIdToRemoveLookup = 0;
 
-                if (duplicate.Key != 0)
+
+            if (p.Name != "unconnected" && p.Name != "GOTV")
+            {
+                if (!playerTicks.ContainsKey(p.UserID))
                 {
-                    // copy duplicate's information across
-                    playerTicks.Add(p.UserID, new TickCounter()
+                    // check if player has been added twice with different UserIDs
+                    var duplicate = playerTicks.Where(x => x.Value.detectedName == p.Name).FirstOrDefault();
+
+                    if (duplicate.Key != 0)
                     {
-                        detectedName = duplicate.Value.detectedName,
-                        ticksAlive = duplicate.Value.ticksAlive,
-                        ticksOnServer = duplicate.Value.ticksOnServer,
-                        ticksPlaying = duplicate.Value.ticksPlaying,
-                    });
+                        // copy duplicate's information across
+                        playerTicks.Add(p.UserID, new TickCounter()
+                        {
+                            detectedName = duplicate.Value.detectedName,
+                            ticksAlive = duplicate.Value.ticksAlive,
+                            ticksOnServer = duplicate.Value.ticksOnServer,
+                            ticksPlaying = duplicate.Value.ticksPlaying,
+                        });
 
-                    // remove duplicate
-                    playerTicks.Remove(duplicate.Key);
+                        duplicateIdToRemoveTicks = duplicate.Key;
+                    }
+                    else
+                    {
+                        var detectedName = (string.IsNullOrWhiteSpace(p.Name)) ? "NOT FOUND" : p.Name;
+                        playerTicks.Add(p.UserID, new TickCounter() { detectedName = detectedName } );
+                    }
                 }
-                else
+
+                if (!playerLookups.ContainsKey(p.UserID))
                 {
-                    playerTicks.Add(p.UserID, new TickCounter());
+                    if (p.SteamID == 0)
+                    {
+                        bool asd = true;
+                    }
+                    // check if player has been added twice with different UserIDs
+                    var duplicate = playerLookups.Where(x => x.Value == p.SteamID).FirstOrDefault();
+
+                    if (duplicate.Key == 0) // if the steam ID was 0
+                    {
+                        duplicate = playerLookups.Where(x => x.Key == duplicateIdToRemoveTicks).FirstOrDefault();
+                    }
+                    
+                    if (p.SteamID != 0)
+                    {
+                        playerLookups.Add(p.UserID, p.SteamID);
+                    }
+                    else if (p.SteamID == 0 && duplicate.Key != 0)
+                    {
+                        playerLookups.Add(p.UserID, duplicate.Value);
+                    }
+
+                    duplicateIdToRemoveLookup = duplicate.Key;
                 }
+
+                // remove duplicates
+                if (duplicateIdToRemoveTicks != 0)
+                {
+                    playerTicks.Remove(duplicateIdToRemoveTicks);
+                }
+                if (duplicateIdToRemoveLookup != 0)
+                {
+                    playerLookups.Remove(duplicateIdToRemoveLookup);
+                }
+
+                return true;
             }
 
-            if (!playerLookups.ContainsKey(p.UserID) && p.SteamID != 0)
-            {
-                // check if player has been added twice with different UserIDs
-                var duplicate = playerLookups.Where(x => x.Value == p.SteamID).FirstOrDefault();
-
-                playerLookups.Add(p.UserID, p.SteamID);
-
-                // remove duplicate
-                if (duplicate.Key != 0)
-                    playerLookups.Remove(duplicate.Key);
-            }
-
-            if (playerTicks[p.UserID].detectedName == "NOT FOUND" && p.Name != "" && p.Name != null)
-                playerTicks[p.UserID].detectedName = p.Name;
+            return false;
         }
 
         void addTick(Player p, PSTATUS status)
         {
-            bindPlayer(p);
+            bool userIdStored = bindPlayer(p);
 
-            if (status == PSTATUS.ONSERVER)
-                playerTicks[p.UserID].ticksOnServer++;
+            if (userIdStored)
+            {
+                if (status == PSTATUS.ONSERVER)
+                    playerTicks[p.UserID].ticksOnServer++;
 
-            if (status == PSTATUS.ALIVE)
-                playerTicks[p.UserID].ticksAlive++;
+                if (status == PSTATUS.ALIVE)
+                    playerTicks[p.UserID].ticksAlive++;
 
-            if (status == PSTATUS.PLAYING)
-                playerTicks[p.UserID].ticksPlaying++;
+                if (status == PSTATUS.PLAYING)
+                    playerTicks[p.UserID].ticksPlaying++;
+            }
         }
 
         public static MatchData fromDemoFile(string file)
@@ -430,7 +473,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.25";
+            string version = "0.0.26";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -712,21 +755,30 @@ namespace TopStatsWaffle
                             break;
                     }
 
-                    //team count values
+                    // team count values
                     int roundNum = i + 1;
                     var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == roundNum).FirstOrDefault();
+
+                    foreach (var player in currentRoundTeams.Terrorists) // make sure steamID's aren't 0
+                    {
+                        player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
+                    }
+                    foreach (var player in currentRoundTeams.CounterTerrorists) // make sure steamID's aren't 0
+                    {
+                        player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
+                    }
 
                     int playerCountTeamA = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.Terrorists.Count() : currentRoundTeams.CounterTerrorists.Count()) : 0;
                     int playerCountTeamB = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.CounterTerrorists.Count() : currentRoundTeams.Terrorists.Count()) : 0;
 
-                    //equip values
+                    // equip values
                     var teamEquipValues = teamEquipmentValues["TeamEquipmentStats"].Count() >= i ? teamEquipmentValues["TeamEquipmentStats"].ElementAt(i) : null;
                     int equipValueTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue) : 0;
                     int equipValueTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue) : 0;
                     int expenditureTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure) : 0;
                     int expenditureTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure) : 0;
 
-                    //bombsite planted at
+                    // bombsite planted at
                     string bombsite = null;
                     if (bombsitePlantValues["BombsitePlants"].Any(p => p.Round == roundNum))
                     {
@@ -1254,10 +1306,9 @@ namespace TopStatsWaffle
         {
             if (name == "unconnected") return 0;
 
-            var player = playerNames.Where(p => p.Value.Values.ElementAt(0) == name);
-            if (player == null) return 0;
+            var steamId = playerNames.Where(p => p.Value.Values.ElementAt(0) == name).Select(p => p.Key).FirstOrDefault(); // steamID will be 0 if not found
 
-            return player.ElementAt(0).Key;
+            return steamId;
         }
 
         public IEnumerable<object> selectWeaponsEventsByName(string name)
