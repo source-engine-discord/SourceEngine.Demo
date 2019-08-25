@@ -40,6 +40,7 @@ namespace TopStatsWaffle
 
         public Dictionary<int, TickCounter> playerTicks = new Dictionary<int, TickCounter>();
         public Dictionary<int, long> playerLookups = new Dictionary<int, long>();
+        public Dictionary<int, int> playerReplacements = new Dictionary<int, int>();
 
         public bool passed = false;
 
@@ -59,9 +60,6 @@ namespace TopStatsWaffle
         /// <returns>Whether or not the userID given has newly been / was previously stored</returns>
         bool bindPlayer(Player p)
         {
-            if (p.SteamID == 0 && (p.Name == "Slimek" || p.UserID == 128)) {
-                bool asd = true;
-            }
             int duplicateIdToRemoveTicks = 0;
             int duplicateIdToRemoveLookup = 0;
 
@@ -95,10 +93,6 @@ namespace TopStatsWaffle
 
                 if (!playerLookups.ContainsKey(p.UserID))
                 {
-                    if (p.SteamID == 0)
-                    {
-                        bool asd = true;
-                    }
                     // check if player has been added twice with different UserIDs
                     var duplicate = playerLookups.Where(x => x.Value == p.SteamID).FirstOrDefault();
 
@@ -120,13 +114,44 @@ namespace TopStatsWaffle
                 }
 
                 // remove duplicates
-                if (duplicateIdToRemoveTicks != 0)
+                if (duplicateIdToRemoveTicks != 0 || duplicateIdToRemoveLookup != 0)
                 {
-                    playerTicks.Remove(duplicateIdToRemoveTicks);
-                }
-                if (duplicateIdToRemoveLookup != 0)
-                {
-                    playerLookups.Remove(duplicateIdToRemoveLookup);
+                    if (duplicateIdToRemoveTicks != 0)
+                    {
+                        playerTicks.Remove(duplicateIdToRemoveTicks);
+                    }
+                    if (duplicateIdToRemoveLookup != 0)
+                    {
+                        playerLookups.Remove(duplicateIdToRemoveLookup);
+                    }
+
+                    /* store duplicate userIDs for replacing in events later on */
+                    var idRemoved = (duplicateIdToRemoveLookup != 0) ? duplicateIdToRemoveLookup : duplicateIdToRemoveTicks;
+
+                    // removes any instance of the old userID pointing to a different userID
+                    if (playerReplacements.Any(r => r.Key == idRemoved))
+                    {
+                        playerReplacements.Remove(idRemoved);
+                    }
+
+                    // tries to avoid infinite loops by removing the old entry
+                    if (playerReplacements.Any(r => r.Key == p.UserID && r.Value == idRemoved))
+                    {
+                        playerReplacements.Remove(p.UserID);
+                    }
+
+                    // replace current mappings between an ancient userID & the old userID, to use the new userID as the value instead
+                    if (playerReplacements.Any(r => r.Value == idRemoved))
+                    {
+                        var keysToReplaceValue = playerReplacements.Where(r => r.Value == idRemoved).Select(r => r.Key);
+
+                        foreach (var userId in keysToReplaceValue.ToList())
+                        {
+                            playerReplacements[userId] = p.UserID;
+                        }
+                    }
+
+                    playerReplacements.Add(idRemoved, p.UserID); // Creates a new entry that maps the player's old user ID to their new user ID
                 }
 
                 return true;
@@ -473,7 +498,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.27";
+            string version = "0.0.28";
 
             sw.WriteLine(header);
             sw.WriteLine(version);
@@ -550,38 +575,47 @@ namespace TopStatsWaffle
                     if (p == null)
                         continue;
 
-                    if (!playerLookups.ContainsKey(p.UserID))
+                    // checks for an updated userID for the user
+                    int userId = checkForUpdatedUserId(p.UserID);
+
+                    if (!playerLookups.ContainsKey(userId))
                         continue;
 
                     //Add player to collections list if doesnt exist
-                    if (!playerNames.ContainsKey(playerLookups[p.UserID]))
-                        playerNames.Add(playerLookups[p.UserID], new Dictionary<string, string>());
+                    if (!playerNames.ContainsKey(playerLookups[userId]))
+                        playerNames.Add(playerLookups[userId], new Dictionary<string, string>());
 
-                    if (!data.ContainsKey(playerLookups[p.UserID]))
-                        data.Add(playerLookups[p.UserID], new Dictionary<string, long>());
+                    if (!data.ContainsKey(playerLookups[userId]))
+                        data.Add(playerLookups[userId], new Dictionary<string, long>());
 
                     //Add catagory to dictionary if doesnt exist
-                    if (!playerNames[playerLookups[p.UserID]].ContainsKey("Name"))
-                        playerNames[playerLookups[p.UserID]].Add("Name", p.Name);
+                    if (!playerNames[playerLookups[userId]].ContainsKey("Name"))
+                        playerNames[playerLookups[userId]].Add("Name", p.Name);
 
-                    if (!data[playerLookups[p.UserID]].ContainsKey(catagory))
-                        data[playerLookups[p.UserID]].Add(catagory, 0);
+                    if (!data[playerLookups[userId]].ContainsKey(catagory))
+                        data[playerLookups[userId]].Add(catagory, 0);
 
                     //Increment it
-                    data[playerLookups[p.UserID]][catagory]++;
+                    data[playerLookups[userId]][catagory]++;
                 }
             }
 
             // remove teamkills and suicides from kills (easy messy implementation)
             foreach (var kill in playerKilledEventsValues["PlayerKilledEvents"])
             {
-                if (kill.Suicide)
+                if (kill.Killer != null)
                 {
-                    data[playerLookups[kill.Killer.UserID]]["Kills"] -= 1;
-                }
-                else if (kill.TeamKill)
-                {
-                    data[playerLookups[kill.Killer.UserID]]["Kills"] -= 2;
+                    // checks for an updated userID for the user
+                    int userId = checkForUpdatedUserId(kill.Killer.UserID);
+
+                    if (kill.Suicide)
+                    {
+                        data[playerLookups[userId]]["Kills"] -= 1;
+                    }
+                    else if (kill.TeamKill)
+                    {
+                        data[playerLookups[userId]]["Kills"] -= 2;
+                    }
                 }
             }
 
@@ -1058,7 +1092,7 @@ namespace TopStatsWaffle
             foreach (var teamPlayers in teamPlayersValues["TeamPlayers"])
             {
                 // players in each team per round
-                swappedSidesCount = (switchSides.ElementAt(swappedSidesCount).RoundBeforeSwitch == currentRoundChecking - 1) ? swappedSidesCount + 1 : swappedSidesCount;
+                swappedSidesCount = switchSides.Count() > swappedSidesCount ? (switchSides.ElementAt(swappedSidesCount).RoundBeforeSwitch == currentRoundChecking - 1 ? swappedSidesCount + 1 : swappedSidesCount) : swappedSidesCount;
                 firstHalf = (swappedSidesCount % 2 == 0) ? true : false;
 
                 var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == teamPlayers.Round).FirstOrDefault();
@@ -1379,6 +1413,13 @@ namespace TopStatsWaffle
             }
 
             return round;
+        }
+
+        public int checkForUpdatedUserId(int userId)
+        {
+            int newUserId = playerReplacements.Where(u => u.Key == userId).Select(u => u.Value).FirstOrDefault();
+
+            return (newUserId != 0) ? newUserId : userId;
         }
     }
 }
