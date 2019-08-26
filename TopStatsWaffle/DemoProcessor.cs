@@ -334,8 +334,6 @@ namespace TopStatsWaffle
 
             // PLAYER EVENTS ===================================================
             dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) => {
-                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
-
                 e.Round = getCurrentRoundNum(md);
 
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
@@ -346,11 +344,14 @@ namespace TopStatsWaffle
             };
 
             dp.PlayerDisconnect += (object sender, PlayerDisconnectEventArgs e) => {
-                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+                if (e.Player != null && e.Player.Name != "unconnected" && e.Player.Name != "GOTV")
+                {
+                    int roundsCount = getCurrentRoundNum(md);
 
-                DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer() { PlayerDisconnectEventArgs = e, Round = roundsCount - 1 };
+                    DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer() { PlayerDisconnectEventArgs = e, Round = roundsCount - 1 };
 
-                md.addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
+                    md.addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
+                }
             };
 
             // BOMB EVENTS =====================================================
@@ -498,7 +499,7 @@ namespace TopStatsWaffle
             VersionNumber versionNumber = new VersionNumber();
 
             string header = "Version Number";
-            string version = "0.0.28";
+            string version = "0.0.29";
 
             sw.WriteLine(header);
             sw.WriteLine(version);

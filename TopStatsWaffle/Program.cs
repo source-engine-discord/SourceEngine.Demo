@@ -733,7 +733,7 @@ namespace TopStatsWaffle
                 tanookiStats.RoundJoined = playedTSide ? (playedCTSide ? ((playedRoundsT.First() < playedRoundsCT.First()) ? playedRoundsT.First() : playedRoundsCT.First()) : playedRoundsT.First()) : (playedCTSide ? playedRoundsCT.First() : tanookiStats.RoundJoined);
             }
 
-            if (dpe["DisconnectedPlayers"].Any(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId))
+            if (dpe["DisconnectedPlayers"].Any(d => d.PlayerDisconnectEventArgs.Player != null && d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId))
             {
                 // checks if he played a round later on than his last disconnect (he left and joined back)
                 int finalDisconnectRound = dpe["DisconnectedPlayers"].Where(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId).Reverse().Select(r => r.Round).First();
