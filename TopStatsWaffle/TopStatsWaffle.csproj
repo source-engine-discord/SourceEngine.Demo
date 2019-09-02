@@ -64,7 +64,7 @@
     <Compile Include="Models\ChickenStats.cs" />
     <Compile Include="Models\DisconnectedPlayer.cs" />
     <Compile Include="Models\FeedbackMessage.cs" />
-    <Compile Include="Models\PlayerPositionStats.cs" />
+    <Compile Include="Models\KillsStats.cs" />
     <Compile Include="Models\RoundsStats.cs" />
     <Compile Include="Models\GrenadesSpecificStats.cs" />
     <Compile Include="Models\GrenadesTotalStats.cs" />

@@ -11,10 +11,13 @@ namespace TopStatsWaffle.Models
         public int Round { get; set; }
         public string Half { get; set; }
         public int Overtime { get; set; }
-        public int Length { get; set; }
+        public double Length { get; set; }
         public string Winners { get; set; }
         public string WinMethod { get; set; }
         public string BombsitePlantedAt { get; set; }
+        public double TimeInRoundPlanted { get; set; }
+        public double TimeInRoundExploded { get; set; }
+        public double TimeInRoundDefused { get; set; }
         public int TeamAlphaPlayerCount { get; set; }
         public int TeamBetaPlayerCount { get; set; }
         public int TeamAlphaEquipValue { get; set; }

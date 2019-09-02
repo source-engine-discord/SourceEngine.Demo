@@ -314,10 +314,12 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<int>> poe = new Dictionary<string, IEnumerable<int>>();
                 Dictionary<string, IEnumerable<char>> be = new Dictionary<string, IEnumerable<char>>();
                 Dictionary<string, IEnumerable<BombPlanted>> bpe = new Dictionary<string, IEnumerable<BombPlanted>>();
+                Dictionary<string, IEnumerable<BombExploded>> bee = new Dictionary<string, IEnumerable<BombExploded>>();
+                Dictionary<string, IEnumerable<BombDefused>> bde = new Dictionary<string, IEnumerable<BombDefused>>();
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
                 Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
-                Dictionary<string, IEnumerable<int>> le = new Dictionary<string, IEnumerable<int>>();
+                Dictionary<string, IEnumerable<double>> le = new Dictionary<string, IEnumerable<double>>();
                 Dictionary<string, IEnumerable<TeamEquipmentStats>> tes = new Dictionary<string, IEnumerable<TeamEquipmentStats>>();
                 Dictionary<string, IEnumerable<NadeEventArgs>> ge = new Dictionary<string, IEnumerable<NadeEventArgs>>();
                 Dictionary<string, IEnumerable<SmokeEventArgs>> gse = new Dictionary<string, IEnumerable<SmokeEventArgs>>();
@@ -377,6 +379,16 @@ namespace TopStatsWaffle
                                           .GroupBy(p => p.Round)
                                           .Select(p => p.FirstOrDefault()));
 
+                bee.Add("BombsiteExplosions", (from explode in mdTest.getEvents<BombExploded>()
+                                               select explode as BombExploded)
+                                               .GroupBy(p => p.Round)
+                                               .Select(p => p.FirstOrDefault()));
+
+                bde.Add("BombsiteDefuses", (from defuse in mdTest.getEvents<BombDefused>()
+                                               select defuse as BombDefused)
+                                               .GroupBy(p => p.Round)
+                                               .Select(p => p.FirstOrDefault()));
+
                 be.Add("PlantsSites", (from plant in mdTest.getEvents<BombPlanted>()
                                        select plant as BombPlanted)
                                       .GroupBy(p => p.Round)
@@ -425,7 +437,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, be, te, re, le, tes, ge, cke, sfe);
+                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, te, re, le, tes, ge, cke, sfe);
                     passCount++;
                 }
             }
