@@ -41,7 +41,7 @@ namespace DemoInfo
 		/// </summary>
 		public Team Winner;
 
-        public int Length { get; set; }
+        public double Length { get; set; }
     }
 
     public class SwitchSidesEventArgs : EventArgs
@@ -107,11 +107,10 @@ namespace DemoInfo
     public class PlayerKilledEventArgs : EventArgs
 	{
         public int Round { get; set; }
-        public bool Suicide { get; internal set; }
 
-        public bool TeamKill { get; internal set; }
+        public double TimeInRound { get; set; }
 
-		public Equipment Weapon { get; internal set; }
+        public Equipment Weapon { get; internal set; }
 
 		[Obsolete("Use \"Victim\" instead. This will be removed soon™", false)]
 		public Player DeathPerson { get { return Victim; } }
@@ -128,7 +127,11 @@ namespace DemoInfo
 
         public bool AssisterBotTakeover { get; internal set; }
 
-		public int PenetratedObjects { get; internal set; }
+        public bool Suicide { get; internal set; }
+
+        public bool TeamKill { get; internal set; }
+
+        public int PenetratedObjects { get; internal set; }
 
 		public bool Headshot { get; internal set; }
 
@@ -209,14 +212,18 @@ namespace DemoInfo
 		public Player Player { get; set; }
 
 		public char Site { get; set; }
-	}
+
+        public double TimeInRound { get; set; }
+    }
 
 	public class BombDefuseEventArgs : EventArgs
 	{
 		public Player Player { get; set; }
 
 		public bool HasKit { get; set; }
-	}
+
+        public double TimeInRound { get; set; }
+    }
 
 	public class PlayerHurtEventArgs : EventArgs
 	{

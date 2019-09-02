@@ -18,7 +18,6 @@ namespace DemoInfo.DP.Handler
 
         private static double timestampFreezetimeEnded = 0; //the total number of seconds passed by the end of the last round
         private static int numOfChickensAliveExpected = 0;
-        private static bool firstEventFired = true;
 
 
         public static void HandleGameEventList(IEnumerable<GameEventList.Descriptor> gel, DemoParser parser)
@@ -42,12 +41,6 @@ namespace DemoInfo.DP.Handler
                 {
                     numOfChickensAlive++;
                 }
-            }
-
-            if (firstEventFired)
-            {
-                numOfChickensAliveExpected = numOfChickensAlive;
-                firstEventFired = false;
             }
 
             return numOfChickensAlive;
@@ -114,7 +107,7 @@ namespace DemoInfo.DP.Handler
 					t = Team.CounterTerrorist;
 
                 //round length
-                int roundLength = Convert.ToInt32(Math.Floor(parser.CurrentTime - timestampFreezetimeEnded));
+                double roundLength = parser.CurrentTime - timestampFreezetimeEnded;
 
                 RoundEndedEventArgs roundEnd = new RoundEndedEventArgs() {
                     Reason = (RoundEndReason)data["reason"],
@@ -222,6 +215,8 @@ namespace DemoInfo.DP.Handler
 
 				PlayerKilledEventArgs kill = new PlayerKilledEventArgs();
 
+                kill.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
+
                 kill.Victim = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
 				kill.Killer = parser.Players.ContainsKey((int)data["attacker"]) ? parser.Players[(int)data["attacker"]] : null;
 				kill.Assister = parser.Players.ContainsKey((int)data["assister"]) ? parser.Players[(int)data["assister"]] : null;
@@ -262,7 +257,6 @@ namespace DemoInfo.DP.Handler
                     kill.AssisterBotTakeover = true;
                 }
                 
-
                 if (data.ContainsKey("assistedflash"))
                 kill.AssistedFlash = (bool)data["assistedflash"];
 
@@ -466,7 +460,7 @@ namespace DemoInfo.DP.Handler
 					} 
 				}
 
-
+                bombEventArgs.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 
 
 				switch (eventDescriptor.Name) {
