@@ -10,28 +10,6 @@ namespace TopStatsWaffle
 {
     static class EXTMethods
     {
-        public static string getAttribCSVrow(this Dictionary<string, int> block, List<string> headerKeys, long steamid, string name = "")
-        {
-
-            string built = steamid.ToString() + ",";
-
-            if (name != "")
-                built += name + ",";
-
-            //Iterate each header and check if its present in the data block
-            //Then add it to the CSV string
-            foreach (string header in headerKeys)
-            {
-                if (block.ContainsKey(header))
-                    built += block[header] + ",";
-                else
-                    built += "0,";
-            }
-
-            //Cut off the last ,
-            return built.Substring(0, built.Length - 1);
-        }
-
         public static PlayerData fromSteamID(this List<PlayerData> players, long steamid)
         {
             foreach (PlayerData dat in players)
@@ -92,28 +70,6 @@ namespace TopStatsWaffle
                             collected.Add(key);
 
             return collected.Distinct().ToList();
-        }
-
-        public static void writeCSVfromStrings(this List<string> lines, List<string> headers, string filename)
-        {
-            StreamWriter sw = new StreamWriter(filename, false);
-
-            //Write header
-            string headerLine = "Steam ID,Steam Name,";
-            foreach (string header in headers)
-            {
-                headerLine += header + ",";
-            }
-
-            sw.WriteLine(headerLine.Substring(0, headerLine.Length - 1));
-
-            //Write data
-            foreach (string line in lines)
-            {
-                sw.WriteLine(line);
-            }
-
-            sw.Close();
         }
     }
 }

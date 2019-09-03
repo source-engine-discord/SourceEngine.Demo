@@ -67,8 +67,6 @@ namespace TopStatsWaffle
         //Settings
         public string TARGET_FOLDER;
         public bool ALLTHEDATA = true;
-        public bool OUTPUT_CSV_PER_MATCH = false;
-        public bool OUTPUT_TOTAL_CSV = true;
 
         //Runtime
         private List<PlayerData> allPlayers = new List<PlayerData>();
@@ -244,64 +242,10 @@ namespace TopStatsWaffle
                     Debug.exitProgressBar();
                     Debug.Error("Attempted to read past end of stream...");
                 }
-                #region per match csv
-                if (OUTPUT_CSV_PER_MATCH)
-                {
-                    //Output per-game csv data
-                    List<string> headers = allPlayers.getAllHeaders(matchID);
-                    List<string> outputLines = new List<string>();
-
-                    foreach (PlayerData mPlayerDat in allPlayers)
-                    {
-                        if (mPlayerDat.collected.ContainsKey(matchID))
-                        {
-                            outputLines.Add(mPlayerDat.collected[matchID].getAttribCSVrow(headers, mPlayerDat.s_steamid));
-                        }
-                    }
-
-                    if (!Directory.Exists("matches"))
-                        Directory.CreateDirectory("matches");
-
-                    string csvfile = "matches/ID" + matchID.ToString() + "-" + Path.GetFileNameWithoutExtension(matches[matchID]) + ".csv";
-
-                    outputLines.writeCSVfromStrings(headers, csvfile);
-                }
-                #endregion
 
                 dp.Dispose();
 
                 Debug.exitProgressBar();
-            }
-            #endregion
-
-            #region output total csv
-            if (OUTPUT_TOTAL_CSV)
-            {
-                Debug.Info("Collecting steam usernames from ID's");
-                List<long> steamIDS = new List<long>();
-                foreach (PlayerData mPlayerDat in allPlayers)
-                    steamIDS.Add(mPlayerDat.s_steamid);
-
-                Dictionary<long, string> steamUnameLookup = Steam.getSteamUserNamesLookupTable(steamIDS);
-
-                Debug.Info("Generating full CSV data...");
-
-                //Output Final FULL CSV data
-                List<string> final_headers = allPlayers.getAllHeaders();
-                List<string> final_outputLines = new List<string>();
-
-                foreach (PlayerData mPlayerDat in allPlayers)
-                {
-                    string name = "UNKOWN";
-                    if (steamUnameLookup.ContainsKey(mPlayerDat.s_steamid))
-                        name = steamUnameLookup[mPlayerDat.s_steamid];
-
-                    final_outputLines.Add(mPlayerDat.getTotalData().getAttribCSVrow(final_headers, mPlayerDat.s_steamid, name));
-                }
-
-                string final_csvfile = Guid.NewGuid().ToString("N") + "-total.csv";
-
-                final_outputLines.writeCSVfromStrings(final_headers, final_csvfile);
             }
             #endregion
 
