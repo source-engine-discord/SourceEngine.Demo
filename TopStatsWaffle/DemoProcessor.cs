@@ -480,11 +480,11 @@ namespace TopStatsWaffle
             var mapDateSplit = (!string.IsNullOrWhiteSpace(demo[2]) && demo[2] != "unknown") ? demo[2].Split('/')  : null;
             var mapDateString = (mapDateSplit != null && mapDateSplit.Count() >= 3) ? (mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]) : string.Empty;
 
-            var mapNameSplit = matchStartValues["MatchStarts"].ElementAt(0).Mapname.Split('/');
+            var mapNameSplit = (matchStartValues["MatchStarts"].Count() > 0) ? matchStartValues["MatchStarts"].ElementAt(0).Mapname.Split('/') : new string[] { demo[1] };
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "0.1.0" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "0.1.1" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -492,11 +492,8 @@ namespace TopStatsWaffle
             /* Supported gamemodes end */
 
             /* map info */
-            MapInfo mapInfo = new MapInfo() { MapName = matchStartValues["MatchStarts"].ElementAt(0).Mapname, TestDate = demo[2], TestType = demo[3] };
+            MapInfo mapInfo = new MapInfo() { MapName = string.Join(string.Empty, mapNameSplit.ToArray()), TestDate = demo[2], TestType = demo[3] };
 
-            mapNameSplit = matchStartValues["MatchStarts"].ElementAt(0).Mapname.Split('/');
-
-            mapInfo.MapName = (mapNameSplit.Count() > 2) ? mapNameSplit[mapNameSplit.Count() - 1] : "unknown";
             mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
             /* map info end */
 
@@ -677,7 +674,7 @@ namespace TopStatsWaffle
                     }
                     else
                     {
-                        half = (i < switchSides.ElementAt(0).RoundBeforeSwitch) ? "First" : "Second";
+                        half = (switchSides.Count() > 0) ? ((i < switchSides.ElementAt(0).RoundBeforeSwitch) ? "First" : "Second") : "First";
                     }
 
                     // total rounds calculation
