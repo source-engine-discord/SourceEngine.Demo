@@ -484,7 +484,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "0.1.1" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "0.1.2" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -511,8 +511,12 @@ namespace TopStatsWaffle
                     if (p == null)
                         continue;
 
-                    // checks for an updated userID for the user
-                    int userId = checkForUpdatedUserId(p.UserID);
+                    // checks for an updated userID for the user, loops incase it has changed more than once
+                    int userId = p.UserID;
+                    while (checkForUpdatedUserId(userId) != userId)
+                    {
+                        userId = checkForUpdatedUserId(userId);
+                    }
 
                     if (!playerLookups.ContainsKey(userId))
                         continue;
@@ -539,10 +543,14 @@ namespace TopStatsWaffle
             // remove teamkills and suicides from kills (easy messy implementation)
             foreach (var kill in playerKilledEventsValues["PlayerKilledEvents"])
             {
-                if (kill.Killer != null)
+                if (kill.Killer != null && kill.Killer.Name != "unconnected")
                 {
-                    // checks for an updated userID for the user
-                    int userId = checkForUpdatedUserId(kill.Killer.UserID);
+                    // checks for an updated userID for the user, loops incase it has changed more than once
+                    int userId = kill.Killer.UserID;
+                    while (checkForUpdatedUserId(userId) != userId)
+                    {
+                        userId = checkForUpdatedUserId(userId);
+                    }
 
                     if (kill.Suicide)
                     {
@@ -1001,8 +1009,19 @@ namespace TopStatsWaffle
                 var alphaPlayers = (currentRoundTeams != null) ? (firstHalf ? currentRoundTeams.Terrorists : currentRoundTeams.CounterTerrorists) : null;
                 var bravoPlayers = (currentRoundTeams != null) ? (firstHalf ? currentRoundTeams.CounterTerrorists : currentRoundTeams.Terrorists) : null;
 
-                var alphaSteamIds = alphaPlayers.Select(p => p.SteamID);
-                var bravoSteamIds = bravoPlayers.Select(p => p.SteamID);
+                List<long> alphaSteamIds = new List<long>();
+                List<long> bravoSteamIds = new List<long>();
+
+                foreach (var player in alphaPlayers)
+                {
+                    player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
+                    alphaSteamIds.Add(player.SteamID);
+                }
+                foreach (var player in bravoPlayers)
+                {
+                    player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
+                    bravoSteamIds.Add(player.SteamID);
+                }
 
                 // kills/death stats this round
                 var deathsThisRound = playerKilledEventsValues["PlayerKilledEvents"].Where(k => k.Round == teamPlayers.Round);
