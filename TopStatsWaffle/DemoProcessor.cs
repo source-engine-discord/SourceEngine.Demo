@@ -484,7 +484,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "0.1.2" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "0.1.3" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -492,8 +492,9 @@ namespace TopStatsWaffle
             /* Supported gamemodes end */
 
             /* map info */
-            MapInfo mapInfo = new MapInfo() { MapName = string.Join(string.Empty, mapNameSplit.ToArray()), TestDate = demo[2], TestType = demo[3] };
+            MapInfo mapInfo = new MapInfo() { MapName = demo[1], TestDate = demo[2], TestType = demo[3] };
 
+            mapInfo.MapName = (mapNameSplit.Count() > 2) ? mapNameSplit[2] : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
             mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
             /* map info end */
 
