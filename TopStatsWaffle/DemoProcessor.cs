@@ -484,7 +484,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "0.1.3" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "0.1.4" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -1022,6 +1022,63 @@ namespace TopStatsWaffle
                 {
                     player.SteamID = (player.SteamID == 0) ? getSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
                     bravoSteamIds.Add(player.SteamID);
+                }
+
+                // attempts to remove and stray players that are supposedly on a team, even though they exceed the max players per team and they are not in player lookups
+                // (also most likely have a steam ID of 0)
+                List<long> alphaSteamIdsToRemove = new List<long>();
+                List<long> bravoSteamIdsToRemove = new List<long>();
+
+                if (mapInfo.TestType.ToLower().Contains("comp") && alphaSteamIds.Count() > 5)
+                {
+                    foreach (var steamId in alphaSteamIds)
+                    {
+                        if (!playerLookups.Any(l => l.Value == steamId))
+                        {
+                            alphaSteamIdsToRemove.Add(steamId);
+                        }
+                    }
+                }
+                else if (mapInfo.TestType.ToLower().Contains("casual") && alphaSteamIds.Count() > 10)
+                {
+                    foreach (var steamId in alphaSteamIds)
+                    {
+                        if (!playerLookups.Any(l => l.Value == steamId))
+                        {
+                            alphaSteamIdsToRemove.Add(steamId);
+                        }
+                    }
+                }
+
+                if (mapInfo.TestType.ToLower().Contains("comp") && bravoSteamIds.Count() > 5)
+                {
+                    foreach (var steamId in bravoSteamIds)
+                    {
+                        if (!playerLookups.Any(l => l.Value == steamId))
+                        {
+                            bravoSteamIdsToRemove.Add(steamId);
+                        }
+                    }
+                }
+                else if (mapInfo.TestType.ToLower().Contains("casual") && bravoSteamIds.Count() > 10)
+                {
+                    foreach (var steamId in bravoSteamIds)
+                    {
+                        if (!playerLookups.Any(l => l.Value == steamId))
+                        {
+                            bravoSteamIdsToRemove.Add(steamId);
+                        }
+                    }
+                }
+
+                // remove the steamIDs if necessary
+                foreach (var steamId in alphaSteamIdsToRemove)
+                {
+                    alphaSteamIds.Remove(steamId);
+                }
+                foreach (var steamId in bravoSteamIdsToRemove)
+                {
+                    bravoSteamIds.Remove(steamId);
                 }
 
                 // kills/death stats this round
