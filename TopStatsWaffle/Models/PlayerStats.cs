@@ -21,6 +21,7 @@ namespace TopStatsWaffle.Models
         public int Shots { get; set; }
         public int Plants { get; set; }
         public int Defuses { get; set; }
+        public int Rescues { get; set; }
         public long TicksAlive { get; set; }
         public long TicksOnServer { get; set; }
         public long TicksPlaying { get; set; }

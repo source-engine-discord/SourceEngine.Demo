@@ -64,6 +64,8 @@
     <Compile Include="Models\ChickenStats.cs" />
     <Compile Include="Models\DisconnectedPlayer.cs" />
     <Compile Include="Models\FeedbackMessage.cs" />
+    <Compile Include="Models\HostageRescued.cs" />
+    <Compile Include="Models\HostageStats.cs" />
     <Compile Include="Models\KillsStats.cs" />
     <Compile Include="Models\RoundsStats.cs" />
     <Compile Include="Models\GrenadesSpecificStats.cs" />

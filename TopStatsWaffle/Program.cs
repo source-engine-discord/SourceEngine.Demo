@@ -310,6 +310,8 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<BombPlanted>> bpe = new Dictionary<string, IEnumerable<BombPlanted>>();
                 Dictionary<string, IEnumerable<BombExploded>> bee = new Dictionary<string, IEnumerable<BombExploded>>();
                 Dictionary<string, IEnumerable<BombDefused>> bde = new Dictionary<string, IEnumerable<BombDefused>>();
+                Dictionary<string, IEnumerable<char>> he = new Dictionary<string, IEnumerable<char>>();
+                Dictionary<string, IEnumerable<HostageRescued>> hre = new Dictionary<string, IEnumerable<HostageRescued>>();
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
                 Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
@@ -368,6 +370,9 @@ namespace TopStatsWaffle
                 pe.Add("Defuses", from player in mdTest.getEvents<BombDefused>()
                                   select (player as BombDefused).Player);
 
+                pe.Add("Rescues", from player in mdTest.getEvents<HostageRescued>()
+                                  select (player as HostageRescued).Player);
+
                 bpe.Add("BombsitePlants", (from plant in mdTest.getEvents<BombPlanted>()
                                            select plant as BombPlanted)
                                           .GroupBy(p => p.Round)
@@ -397,6 +402,12 @@ namespace TopStatsWaffle
                                         select defuse as BombDefused)
                                         .GroupBy(p => p.Round)
                                         .Select(p => p.FirstOrDefault().Bombsite));
+
+                hre.Add("HostageRescues", (from hostage in mdTest.getEvents<HostageRescued>()
+                                           select hostage as HostageRescued));
+
+                he.Add("RescuedHostages", from rescue in mdTest.getEvents<HostageRescued>()
+                                          select (rescue as HostageRescued).Hostage);
 
                 dpe.Add("DisconnectedPlayers", from disconnection in mdTest.getEvents<DisconnectedPlayer>()
                                                select (disconnection as DisconnectedPlayer));
@@ -431,7 +442,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, te, re, le, tes, ge, cke, sfe);
+                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, hre, he, te, re, le, tes, ge, cke, sfe);
                     passCount++;
                 }
             }

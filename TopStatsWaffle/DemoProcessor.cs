@@ -379,6 +379,15 @@ namespace TopStatsWaffle
                 md.addEvent(typeof(BombDefused), bombDefused);
             };
 
+            // HOSTAGE EVENTS =====================================================
+            dp.HostageRescued += (object sender, HostageRescuedEventArgs e) => {
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+
+                HostageRescued hostageRescued = new HostageRescued { Round = roundsCount + 1, TimeInRound = e.TimeInRound, Player = e.Player, Hostage = e.Hostage };
+
+                md.addEvent(typeof(HostageRescued), hostageRescued);
+            };
+
             // WEAPON EVENTS ===================================================
             dp.WeaponFired += (object sender, WeaponFiredEventArgs e) => {
                 md.addEvent(typeof(WeaponFiredEventArgs), e);
@@ -472,9 +481,10 @@ namespace TopStatsWaffle
             Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues,
             Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<int>> penetrationValues,
             Dictionary<string, IEnumerable<BombPlanted>> bombsitePlantValues, Dictionary<string, IEnumerable<BombExploded>> bombsiteExplodeValues, Dictionary<string, IEnumerable<BombDefused>> bombsiteDefuseValues,
-            Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
-            Dictionary<string, IEnumerable<double>> roundLengthValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues,
-            Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, Dictionary<string, IEnumerable<ShotFired>> shotsFiredValues, bool writeTicks = true
+            Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<HostageRescued>> hostageRescueValues, Dictionary<string, IEnumerable<char>> hostageValues,
+            Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<double>> roundLengthValues,
+            Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues,
+            Dictionary<string, IEnumerable<ShotFired>> shotsFiredValues, bool writeTicks = true
         )
         {
             var mapDateSplit = (!string.IsNullOrWhiteSpace(demo[2]) && demo[2] != "unknown") ? demo[2].Split('/')  : null;
@@ -484,11 +494,11 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "0.1.4" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "0.2.0" };
             /* demo parser version end */
 
             /* Supported gamemodes */
-            List<string> supportedGamemodes = new List<string>() { "Defuse", "Wingman" };
+            List<string> supportedGamemodes = new List<string>() { "Defuse", "Hostage", "Wingman" };
             /* Supported gamemodes end */
 
             /* map info */
@@ -496,6 +506,24 @@ namespace TopStatsWaffle
 
             mapInfo.MapName = (mapNameSplit.Count() > 2) ? mapNameSplit[2] : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
             mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
+
+            // attempts to get the gamemode
+            if (bombsiteValues["PlantsSites"].Count() > 0)
+            {
+                if (teamPlayersValues["TeamPlayers"].Any(t => t.Terrorists.Count() > 2 && teamPlayersValues["TeamPlayers"].Any(ct => ct.CounterTerrorists.Count() > 2)))
+                {
+                    mapInfo.GameMode = "Defuse";
+                }
+                else
+                {
+                    mapInfo.GameMode = "Wingman";
+                }
+            }
+            else // assumes it's hostage if no bomb events are triggered --- is there a better way to decide this since matches with no plants will fall into this category ???
+                 // maybe instead check the entity list for entities that are bombs or hostages?
+            {
+                mapInfo.GameMode = "Hostage";
+            }
             /* map info end */
 
             /* player stats */
@@ -571,19 +599,15 @@ namespace TopStatsWaffle
                 var playerName = match.ElementAt(0).Value.ElementAt(0).Value;
                 var steamID = match.ElementAt(0).Key;
 
-                string playerLine = $"{ playerName },{ player },";
-
                 List<int> statsList1 = new List<int>();
                 foreach (string catagory in playerValues.Keys)
                 {
                     if (data[player].ContainsKey(catagory))
                     {
-                        playerLine += data[player][catagory] + ",";
                         statsList1.Add((int)data[player][catagory]);
                     }
                     else
                     {
-                        playerLine += "0,";
                         statsList1.Add(0);
                     }
                 }
@@ -597,26 +621,17 @@ namespace TopStatsWaffle
                         {
                             if (playerLookups[userid] == player)
                             {
-                                playerLine += this.playerTicks[userid].ticksAlive + ",";
                                 statsList2.Add(this.playerTicks[userid].ticksAlive);
 
-                                playerLine += this.playerTicks[userid].ticksOnServer + ",";
                                 statsList2.Add(this.playerTicks[userid].ticksOnServer);
 
-                                playerLine += this.playerTicks[userid].ticksPlaying + ",";
                                 statsList2.Add(this.playerTicks[userid].ticksPlaying);
 
                                 break;
                             }
                         }
                     }
-                    else
-                    {
-                        playerLine += "0,0,0,";
-                    }
                 }
-
-                string[] stats = playerLine.Split(',');
 
                 int numOfKillsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Killer != null) && (k.Killer.Name.ToString() == playerName.ToString()) && (k.KillerBotTakeover)).Count();
                 int numOfDeathsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Victim != null) && (k.Victim.Name.ToString() == playerName.ToString()) && (k.VictimBotTakeover)).Count();
@@ -637,6 +652,7 @@ namespace TopStatsWaffle
                     Shots = statsList1.ElementAt(5),
                     Plants = statsList1.ElementAt(6),
                     Defuses = statsList1.ElementAt(7),
+                    Rescues = statsList1.ElementAt(8),
                     TicksAlive = statsList2.ElementAt(0),
                     TicksOnServer = statsList2.ElementAt(1),
                     TicksPlaying = statsList2.ElementAt(2),
@@ -655,8 +671,6 @@ namespace TopStatsWaffle
             var roundsWonReasons = getRoundsWonReasons(roundEndReasonValues);
             var roundsWonTeams = getRoundsWonTeams(teamValues);
             int totalRoundsWonTeamAlpha = 0, totalRoundsWonTeamBeta = 0;
-
-            List<string> roundStatsStrings = new List<string>();
 
             for (int i = 0; i < roundsWonTeams.Count(); i++)
             {
@@ -711,7 +725,7 @@ namespace TopStatsWaffle
                     }
 
                     //win method
-                    const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", timeout = "TargetSaved";
+                    const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", rescued = "HostagesRescued", notRescued = "HostagesNotRescued", timeout = "TargetSaved";
 
                     switch (roundsWonReasons[i].ToString())
                     {
@@ -726,6 +740,12 @@ namespace TopStatsWaffle
                             break;
                         case defused:
                             reason = "Defused";
+                            break;
+                        case rescued:
+                            reason = "HostagesRescued";
+                            break;
+                        case notRescued:
+                            reason = "HostagesNotRescued";
                             break;
                         case timeout:
                             reason = "Timeout";
@@ -775,11 +795,27 @@ namespace TopStatsWaffle
                         bombsite = (bombsite != null) ? bombsite : bombDefused.Bombsite.ToString();
                     }
 
-                    var timeInRoundPlanted = bombPlanted != null ? bombPlanted.TimeInRound : 0;
-                    var timeInRoundExploded = bombExploded != null ? bombExploded.TimeInRound : 0;
-                    var timeInRoundDefused = bombDefused != null ? bombDefused.TimeInRound : 0;
+                    var timeInRoundPlanted = (bombPlanted != null) ? bombPlanted.TimeInRound : 0;
+                    var timeInRoundExploded = (bombExploded != null) ? bombExploded.TimeInRound : 0;
+                    var timeInRoundDefused = (bombDefused != null) ? bombDefused.TimeInRound : 0;
 
-                    roundStatsStrings.Add($"{ i + 1 },{ half },{ overtimeNum },{ roundLength },{ roundsWonTeams[i].ToString() },{ reason },{ bombsite },{ playerCountTeamA },{ playerCountTeamB },{ equipValueTeamA },{ equipValueTeamB },{ expenditureTeamA },{ expenditureTeamB }");
+                    // hostage rescued
+                    bool rescuedHostageA = false, rescuedHostageB = false, rescuedAllHostages = false;
+                    HostageRescued hostageRescuedA = null, hostageRescuedB = null;
+
+                    if (hostageRescueValues["HostageRescues"].Any(r => r.Round == roundNum))
+                    {
+                        hostageRescuedA = hostageRescueValues["HostageRescues"].Where(r => r.Round == roundNum && r.Hostage == 'A').FirstOrDefault();
+                        hostageRescuedB = hostageRescueValues["HostageRescues"].Where(r => r.Round == roundNum && r.Hostage == 'B').FirstOrDefault();
+
+                        rescuedHostageA = (hostageRescuedA != null) ? true : false;
+                        rescuedHostageB = (hostageRescuedB != null) ? true : false;
+
+                        rescuedAllHostages = (rescuedHostageA && rescuedHostageB) ? true : false;
+                    }
+
+                    var timeInRoundRescuedHostageA = (rescuedHostageA != false) ? hostageRescuedA.TimeInRound : 0;
+                    var timeInRoundRescuedHostageB = (rescuedHostageB != false) ? hostageRescuedB.TimeInRound : 0;
 
                     roundsStats.Add(new RoundsStats()
                     {
@@ -790,9 +826,14 @@ namespace TopStatsWaffle
                         Winners = roundsWonTeams[i].ToString(),
                         WinMethod = reason,
                         BombsitePlantedAt = bombsite,
+                        RescuedHostageA = rescuedHostageA,
+                        RescuedHostageB = rescuedHostageB,
+                        RescuedAllHostages = rescuedAllHostages,
                         TimeInRoundPlanted = timeInRoundPlanted,
                         TimeInRoundExploded = timeInRoundExploded,
                         TimeInRoundDefused = timeInRoundDefused,
+                        TimeInRoundRescuedHostageA = timeInRoundRescuedHostageA,
+                        TimeInRoundRescuedHostageB = timeInRoundRescuedHostageB,
                         TeamAlphaPlayerCount = playerCountTeamA,
                         TeamBetaPlayerCount = playerCountTeamB,
                         TeamAlphaEquipValue = equipValueTeamA,
@@ -828,6 +869,18 @@ namespace TopStatsWaffle
             bombsiteStats.Add(new BombsiteStats() { Bombsite = 'A', Plants = plantsA, Explosions = explosionsA, Defuses = defusesA });
             bombsiteStats.Add(new BombsiteStats() { Bombsite = 'B', Plants = plantsB, Explosions = explosionsB, Defuses = defusesB });
             /* bombsite stats end */
+
+            /* hostage stats */
+            List<HostageStats> hostageStats = new List<HostageStats>();
+
+            List<char> hostageRescues = new List<char>(hostageValues["RescuedHostages"]);
+
+            int rescuesA = hostageRescues.Where(b => b.ToString().Equals("A")).Count();
+            int rescuesB = hostageRescues.Where(b => b.ToString().Equals("B")).Count();
+
+            hostageStats.Add(new HostageStats() { Hostage = 'A', Rescues = rescuesA });
+            hostageStats.Add(new HostageStats() { Hostage = 'B', Rescues = rescuesB });
+            /* hostage stats end */
 
             /* Grenades total stats */
             List<GrenadesTotalStats> grenadesTotalStats = new List<GrenadesTotalStats>();
@@ -1241,6 +1294,7 @@ namespace TopStatsWaffle
                 WinnersStats = winnersStats,
                 RoundsStats = roundsStats,
                 BombsiteStats = bombsiteStats,
+                HostageStats = hostageStats,
                 GrenadesTotalStats = grenadesTotalStats,
                 GrenadesSpecificStats = grenadesSpecificStats,
                 KillsStats = killsStats,
@@ -1273,6 +1327,7 @@ namespace TopStatsWaffle
                 winnersStats,
                 roundsStats,
                 bombsiteStats,
+                hostageStats,
                 grenadesTotalStats,
                 grenadesSpecificStats,
                 killsStats,
@@ -1329,13 +1384,15 @@ namespace TopStatsWaffle
 
         public List<RoundEndReason> getRoundsWonReasons(Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues)
         {
-            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", timeout = "TargetSaved";
+            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", rescued = "HostagesRescued", notRescued = "HostagesNotRescued", timeout = "TargetSaved";
 
             var roundsWonReasons = roundEndReasonValues["RoundsWonReasons"].ToList();
             roundsWonReasons.RemoveAll(r => !r.ToString().Equals(tKills)
                                          && !r.ToString().Equals(ctKills)
                                          && !r.ToString().Equals(bombed)
                                          && !r.ToString().Equals(defused)
+                                         && !r.ToString().Equals(rescued)
+                                         && !r.ToString().Equals(notRescued)
                                          && !r.ToString().Equals(timeout)
             );
 

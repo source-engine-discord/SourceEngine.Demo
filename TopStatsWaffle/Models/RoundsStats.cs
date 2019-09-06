@@ -15,9 +15,14 @@ namespace TopStatsWaffle.Models
         public string Winners { get; set; }
         public string WinMethod { get; set; }
         public string BombsitePlantedAt { get; set; }
+        public bool RescuedHostageA { get; set; }
+        public bool RescuedHostageB { get; set; }
+        public bool RescuedAllHostages { get; set; }
         public double TimeInRoundPlanted { get; set; }
         public double TimeInRoundExploded { get; set; }
         public double TimeInRoundDefused { get; set; }
+        public double TimeInRoundRescuedHostageA { get; set; }
+        public double TimeInRoundRescuedHostageB { get; set; }
         public int TeamAlphaPlayerCount { get; set; }
         public int TeamBetaPlayerCount { get; set; }
         public int TeamAlphaEquipValue { get; set; }
