@@ -177,326 +177,373 @@ namespace DemoInfo.DP.Handler
 			//}
 
 			switch (eventDescriptor.Name) {
-			case "weapon_fire":
+			    case "weapon_fire":
 
-				data = MapData (eventDescriptor, rawEvent);
+				    data = MapData (eventDescriptor, rawEvent);
 
-				WeaponFiredEventArgs fire = new WeaponFiredEventArgs ();
-				fire.Shooter = parser.Players.ContainsKey ((int)data ["userid"]) ? parser.Players [(int)data ["userid"]] : null;
-				fire.Weapon = new Equipment ((string)data ["weapon"]);
+				    WeaponFiredEventArgs fire = new WeaponFiredEventArgs ();
+				    fire.Shooter = parser.Players.ContainsKey ((int)data ["userid"]) ? parser.Players [(int)data ["userid"]] : null;
+				    fire.Weapon = new Equipment ((string)data ["weapon"]);
 
-				if (fire.Shooter != null && fire.Shooter.ActiveWeapon != null && fire.Weapon.Class != EquipmentClass.Grenade) {
-					fire.Weapon = fire.Shooter.ActiveWeapon;
-				}
+				    if (fire.Shooter != null && fire.Shooter.ActiveWeapon != null && fire.Weapon.Class != EquipmentClass.Grenade) {
+					    fire.Weapon = fire.Shooter.ActiveWeapon;
+				    }
 
-				parser.RaiseWeaponFired(fire);
-				break;
-            /* doesn't seem to trigger this event currently */
-            /*
-                case "other_death":
-                data = MapData(eventDescriptor, rawEvent);
+				    parser.RaiseWeaponFired(fire);
+				    break;
+                /* doesn't seem to trigger this event currently */
+                /*
+                    case "other_death":
+                    data = MapData(eventDescriptor, rawEvent);
 
-                string entityType = data["othertype"].ToString();
+                    string entityType = data["othertype"].ToString();
 
-                if (entityType == "chicken")
-                {
-                    ChickenKilledEventArgs chickenKill = new ChickenKilledEventArgs();
-                    //long deathLocationX = rawEvent.Keys.
-
-                    parser.RaiseChickenKilled(chickenKill);
-                }
-
-                parser.RaiseOtherKilled();
-
-                break;
-            */
-            case "player_death":
-				data = MapData(eventDescriptor, rawEvent);
-
-				PlayerKilledEventArgs kill = new PlayerKilledEventArgs();
-
-                kill.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
-
-                kill.Victim = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				kill.Killer = parser.Players.ContainsKey((int)data["attacker"]) ? parser.Players[(int)data["attacker"]] : null;
-				kill.Assister = parser.Players.ContainsKey((int)data["assister"]) ? parser.Players[(int)data["assister"]] : null;
-				kill.Headshot = (bool)data["headshot"];
-				kill.Weapon = new Equipment((string)data["weapon"], (string)data["weapon_itemid"]);
-
-                // works out if the kill and death were teamkills or suicides
-                kill.TeamKill = false;
-                kill.Suicide = false;
-
-                if (kill.Victim != null && kill.Killer != null)
-                {
-                    if (kill.Victim.SteamID != 0 && kill.Victim.SteamID == kill.Killer.SteamID)
+                    if (entityType == "chicken")
                     {
-                        kill.Suicide = true;
+                        ChickenKilledEventArgs chickenKill = new ChickenKilledEventArgs();
+                        //long deathLocationX = rawEvent.Keys.
+
+                        parser.RaiseChickenKilled(chickenKill);
                     }
-                    else if (kill.Victim.Team == kill.Killer.Team)
+
+                    parser.RaiseOtherKilled();
+
+                    break;
+                */
+                case "player_death":
+				    data = MapData(eventDescriptor, rawEvent);
+
+				    PlayerKilledEventArgs kill = new PlayerKilledEventArgs();
+
+                    kill.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
+
+                    kill.Round = 0;
+                    kill.Victim = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				    kill.Killer = parser.Players.ContainsKey((int)data["attacker"]) ? parser.Players[(int)data["attacker"]] : null;
+				    kill.Assister = parser.Players.ContainsKey((int)data["assister"]) ? parser.Players[(int)data["assister"]] : null;
+				    kill.Headshot = (bool)data["headshot"];
+				    kill.Weapon = new Equipment((string)data["weapon"], (string)data["weapon_itemid"]);
+
+                    // works out if the kill and death were teamkills or suicides
+                    kill.TeamKill = false;
+                    kill.Suicide = false;
+
+                    if (kill.Victim != null && kill.Killer != null)
                     {
-                        kill.TeamKill = true;
+                        if (kill.Victim.SteamID != 0 && kill.Victim.SteamID == kill.Killer.SteamID)
+                        {
+                            kill.Suicide = true;
+                        }
+                        else if (kill.Victim.Team == kill.Killer.Team)
+                        {
+                            kill.TeamKill = true;
+                        }
                     }
-                }
 
-                // works out if either the killer or victim have taken over bots
-                kill.KillerBotTakeover = false;
-                kill.VictimBotTakeover = false;
-                kill.AssisterBotTakeover = false;
+                    // works out if either the killer or victim have taken over bots
+                    kill.KillerBotTakeover = false;
+                    kill.VictimBotTakeover = false;
+                    kill.AssisterBotTakeover = false;
 
-                if (kill.Killer != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
-                {
-                    kill.KillerBotTakeover = true;
-                }
-                if (kill.Victim != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
-                {
-                    kill.VictimBotTakeover = true;
-                }
-                if (kill.Assister != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name.ToString()))
-                {
-                    kill.AssisterBotTakeover = true;
-                }
+                    if (kill.Killer != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
+                    {
+                        kill.KillerBotTakeover = true;
+                    }
+                    if (kill.Victim != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
+                    {
+                        kill.VictimBotTakeover = true;
+                    }
+                    if (kill.Assister != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name.ToString()))
+                    {
+                        kill.AssisterBotTakeover = true;
+                    }
                 
-                if (data.ContainsKey("assistedflash"))
-                kill.AssistedFlash = (bool)data["assistedflash"];
+                    if (data.ContainsKey("assistedflash"))
+                    kill.AssistedFlash = (bool)data["assistedflash"];
 
-                kill.PenetratedObjects = (int)data["penetrated"];
+                    kill.PenetratedObjects = (int)data["penetrated"];
 
-                /*if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade
-                    && kill.Weapon.Weapon != EquipmentElement.Revolver
-                    && kill.Killer.Weapons.Any() && kill.Weapon.Weapon != EquipmentElement.World) {
-                #if DEBUG
-                if(kill.Weapon.Weapon != kill.Killer.ActiveWeapon.Weapon)
-                    throw new InvalidDataException();
-                #endif
-                kill.Weapon = kill.Killer.ActiveWeapon;
-                }*/
+                    /*if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade
+                        && kill.Weapon.Weapon != EquipmentElement.Revolver
+                        && kill.Killer.Weapons.Any() && kill.Weapon.Weapon != EquipmentElement.World) {
+                    #if DEBUG
+                    if(kill.Weapon.Weapon != kill.Killer.ActiveWeapon.Weapon)
+                        throw new InvalidDataException();
+                    #endif
+                    kill.Weapon = kill.Killer.ActiveWeapon;
+                    }*/
 
-                parser.RaisePlayerKilled(kill);
-				break;
-			case "player_hurt":
-				data = MapData (eventDescriptor, rawEvent);
+                    parser.RaisePlayerKilled(kill);
+				    break;
+			    case "player_hurt":
+				    data = MapData (eventDescriptor, rawEvent);
 
-				PlayerHurtEventArgs hurt = new PlayerHurtEventArgs ();
-				hurt.Player = parser.Players.ContainsKey ((int)data ["userid"]) ? parser.Players [(int)data ["userid"]] : null;
-				hurt.Attacker = parser.Players.ContainsKey ((int)data ["attacker"]) ? parser.Players [(int)data ["attacker"]] : null;
-				hurt.Health = (int)data ["health"];
-				hurt.Armor = (int)data ["armor"];
-				hurt.HealthDamage = (int)data ["dmg_health"];
-				hurt.ArmorDamage = (int)data ["dmg_armor"];
-				hurt.Hitgroup = (Hitgroup)((int)data ["hitgroup"]);
+				    PlayerHurtEventArgs hurt = new PlayerHurtEventArgs ();
+				    hurt.Player = parser.Players.ContainsKey ((int)data ["userid"]) ? parser.Players [(int)data ["userid"]] : null;
+				    hurt.Attacker = parser.Players.ContainsKey ((int)data ["attacker"]) ? parser.Players [(int)data ["attacker"]] : null;
+				    hurt.Health = (int)data ["health"];
+				    hurt.Armor = (int)data ["armor"];
+				    hurt.HealthDamage = (int)data ["dmg_health"];
+				    hurt.ArmorDamage = (int)data ["dmg_armor"];
+				    hurt.Hitgroup = (Hitgroup)((int)data ["hitgroup"]);
 
-				hurt.Weapon = new Equipment ((string)data ["weapon"], "");
+				    hurt.Weapon = new Equipment ((string)data ["weapon"], "");
 
-				if (hurt.Attacker != null && hurt.Weapon.Class != EquipmentClass.Grenade && hurt.Attacker.Weapons.Any ()) {
-					hurt.Weapon = hurt.Attacker.ActiveWeapon;
-				}
+				    if (hurt.Attacker != null && hurt.Weapon.Class != EquipmentClass.Grenade && hurt.Attacker.Weapons.Any ()) {
+					    hurt.Weapon = hurt.Attacker.ActiveWeapon;
+				    }
 
-				parser.RaisePlayerHurt (hurt);
-				break;
+				    parser.RaisePlayerHurt (hurt);
+				    break;
 
-				#region Nades
-			case "player_blind":
-				data = MapData(eventDescriptor, rawEvent);
+				    #region Nades
+			    case "player_blind":
+				    data = MapData(eventDescriptor, rawEvent);
 
-				if (parser.Players.ContainsKey((int)data["userid"])) {
-					var blindPlayer = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				    if (parser.Players.ContainsKey((int)data["userid"])) {
+					    var blindPlayer = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
 
-					if (blindPlayer != null && blindPlayer.Team != Team.Spectate)
-					{
-						BlindEventArgs blind = new BlindEventArgs();
-						blind.Player = blindPlayer;
-						if (data.ContainsKey("attacker") && parser.Players.ContainsKey((int)data["attacker"])) {
-							blind.Attacker = parser.Players[(int)data["attacker"]];
-						} else {
-							blind.Attacker = null;
-						}
+					    if (blindPlayer != null && blindPlayer.Team != Team.Spectate)
+					    {
+						    BlindEventArgs blind = new BlindEventArgs();
+						    blind.Player = blindPlayer;
+						    if (data.ContainsKey("attacker") && parser.Players.ContainsKey((int)data["attacker"])) {
+							    blind.Attacker = parser.Players[(int)data["attacker"]];
+						    } else {
+							    blind.Attacker = null;
+						    }
 
-						if (data.ContainsKey("blind_duration"))
-							blind.FlashDuration = (float?)data["blind_duration"];
-						else
-							blind.FlashDuration = null;
+						    if (data.ContainsKey("blind_duration"))
+							    blind.FlashDuration = (float?)data["blind_duration"];
+						    else
+							    blind.FlashDuration = null;
 
-						parser.RaiseBlind(blind);
-					}
+						    parser.RaiseBlind(blind);
+					    }
 
-					//previous blind implementation
-					blindPlayers.Add(parser.Players[(int)data["userid"]]);
-				}
+					    //previous blind implementation
+					    blindPlayers.Add(parser.Players[(int)data["userid"]]);
+				    }
 
-				break;
-			case "flashbang_detonate":
-				var args = FillNadeEvent<FlashEventArgs>(MapData(eventDescriptor, rawEvent), parser);
-				args.FlashedPlayers = blindPlayers.ToArray(); //prev blind implementation
-				parser.RaiseFlashExploded(args);
-				blindPlayers.Clear(); //prev blind implementation
-				break;
-			case "hegrenade_detonate":
-				parser.RaiseGrenadeExploded(FillNadeEvent<GrenadeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "decoy_started":
-				parser.RaiseDecoyStart(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "decoy_detonate":
-				parser.RaiseDecoyEnd(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "smokegrenade_detonate":
-				parser.RaiseSmokeStart(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "smokegrenade_expired":
-				parser.RaiseSmokeEnd(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
-				break;
-			case "inferno_startburn":
-				var fireData = MapData(eventDescriptor, rawEvent);
-				var fireArgs = FillNadeEvent<FireEventArgs>(fireData, parser);
-				var fireStarted = new Tuple<int, FireEventArgs>((int)fireData["entityid"], fireArgs);
-				parser.GEH_StartBurns.Enqueue(fireStarted);
-				parser.RaiseFireStart(fireArgs);
-				break;
-			case "inferno_expire":
-				var fireEndData = MapData(eventDescriptor, rawEvent);
-				var fireEndArgs = FillNadeEvent<FireEventArgs>(fireEndData, parser);
-				int entityID = (int)fireEndData["entityid"];
-				fireEndArgs.ThrownBy = parser.InfernoOwners[entityID];
-				parser.RaiseFireEnd(fireEndArgs);
-				break;
-				#endregion
+				    break;
+			    case "flashbang_detonate":
+				    var args = FillNadeEvent<FlashEventArgs>(MapData(eventDescriptor, rawEvent), parser);
+				    args.FlashedPlayers = blindPlayers.ToArray(); //prev blind implementation
+				    parser.RaiseFlashExploded(args);
+				    blindPlayers.Clear(); //prev blind implementation
+				    break;
+			    case "hegrenade_detonate":
+				    parser.RaiseGrenadeExploded(FillNadeEvent<GrenadeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+				    break;
+			    case "decoy_started":
+				    parser.RaiseDecoyStart(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+				    break;
+			    case "decoy_detonate":
+				    parser.RaiseDecoyEnd(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+				    break;
+			    case "smokegrenade_detonate":
+				    parser.RaiseSmokeStart(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+				    break;
+			    case "smokegrenade_expired":
+				    parser.RaiseSmokeEnd(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+				    break;
+			    case "inferno_startburn":
+				    var fireData = MapData(eventDescriptor, rawEvent);
+				    var fireArgs = FillNadeEvent<FireEventArgs>(fireData, parser);
+				    var fireStarted = new Tuple<int, FireEventArgs>((int)fireData["entityid"], fireArgs);
+				    parser.GEH_StartBurns.Enqueue(fireStarted);
+				    parser.RaiseFireStart(fireArgs);
+				    break;
+			    case "inferno_expire":
+				    var fireEndData = MapData(eventDescriptor, rawEvent);
+				    var fireEndArgs = FillNadeEvent<FireEventArgs>(fireEndData, parser);
+				    int entityID = (int)fireEndData["entityid"];
+				    fireEndArgs.ThrownBy = parser.InfernoOwners[entityID];
+				    parser.RaiseFireEnd(fireEndArgs);
+				    break;
+				    #endregion
 
-			case "player_connect":
-				data = MapData (eventDescriptor, rawEvent);
+			    case "player_connect":
+				    data = MapData (eventDescriptor, rawEvent);
 
-				PlayerInfo player = new PlayerInfo ();
-				player.UserID = (int)data ["userid"];
-				player.Name = (string)data ["name"];
-				player.GUID = (string)data ["networkid"];
-				player.XUID = player.GUID == "BOT" ? 0 : GetCommunityID (player.GUID);
-
-
-				//player.IsFakePlayer = (bool)data["bot"];
-
-				int index = (int)data["index"];
-
-				parser.RawPlayers[index] = player;
+				    PlayerInfo player = new PlayerInfo ();
+				    player.UserID = (int)data ["userid"];
+				    player.Name = (string)data ["name"];
+				    player.GUID = (string)data ["networkid"];
+				    player.XUID = player.GUID == "BOT" ? 0 : GetCommunityID (player.GUID);
 
 
-				break;
-			case "player_disconnect":
-				data = MapData(eventDescriptor, rawEvent);
+				    //player.IsFakePlayer = (bool)data["bot"];
 
-				PlayerDisconnectEventArgs disconnect = new PlayerDisconnectEventArgs();
-				disconnect.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				parser.RaisePlayerDisconnect(disconnect);
+				    int index = (int)data["index"];
 
-				int toDelete = (int)data["userid"];
-				for (int i = 0; i < parser.RawPlayers.Length; i++) {
-
-					if (parser.RawPlayers[i] != null && parser.RawPlayers[i].UserID == toDelete) {
-						parser.RawPlayers[i] = null;
-						break;
-					}
-				}
-
-				if (parser.Players.ContainsKey(toDelete))
-				{
-					parser.Players.Remove(toDelete);
-				}
-
-				break;
-
-			case "player_team":
-				data = MapData(eventDescriptor, rawEvent);
-				PlayerTeamEventArgs playerTeamEvent = new PlayerTeamEventArgs();
-
-				Team t = Team.Spectate;
-
-				int team = (int)data["team"];
-
-				if (team == parser.tID)
-					t = Team.Terrorist;
-				else if (team == parser.ctID)
-					t = Team.CounterTerrorist;
-				playerTeamEvent.NewTeam = t;
-
-				t = Team.Spectate;
-				team = (int)data["oldteam"];
-				if (team == parser.tID)
-					t = Team.Terrorist;
-				else if (team == parser.ctID)
-					t = Team.CounterTerrorist;
-				playerTeamEvent.OldTeam = t;
-
-				playerTeamEvent.Swapped = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				playerTeamEvent.IsBot = (bool)data["isbot"];
-				playerTeamEvent.Silent = (bool)data["silent"];
-
-				parser.RaisePlayerTeam(playerTeamEvent);
-				break;
-			case "bomb_beginplant": //When the bomb is starting to get planted
-			case "bomb_abortplant": //When the bomb planter stops planting the bomb
-			case "bomb_planted": //When the bomb has been planted
-			case "bomb_defused": //When the bomb has been defused
-			case "bomb_exploded": //When the bomb has exploded
-				data = MapData(eventDescriptor, rawEvent);
-
-				var bombEventArgs = new BombEventArgs();
-                bombEventArgs.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-
-				int site = (int)data["site"];
-
-				if (site == parser.bombsiteAIndex) {
-					bombEventArgs.Site = 'A';
-				} else if (site == parser.bombsiteBIndex) {
-					bombEventArgs.Site = 'B';
-				} else {
-					var relevantTrigger = parser.triggers.Single(a => a.Index == site);
-					if (relevantTrigger.Contains(parser.bombsiteACenter)) {
-						//planted at A.
-						bombEventArgs.Site = 'A';
-						parser.bombsiteAIndex = site;
-					} else {
-						//planted at B.
-						bombEventArgs.Site = 'B';
-						parser.bombsiteBIndex = site;
-					} 
-				}
-
-                bombEventArgs.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
+				    parser.RawPlayers[index] = player;
 
 
-				switch (eventDescriptor.Name) {
-				case "bomb_beginplant":
-					parser.RaiseBombBeginPlant(bombEventArgs);
-					break;
-				case "bomb_abortplant":
-					parser.RaiseBombAbortPlant(bombEventArgs);
-					break;
-				case "bomb_planted":
-					parser.RaiseBombPlanted(bombEventArgs);
-					break;
-				case "bomb_defused":
-					parser.RaiseBombDefused(bombEventArgs);
-					break;
-				case "bomb_exploded":
-					parser.RaiseBombExploded(bombEventArgs);
-					break;
-				}
+				    break;
+			    case "player_disconnect":
+				    data = MapData(eventDescriptor, rawEvent);
 
-				break;
-			case "bomb_begindefuse":
-				data = MapData(eventDescriptor, rawEvent);
-				var e = new BombDefuseEventArgs();
-                e.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				e.HasKit = (bool)data["haskit"];
-				parser.RaiseBombBeginDefuse(e);
-				break;
-			case "bomb_abortdefuse":
-				data = MapData(eventDescriptor, rawEvent);
-				var e2 = new BombDefuseEventArgs();
-                e2.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				e2.HasKit = e2.Player.HasDefuseKit;
-				parser.RaiseBombAbortDefuse(e2);
-				break;
-			}
+				    PlayerDisconnectEventArgs disconnect = new PlayerDisconnectEventArgs();
+				    disconnect.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				    parser.RaisePlayerDisconnect(disconnect);
+
+				    int toDelete = (int)data["userid"];
+				    for (int i = 0; i < parser.RawPlayers.Length; i++) {
+
+					    if (parser.RawPlayers[i] != null && parser.RawPlayers[i].UserID == toDelete) {
+						    parser.RawPlayers[i] = null;
+						    break;
+					    }
+				    }
+
+				    if (parser.Players.ContainsKey(toDelete))
+				    {
+					    parser.Players.Remove(toDelete);
+				    }
+
+				    break;
+
+			    case "player_team":
+				    data = MapData(eventDescriptor, rawEvent);
+				    PlayerTeamEventArgs playerTeamEvent = new PlayerTeamEventArgs();
+
+				    Team t = Team.Spectate;
+
+				    int team = (int)data["team"];
+
+				    if (team == parser.tID)
+					    t = Team.Terrorist;
+				    else if (team == parser.ctID)
+					    t = Team.CounterTerrorist;
+				    playerTeamEvent.NewTeam = t;
+
+				    t = Team.Spectate;
+				    team = (int)data["oldteam"];
+				    if (team == parser.tID)
+					    t = Team.Terrorist;
+				    else if (team == parser.ctID)
+					    t = Team.CounterTerrorist;
+				    playerTeamEvent.OldTeam = t;
+
+				    playerTeamEvent.Swapped = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				    playerTeamEvent.IsBot = (bool)data["isbot"];
+				    playerTeamEvent.Silent = (bool)data["silent"];
+
+				    parser.RaisePlayerTeam(playerTeamEvent);
+				    break;
+			    case "bomb_beginplant": //When the bomb is starting to get planted
+			    case "bomb_abortplant": //When the bomb planter stops planting the bomb
+			    case "bomb_planted": //When the bomb has been planted
+			    case "bomb_defused": //When the bomb has been defused
+			    case "bomb_exploded": //When the bomb has exploded
+				    data = MapData(eventDescriptor, rawEvent);
+
+				    var bombEventArgs = new BombEventArgs();
+                    bombEventArgs.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+
+				    int site = (int)data["site"];
+
+                    //works out which bombsite the bomb was planted at
+				    if (site == parser.bombsiteAIndex) {
+					    bombEventArgs.Site = 'A';
+				    } else if (site == parser.bombsiteBIndex) {
+					    bombEventArgs.Site = 'B';
+				    } else {
+					    var relevantTrigger = parser.triggers.Single(a => a.Index == site);
+					    if (relevantTrigger.Contains(parser.bombsiteACenter)) {
+						    //planted at A.
+						    bombEventArgs.Site = 'A';
+						    parser.bombsiteAIndex = site;
+					    } else if (relevantTrigger.Contains(parser.bombsiteBCenter)) {
+						    //planted at B.
+						    bombEventArgs.Site = 'B';
+						    parser.bombsiteBIndex = site;
+					    } else {
+                            //where have they planted???
+                            bombEventArgs.Site = '?';
+                        }
+				    }
+
+                    bombEventArgs.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
+
+
+				    switch (eventDescriptor.Name) {
+				    case "bomb_beginplant":
+					    parser.RaiseBombBeginPlant(bombEventArgs);
+					    break;
+				    case "bomb_abortplant":
+					    parser.RaiseBombAbortPlant(bombEventArgs);
+					    break;
+				    case "bomb_planted":
+					    parser.RaiseBombPlanted(bombEventArgs);
+					    break;
+				    case "bomb_defused":
+					    parser.RaiseBombDefused(bombEventArgs);
+					    break;
+				    case "bomb_exploded":
+					    parser.RaiseBombExploded(bombEventArgs);
+					    break;
+				    }
+
+				    break;
+			    case "bomb_begindefuse":
+				    data = MapData(eventDescriptor, rawEvent);
+				    var e = new BombDefuseEventArgs();
+                    e.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				    e.HasKit = (bool)data["haskit"];
+				    parser.RaiseBombBeginDefuse(e);
+				    break;
+			    case "bomb_abortdefuse":
+				    data = MapData(eventDescriptor, rawEvent);
+				    var e2 = new BombDefuseEventArgs();
+                    e2.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				    e2.HasKit = e2.Player.HasDefuseKit;
+				    parser.RaiseBombAbortDefuse(e2);
+				    break;
+
+                case "hostage_rescued":
+                    data = MapData(eventDescriptor, rawEvent);
+                    var rescued = new HostageRescuedEventArgs();
+                    rescued.Round = 0; // worked out in DemoProcessor
+                    rescued.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+                    rescued.RescueZone = (int)data["site"];
+
+                    int hostage = (int)data["hostage"];
+
+                    //works out which rescue zone the hostage was rescued at
+                    if (hostage == parser.hostageAIndex)
+                    {
+                        rescued.Hostage = 'A';
+                    }
+                    else if (hostage == parser.hostageBIndex)
+                    {
+                        rescued.Hostage = 'B';
+                    }
+                    else
+                    {
+                        if (parser.hostageAIndex == -1)
+                        {
+                            rescued.Hostage = 'A';
+                            parser.hostageAIndex = hostage;
+                        }
+                        else if (parser.hostageBIndex == -1)
+                        {
+                            rescued.Hostage = 'B';
+                            parser.hostageBIndex = hostage;
+                        }
+                        else
+                        {
+                            // a third hostage???
+                            rescued.Hostage = '?';
+                        }
+                    }
+
+                    rescued.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
+
+                    parser.RaiseHostageRescued(rescued);
+                    break;
+            }
 		}
 
 		private static T FillNadeEvent<T>(Dictionary<string, object> data, DemoParser parser) where T : NadeEventArgs, new()

@@ -221,6 +221,11 @@ namespace DemoInfo
 		public event EventHandler<BombDefuseEventArgs> BombAbortDefuse;
 
 		/// <summary>
+		/// Occurs when someone rescues a hostage.
+		/// </summary>
+		public event EventHandler<HostageRescuedEventArgs> HostageRescued;
+
+		/// <summary>
 		/// Occurs when an player is attacked by another player.
 		/// Hint: Only occurs in GOTV-demos. 
 		/// </summary>
@@ -358,6 +363,12 @@ namespace DemoInfo
 		/// </summary>
 		internal int bombsiteAIndex = -1, bombsiteBIndex = -1;
 		internal Vector bombsiteACenter, bombsiteBCenter;
+
+		/// <summary>
+		/// The indicies of the hostages - useful to find out
+		/// which hostage has been rescued
+		/// </summary>
+		internal int hostageAIndex = -1, hostageBIndex = -1;
 
 		/// <summary>
 		/// The ID of the CT-Team
@@ -1457,6 +1468,12 @@ namespace DemoInfo
 				BombAbortDefuse(this, args);
 		}
 
+		internal void RaiseHostageRescued(HostageRescuedEventArgs args)
+		{
+			if (HostageRescued != null)
+                HostageRescued(this, args);
+		}
+
 		internal void RaiseSayText(SayTextEventArgs args)
 		{
 			if (SayText != null)
@@ -1508,6 +1525,7 @@ namespace DemoInfo
 			this.BombDefused = null;
 			this.BombExploded = null;
 			this.BombPlanted = null;
+            this.HostageRescued = null;
 			this.DecoyNadeEnded = null;
 			this.DecoyNadeStarted = null;
 			this.ExplosiveNadeExploded = null;
@@ -1517,12 +1535,17 @@ namespace DemoInfo
 			this.FlashNadeExploded = null;
 			this.HeaderParsed = null;
 			this.MatchStarted = null;
+            this.SwitchSides = null;
 			this.NadeReachedTarget = null;
 			this.PlayerKilled = null;
+			this.OtherKilled = null;
+			this.ChickenKilled = null;
 			this.RoundStart = null;
 			this.SmokeNadeEnded = null;
 			this.SmokeNadeStarted = null;
 			this.WeaponFired = null;
+            this.SayText = null;
+            this.SayText2 = null;
 
 			Players.Clear ();
 		}
