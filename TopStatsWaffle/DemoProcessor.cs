@@ -42,6 +42,8 @@ namespace TopStatsWaffle
         public Dictionary<int, long> playerLookups = new Dictionary<int, long>();
         public Dictionary<int, int> playerReplacements = new Dictionary<int, int>();
 
+        const string winReasonTKills = "TerroristWin", winReasonCtKills = "CTWin", winReasonBombed = "TargetBombed", winReasonDefused = "BombDefused", winReasonRescued = "HostagesRescued", winReasonNotRescued = "HostagesNotRescued", winReasonTSaved = "TargetSaved";
+
         public bool passed = false;
 
         void addEvent(Type type, object ev)
@@ -494,7 +496,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "0.2.0" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "0.2.1" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -508,7 +510,9 @@ namespace TopStatsWaffle
             mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
 
             // attempts to get the gamemode
-            if (bombsiteValues["PlantsSites"].Count() > 0)
+            var roundsWonReasons = getRoundsWonReasons(roundEndReasonValues);
+
+            if (bombsiteValues["PlantsSites"].Count() > 0 || roundsWonReasons.Any(w => w.ToString() == winReasonBombed) || roundsWonReasons.Any(w => w.ToString() == winReasonDefused) || roundsWonReasons.Any(w => w.ToString() == winReasonTSaved))
             {
                 if (teamPlayersValues["TeamPlayers"].Any(t => t.Terrorists.Count() > 2 && teamPlayersValues["TeamPlayers"].Any(ct => ct.CounterTerrorists.Count() > 2)))
                 {
@@ -668,7 +672,6 @@ namespace TopStatsWaffle
 
             // winning team & total rounds stats
             IEnumerable<SwitchSidesEventArgs> switchSides = switchSidesValues["SwitchSides"];
-            var roundsWonReasons = getRoundsWonReasons(roundEndReasonValues);
             var roundsWonTeams = getRoundsWonTeams(teamValues);
             int totalRoundsWonTeamAlpha = 0, totalRoundsWonTeamBeta = 0;
 
@@ -725,30 +728,28 @@ namespace TopStatsWaffle
                     }
 
                     //win method
-                    const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", rescued = "HostagesRescued", notRescued = "HostagesNotRescued", timeout = "TargetSaved";
-
                     switch (roundsWonReasons[i].ToString())
                     {
-                        case tKills:
+                        case winReasonTKills:
                             reason = "T Kills";
                             break;
-                        case ctKills:
+                        case winReasonCtKills:
                             reason = "CT Kills";
                             break;
-                        case bombed:
+                        case winReasonBombed:
                             reason = "Bombed";
                             break;
-                        case defused:
+                        case winReasonDefused:
                             reason = "Defused";
                             break;
-                        case rescued:
+                        case winReasonRescued:
                             reason = "HostagesRescued";
                             break;
-                        case notRescued:
+                        case winReasonNotRescued:
                             reason = "HostagesNotRescued";
                             break;
-                        case timeout:
-                            reason = "Timeout";
+                        case winReasonTSaved:
+                            reason = "TSaved";
                             break;
                     }
 
@@ -1384,16 +1385,14 @@ namespace TopStatsWaffle
 
         public List<RoundEndReason> getRoundsWonReasons(Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues)
         {
-            const string tKills = "TerroristWin", ctKills = "CTWin", bombed = "TargetBombed", defused = "BombDefused", rescued = "HostagesRescued", notRescued = "HostagesNotRescued", timeout = "TargetSaved";
-
             var roundsWonReasons = roundEndReasonValues["RoundsWonReasons"].ToList();
-            roundsWonReasons.RemoveAll(r => !r.ToString().Equals(tKills)
-                                         && !r.ToString().Equals(ctKills)
-                                         && !r.ToString().Equals(bombed)
-                                         && !r.ToString().Equals(defused)
-                                         && !r.ToString().Equals(rescued)
-                                         && !r.ToString().Equals(notRescued)
-                                         && !r.ToString().Equals(timeout)
+            roundsWonReasons.RemoveAll(r => !r.ToString().Equals(winReasonTKills)
+                                         && !r.ToString().Equals(winReasonCtKills)
+                                         && !r.ToString().Equals(winReasonBombed)
+                                         && !r.ToString().Equals(winReasonDefused)
+                                         && !r.ToString().Equals(winReasonRescued)
+                                         && !r.ToString().Equals(winReasonNotRescued)
+                                         && !r.ToString().Equals(winReasonTSaved)
             );
 
             return roundsWonReasons;
