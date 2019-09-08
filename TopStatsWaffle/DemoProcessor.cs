@@ -496,7 +496,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "0.2.1" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.0.0" };
             /* demo parser version end */
 
             /* Supported gamemodes */
