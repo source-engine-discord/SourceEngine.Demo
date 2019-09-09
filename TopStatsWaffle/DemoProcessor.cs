@@ -197,19 +197,6 @@ namespace TopStatsWaffle
                 //prints blank space out to console
                 Console.WriteLine();
 
-                if (dp.Map != null && dp.Map.ToString() != string.Empty)
-                {
-                    e.Mapname = dp.Map.ToString();
-                }
-                else if (dp.Header.MapName != null && dp.Header.MapName.ToString() != string.Empty)
-                {
-                    e.Mapname = dp.Header.MapName.ToString();
-                }
-                else
-                {
-                    e.Mapname = "unknown";
-                }
-
                 List<FeedbackMessage> currentFeedbackMessages = new List<FeedbackMessage>();
 
                 //stores all fb messages so that they aren't lost when stats are reset
@@ -496,7 +483,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.0.0" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.0.1" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -512,7 +499,7 @@ namespace TopStatsWaffle
             // attempts to get the gamemode
             var roundsWonReasons = getRoundsWonReasons(roundEndReasonValues);
 
-            if (bombsiteValues["PlantsSites"].Count() > 0 || roundsWonReasons.Any(w => w.ToString() == winReasonBombed) || roundsWonReasons.Any(w => w.ToString() == winReasonDefused) || roundsWonReasons.Any(w => w.ToString() == winReasonTSaved))
+            if (matchStartValues["MatchStarts"].Any(m => m.HasBombsites) || bombsiteValues["PlantsSites"].Count() > 0 || roundsWonReasons.Any(w => w.ToString() == winReasonBombed) || roundsWonReasons.Any(w => w.ToString() == winReasonDefused) || roundsWonReasons.Any(w => w.ToString() == winReasonTSaved))
             {
                 if (teamPlayersValues["TeamPlayers"].Any(t => t.Terrorists.Count() > 2 && teamPlayersValues["TeamPlayers"].Any(ct => ct.CounterTerrorists.Count() > 2)))
                 {
