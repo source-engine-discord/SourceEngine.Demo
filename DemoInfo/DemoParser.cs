@@ -1136,7 +1136,7 @@ namespace DemoInfo
 		}
 
 		internal List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
-		private void HandleBombSites()
+		public void HandleBombSites()
 		{
 			SendTableParser.FindByName("CCSPlayerResource").OnNewEntity += (s1, newResource) => {
 				newResource.Entity.FindProperty("m_bombsiteCenterA").VectorRecived += (s2, center) => {
@@ -1224,10 +1224,10 @@ namespace DemoInfo
 
 		#region EventCaller
 
-		internal void RaiseMatchStarted()
+		internal void RaiseMatchStarted(MatchStartedEventArgs matchStartedEventArgs)
 		{
 			if (MatchStarted != null)
-				MatchStarted(this, new MatchStartedEventArgs());
+				MatchStarted(this, matchStartedEventArgs);
 		}
 
 		internal void RaiseRoundAnnounceMatchStarted()

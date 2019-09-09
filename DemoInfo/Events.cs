@@ -24,6 +24,8 @@ namespace DemoInfo
 	public class MatchStartedEventArgs : EventArgs
 	{
         public string Mapname { get; set; }
+
+        public bool HasBombsites { get; set; }
 	}
 
 	public class RoundAnnounceMatchStartedEventArgs : EventArgs

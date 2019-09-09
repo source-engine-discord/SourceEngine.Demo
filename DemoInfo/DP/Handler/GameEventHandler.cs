@@ -158,8 +158,36 @@ namespace DemoInfo.DP.Handler
 				parser.RaiseBotTakeOver(botTakeOverArgs);
 			}
 
-			if (eventDescriptor.Name == "begin_new_match")
-				parser.RaiseMatchStarted ();
+            if (eventDescriptor.Name == "begin_new_match") {
+                MatchStartedEventArgs matchStartedEventArgs = new MatchStartedEventArgs();
+
+                if (!string.IsNullOrEmpty(parser.Map))
+                {
+                    matchStartedEventArgs.Mapname = parser.Map.ToString();
+                }
+                else if (parser.Header != null && !string.IsNullOrEmpty(parser.Header.MapName))
+                {
+                    matchStartedEventArgs.Mapname = parser.Header.MapName.ToString();
+                }
+                else
+                {
+                    matchStartedEventArgs.Mapname = "unknown";
+                }
+
+                //makes sure that bombsite triggers' vector values have been set if they exist
+                parser.HandleBombSites();
+
+                //checks if the map contains bombsite triggers to figure out the gamemode
+                var bombsiteCenterA = parser.bombsiteACenter;
+                var bombsiteCenterB = parser.bombsiteBCenter;
+
+                bool hasBombsiteA = (bombsiteCenterA.X == 0 && bombsiteCenterA.Y == 0 && bombsiteCenterA.Z == 0 && bombsiteCenterA.Absolute == 0 && bombsiteCenterA.AbsoluteSquared == 0 && bombsiteCenterA.Angle2D == 0) ? false : true;
+                bool hasBombsiteB = (bombsiteCenterB.X == 0 && bombsiteCenterB.Y == 0 && bombsiteCenterB.Z == 0 && bombsiteCenterB.Absolute == 0 && bombsiteCenterB.AbsoluteSquared == 0 && bombsiteCenterB.Angle2D == 0) ? false : true;
+
+                matchStartedEventArgs.HasBombsites = (hasBombsiteA || hasBombsiteB) ? true : false;
+
+                parser.RaiseMatchStarted(matchStartedEventArgs);
+            }
 
 			if (eventDescriptor.Name == "round_announce_match_start")
 				parser.RaiseRoundAnnounceMatchStarted();
