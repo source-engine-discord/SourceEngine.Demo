@@ -85,10 +85,44 @@ namespace DemoInfo
 
 		}
 
-		/// <summary>
-		/// Copy this instance for multi-threading use. 
-		/// </summary>
-		public Player Copy()
+        public Player(Player player)
+        {
+            if (player != null)
+            {
+                this.Name = player.Name;
+                this.SteamID = player.SteamID;
+                this.Position = player.Position;
+                this.EntityID = player.EntityID;
+                this.UserID = player.UserID;
+                this.HP = player.HP;
+                this.Armor = player.Armor;
+                this.LastAlivePosition = player.LastAlivePosition;
+                this.Velocity = player.Velocity;
+                this.ViewDirectionX = player.ViewDirectionX;
+                this.ViewDirectionY = player.ViewDirectionY;
+                this.FlashDuration = player.FlashDuration;
+                this.Money = player.Money;
+                this.CurrentEquipmentValue = player.CurrentEquipmentValue;
+                this.FreezetimeEndEquipmentValue = player.FreezetimeEndEquipmentValue;
+                this.RoundStartEquipmentValue = player.RoundStartEquipmentValue;
+                this.IsDucking = player.IsDucking;
+                this.Entity = player.Entity;
+                this.Disconnected = player.Disconnected;
+                this.ActiveWeaponID = player.ActiveWeaponID;
+                this.rawWeapons = player.rawWeapons;
+                this.Team = player.Team;
+                this.HasDefuseKit = player.HasDefuseKit;
+                this.HasHelmet = player.HasHelmet;
+                this.TeamID = player.TeamID;
+                this.AmmoLeft = player.AmmoLeft;
+                this.AdditionaInformations = player.AdditionaInformations;
+            }
+        }
+
+        /// <summary>
+        /// Copy this instance for multi-threading use. 
+        /// </summary>
+        public Player Copy()
 		{
 			Player me = new Player();
 			me.EntityID = -1; //this should bot be copied

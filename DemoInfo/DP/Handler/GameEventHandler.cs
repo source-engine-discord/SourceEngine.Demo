@@ -246,9 +246,9 @@ namespace DemoInfo.DP.Handler
                     kill.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 
                     kill.Round = 0;
-                    kill.Victim = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
-				    kill.Killer = parser.Players.ContainsKey((int)data["attacker"]) ? parser.Players[(int)data["attacker"]] : null;
-				    kill.Assister = parser.Players.ContainsKey((int)data["assister"]) ? parser.Players[(int)data["assister"]] : null;
+                    kill.Victim = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+				    kill.Killer = parser.Players.ContainsKey((int)data["attacker"]) ? new Player(parser.Players[(int)data["attacker"]]) : null;
+				    kill.Assister = parser.Players.ContainsKey((int)data["assister"]) ? new Player(parser.Players[(int)data["assister"]]) : null;
 				    kill.Headshot = (bool)data["headshot"];
 				    kill.Weapon = new Equipment((string)data["weapon"], (string)data["weapon_itemid"]);
 
