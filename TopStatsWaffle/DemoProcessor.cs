@@ -483,7 +483,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.0.1" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.0.2" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -934,7 +934,7 @@ namespace TopStatsWaffle
 
             for (int i = 0; i < deaths.Count(); i++)
             {
-                if (kills.ElementAt(i) != null && kills.ElementAt(i).Position != null && deaths.ElementAt(i) != null && deaths.ElementAt(i).Position != null)
+                if (kills.ElementAt(i) != null && kills.ElementAt(i).LastAlivePosition != null && deaths.ElementAt(i) != null && deaths.ElementAt(i).LastAlivePosition != null)
                 {
                     var playerKilledEvent = playerKilledEventsValues["PlayerKilledEvents"].ElementAt(i);
 
@@ -942,10 +942,10 @@ namespace TopStatsWaffle
                     {
                         int round = playerKilledEvent.Round;
 
-                        string[] killPositionSplit = kills.ElementAt(i).Position.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+                        string[] killPositionSplit = kills.ElementAt(i).LastAlivePosition.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
                         string killPositions = $"{ killPositionSplit[1] },{ killPositionSplit[2] },{ killPositionSplit[3] }";
 
-                        string[] deathPositionSplit = deaths.ElementAt(i).Position.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+                        string[] deathPositionSplit = deaths.ElementAt(i).LastAlivePosition.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
                         string deathPositions = $"{ deathPositionSplit[1] },{ deathPositionSplit[2] },{ deathPositionSplit[3] }";
 
                         //retrieve steam ID using player name if the event does not return it correctly
