@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using System.Diagnostics;
 using DemoInfo;
-using System.Threading;
-using Newtonsoft.Json;
 using TopStatsWaffle.Models;
 
 namespace TopStatsWaffle
@@ -56,7 +51,8 @@ namespace TopStatsWaffle
                         "-recursive                               Switch for recursive demo search\n\n" +
                         "-noguid                                  Disables GUID prefix on output files\n" + 
                         "-steaminfo                               Takes steam names from steam\n" +
-                        "-noclear                                 Disables clearing the data folder\n"
+                        "-noclear                                 Disables clearing the data folder\n" +
+                        "-nochickens                              Disables checks for number of chickens killed when parsing\n"
                 );
         }
 
@@ -70,6 +66,8 @@ namespace TopStatsWaffle
             bool steaminfo = false;
             bool clear = true;
 
+            bool parseChickens = true;
+
             List<string> foldersToProcess = new List<string>();
             List<string> demosToProcess = new List<string>();
 
@@ -81,15 +79,16 @@ namespace TopStatsWaffle
 
             for(int i = 0; i < args.Count(); i++)
             {
-                if (args[i] == "-config")
+                var arg = args[i].ToLower();
+
+                if (arg == "-config")
                 {
                     if (i < args.Count())
                         cfgPath = args[i + 1];
 
                     i++;
                 }
-
-                if(args[i] == "-folders")
+                else if (arg == "-folders")
                 {
                     bool searching = true;
                     while (i < args.Count() - 1 && searching)
@@ -103,8 +102,7 @@ namespace TopStatsWaffle
                     }
                     i--;
                 }
-
-                if (args[i] == "-demos")
+                else if (arg == "-demos")
                 {
                     bool searching = true;
                     while (i < args.Count() - 1 && searching)
@@ -118,27 +116,30 @@ namespace TopStatsWaffle
                     }
                     i--;
                 }
-
-                if(args[i] == "-noclear")
+                else if (arg == "-noclear")
                 {
                     clear = false;
                 }
-
-                if(args[i] == "-steaminfo")
+                else if (arg == "-steaminfo")
                 {
                     steaminfo = true;
                 }
-
-                if (args[i] == "-recursive")
+                else if (arg == "-recursive")
+                {
                     recursive = true;
-
-                if (args[i] == "-noguid")
+                }
+                else if (arg == "-noguid")
+                {
                     noguid = true;
-
-                if(args[i] == "-help")
+                }
+                else if (arg == "-help")
                 {
                     helpText();
                     return;
+                }
+                else if (arg == "-nochickens")
+                {
+                    parseChickens = false;
                 }
             }
 
@@ -296,7 +297,7 @@ namespace TopStatsWaffle
             //Process all the found demos
             for (int i = 0; i < demos.Count(); i++)
             {
-                MatchData mdTest = MatchData.fromDemoFile(demos[i][0]);
+                MatchData mdTest = MatchData.fromDemoFile(demos[i][0], parseChickens);
 
                 Dictionary<string, IEnumerable<MatchStartedEventArgs>> mse = new Dictionary<string, IEnumerable<MatchStartedEventArgs>>();
                 Dictionary<string, IEnumerable<SwitchSidesEventArgs>> sse = new Dictionary<string, IEnumerable<SwitchSidesEventArgs>>();
@@ -442,7 +443,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, hre, he, te, re, le, tes, ge, cke, sfe);
+                    mdTest.CreateFiles(demos[i], noguid, parseChickens, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, hre, he, te, re, le, tes, ge, cke, sfe);
                     passCount++;
                 }
             }

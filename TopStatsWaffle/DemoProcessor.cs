@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
-using TopStatsWaffle.Serialization;
 using DemoInfo;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TopStatsWaffle.Models;
 
 namespace TopStatsWaffle
@@ -43,6 +39,7 @@ namespace TopStatsWaffle
         public Dictionary<int, int> playerReplacements = new Dictionary<int, int>();
 
         const string winReasonTKills = "TerroristWin", winReasonCtKills = "CTWin", winReasonBombed = "TargetBombed", winReasonDefused = "BombDefused", winReasonRescued = "HostagesRescued", winReasonNotRescued = "HostagesNotRescued", winReasonTSaved = "TargetSaved";
+        const string winReasonUnknown = "Unknown"; // Caused by an error where the round_end event was not triggered for a round
 
         public bool passed = false;
 
@@ -179,12 +176,12 @@ namespace TopStatsWaffle
             }
         }
 
-        public static MatchData fromDemoFile(string file)
+        public static MatchData fromDemoFile(string file, bool parseChickens)
         {
             MatchData md = new MatchData();
 
             //Create demo parser instance
-            DemoParser dp = new DemoParser(File.OpenRead(file));
+            DemoParser dp = new DemoParser(File.OpenRead(file), parseChickens);
 
             dp.ParseHeader();
 
@@ -204,7 +201,9 @@ namespace TopStatsWaffle
                 {
                     foreach (FeedbackMessage message in md.events.Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value).ElementAt(0))
                     {
-                        if (message.Message.ToLower().Contains(">fb ") || message.Message.ToLower().Contains(">feedback "))
+                        var text = message.Message.Replace(" ", string.Empty).ToLower();
+
+                        if (text.StartsWith(">fb") || text.StartsWith(">feedback"))
                         {
                             //Sets round to 0 as anything before a match start event should always be classed as warmup
                             currentFeedbackMessages.Add(new FeedbackMessage() { Round = 0, SteamID = message.SteamID, TeamName = message.TeamName, Message = message.Message });
@@ -230,9 +229,9 @@ namespace TopStatsWaffle
             dp.SayText2 += (object sender, SayText2EventArgs e) => {
                 md.addEvent(typeof(SayText2EventArgs), e);
 
-                var text = e.Text.ToString();
+                var text = e.Text.ToString().Replace(" ", string.Empty).ToLower();
 
-                if (text.ToLower().Contains(">fb") || text.ToLower().Contains(">feedback") || text.ToLower().Contains("> fb") || text.ToLower().Contains("> feedback"))
+                if (text.StartsWith(">fb") || text.StartsWith(">feedback"))
                 {
                     int round = getCurrentRoundNum(md);
 
@@ -287,6 +286,19 @@ namespace TopStatsWaffle
             };
 
             dp.FreezetimeEnded += (object sender, FreezetimeEndedEventArgs e) => {
+                var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
+                var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
+
+                int numOfFreezetimesEnded = freezetimesEndedEvents.Count() > 0 ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+                int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
+
+                // if round_end event did not get fired in the previous round due to error
+                while (numOfFreezetimesEnded > numOfRoundsEnded)
+                {
+                    dp.RaiseRoundEnd(new RoundEndedEventArgs() { Winner = Team.Unknown, Message = "Unknown", Reason = RoundEndReason.Unknown, Length = 0 } );
+                    numOfRoundsEnded = roundsEndedEvents.ElementAt(0).Count();
+                }
+
                 md.addEvent(typeof(FreezetimeEndedEventArgs), e);
 
                 //work out teams at current round
@@ -466,7 +478,7 @@ namespace TopStatsWaffle
         }
 
         public void CreateFiles(
-            List<string> demo, bool noguid, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues, Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues,
+            List<string> demo, bool noguid, bool parseChickens, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues, Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues,
             Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues,
             Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<int>> penetrationValues,
             Dictionary<string, IEnumerable<BombPlanted>> bombsitePlantValues, Dictionary<string, IEnumerable<BombExploded>> bombsiteExplodeValues, Dictionary<string, IEnumerable<BombDefused>> bombsiteDefuseValues,
@@ -483,7 +495,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.0.2" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.0.3" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -737,6 +749,9 @@ namespace TopStatsWaffle
                             break;
                         case winReasonTSaved:
                             reason = "TSaved";
+                            break;
+                        case winReasonUnknown:
+                            reason = "Unknown";
                             break;
                     }
 
@@ -1030,7 +1045,11 @@ namespace TopStatsWaffle
             /* Feedback Messages end */
 
             /* chickens killed stats */
-            ChickenStats chickenStats = new ChickenStats() { Killed = chickenValues["ChickensKilled"].Count() };
+            ChickenStats chickenStats = null;
+            if (parseChickens)
+            {
+                chickenStats = new ChickenStats() { Killed = chickenValues["ChickensKilled"].Count() };
+            }
             /* chickens killed stats end */
 
             /* team stats */
@@ -1305,24 +1324,24 @@ namespace TopStatsWaffle
 
             StreamWriter sw = new StreamWriter(path, false);
 
-            string json = JsonConvert.SerializeObject(new
-            {
-                versionNumber,
-                supportedGamemodes,
-                mapInfo,
-                tanookiStats,
-                playerStats,
-                winnersStats,
-                roundsStats,
-                bombsiteStats,
-                hostageStats,
-                grenadesTotalStats,
-                grenadesSpecificStats,
-                killsStats,
-                feedbackMessages,
-                chickenStats,
-                teamStats,
-            },
+            string json = JsonConvert.SerializeObject(
+                new {
+                    versionNumber,
+                    supportedGamemodes,
+                    mapInfo,
+                    tanookiStats,
+                    playerStats,
+                    winnersStats,
+                    roundsStats,
+                    bombsiteStats,
+                    hostageStats,
+                    grenadesTotalStats,
+                    grenadesSpecificStats,
+                    killsStats,
+                    feedbackMessages,
+                    chickenStats,
+                    teamStats,
+                },
                 Formatting.Indented
             );
 
@@ -1365,6 +1384,7 @@ namespace TopStatsWaffle
             var roundsWonTeams = teamValues["RoundsWonTeams"].ToList();
             roundsWonTeams.RemoveAll(r => !r.ToString().Equals("Terrorist")
                                        && !r.ToString().Equals("CounterTerrorist")
+                                       && !r.ToString().Equals("Unknown")
             );
 
             return roundsWonTeams;
@@ -1380,6 +1400,7 @@ namespace TopStatsWaffle
                                          && !r.ToString().Equals(winReasonRescued)
                                          && !r.ToString().Equals(winReasonNotRescued)
                                          && !r.ToString().Equals(winReasonTSaved)
+                                         && !r.ToString().Equals("Unknown")
             );
 
             return roundsWonReasons;
