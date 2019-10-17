@@ -1,13 +1,10 @@
 ﻿using DemoInfo.DP;
 using DemoInfo.DT;
-using DemoInfo.Messages;
 using DemoInfo.ST;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Diagnostics;
-using System.Text;
 using System.Threading;
 
 namespace DemoInfo
@@ -27,12 +24,14 @@ namespace DemoInfo
 		const int MAXPLAYERS = 64;
 		const int MAXWEAPONS = 64;
 
+        bool parseChickens = true;
 
-		#region Events
-		/// <summary>
-		/// Raised once when the Header of the demo is parsed
-		/// </summary>
-		public event EventHandler<HeaderParsedEventArgs> HeaderParsed;
+
+        #region Events
+        /// <summary>
+        /// Raised once when the Header of the demo is parsed
+        /// </summary>
+        public event EventHandler<HeaderParsedEventArgs> HeaderParsed;
 
 		/// <summary>
 		/// Occurs when the match started, so when the "begin_new_match"-GameEvent is dropped. 
@@ -523,13 +522,15 @@ namespace DemoInfo
 		/// Hint: ParseHeader() is propably what you want to look into next. 
 		/// </summary>
 		/// <param name="input">An input-stream.</param>
-		public DemoParser(Stream input)
+		public DemoParser(Stream input, bool parseChickens = true)
 		{
 			BitStream = BitStreamUtil.Create(input);
 
 			for (int i = 0; i < MAXPLAYERS; i++) {
 				additionalInformations [i] = new AdditionalPlayerInformation ();
 			}
+
+            this.parseChickens = parseChickens;
 		}
 
 
@@ -709,7 +710,7 @@ namespace DemoInfo
 			BitStream.ReadInt(32); // SeqNrOut
 
 			BitStream.BeginChunk(BitStream.ReadSignedInt(32) * 8);
-			DemoPacketParser.ParsePacket(BitStream, this);
+			DemoPacketParser.ParsePacket(BitStream, this, this.parseChickens);
 			BitStream.EndChunk();
 		}
 
@@ -1260,11 +1261,10 @@ namespace DemoInfo
 				LastRoundHalf(this, new LastRoundHalfEventArgs());
 		}
 
-		internal void RaiseRoundEnd(RoundEndedEventArgs re)
+		public void RaiseRoundEnd(RoundEndedEventArgs re)
 		{
 			if (RoundEnd != null)
 				RoundEnd(this, re);
-
 		}
 
         internal void RaiseSwitchSides()

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using DemoInfo.DP.Handler;
-using System.Linq;
 
 namespace DemoInfo
 {
@@ -12,7 +11,7 @@ namespace DemoInfo
 		public Int32 EventId;
 		public IList<object> Keys;
 
-		public void Parse(IBitStream bitstream, DemoParser parser)
+		public void Parse(IBitStream bitstream, DemoParser parser, bool parseChickens)
 		{
             Keys = new List<object>();
 			while (!bitstream.ChunkFinished) {
@@ -78,7 +77,7 @@ namespace DemoInfo
 					throw new InvalidDataException();
 			}
 
-			GameEventHandler.Apply(this, parser);
+			GameEventHandler.Apply(this, parser, parseChickens);
 		}
 	}
 }

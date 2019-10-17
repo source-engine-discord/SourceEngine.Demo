@@ -441,8 +441,12 @@ namespace DemoInfo
 		/// <summary>
 		/// CTs Surrender
 		/// </summary>
-		CTSurrender
-	};
+		CTSurrender,
+        /// <summary>
+        /// Unknown
+        /// </summary>
+        Unknown // Caused by an error where the round_end event was not triggered for a round
+    };
 
 	public enum RoundMVPReason
 	{

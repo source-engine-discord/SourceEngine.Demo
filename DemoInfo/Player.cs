@@ -165,5 +165,6 @@ namespace DemoInfo
 		Spectate = 1,
 		Terrorist = 2,
 		CounterTerrorist = 3,
+		Unknown = 4, // Caused by an error where the round_end event was not triggered for a round
 	}
 }

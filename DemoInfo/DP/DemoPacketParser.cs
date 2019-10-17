@@ -1,11 +1,4 @@
 ﻿using DemoInfo.Messages;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using DemoInfo.DP.FastNetmessages;
 
 namespace DemoInfo.DP
@@ -26,7 +19,7 @@ namespace DemoInfo.DP
 		/// </summary>
 		/// <param name="bitstream">Bitstream.</param>
 		/// <param name="demo">Demo.</param>
-		public static void ParsePacket(IBitStream bitstream, DemoParser demo)
+		public static void ParsePacket(IBitStream bitstream, DemoParser demo, bool parseChickens)
         {
 			//As long as there is stuff to read
 			while (!bitstream.ChunkFinished)
@@ -39,7 +32,7 @@ namespace DemoInfo.DP
 				} else if (cmd == (int)SVC_Messages.svc_GameEventList) { //and all this other stuff
 					new GameEventList().Parse(bitstream, demo);
 				} else if (cmd == (int)SVC_Messages.svc_GameEvent) {
-					new GameEvent().Parse(bitstream, demo);
+					new GameEvent().Parse(bitstream, demo, parseChickens);
 				} else if (cmd == (int)SVC_Messages.svc_CreateStringTable) {
 					new CreateStringTable().Parse(bitstream, demo);
 				} else if (cmd == (int)SVC_Messages.svc_UpdateStringTable) {

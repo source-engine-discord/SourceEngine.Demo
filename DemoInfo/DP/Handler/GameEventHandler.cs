@@ -1,11 +1,6 @@
-﻿using DemoInfo.Messages;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 
 namespace DemoInfo.DP.Handler
 {
@@ -51,9 +46,13 @@ namespace DemoInfo.DP.Handler
         /// </summary>
         /// <param name="rawEvent">The raw event.</param>
         /// <param name="parser">The parser to mutate.</param>
-        public static void Apply(GameEvent rawEvent, DemoParser parser)
+        public static void Apply(GameEvent rawEvent, DemoParser parser, bool parseChickens)
         {
-			int numOfChickensAlive = CountChickensAlive(parser); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
+            int numOfChickensAlive = 0;
+            if (parseChickens) // Parse chickens unless explicitly told not to
+            {
+                numOfChickensAlive = CountChickensAlive(parser); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
+            }
 
             var descriptors = parser.GEH_Descriptors;
 			//previous blind implementation
@@ -120,7 +119,7 @@ namespace DemoInfo.DP.Handler
 
                 numOfChickensAliveExpected = 0; //sets expected number of chickens to 0 until the start of the next round to avoid edge cases
             }
-            else //checks for killed chickens
+            else if (parseChickens) //checks for killed chickens if required
             {
                 while (numOfChickensAlive < numOfChickensAliveExpected)
                 {
