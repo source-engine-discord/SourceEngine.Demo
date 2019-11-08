@@ -478,14 +478,14 @@ namespace TopStatsWaffle
         }
 
         public void CreateFiles(
-            List<string> demo, bool noguid, bool parseChickens, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues, Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues,
-            Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues, Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues,
-            Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues, Dictionary<string, IEnumerable<int>> penetrationValues,
-            Dictionary<string, IEnumerable<BombPlanted>> bombsitePlantValues, Dictionary<string, IEnumerable<BombExploded>> bombsiteExplodeValues, Dictionary<string, IEnumerable<BombDefused>> bombsiteDefuseValues,
-            Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<HostageRescued>> hostageRescueValues, Dictionary<string, IEnumerable<char>> hostageValues,
-            Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<double>> roundLengthValues,
-            Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues,
-            Dictionary<string, IEnumerable<ShotFired>> shotsFiredValues, bool writeTicks = true
+            List<string> demo, bool sameFilename, bool samefolderstructure, bool parseChickens, List<string> foldersToProcess, string outputRootFolder, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues,
+            Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues, Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues,
+            Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues,
+            Dictionary<string, IEnumerable<int>> penetrationValues, Dictionary<string, IEnumerable<BombPlanted>> bombsitePlantValues, Dictionary<string, IEnumerable<BombExploded>> bombsiteExplodeValues,
+            Dictionary<string, IEnumerable<BombDefused>> bombsiteDefuseValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<HostageRescued>> hostageRescueValues,
+            Dictionary<string, IEnumerable<char>> hostageValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
+            Dictionary<string, IEnumerable<double>> roundLengthValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues,
+            Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, Dictionary<string, IEnumerable<ShotFired>> shotsFiredValues, bool writeTicks = true
         )
         {
             var mapDateSplit = (!string.IsNullOrWhiteSpace(demo[2]) && demo[2] != "unknown") ? demo[2].Split('/')  : null;
@@ -495,7 +495,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.0.3" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.0" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -1311,16 +1311,36 @@ namespace TopStatsWaffle
             };
 
             /* JSON creation */
-            Guid guid = Guid.NewGuid();
-            string path = "matches/";
+            string filename = sameFilename ? demo[0].Split('\\').Last().Replace(".dem", string.Empty) : Guid.NewGuid().ToString();
+
+            string path = string.Empty;
+            if (foldersToProcess.Count() > 0 && samefolderstructure)
+            {
+                foreach (var folder in foldersToProcess)
+                {
+                    string[] splitPath = Path.GetDirectoryName(demo[0]).Split(new string[] { string.Concat(folder, "\\") }, StringSplitOptions.None);
+                    path = splitPath.Count() > 1 ? string.Concat(outputRootFolder, "\\", splitPath.LastOrDefault(), "\\") : string.Concat(outputRootFolder, "\\");
+
+                    if (!string.IsNullOrWhiteSpace(path))
+                    {
+                        if (!Directory.Exists(path))
+                            Directory.CreateDirectory(path);
+
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                path = string.Concat(outputRootFolder, "\\");
+            }
+            
             if (mapDateString != string.Empty)
             {
                 path += mapDateString + "_";
             }
-            path += mapNameString + "_" + (noguid ? "" : guid.ToString("N")) + ".json";
 
-            if (File.Exists(path))
-                File.Delete(path);
+            path += mapNameString + "_" + filename + ".json";
 
             StreamWriter sw = new StreamWriter(path, false);
 

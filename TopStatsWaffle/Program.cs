@@ -49,10 +49,11 @@ namespace TopStatsWaffle
                         "-folders      [paths (space seperated)]  Processes all demo files in each folder specified\n" +
                         "-demos        [paths (space seperated)]  Processess a list of single demo files at paths\n" +
                         "-recursive                               Switch for recursive demo search\n\n" +
-                        "-noguid                                  Disables GUID prefix on output files\n" + 
                         "-steaminfo                               Takes steam names from steam\n" +
-                        "-noclear                                 Disables clearing the data folder\n" +
-                        "-nochickens                              Disables checks for number of chickens killed when parsing\n"
+                        "-clear                                   Clears the data folder\n" +
+                        "-nochickens                              Disables checks for number of chickens killed when parsing\n" +
+                        "-samefilename                            Uses the demo's filename as the output filename\n" +
+                        "-samefolderstructure                     Uses the demo's folder structure inside the root folder for the output json file\n"
                 );
         }
 
@@ -62,11 +63,12 @@ namespace TopStatsWaffle
             string cfgPath = "config.cfg";
 
             bool recursive = false;
-            bool noguid = false;
             bool steaminfo = false;
-            bool clear = true;
-
+            bool clear = false;
             bool parseChickens = true;
+            string outputRootFolder = "parsed";
+            bool sameFilename = false;
+            bool samefolderstructure = false;
 
             List<string> foldersToProcess = new List<string>();
             List<string> demosToProcess = new List<string>();
@@ -116,9 +118,14 @@ namespace TopStatsWaffle
                     }
                     i--;
                 }
-                else if (arg == "-noclear")
+                else if (arg == "-output")
                 {
-                    clear = false;
+                    outputRootFolder = args[i+1];
+                    i++;
+                }
+                else if (arg == "-clear")
+                {
+                    clear = true;
                 }
                 else if (arg == "-steaminfo")
                 {
@@ -128,10 +135,6 @@ namespace TopStatsWaffle
                 {
                     recursive = true;
                 }
-                else if (arg == "-noguid")
-                {
-                    noguid = true;
-                }
                 else if (arg == "-help")
                 {
                     helpText();
@@ -140,6 +143,14 @@ namespace TopStatsWaffle
                 else if (arg == "-nochickens")
                 {
                     parseChickens = false;
+                }
+                else if (arg == "-samefilename")
+                {
+                    sameFilename = true;
+                }
+                else if (arg == "-samefolderstructure")
+                {
+                    samefolderstructure = true;
                 }
             }
 
@@ -172,20 +183,20 @@ namespace TopStatsWaffle
                 }
             }
 
-
-            if (!Directory.Exists("matches"))
-                Directory.CreateDirectory("matches");
-
             //Clear by recreating folder
-            /*if (clear)
+            if (clear && Directory.Exists(outputRootFolder))
             {
-                Directory.Delete("matches", true);
-                Directory.CreateDirectory("matches");
-            }*/
+                Directory.Delete(outputRootFolder, true);
+                Directory.CreateDirectory(outputRootFolder);
+            }
+            else if(!Directory.Exists(outputRootFolder))
+            {
+                Directory.CreateDirectory(outputRootFolder);
+            }
 
-            List<List<string>> demos = new List<List<string>>();
+            List<List<string>> demosInformation = new List<List<string>>();
 
-            foreach(string folder in foldersToProcess)
+            foreach (string folder in foldersToProcess)
             {
                 try
                 {
@@ -230,7 +241,7 @@ namespace TopStatsWaffle
                             }
                         }
 
-                        demos.Add(new List<string>() { demo, mapname, testDate, testType });
+                        demosInformation.Add(new List<string>() { demo, mapname, testDate, testType });
                     }
                 }
                 catch (Exception e)
@@ -280,7 +291,7 @@ namespace TopStatsWaffle
                         }
                     }
 
-                    demos.Add(new List<string>() { demo, mapname, testDate, testType });
+                    demosInformation.Add(new List<string>() { demo, mapname, testDate, testType });
                 }
                 catch (Exception e)
                 {
@@ -288,16 +299,16 @@ namespace TopStatsWaffle
                 }
             }
 
-            Debug.Info("Starting processing of {0} demos", demos.Count());
+            Debug.Info("Starting processing of {0} demos", demosInformation.Count());
             DateTime startTime = DateTime.Now;
 
             int passCount = 0;
 
             Console.CursorVisible = false;
             //Process all the found demos
-            for (int i = 0; i < demos.Count(); i++)
+            for (int i = 0; i < demosInformation.Count(); i++)
             {
-                MatchData mdTest = MatchData.fromDemoFile(demos[i][0], parseChickens);
+                MatchData mdTest = MatchData.fromDemoFile(demosInformation[i][0], parseChickens);
 
                 Dictionary<string, IEnumerable<MatchStartedEventArgs>> mse = new Dictionary<string, IEnumerable<MatchStartedEventArgs>>();
                 Dictionary<string, IEnumerable<SwitchSidesEventArgs>> sse = new Dictionary<string, IEnumerable<SwitchSidesEventArgs>>();
@@ -443,7 +454,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demos[i], noguid, parseChickens, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, hre, he, te, re, le, tes, ge, cke, sfe);
+                    mdTest.CreateFiles(demosInformation[i], sameFilename, samefolderstructure, parseChickens, foldersToProcess, outputRootFolder, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, hre, he, te, re, le, tes, ge, cke, sfe);
                     passCount++;
                 }
             }
@@ -455,7 +466,7 @@ namespace TopStatsWaffle
 
             Debug.White("Processing took {0} minutes\n", (end - startTime).TotalMinutes);
             Debug.White("Passed: {0}\n", passCount);
-            Debug.White("Failed: {0}\n", demos.Count() - passCount);
+            Debug.White("Failed: {0}\n", demosInformation.Count() - passCount);
         }
 
         private static TanookiStats tanookiStatsCreator(Dictionary<string, IEnumerable<TeamPlayers>> tpe, Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe)
