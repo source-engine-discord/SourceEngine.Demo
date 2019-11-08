@@ -7,7 +7,7 @@
     <ProjectGuid>{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>TopStatsWaffle</RootNamespace>
-    <AssemblyName>CSGODemoCSV</AssemblyName>
+    <AssemblyName>IDemO</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
