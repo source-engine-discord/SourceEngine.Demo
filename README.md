@@ -5,8 +5,9 @@ Latest release **v1.1.0**: https://github.com/JamesT-W/IDemO/releases/tag/v1.1.0
 
 ![Program output](https://i.imgur.com/RALmTAR.png)
 
-## Available Gamemodes
+## Supported Gamemodes
 - Defuse
+- Hostage
 - Wingman
 
 ## Example Usage
