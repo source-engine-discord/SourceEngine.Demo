@@ -45,10 +45,10 @@ namespace TopStatsWaffle
         {
             Debug.White("                             ========= HELP ==========\n\n" +
                         "Command line parameters:\n\n" +
-                        "-config       [path]                     Path to config file\n\n" +
+                        "-config       [path]                     Path to config file\n" +
                         "-folders      [paths (space seperated)]  Processes all demo files in each folder specified\n" +
                         "-demos        [paths (space seperated)]  Processess a list of single demo files at paths\n" +
-                        "-recursive                               Switch for recursive demo search\n\n" +
+                        "-recursive                               Switch for recursive demo search\n" +
                         "-steaminfo                               Takes steam names from steam\n" +
                         "-clear                                   Clears the data folder\n" +
                         "-nochickens                              Disables checks for number of chickens killed when parsing\n" +
