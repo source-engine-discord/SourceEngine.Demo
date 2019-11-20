@@ -190,10 +190,8 @@ namespace TopStatsWaffle
             };
 
             // SERVER EVENTS ===================================================
-            dp.MatchStarted += (object sender, MatchStartedEventArgs e) => {
-                //prints blank space out to console
-                Console.WriteLine();
-
+            dp.MatchStarted += (object sender, MatchStartedEventArgs e) =>
+			{
                 List<FeedbackMessage> currentFeedbackMessages = new List<FeedbackMessage>();
 
                 //stores all fb messages so that they aren't lost when stats are reset
@@ -512,7 +510,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.0" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.1" };
             /* demo parser version end */
 
             /* Supported gamemodes */

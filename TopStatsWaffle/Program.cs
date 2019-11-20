@@ -306,7 +306,7 @@ namespace TopStatsWaffle
                 }
             }
 
-            Debug.Info("Starting processing of {0} demos", demosInformation.Count());
+            Debug.Info("Starting processing of {0} demos.\n", demosInformation.Count());
             DateTime startTime = DateTime.Now;
 
             int passCount = 0;
