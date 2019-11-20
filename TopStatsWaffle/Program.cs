@@ -53,7 +53,9 @@ namespace TopStatsWaffle
                         "-clear                                   Clears the data folder\n" +
                         "-nochickens                              Disables checks for number of chickens killed when parsing\n" +
                         "-samefilename                            Uses the demo's filename as the output filename\n" +
-                        "-samefolderstructure                     Uses the demo's folder structure inside the root folder for the output json file\n"
+                        "-samefolderstructure                     Uses the demo's folder structure inside the root folder for the output json file\n" +
+						"-lowoutputmode							  Does not print out the progress bar and round completed messages to console\n" +
+						"\n"
                 );
         }
 
@@ -68,7 +70,8 @@ namespace TopStatsWaffle
             bool parseChickens = true;
             string outputRootFolder = "parsed";
             bool sameFilename = false;
-            bool samefolderstructure = false;
+            bool sameFolderStructure = false;
+            bool lowOutputMode = false;
 
             List<string> foldersToProcess = new List<string>();
             List<string> demosToProcess = new List<string>();
@@ -150,7 +153,11 @@ namespace TopStatsWaffle
                 }
                 else if (arg == "-samefolderstructure")
                 {
-                    samefolderstructure = true;
+					sameFolderStructure = true;
+                }
+                else if (arg == "-lowoutputmode")
+                {
+					lowOutputMode = true;
                 }
             }
 
@@ -308,7 +315,9 @@ namespace TopStatsWaffle
             //Process all the found demos
             for (int i = 0; i < demosInformation.Count(); i++)
             {
-                MatchData mdTest = MatchData.fromDemoFile(demosInformation[i][0], parseChickens);
+				Console.WriteLine($"Began parsing demo {demosInformation[i][0]}.");
+
+                MatchData mdTest = MatchData.fromDemoFile(demosInformation[i][0], parseChickens, lowOutputMode);
 
                 Dictionary<string, IEnumerable<MatchStartedEventArgs>> mse = new Dictionary<string, IEnumerable<MatchStartedEventArgs>>();
                 Dictionary<string, IEnumerable<SwitchSidesEventArgs>> sse = new Dictionary<string, IEnumerable<SwitchSidesEventArgs>>();
@@ -449,14 +458,20 @@ namespace TopStatsWaffle
                 sfe.Add("ShotsFired", from shot in mdTest.getEvents<ShotFired>()
                                       select (shot as ShotFired));
 
-                TanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
+                TanookiStats tanookiStats = TanookiStatsCreator(tpe, dpe);
 
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demosInformation[i], sameFilename, samefolderstructure, parseChickens, foldersToProcess, outputRootFolder, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, hre, he, te, re, le, tes, ge, cke, sfe);
+                    mdTest.CreateFiles(demosInformation[i], sameFilename, sameFolderStructure, parseChickens, foldersToProcess, outputRootFolder, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, hre, he, te, re, le, tes, ge, cke, sfe);
                     passCount++;
-                }
+
+					Console.WriteLine($"Finished parsing demo {demosInformation[i][0]}.\n");
+				}
+				else
+				{
+					Console.WriteLine($"Failed parsing demo {demosInformation[i][0]}.\n");
+				}
             }
 
             Console.CursorVisible = true;
@@ -469,7 +484,7 @@ namespace TopStatsWaffle
             Debug.White("Failed: {0}\n", demosInformation.Count() - passCount);
         }
 
-        private static TanookiStats tanookiStatsCreator(Dictionary<string, IEnumerable<TeamPlayers>> tpe, Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe)
+        private static TanookiStats TanookiStatsCreator(Dictionary<string, IEnumerable<TeamPlayers>> tpe, Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe)
         {
             TanookiStats tanookiStats = new TanookiStats() { Joined = false, Left = false, RoundJoined = -1, RoundLeft = -1, RoundsLasted = -1 };
             long tanookiId = 76561198123165941;

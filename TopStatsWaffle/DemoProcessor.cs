@@ -176,7 +176,7 @@ namespace TopStatsWaffle
             }
         }
 
-        public static MatchData fromDemoFile(string file, bool parseChickens)
+        public static MatchData fromDemoFile(string file, bool parseChickens, bool lowOutputMode)
         {
             MatchData md = new MatchData();
 
@@ -273,8 +273,11 @@ namespace TopStatsWaffle
                 md.addEvent(typeof(RoundEndedEventArgs), e);
 
                 //print rounds complete out to console
-                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
-                Console.WriteLine("Round " + roundsCount + " complete.");
+				if (!lowOutputMode)
+				{
+					int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+					Console.WriteLine("Round " + roundsCount + " complete.");
+				}
             };
 
             dp.SwitchSides += (object sender, SwitchSidesEventArgs e) => {
@@ -446,36 +449,50 @@ namespace TopStatsWaffle
             const int interval = 2500;
             int progMod = interval;
 
-            ProgressViewer pv = new ProgressViewer(Path.GetFileName(file));
+			if (!lowOutputMode)
+			{
+				ProgressViewer pv = new ProgressViewer(Path.GetFileName(file));
 
-            // PROGRESS BAR ==================================================
-            dp.TickDone += (object sender, TickDoneEventArgs e) =>
-            {
-                progMod++;
-                if (progMod >= interval)
-                {
-                    progMod = 0;
+				// PROGRESS BAR ==================================================
+				dp.TickDone += (object sender, TickDoneEventArgs e) =>
+				{
+					progMod++;
+					if (progMod >= interval)
+					{
+						progMod = 0;
 
-                    pv.percent = dp.ParsingProgess;
-                    pv.Draw();
-                }
-            };
+						pv.percent = dp.ParsingProgess;
+						pv.Draw();
+					}
+				};
 
-            try
-            {
-                dp.ParseToEnd();
-                pv.End();
+				try
+				{
+					dp.ParseToEnd();
+					pv.End();
 
-                md.passed = true;
-            }
-            catch (Exception e)
-            {
-                pv.Error();
-            }
+					md.passed = true;
+				}
+				catch (Exception e)
+				{
+					pv.Error();
+				}
+			}
+			else
+			{
+				try
+				{
+					dp.ParseToEnd();
 
-            dp.Dispose();
-            return md;
-        }
+					md.passed = true;
+				}
+				catch (Exception e) { }
+			}
+
+			dp.Dispose();
+
+			return md;
+		}
 
         public void CreateFiles(
             List<string> demo, bool sameFilename, bool samefolderstructure, bool parseChickens, List<string> foldersToProcess, string outputRootFolder, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues,
