@@ -9,7 +9,7 @@ using SourceEngine.Demo.Parser;
 
 namespace SourceEngine.Demo.Stats
 {
-    static class EXTMethods
+    internal static class EXTMethods
     {
         public static PlayerData fromSteamID(this List<PlayerData> players, long steamid)
         {

@@ -47,7 +47,7 @@ namespace SourceEngine.Demo.Stats
         }
     }
 
-    class RecorderSettings
+    internal class RecorderSettings
     {
         public int matchID = 0;
         public Dictionary<int, long> playerLookups = new Dictionary<int, long>();

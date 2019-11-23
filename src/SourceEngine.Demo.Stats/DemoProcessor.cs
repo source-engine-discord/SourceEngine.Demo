@@ -10,14 +10,14 @@ using SourceEngine.Demo.Stats.Models;
 
 namespace SourceEngine.Demo.Stats
 {
-    enum PSTATUS
+    internal enum PSTATUS
     {
         ONSERVER,
         PLAYING,
         ALIVE
     }
 
-    class TickCounter
+    public class TickCounter
     {
         public long ticksOnServer = 0;
         public long ticksPlaying = 0;
@@ -41,14 +41,14 @@ namespace SourceEngine.Demo.Stats
         public Dictionary<int, long> playerLookups = new Dictionary<int, long>();
         public Dictionary<int, int> playerReplacements = new Dictionary<int, int>();
 
-        const string winReasonTKills = "TerroristWin", winReasonCtKills = "CTWin", winReasonBombed = "TargetBombed", winReasonDefused = "BombDefused", winReasonRescued = "HostagesRescued", winReasonNotRescued = "HostagesNotRescued", winReasonTSaved = "TargetSaved";
-        const string winReasonUnknown = "Unknown"; // Caused by an error where the round_end event was not triggered for a round
+        private const string winReasonTKills = "TerroristWin", winReasonCtKills = "CTWin", winReasonBombed = "TargetBombed", winReasonDefused = "BombDefused", winReasonRescued = "HostagesRescued", winReasonNotRescued = "HostagesNotRescued", winReasonTSaved = "TargetSaved";
+        private const string winReasonUnknown = "Unknown"; // Caused by an error where the round_end event was not triggered for a round
 
         public bool changingPlantedRoundsToA = false, changingPlantedRoundsToB = false; // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
 
         public bool passed = false;
 
-        void addEvent(Type type, object ev)
+        private void addEvent(Type type, object ev)
         {
             //Create if doesnt exist
             if (!this.events.ContainsKey(type))
@@ -164,7 +164,7 @@ namespace SourceEngine.Demo.Stats
             return false;
         }
 
-        void addTick(Player p, PSTATUS status)
+        private void addTick(Player p, PSTATUS status)
         {
             bool userIdStored = BindPlayer(p);
 

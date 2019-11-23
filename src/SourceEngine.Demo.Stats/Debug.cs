@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace SourceEngine.Demo.Stats
 {
-    class Debug
+    public class Debug
     {
 
         private static bool isProgressBar = false;
         private static string headerRef = "";
         private static string currmessage = "";
 
-        enum DebugLevel
+        private enum DebugLevel
         {
             low,
             normal,

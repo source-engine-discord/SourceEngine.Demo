@@ -30,10 +30,10 @@ namespace SourceEngine.Demo.Stats.App
                     keyVals.Add(elements[0], elements[1]);
             }
 
-            if (!this.keyVals.ContainsKey("apikey"))
+            if (!keyVals.ContainsKey("apikey"))
                 throw new Exception("CFG::STEAM_API_KEY::NOT_FOUND");
 
-            if(this.keyVals["apikey"] == "" || this.keyVals["apikey"] == null)
+            if(keyVals["apikey"] == "" || keyVals["apikey"] == null)
                 throw new Exception("CFG:STEAM_API_KEY::INVALID");
 
             sr.Close();
@@ -172,7 +172,7 @@ namespace SourceEngine.Demo.Stats.App
 
                         Steam.setAPIKey(cfg.keyVals["apikey"]);
 
-                        if(Steam.getSteamUserNamesLookupTable(new List<long>() { 76561198072130043 }) == null)
+                        if(Steam.getSteamUserNamesLookupTable(new List<long> { 76561198072130043 }) == null)
                         {
                             throw new Exception("CONFIG::STEAM_API_KEY::INVALID");
                         }
@@ -249,7 +249,7 @@ namespace SourceEngine.Demo.Stats.App
                             }
                         }
 
-                        demosInformation.Add(new DemoInformation() { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType });
+                        demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType });
                     }
                 }
                 catch (Exception e)
@@ -299,7 +299,7 @@ namespace SourceEngine.Demo.Stats.App
                         }
                     }
 
-                    demosInformation.Add(new DemoInformation() { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType });
+                    demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType });
 				}
                 catch (Exception e)
                 {
@@ -505,7 +505,7 @@ namespace SourceEngine.Demo.Stats.App
 
         private static tanookiStats tanookiStatsCreator(IEnumerable<TeamPlayers> tpe, IEnumerable<DisconnectedPlayer> dpe)
         {
-            tanookiStats tanookiStats = new tanookiStats() { Joined = false, Left = false, RoundJoined = -1, RoundLeft = -1, RoundsLasted = -1 };
+            tanookiStats tanookiStats = new tanookiStats { Joined = false, Left = false, RoundJoined = -1, RoundLeft = -1, RoundsLasted = -1 };
             long tanookiId = 76561198123165941;
 
             if (tpe.Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId)) || tpe.Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
