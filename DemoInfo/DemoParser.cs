@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 
 namespace DemoInfo
 {
 	#if DEBUG
-	#warning The DemoParser is very slow when compiled in Debug-Mode, since we use it as that: We perform many integrity checks during runtime. 
+	#warning The DemoParser is very slow when compiled in Debug-Mode, since we use it as that: We perform many integrity checks during runtime.
 	#warning Build this in Relase-Mode for more performance if you're not working the internals of the parser. (If you are, create a pull request when you're done!)
 	#endif
 	#if SAVE_PROP_VALUES
@@ -34,7 +35,7 @@ namespace DemoInfo
         public event EventHandler<HeaderParsedEventArgs> HeaderParsed;
 
 		/// <summary>
-		/// Occurs when the match started, so when the "begin_new_match"-GameEvent is dropped. 
+		/// Occurs when the match started, so when the "begin_new_match"-GameEvent is dropped.
 		/// This usually right before the freezetime of the 1st round. Be careful, since the players
 		/// usually still have warmup-money when this drops.
 		/// </summary>
@@ -46,7 +47,7 @@ namespace DemoInfo
 		public event EventHandler<RoundAnnounceMatchStartedEventArgs> RoundAnnounceMatchStarted;
 
 		/// <summary>
-		/// Occurs when round starts, on the round_start event of the demo. Usually the players haven't spawned yet, but have recieved the money for the next round. 
+		/// Occurs when round starts, on the round_start event of the demo. Usually the players haven't spawned yet, but have recieved the money for the next round.
 		/// </summary>
 		public event EventHandler<RoundStartedEventArgs> RoundStart;
 
@@ -91,7 +92,7 @@ namespace DemoInfo
 		public event EventHandler<BotTakeOverEventArgs> BotTakeOver;
 
 		/// <summary>
-		/// Occurs when freezetime ended. Raised on "round_freeze_end" 
+		/// Occurs when freezetime ended. Raised on "round_freeze_end"
 		/// </summary>
 		public event EventHandler<FreezetimeEndedEventArgs> FreezetimeEnded;
 
@@ -132,8 +133,8 @@ namespace DemoInfo
 		public event EventHandler<SmokeEventArgs> SmokeNadeStarted;
 
 		/// <summary>
-		/// Occurs when smoke nade ended. 
-		/// Hint: When a round ends, this is *not* caĺled. 
+		/// Occurs when smoke nade ended.
+		/// Hint: When a round ends, this is *not* caĺled.
 		/// Make sure to clear nades yourself at the end of rounds
 		/// </summary>
 		public event EventHandler<SmokeEventArgs> SmokeNadeEnded;
@@ -144,14 +145,14 @@ namespace DemoInfo
 		public event EventHandler<DecoyEventArgs> DecoyNadeStarted;
 
 		/// <summary>
-		/// Occurs when decoy nade ended. 
-		/// Hint: When a round ends, this is *not* caĺled. 
+		/// Occurs when decoy nade ended.
+		/// Hint: When a round ends, this is *not* caĺled.
 		/// Make sure to clear nades yourself at the end of rounds
 		/// </summary>
 		public event EventHandler<DecoyEventArgs> DecoyNadeEnded;
 
 		/// <summary>
-		/// Occurs when a fire nade (incendiary / molotov) started. 
+		/// Occurs when a fire nade (incendiary / molotov) started.
 		/// This currently *doesn't* contain who it threw since this is for some weird reason not networked
 		/// </summary>
 		public event EventHandler<FireEventArgs> FireNadeStarted;
@@ -164,7 +165,7 @@ namespace DemoInfo
 
 		/// <summary>
 		/// Occurs when fire nade ended.
-		/// Hint: When a round ends, this is *not* caĺled. 
+		/// Hint: When a round ends, this is *not* caĺled.
 		/// Make sure to clear nades yourself at the end of rounds
 		/// </summary>
 		public event EventHandler<FireEventArgs> FireNadeEnded;
@@ -231,7 +232,7 @@ namespace DemoInfo
 
 		/// <summary>
 		/// Occurs when an player is attacked by another player.
-		/// Hint: Only occurs in GOTV-demos. 
+		/// Hint: Only occurs in GOTV-demos.
 		/// </summary>
 		public event EventHandler<PlayerHurtEventArgs> PlayerHurt;
 
@@ -248,7 +249,7 @@ namespace DemoInfo
 		public event EventHandler<PlayerBindEventArgs> PlayerBind;
 
 		/// <summary>
-		/// Occurs when a player disconnects from the server. 
+		/// Occurs when a player disconnects from the server.
 		/// </summary>
 		public event EventHandler<PlayerDisconnectEventArgs> PlayerDisconnect;
 
@@ -269,7 +270,7 @@ namespace DemoInfo
 		#endregion
 
 		/// <summary>
-		/// The mapname of the Demo. Only avaible after the header is parsed. 
+		/// The mapname of the Demo. Only avaible after the header is parsed.
 		/// Is a string like "de_dust2".
 		/// </summary>
 		/// <value>The map.</value>
@@ -278,7 +279,7 @@ namespace DemoInfo
 		}
 
 		/// <summary>
-		/// The header of the demo, containing some useful information. 
+		/// The header of the demo, containing some useful information.
 		/// </summary>
 		/// <value>The header.</value>
 		public DemoHeader Header { get; private set; }
@@ -288,7 +289,7 @@ namespace DemoInfo
 		/// </summary>
 		/// <value>The participants.</value>
 		public IEnumerable<Player> Participants {
-			get { 
+			get {
 				return Players.Values;
 			}
 		}
@@ -298,7 +299,7 @@ namespace DemoInfo
 		/// </summary>
 		/// <value>The playing participants.</value>
 		public IEnumerable<Player> PlayingParticipants {
-			get { 
+			get {
 				return Players.Values.Where(a => a.Team != Team.Spectate);
 			}
 		}
@@ -311,7 +312,7 @@ namespace DemoInfo
 
 
 		/// <summary>
-		/// A parser for DataTables. This contains the ServerClasses and DataTables. 
+		/// A parser for DataTables. This contains the ServerClasses and DataTables.
 		/// </summary>
 		internal DataTableParser SendTableParser = new DataTableParser();
 
@@ -321,7 +322,7 @@ namespace DemoInfo
 		StringTableParser StringTables = new StringTableParser();
 
 		/// <summary>
-		/// This maps an ServerClass to an Equipment. 
+		/// This maps an ServerClass to an Equipment.
 		/// Note that this is wrong for the CZ,M4A1 and USP-S, there is an additional fix for those
 		/// </summary>
 		internal Dictionary<ServerClass, EquipmentElement> equipmentMapping = new Dictionary<ServerClass, EquipmentElement>();
@@ -334,14 +335,14 @@ namespace DemoInfo
 		internal Player[] PlayerInformations = new Player[MAXPLAYERS];
 
 		/// <summary>
-		/// Contains information about the players, accessible by the userid. 
+		/// Contains information about the players, accessible by the userid.
 		/// </summary>
 		internal PlayerInfo[] RawPlayers = new PlayerInfo[MAXPLAYERS];
 
 		/// <summary>
-		/// All entities currently alive in the demo. 
+		/// All entities currently alive in the demo.
 		/// </summary>
-		internal Entity[] Entities = new Entity[MAX_ENTITIES]; //Max 2048 entities. 
+		internal Entity[] Entities = new Entity[MAX_ENTITIES]; //Max 2048 entities.
 
 		/// <summary>
 		/// The modelprecache. With this we can tell which model an entity has.
@@ -350,14 +351,14 @@ namespace DemoInfo
 		internal List<string> modelprecache = new List<string> ();
 
 		/// <summary>
-		/// The string tables sent by the server. 
+		/// The string tables sent by the server.
 		/// </summary>
 		internal List<CreateStringTable> stringTables = new List<CreateStringTable>();
 
 
 		/// <summary>
-		/// An map entity <-> weapon. Used to remember whether a weapon is a p250, 
-		/// how much ammonition it has, etc. 
+		/// An map entity <-> weapon. Used to remember whether a weapon is a p250,
+		/// how much ammonition it has, etc.
 		/// </summary>
 		Equipment[] weapons = new Equipment[MAX_ENTITIES];
 
@@ -443,7 +444,7 @@ namespace DemoInfo
 		}
 
 		/// <summary>
-		/// And GameEvent is just sent with ID |--> Value, but we need Name |--> Value. 
+		/// And GameEvent is just sent with ID |--> Value, but we need Name |--> Value.
 		/// Luckily these contain a map ID |--> Name.
 		/// </summary>
 		internal Dictionary<int, GameEventList.Descriptor> GEH_Descriptors = null;
@@ -469,10 +470,10 @@ namespace DemoInfo
 		internal Dictionary<int, object[]> PreprocessedBaselines = new Dictionary<int, object[]>();
 
 		/// <summary>
-		/// The instance baselines. 
-		/// When a new edict is created one would need to send all the information twice. 
+		/// The instance baselines.
+		/// When a new edict is created one would need to send all the information twice.
 		/// Since this is (was) expensive, valve sends an instancebaseline, which contains defaults
-		/// for all the properties. 
+		/// for all the properties.
 		/// </summary>
 		internal Dictionary<int, byte[]> instanceBaseline = new Dictionary<int, byte[]>();
 
@@ -501,33 +502,33 @@ namespace DemoInfo
 		}
 
 		/// <summary>
-		/// The current tick the parser has seen. So if it's a 16-tick demo, 
-		/// it will have 16 after one second. 
+		/// The current tick the parser has seen. So if it's a 16-tick demo,
+		/// it will have 16 after one second.
 		/// </summary>
 		/// <value>The current tick.</value>
 		public int CurrentTick { get; private set; }
 
 		/// <summary>
-		/// The current ingame-tick as reported by the demo-file. 
+		/// The current ingame-tick as reported by the demo-file.
 		/// </summary>
 		/// <value>The current tick.</value>
 		public int IngameTick { get; internal set; }
 
 		/// <summary>
-		/// How far we've advanced in the demo in seconds. 
+		/// How far we've advanced in the demo in seconds.
 		/// </summary>
 		/// <value>The current time.</value>
 		public float CurrentTime { get { return CurrentTick * TickTime; } }
 
 		/// <summary>
-		/// This contains additional informations about each player, such as Kills, Deaths, etc. 
+		/// This contains additional informations about each player, such as Kills, Deaths, etc.
 		/// This is networked seperately from the player, so we need to cache it somewhere else.
 		/// </summary>
 		private AdditionalPlayerInformation[] additionalInformations = new AdditionalPlayerInformation[MAXPLAYERS];
 
 		/// <summary>
-		/// Initializes a new DemoParser. Right point if you want to start analyzing demos. 
-		/// Hint: ParseHeader() is propably what you want to look into next. 
+		/// Initializes a new DemoParser. Right point if you want to start analyzing demos.
+		/// Hint: ParseHeader() is propably what you want to look into next.
 		/// </summary>
 		/// <param name="input">An input-stream.</param>
 		public DemoParser(Stream input, bool parseChickens = true)
@@ -544,7 +545,7 @@ namespace DemoInfo
 
 
 		/// <summary>
-		/// Parses the header (first few hundret bytes) of the demo. 
+		/// Parses the header (first few hundret bytes) of the demo.
 		/// </summary>
 		public void ParseHeader()
 		{
@@ -567,7 +568,7 @@ namespace DemoInfo
 		}
 
 		/// <summary>
-		/// Parses this file until the end of the demo is reached. 
+		/// Parses this file until the end of the demo is reached.
 		/// Useful if you have subscribed to events
 		/// </summary>
 		public void ParseToEnd()
@@ -597,7 +598,7 @@ namespace DemoInfo
 				throw new InvalidOperationException ("You need to call ParseHeader first before you call ParseToEnd or ParseNextTick!");
 
 			bool b = ParseTick();
-			
+
 			for (int i = 0; i < RawPlayers.Length; i++) {
 				if (RawPlayers[i] == null)
 					continue;
@@ -622,7 +623,7 @@ namespace DemoInfo
 					Player p = Players[id];
 					p.Name = rawPlayer.Name;
 					p.SteamID = rawPlayer.XUID;
-					
+
                     p.UserID = id;
 
 					p.AdditionaInformations = additionalInformations [p.EntityID];
@@ -682,7 +683,7 @@ namespace DemoInfo
 				//Map the weapons in the equipmentMapping-Dictionary.
 				MapEquipment ();
 
-				//And now we have the entities, we can bind events on them. 
+				//And now we have the entities, we can bind events on them.
 				BindEntites();
 
 				break;
@@ -708,11 +709,11 @@ namespace DemoInfo
 		}
 
 		/// <summary>
-		/// Parses a DEM_Packet. 
+		/// Parses a DEM_Packet.
 		/// </summary>
 		private void ParseDemoPacket()
 		{
-			//Read a command-info. Contains no really useful information afaik. 
+			//Read a command-info. Contains no really useful information afaik.
 			CommandInfo.Parse(BitStream);
 			BitStream.ReadInt(32); // SeqNrIn
 			BitStream.ReadInt(32); // SeqNrOut
@@ -723,14 +724,14 @@ namespace DemoInfo
 		}
 
 		/// <summary>
-		/// Binds the events for entities. And Entity has many properties. 
-		/// You can subscribe to when an entity of a specific class is created, 
-		/// and then you can subscribe to updates of properties of this entity. 
-		/// This is a bit complex, but very fast. 
+		/// Binds the events for entities. And Entity has many properties.
+		/// You can subscribe to when an entity of a specific class is created,
+		/// and then you can subscribe to updates of properties of this entity.
+		/// This is a bit complex, but very fast.
 		/// </summary>
 		private void BindEntites()
 		{
-			//Okay, first the team-stuff. 
+			//Okay, first the team-stuff.
 			HandleTeamScores();
 
 			HandleBombSites();
@@ -753,11 +754,11 @@ namespace DemoInfo
 				int teamID = -1;
 				int score = 0;
 
-				e.Entity.FindProperty("m_scoreTotal").IntRecived += (xx, update) => { 
+				e.Entity.FindProperty("m_scoreTotal").IntRecived += (xx, update) => {
 					score = update.Value;
 				};
 
-				e.Entity.FindProperty("m_iTeamNum").IntRecived += (xx, update) => { 
+				e.Entity.FindProperty("m_iTeamNum").IntRecived += (xx, update) => {
 					teamID = update.Value;
 
 					if(team == "CT")
@@ -777,7 +778,7 @@ namespace DemoInfo
 					}
 				};
 
-				e.Entity.FindProperty("m_szTeamname").StringRecived += (sender_, recivedTeamName) => { 
+				e.Entity.FindProperty("m_szTeamname").StringRecived += (sender_, recivedTeamName) => {
 					team = recivedTeamName.Value;
 
 					//We got the name. Lets bind the updates accordingly!
@@ -785,7 +786,7 @@ namespace DemoInfo
 					{
 						CTScore = score;
 						CTClanName = teamName;
-						e.Entity.FindProperty("m_scoreTotal").IntRecived += (xx, update) => { 
+						e.Entity.FindProperty("m_scoreTotal").IntRecived += (xx, update) => {
 							CTScore = update.Value;
 						};
 
@@ -801,7 +802,7 @@ namespace DemoInfo
 					{
 						TScore = score;
 						TClanName = teamName;
-						e.Entity.FindProperty("m_scoreTotal").IntRecived += (xx, update) => { 
+						e.Entity.FindProperty("m_scoreTotal").IntRecived += (xx, update) => {
 							TScore = update.Value;
 						};
 
@@ -918,17 +919,17 @@ namespace DemoInfo
 
 			//position update
 			playerEntity.FindProperty("cslocaldata.m_vecOrigin").VectorRecived += (sender, e) => {
-				p.Position.X = e.Value.X; 
+				p.Position.X = e.Value.X;
 				p.Position.Y = e.Value.Y;
 			};
 
 			playerEntity.FindProperty("cslocaldata.m_vecOrigin[2]").FloatRecived += (sender, e) => {
-				p.Position.Z = e.Value; 
+				p.Position.Z = e.Value;
 			};
 
 			//team update
 			//problem: Teams are networked after the players... How do we solve that?
-			playerEntity.FindProperty("m_iTeamNum").IntRecived += (sender, e) => { 
+			playerEntity.FindProperty("m_iTeamNum").IntRecived += (sender, e) => {
 
 				p.TeamID = e.Value;
 
@@ -973,14 +974,14 @@ namespace DemoInfo
 
 			for(int i = 0; i < MAXWEAPONS; i++)
 			{
-				int iForTheMethod = i; //Because else i is passed as reference to the delegate. 
+				int iForTheMethod = i; //Because else i is passed as reference to the delegate.
 
 				playerEntity.FindProperty(weaponPrefix + i.ToString().PadLeft(3, '0')).IntRecived += (sender, e) => {
 
 					int index = e.Value & INDEX_MASK;
 
 					if (index != INDEX_MASK) {
-						if(cache[iForTheMethod] != 0) //Player already has a weapon in this slot. 
+						if(cache[iForTheMethod] != 0) //Player already has a weapon in this slot.
 						{
 							p.rawWeapons.Remove(cache[iForTheMethod]);
 							cache[iForTheMethod] = 0;
@@ -1014,11 +1015,11 @@ namespace DemoInfo
 		}
 
 		private void MapEquipment()
-		{				
+		{
 			for (int i = 0; i < SendTableParser.ServerClasses.Count; i++) {
 				var sc = SendTableParser.ServerClasses[i];
 
-				if (sc.BaseClasses.Count > 6 && sc.BaseClasses [6].Name == "CWeaponCSBase") { 
+				if (sc.BaseClasses.Count > 6 && sc.BaseClasses [6].Name == "CWeaponCSBase") {
 					//It is a "weapon" (Gun, C4, ... (...is the cz still a "weapon" after the nerf? (fml, it was buffed again)))
 					if (sc.BaseClasses.Count > 7) {
 						if (sc.BaseClasses [7].Name == "CWeaponCSBaseGun") {
@@ -1026,9 +1027,9 @@ namespace DemoInfo
 							var s = sc.DTName.Substring (9).ToLower ();
 							equipmentMapping.Add (sc, Equipment.MapEquipment (s));
 						} else if (sc.BaseClasses [7].Name == "CBaseCSGrenade") {
-							//"boom"-weapon. 
+							//"boom"-weapon.
 							equipmentMapping.Add (sc, Equipment.MapEquipment (sc.DTName.Substring (3).ToLower ()));
-						} 
+						}
 					} else if (sc.Name == "CC4") {
 						//Bomb is neither "ratatata" nor "boom", its "booooooom".
 						equipmentMapping.Add (sc, EquipmentElement.Bomb);
@@ -1085,7 +1086,7 @@ namespace DemoInfo
 						equipment.Weapon = EquipmentElement.USP; //BAM
 					else if(modelprecache[e2.Value].Contains("_pist_hkp2000"))
 						equipment.Weapon = EquipmentElement.P2000;
-					else 
+					else
 						throw new InvalidDataException("Unknown weapon model");
 				};
 			}
@@ -1098,7 +1099,7 @@ namespace DemoInfo
 						// if it's not an M4A1-S, check if it's an M4A4
 					else if(modelprecache[e2.Value].Contains("_rif_m4a1"))
 						equipment.Weapon = EquipmentElement.M4A4;
-					else 
+					else
 						throw new InvalidDataException("Unknown weapon model");
 				};
 			}
@@ -1110,7 +1111,7 @@ namespace DemoInfo
 						equipment.Weapon = EquipmentElement.CZ;  //BAM
 					else if(modelprecache[e2.Value].Contains("_pist_p250"))
 						equipment.Weapon = EquipmentElement.P250;
-					else 
+					else
 						throw new InvalidDataException("Unknown weapon model");
 				};
 			}
@@ -1229,7 +1230,7 @@ namespace DemoInfo
 			writer.Flush();
 			writer.Close();
 		}
-		#endif 
+		#endif
 
 		#region EventCaller
 
@@ -1509,9 +1510,9 @@ namespace DemoInfo
 		#endregion
 
 		/// <summary>
-		/// Releases all resource used by the <see cref="DemoInfo.DemoParser"/> object. This must be called or evil things (memory leaks) happen. 
-		/// Sorry for that - I've debugged and I don't know why this is, but I can't fix it somehow. 
-		/// This is bad, I know. 
+		/// Releases all resource used by the <see cref="DemoInfo.DemoParser"/> object. This must be called or evil things (memory leaks) happen.
+		/// Sorry for that - I've debugged and I don't know why this is, but I can't fix it somehow.
+		/// This is bad, I know.
 		/// </summary>
 		/// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="DemoInfo.DemoParser"/>. The
 		/// <see cref="Dispose"/> method leaves the <see cref="DemoInfo.DemoParser"/> in an unusable state. After calling

@@ -13,7 +13,7 @@ namespace DevNullPlayer
 
 			using (var input = File.OpenRead(args[0])) {
 				var parser = new DemoParser(input);
-				
+
 				parser.ParseHeader ();
 
 				#if DEBUG
@@ -30,7 +30,7 @@ namespace DevNullPlayer
 						if(p.HP == p.AdditionaInformations.ScoreboardHP)
 							failures[p] = 0;
 						else
-							failures[p]++; //omg this is hacky. 
+							failures[p]++; //omg this is hacky.
 
 						//Okay, if it's wrong 2 seconds in a row, something's off
 						//Since there should be a tick where it's right, right?
@@ -38,9 +38,9 @@ namespace DevNullPlayer
 						//there will be 2 seconds of ticks where it's wrong
 						//So no problem here :)
 						Debug.Assert(
-							failures[p] < parser.TickRate * 2, 
+							failures[p] < parser.TickRate * 2,
 							string.Format(
-								"The player-HP({0}) of {2} (Clan: {3}) and it's Scoreboard HP ({1}) didn't match for {4} ticks. ", 
+								"The player-HP({0}) of {2} (Clan: {3}) and it's Scoreboard HP ({1}) didn't match for {4} ticks. ",
 								p.HP, p.AdditionaInformations.ScoreboardHP, p.Name, p.AdditionaInformations.Clantag, parser.TickRate * 2
 							)
 						);
@@ -48,7 +48,7 @@ namespace DevNullPlayer
 					}
 				};
 
-				
+
 
 				if (args.Length >= 2) {
 					// progress reporting requested
@@ -67,7 +67,7 @@ namespace DevNullPlayer
 					return;
 				}
 				#endif
-				
+
 				parser.ParseToEnd();
 			}
 		}
