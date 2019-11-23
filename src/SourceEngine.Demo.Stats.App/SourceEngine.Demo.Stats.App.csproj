@@ -8,6 +8,7 @@
         <PublishTrimmed>true</PublishTrimmed>
         <StartupObject>SourceEngine.Demo.Stats.App.Program</StartupObject>
         <ApplicationIcon>icon_8RJ_icon.ico</ApplicationIcon>
+        <AssemblyName>IDemO</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
