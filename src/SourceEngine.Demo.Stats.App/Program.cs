@@ -6,7 +6,7 @@ using System.IO;
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
 
-namespace SourceEngine.Demo.Stats
+namespace SourceEngine.Demo.Stats.App
 {
     //Config class, currently only holds api key
 

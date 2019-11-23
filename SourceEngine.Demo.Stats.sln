@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceEngine.Demo.Stats", "src\SourceEngine.Demo.Stats\SourceEngine.Demo.Stats.csproj", "{10BBC6A5-335B-46EB-8F1F-4B648533D41E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceEngine.Demo.Stats.App", "src\SourceEngine.Demo.Stats.App\SourceEngine.Demo.Stats.App.csproj", "{EC684D65-2C2E-43DF-A8A6-1EAD03FB5F11}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceEngine.Demo.Stats.Tests", "tests\SourceEngine.Demo.Stats.Tests\SourceEngine.Demo.Stats.Tests.csproj", "{000571C6-8000-4D00-ACD1-E6197B279CB2}"
 EndProject
 Global
@@ -17,6 +19,10 @@ Global
 		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC684D65-2C2E-43DF-A8A6-1EAD03FB5F11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC684D65-2C2E-43DF-A8A6-1EAD03FB5F11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC684D65-2C2E-43DF-A8A6-1EAD03FB5F11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC684D65-2C2E-43DF-A8A6-1EAD03FB5F11}.Release|Any CPU.Build.0 = Release|Any CPU
 		{000571C6-8000-4D00-ACD1-E6197B279CB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{000571C6-8000-4D00-ACD1-E6197B279CB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{000571C6-8000-4D00-ACD1-E6197B279CB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
