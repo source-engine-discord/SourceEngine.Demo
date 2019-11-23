@@ -1,8 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp3.0</TargetFramework>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <PublishSingleFile>true</PublishSingleFile>
+        <PublishTrimmed>true</PublishTrimmed>
+        <StartupObject>SourceEngine.Demo.Stats.App.Program</StartupObject>
+        <ApplicationIcon>icon_8RJ_icon.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
