@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceEngine.Demo.Stats", "src\SourceEngine.Demo.Stats\SourceEngine.Demo.Stats.csproj", "{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceEngine.Demo.Stats", "src\SourceEngine.Demo.Stats\SourceEngine.Demo.Stats.csproj", "{10BBC6A5-335B-46EB-8F1F-4B648533D41E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoInfo", "..\demoinfo\DemoInfo\DemoInfo.csproj", "{22D4CFC7-6810-4C18-A353-71A49782394F}"
 EndProject
@@ -18,16 +18,16 @@ Global
 		YoloDebug|Any CPU = YoloDebug|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.Bitstream-Debugging|Any CPU.ActiveCfg = Debug|Any CPU
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.Bitstream-Debugging|Any CPU.Build.0 = Debug|Any CPU
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.SavePropValues|Any CPU.ActiveCfg = Release|Any CPU
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.SavePropValues|Any CPU.Build.0 = Release|Any CPU
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.YoloDebug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9E35F904-5F5D-46EF-8ADD-5151E016DEAA}.YoloDebug|Any CPU.Build.0 = Debug|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.Bitstream-Debugging|Any CPU.ActiveCfg = Debug|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.Bitstream-Debugging|Any CPU.Build.0 = Debug|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.SavePropValues|Any CPU.ActiveCfg = Release|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.SavePropValues|Any CPU.Build.0 = Release|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.YoloDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E}.YoloDebug|Any CPU.Build.0 = Debug|Any CPU
 		{22D4CFC7-6810-4C18-A353-71A49782394F}.Bitstream-Debugging|Any CPU.ActiveCfg = Bitstream-Debugging|Any CPU
 		{22D4CFC7-6810-4C18-A353-71A49782394F}.Bitstream-Debugging|Any CPU.Build.0 = Bitstream-Debugging|Any CPU
 		{22D4CFC7-6810-4C18-A353-71A49782394F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
