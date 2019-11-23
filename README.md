@@ -1,18 +1,25 @@
-# IDemO
-Extended from CSGODemoCSV, utilises DemoInfo.
+# SourceEngine.Demo.Stats
 
-Latest release **v1.1.16**: https://github.com/JamesT-W/IDemO/releases/tag/v1.1.16
+Outputs game statistics from CS:GO demos as JSON. Extended from CSGODemoCSV and utilises DemoInfo.
 
 ![Program output](https://i.imgur.com/RALmTAR.png)
 
-## Supported Gamemodes
+#### Supported Gamemodes
+
 - Defuse
 - Hostage
 - Wingman
 
-## Example Usage
+## Running
 
-Example: `IDemO -folders "demos" -output "parsed" -recursive -nochickens -samefilename -samefolderstructure`
+### Releases
+
+Latest release:
+
+* [Windows (x64)][1]
+
+### Usage
+
 ```
   -config               [path]                      Path to config file.
   -folders              [paths (space seperated)]   Processes all demo files in each folder specified.
@@ -24,3 +31,47 @@ Example: `IDemO -folders "demos" -output "parsed" -recursive -nochickens -samefi
   -samefilename                                     Uses the demo's filename as the output filename.
   -samefolderstructure                              Uses the demo's folder structure inside the root folder for the output json file.
 ```
+
+Example:
+
+```
+IDemO -folders "demos" -output "parsed" -recursive -nochickens -samefilename -samefolderstructure
+```
+
+## Development
+
+### Requirements
+
+* [.NET Core 3.0 SDK][2] or higher.
+* [Visual Studio 2019][3], [JetBrains Rider][4], or [Visual Studio Code][5] recommended.
+
+### Building
+
+The `SourceEngine.Demo.Stats.App` project will build the executable. By default, a [self-contained][6] [single executable][7] is published targeting `win-x64`.
+
+#### Visual Studio
+
+Right-click the `SourceEngine.Demo.Stats.App` project and click `Publish`. A new tab will open and it should have the `win_x64_self_contained` profile already selected. Take note of the target location shown (i.e. where the resulting exe will be) and then click the `Publish` button.
+
+#### Command Line
+
+Run
+
+```
+dotnet publish -c Release
+```
+
+By default, this publishes for the `win-x64` runtime. To build for another runtime, specify the [RID][8] with the `-r` option. For example:
+
+```
+dotnet publish -c Release -r linux-x64
+```
+
+[1]: https://github.com/source-engine-discord/SourceEngine.Demo.Stats/releases/download/latest/IDemO.exe
+[2]: https://dotnet.microsoft.com/download/dotnet-core/3.0
+[3]: https://visualstudio.microsoft.com/
+[4]: https://www.jetbrains.com/rider/
+[5]: https://code.visualstudio.com/
+[6]: https://docs.microsoft.com/en-us/dotnet/core/deploying/index#self-contained-deployments-scd
+[7]: https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#single-file-executables
+[8]: https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
