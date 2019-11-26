@@ -1,38 +1,67 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-VisualStudioVersion = 12.0.30501.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceEngine.Demo.Parser", "src\SourceEngine.Demo.Parser\SourceEngine.Demo.Parser.csproj", "{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceEngine.Demo.Parser", "src\SourceEngine.Demo.Parser\SourceEngine.Demo.Parser.csproj", "{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceEngine.Demo.Parser.Tests", "tests\SourceEngine.Demo.Parser.Tests\SourceEngine.Demo.Parser.Tests.csproj", "{19685EEE-FE95-44D3-BF91-F106A75A8779}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceEngine.Demo.Parser.Tests", "tests\SourceEngine.Demo.Parser.Tests\SourceEngine.Demo.Parser.Tests.csproj", "{19685EEE-FE95-44D3-BF91-F106A75A8779}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{92F7E92B-3E99-43DF-A753-69BD5E949F20}"
+	ProjectSection(SolutionItems) = preProject
+		src\SourceEngine.Demo.Parser.nuspec = src\SourceEngine.Demo.Parser.nuspec
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F58975AD-9DB7-4B6C-BA02-18E13D911C5F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3A5D6EEA-67F0-433D-8C73-63DEE2B61B0F}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.travis.yml = .travis.yml
+		CONTRIBUTING.md = CONTRIBUTING.md
+		License.txt = License.txt
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Bitstream-Debugging|Any CPU = Bitstream-Debugging|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-		Bitstream-Debugging|Any CPU = Bitstream-Debugging|Any CPU
 		SavePropValues|Any CPU = SavePropValues|Any CPU
+		YoloDebug|Any CPU = YoloDebug|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.Bitstream-Debugging|Any CPU.ActiveCfg = Bitstream-Debugging|Any CPU
 		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.Bitstream-Debugging|Any CPU.Build.0 = Bitstream-Debugging|Any CPU
 		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.SavePropValues|Any CPU.ActiveCfg = SavePropValues|Any CPU
 		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.SavePropValues|Any CPU.Build.0 = SavePropValues|Any CPU
+		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.YoloDebug|Any CPU.ActiveCfg = YoloDebug|Any CPU
+		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}.YoloDebug|Any CPU.Build.0 = YoloDebug|Any CPU
+		{19685EEE-FE95-44D3-BF91-F106A75A8779}.Bitstream-Debugging|Any CPU.ActiveCfg = Debug|Any CPU
+		{19685EEE-FE95-44D3-BF91-F106A75A8779}.Bitstream-Debugging|Any CPU.Build.0 = Debug|Any CPU
 		{19685EEE-FE95-44D3-BF91-F106A75A8779}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19685EEE-FE95-44D3-BF91-F106A75A8779}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19685EEE-FE95-44D3-BF91-F106A75A8779}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19685EEE-FE95-44D3-BF91-F106A75A8779}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19685EEE-FE95-44D3-BF91-F106A75A8779}.Bitstream-Debugging|Any CPU.ActiveCfg = Debug|Any CPU
-		{19685EEE-FE95-44D3-BF91-F106A75A8779}.Bitstream-Debugging|Any CPU.Build.0 = Debug|Any CPU
 		{19685EEE-FE95-44D3-BF91-F106A75A8779}.SavePropValues|Any CPU.ActiveCfg = Debug|Any CPU
 		{19685EEE-FE95-44D3-BF91-F106A75A8779}.SavePropValues|Any CPU.Build.0 = Debug|Any CPU
+		{19685EEE-FE95-44D3-BF91-F106A75A8779}.YoloDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19685EEE-FE95-44D3-BF91-F106A75A8779}.YoloDebug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6A8AAD2B-1517-4455-A68E-69C7CE2535A7} = {92F7E92B-3E99-43DF-A753-69BD5E949F20}
+		{19685EEE-FE95-44D3-BF91-F106A75A8779} = {F58975AD-9DB7-4B6C-BA02-18E13D911C5F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5FA3BB91-0955-4077-9192-21E5B28B84FB}
 	EndGlobalSection
 EndGlobal
