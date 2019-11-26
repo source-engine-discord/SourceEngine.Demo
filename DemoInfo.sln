@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoInfo", "DemoInfo\DemoInfo.csproj", "{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceEngine.Demo.Parser", "src\SourceEngine.Demo.Parser\SourceEngine.Demo.Parser.csproj", "{6A8AAD2B-1517-4455-A68E-69C7CE2535A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevNullPlayer", "DevNullPlayer\DevNullPlayer.csproj", "{EB450FF9-B29F-4D27-9F54-2EEDC1E36DA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevNullPlayer", "src\DevNullPlayer\DevNullPlayer.csproj", "{EB450FF9-B29F-4D27-9F54-2EEDC1E36DA0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.csproj", "{19685EEE-FE95-44D3-BF91-F106A75A8779}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceEngine.Demo.Parser.Tests", "tests\SourceEngine.Demo.Parser.Tests\SourceEngine.Demo.Parser.Tests.csproj", "{19685EEE-FE95-44D3-BF91-F106A75A8779}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
