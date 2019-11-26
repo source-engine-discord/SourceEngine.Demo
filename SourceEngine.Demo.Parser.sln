@@ -8,9 +8,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceEngine.Demo.Parser.Tests", "tests\SourceEngine.Demo.Parser.Tests\SourceEngine.Demo.Parser.Tests.csproj", "{19685EEE-FE95-44D3-BF91-F106A75A8779}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{92F7E92B-3E99-43DF-A753-69BD5E949F20}"
-	ProjectSection(SolutionItems) = preProject
-		src\SourceEngine.Demo.Parser.nuspec = src\SourceEngine.Demo.Parser.nuspec
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F58975AD-9DB7-4B6C-BA02-18E13D911C5F}"
 EndProject
