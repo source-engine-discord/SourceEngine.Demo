@@ -9,10 +9,25 @@
         <DelaySign>true</DelaySign>
         <Configurations>Debug;Release;Bitstream-Debugging;YoloDebug;SavePropValues</Configurations>
         <Platforms>AnyCPU</Platforms>
-        <Company>EHVAG</Company>
-        <Description>This is a C#-Library that makes reading CS:GO-Demos and analyzing them easier.</Description>
-        <Product>DemoInfo</Product>
-        <Title>DemoInfo</Title>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AssemblyTitle>SourceEngine.Demo.Parser</AssemblyTitle>
+        <Company>Source Engine Discord</Company>
+        <Copyright>Copyright © 2014 EHVAG, 2019 Source Engine Discord and contributors</Copyright>
+        <Description>A library for parsing Counter-Strike: Global Offensive demos.</Description>
+        <Product>SourceEngine.Demo.Parser</Product>
+        <VersionPrefix>2.0.0</VersionPrefix>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Authors>source-engine-discord;main</Authors>
+        <Title>SourceEngine.Demo.Parser</Title>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://discord.gg/SourceEngine</PackageProjectUrl>
+        <PackageTags>source engine;demo;csgo;counter-strike;parser</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/source-engine-discord/SourceEngine.Demo.Parser</RepositoryUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
