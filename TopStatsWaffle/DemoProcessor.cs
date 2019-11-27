@@ -199,9 +199,9 @@ namespace TopStatsWaffle
                 {
                     foreach (FeedbackMessage message in md.events.Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value).ElementAt(0))
                     {
-                        var text = message.Message.Replace(" ", string.Empty).ToLower();
+						var text = message.Message;
 
-                        if (text.StartsWith(">fb") || text.StartsWith(">feedback"))
+                        if (text.ToLower().StartsWith(">fb") || text.ToLower().StartsWith(">feedback"))
                         {
                             //Sets round to 0 as anything before a match start event should always be classed as warmup
                             currentFeedbackMessages.Add(new FeedbackMessage() { Round = 0, SteamID = message.SteamID, TeamName = message.TeamName, Message = message.Message });
@@ -227,9 +227,9 @@ namespace TopStatsWaffle
             dp.SayText2 += (object sender, SayText2EventArgs e) => {
                 md.addEvent(typeof(SayText2EventArgs), e);
 
-                var text = e.Text.ToString().Replace(" ", string.Empty).ToLower();
+				var text = e.Text.ToString();
 
-                if (text.StartsWith(">fb") || text.StartsWith(">feedback"))
+                if (text.ToLower().StartsWith(">fb") || text.ToLower().StartsWith(">feedback"))
                 {
                     int round = getCurrentRoundNum(md);
 
@@ -510,7 +510,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.1" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.2" };
             /* demo parser version end */
 
             /* Supported gamemodes */
