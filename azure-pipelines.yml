@@ -1,0 +1,27 @@
+pool:
+  vmImage: ubuntu-18.04
+
+variables:
+  configuration: Release
+  tagged: $[ startsWith(variables['Build.SourceBranch'], 'refs/tags') ]
+
+jobs:
+  - job: build
+    displayName: 'Build & Test'
+    steps:
+      - template: ci/build.yml
+
+  - job: deploy
+    displayName: 'Deploy'
+    dependsOn: build
+    condition: >
+      and(
+        succeeded(),
+        ne(variables['Build.Reason'], 'PullRequest'),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+          eq(variables.tagged, True)
+        )
+      )
+    steps:
+      - template: ci/deploy.yml

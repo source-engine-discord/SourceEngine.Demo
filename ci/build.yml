@@ -1,0 +1,28 @@
+steps:
+  - script: dotnet restore SourceEngine.Demo.Parser.sln
+    displayName: 'Restore packages'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build solution'
+    inputs:
+      command: build
+      projects: SourceEngine.Demo.Parser.sln
+      configuration: $(configuration)
+      arguments: --no-restore
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run tests'
+    inputs:
+      command: test
+      projects: 'tests/*/*.csproj'
+      configuration: $(configuration)
+      publishTestResults: true
+      nobuild: true
+
+  - task: PublishTestResults@2
+    displayName: 'Publish test results'
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: VSTest
+      testResultsFiles: '**/*.trx'
+      searchFolder: $(Agent.TempDirectory)
