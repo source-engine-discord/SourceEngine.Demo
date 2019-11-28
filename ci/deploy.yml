@@ -10,6 +10,20 @@ steps:
       )
     }}"
   :
+    - script: |
+        set -euo pipefail
+
+        version="$(
+          xmllint \
+            --xpath '//Version[last()]/text()' \
+            src/SourceEngine.Demo.Parser/SourceEngine.Demo.Parser.csproj
+        )-build.${BUILD_BUILDID}"
+
+        printf '%s\n' "Version read from project file: ${version}"
+        printf '%s\n' "##vso[task.setvariable variable=VERSION]${version}"
+      displayName: 'Read version'
+      condition: and(succeeded(), eq(variables.tagged, False))
+
     - task: DotNetCoreCLI@2
       displayName: 'Pack projects'
       inputs:
@@ -21,7 +35,8 @@ steps:
         includesymbols: true
         nobuild: true
         ${{ if eq(variables.tagged, False) }}:
-          buildProperties: suffix=-$(Build.BuildNumber)
+          versioningScheme: byEnvVar
+          versionEnvVar: VERSION
 
     - task: DotNetCoreCLI@2
       displayName: 'Push packages'
