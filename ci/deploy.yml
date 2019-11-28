@@ -27,7 +27,9 @@ steps:
     - task: DotNetCoreCLI@2
       displayName: 'Push packages'
       inputs:
-        command: push
-        searchPatternPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-        nugetFeedType: external
-        externalEndPoint: NuGetServiceConnection
+        command: custom
+        custom: nuget
+        arguments: >
+          push $(Build.ArtifactStagingDirectory)/*.nupkg
+          -s $(NuGet.SourceUrl)
+          -k $(NuGet.ApiKey)
