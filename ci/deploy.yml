@@ -3,11 +3,7 @@ steps:
     - script: |
         set -euo pipefail
 
-        version="$(
-          xmllint \
-            --xpath '//Version[last()]/text()' \
-            src/${PROJECT}/${PROJECT}.csproj
-        )-build.${BUILD_BUILDID}"
+        version="$(grep -Po '<Version>\K.+(?=<)' src/${PROJECT}/${PROJECT}.csproj)-build.${BUILD_BUILDID}"
 
         printf '%s\n' "Version read from project file: ${version}"
         printf '%s\n' "##vso[task.setvariable variable=VERSION]${version}"
