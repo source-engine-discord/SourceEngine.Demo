@@ -23,7 +23,7 @@
     <PropertyGroup>
         <Authors>source-engine-discord;main</Authors>
         <Title>SourceEngine.Demo.Parser</Title>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
         <PackageProjectUrl>https://discord.gg/SourceEngine</PackageProjectUrl>
         <PackageTags>source engine;demo;csgo;counter-strike;parser</PackageTags>
         <RepositoryType>git</RepositoryType>
@@ -52,5 +52,11 @@
       <DefineConstants>TRACE;SAVE_PROP_VALUES</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\LICENSE.txt" Pack="true" Visible="false" PackagePath="$(PackageLicenseFile)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
 </Project>
