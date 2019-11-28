@@ -16,7 +16,7 @@ steps:
         version="$(
           xmllint \
             --xpath '//Version[last()]/text()' \
-            src/SourceEngine.Demo.Parser/SourceEngine.Demo.Parser.csproj
+            src/${PROJECT}/${PROJECT}.csproj
         )-build.${BUILD_BUILDID}"
 
         printf '%s\n' "Version read from project file: ${version}"
@@ -29,7 +29,7 @@ steps:
       inputs:
         command: pack
         # searchPatternPack: 'src/*/*.csproj'
-        searchPatternPack: src/SourceEngine.Demo.Parser/SourceEngine.Demo.Parser.csproj
+        searchPatternPack: src/$(project)/$(project).csproj
         configuration: $(configuration)
         outputDir: $(Build.ArtifactStagingDirectory)
         includesymbols: true

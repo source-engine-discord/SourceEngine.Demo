@@ -4,6 +4,7 @@ pool:
 variables:
   configuration: Release
   tagged: $[ startsWith(variables['Build.SourceBranch'], 'refs/tags') ]
+  project: SourceEngine.Demo.Parser
 
 jobs:
   - job: build

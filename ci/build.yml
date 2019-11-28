@@ -6,7 +6,7 @@ steps:
     displayName: 'Build solution'
     inputs:
       command: build
-      projects: SourceEngine.Demo.Parser.sln
+      projects: $(project).sln
       configuration: $(configuration)
       arguments: --no-restore
 
