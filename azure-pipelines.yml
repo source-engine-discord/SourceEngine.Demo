@@ -7,21 +7,7 @@ variables:
 
 jobs:
   - job: build
-    displayName: 'Build & Test'
+    displayName: 'Build & Deploy'
     steps:
       - template: ci/build.yml
-
-  - job: deploy
-    displayName: 'Deploy'
-    dependsOn: build
-    condition: >
-      and(
-        succeeded(),
-        ne(variables['Build.Reason'], 'PullRequest'),
-        or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-          eq(variables.tagged, True)
-        )
-      )
-    steps:
       - template: ci/deploy.yml
