@@ -1,15 +1,5 @@
 steps:
-  - ? "${{ if
-      and(
-        succeeded(),
-        ne(variables['Build.Reason'], 'PullRequest'),
-        or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-          eq(variables.tagged, True)
-        )
-      )
-    }}"
-  :
+  - ${{ if and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables.tagged, True))) }}:
     - script: |
         set -euo pipefail
 
