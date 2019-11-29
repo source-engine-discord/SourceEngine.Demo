@@ -7,6 +7,7 @@ steps:
         nuget | "$(Agent.OS)"
         nuget
       path: $(NUGET_PACKAGES)
+    enabled: false
 
   - script: dotnet restore SourceEngine.Demo.Parser.sln -p:RestoreLockedMode=true
     displayName: 'Restore packages'
