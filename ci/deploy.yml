@@ -14,8 +14,7 @@ steps:
       displayName: 'Pack projects'
       inputs:
         command: pack
-        # searchPatternPack: 'src/*/*.csproj'
-        searchPatternPack: src/$(project)/$(project).csproj
+        projects: $(project).sln
         configuration: $(configuration)
         outputDir: $(Build.ArtifactStagingDirectory)
         includesymbols: true
