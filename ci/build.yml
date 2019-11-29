@@ -1,5 +1,5 @@
 steps:
-  - script: dotnet restore SourceEngine.Demo.Parser.sln
+  - script: dotnet restore SourceEngine.Demo.Parser.sln -p:RestoreLockedMode=true
     displayName: 'Restore packages'
 
   - task: DotNetCoreCLI@2

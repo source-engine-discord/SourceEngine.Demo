@@ -8,8 +8,14 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceEngine.Demo.Parser.Tests", "tests\SourceEngine.Demo.Parser.Tests\SourceEngine.Demo.Parser.Tests.csproj", "{19685EEE-FE95-44D3-BF91-F106A75A8779}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{92F7E92B-3E99-43DF-A753-69BD5E949F20}"
+ProjectSection(SolutionItems) = preProject
+	src\Directory.Build.props = src\Directory.Build.props
+EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F58975AD-9DB7-4B6C-BA02-18E13D911C5F}"
+ProjectSection(SolutionItems) = preProject
+	tests\Directory.Build.props = tests\Directory.Build.props
+EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3A5D6EEA-67F0-433D-8C73-63DEE2B61B0F}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
 		azure-pipelines.yml = azure-pipelines.yml
+		NuGet.config = NuGet.config
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Global

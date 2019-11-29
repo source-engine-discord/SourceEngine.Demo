@@ -57,6 +57,7 @@
         <None Include="..\..\LICENSE.txt" Pack="true" Visible="false" PackagePath="$(PackageLicenseFile)">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Remove="packages.lock.json" />
     </ItemGroup>
 
 </Project>

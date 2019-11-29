@@ -16,4 +16,8 @@
       <ProjectReference Include="..\..\src\SourceEngine.Demo.Parser\SourceEngine.Demo.Parser.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="packages.lock.json" />
+    </ItemGroup>
+
 </Project>
