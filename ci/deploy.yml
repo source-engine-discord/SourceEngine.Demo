@@ -20,6 +20,7 @@ steps:
         outputDir: $(Build.ArtifactStagingDirectory)
         includesymbols: true
         nobuild: true
+        verbosityPack: normal
         ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags')) }}:
           versioningScheme: byEnvVar
           versionEnvVar: VERSION
