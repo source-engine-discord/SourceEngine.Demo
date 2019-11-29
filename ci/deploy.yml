@@ -1,5 +1,5 @@
 steps:
-  - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables.tagged, True))) }}:
+  - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))) }}:
     - script: |
         set -euo pipefail
 
@@ -20,7 +20,7 @@ steps:
         outputDir: $(Build.ArtifactStagingDirectory)
         includesymbols: true
         nobuild: true
-        ${{ if eq(variables.tagged, False) }}:
+        ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags')) }}:
           versioningScheme: byEnvVar
           versionEnvVar: VERSION
 
