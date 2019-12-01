@@ -31,8 +31,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DefineConstants>TRACE;YOLO</DefineConstants>
-      <DocumentationFile>bin\Release\DemoInfo.xml</DocumentationFile>
+        <DefineConstants>TRACE;YOLO</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Bitstream-Debugging' ">
