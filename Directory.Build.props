@@ -1,6 +1,29 @@
 <Project>
-    <PropertyGroup>
+
+    <PropertyGroup Label="Build Settings">
+        <LangVersion>8.0</LangVersion>
+        <DebugType>portable</DebugType>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+    <PropertyGroup Label="NuGet Settings">
         <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
+
+    <PropertyGroup Label="Assembly Metadata">
+        <Company>Source Engine Discord</Company>
+        <Copyright>© 2014 EHVAG, 2019 Source Engine Discord and contributors</Copyright>
+        <Product>SourceEngine.Demo.Parser</Product>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Package Metadata">
+        <Authors>source-engine-discord;main</Authors>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageProjectUrl>https://discord.gg/SourceEngine</PackageProjectUrl>
+        <PackageTags>source engine;demo;csgo;counter-strike;parser</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/source-engine-discord/SourceEngine.Demo.Parser</RepositoryUrl>
+    </PropertyGroup>
+
 </Project>
