@@ -1,5 +1,6 @@
-﻿using DemoInfo;
 using System.Collections.Generic;
+
+using SourceEngine.Demo.Parser;
 
 namespace SourceEngine.Demo.Stats.Models
 {

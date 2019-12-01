@@ -1,8 +1,8 @@
-﻿using DemoInfo;
-using NSubstitute;
-using Shouldly;
+﻿using Shouldly;
 using System;
 using System.Collections.Generic;
+
+using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
 using Xunit;
 

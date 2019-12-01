@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using DemoInfo;
+
+using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
 
 namespace SourceEngine.Demo.Stats

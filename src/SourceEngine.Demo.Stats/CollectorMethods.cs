@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DemoInfo;
 using System.IO;
+
+using SourceEngine.Demo.Parser;
 
 namespace SourceEngine.Demo.Stats
 {

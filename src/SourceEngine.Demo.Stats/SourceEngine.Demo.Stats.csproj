@@ -5,11 +5,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\demoinfo\DemoInfo\DemoInfo.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+      <PackageReference Include="SourceEngine.Demo.Parser" Version="2.0.0-build.64" />
     </ItemGroup>
 
 </Project>

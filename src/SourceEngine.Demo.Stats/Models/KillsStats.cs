@@ -1,4 +1,4 @@
-﻿namespace SourceEngine.Demo.Stats.Models
+namespace SourceEngine.Demo.Stats.Models
 {
     public class killsStats
     {

@@ -1,4 +1,4 @@
-﻿using DemoInfo;
+﻿using SourceEngine.Demo.Parser;
 
 namespace SourceEngine.Demo.Stats.Models
 {
