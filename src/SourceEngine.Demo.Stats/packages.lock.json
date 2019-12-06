@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETStandard,Version=v2.1": {
+      "Newtonsoft.Json": {
+        "type": "Direct",
+        "requested": "[12.0.3, )",
+        "resolved": "12.0.3",
+        "contentHash": "6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg=="
+      },
+      "SourceEngine.Demo.Parser": {
+        "type": "Direct",
+        "requested": "[2.0.0-build.64, )",
+        "resolved": "2.0.0-build.64",
+        "contentHash": "suagC2FVZLli8IirJsMYt1C1mhYMChZgKmc4GRk+jJL9BkQ+yUllKm/HCKG0RBaPX9iIyhbCfUK7B7WduMlaJA=="
+      }
+    }
+  }
+}

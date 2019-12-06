@@ -1,5 +1,16 @@
 <Project>
 
+    <PropertyGroup Label="Build Settings">
+        <LangVersion>8.0</LangVersion>
+        <DebugType>portable</DebugType>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+    <PropertyGroup Label="NuGet Settings">
+        <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
+
     <PropertyGroup Label="Assembly Metadata">
         <Company>Source Engine Discord</Company>
         <Copyright>© 2019 Source Engine Discord and contributors</Copyright>

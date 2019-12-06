@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\src\SourceEngine.Demo.Stats\SourceEngine.Demo.Stats.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="packages.lock.json" />
+  </ItemGroup>
+
 </Project>
