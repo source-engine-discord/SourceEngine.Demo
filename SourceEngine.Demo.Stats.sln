@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C852A71E-BBF3-4D71-8B11-D244C1751EF3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A3951F78-293A-4698-8CE8-711CF7E21C2A}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{10BBC6A5-335B-46EB-8F1F-4B648533D41E} = {C852A71E-BBF3-4D71-8B11-D244C1751EF3}
+		{EC684D65-2C2E-43DF-A8A6-1EAD03FB5F11} = {C852A71E-BBF3-4D71-8B11-D244C1751EF3}
 	EndGlobalSection
 EndGlobal
