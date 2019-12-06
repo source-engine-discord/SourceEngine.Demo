@@ -1,9 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
+    <PropertyGroup Label="Build Settings">
         <TargetFramework>netstandard2.1</TargetFramework>
-        <AssemblyVersion>2.0.0</AssemblyVersion>
-        <FileVersion>2.0.0</FileVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Assembly Metadata">
+        <Description>Library for parsing CS:GO demos and outputting game statistics as JSON.</Description>
+        <Version>2.0.0</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

@@ -1,0 +1,18 @@
+<Project>
+
+    <PropertyGroup Label="Assembly Metadata">
+        <Company>Source Engine Discord</Company>
+        <Copyright>© 2019 Source Engine Discord and contributors</Copyright>
+        <Product>SourceEngine.Demo.Stats</Product>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Package Metadata">
+        <Authors>source-engine-discord</Authors>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageProjectUrl>https://discord.gg/SourceEngine</PackageProjectUrl>
+        <PackageTags>source engine;demo;csgo;counter-strike;stats;json</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/source-engine-discord/SourceEngine.Demo.Stats</RepositoryUrl>
+    </PropertyGroup>
+
+</Project>
