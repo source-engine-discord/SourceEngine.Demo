@@ -1,0 +1,35 @@
+steps:
+  - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))) }}:
+    - script: |
+        set -euo pipefail
+
+        version="$(grep -Po '<Version>\K.+(?=<)' src/${PROJECT}/${PROJECT}.csproj)-build.${BUILD_BUILDID}"
+
+        printf '%s\n' "Version read from project file: ${version}"
+        printf '%s\n' "##vso[task.setvariable variable=VERSION]${version}"
+      displayName: 'Read version'
+      condition: and(succeeded(), eq(variables.tagged, False))
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Pack projects'
+      inputs:
+        command: pack
+        projects: $(project).sln
+        configuration: $(configuration)
+        outputDir: $(Build.ArtifactStagingDirectory)
+        includesymbols: true
+        nobuild: true
+        verbosityPack: normal
+        ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags')) }}:
+          versioningScheme: byEnvVar
+          versionEnvVar: VERSION
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Push packages'
+      inputs:
+        command: custom
+        custom: nuget
+        arguments: >
+          push $(Build.ArtifactStagingDirectory)/*.nupkg
+          -s $(NuGet.SourceUrl)
+          -k $(NuGet.ApiKey)

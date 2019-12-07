@@ -1,0 +1,20 @@
+pool:
+  vmImage: ubuntu-18.04
+
+variables:
+  - group: NuGet
+  - name: NUGET_PACKAGES
+    value: $(Pipeline.Workspace)/.nuget/packages
+  - name: configuration
+    value: Release
+  - name: tagged
+    value: $[ startsWith(variables['Build.SourceBranch'], 'refs/tags') ]
+  - name: project
+    value: SourceEngine.Demo.Stats
+
+jobs:
+  - job: build
+    displayName: 'Build & Deploy'
+    steps:
+      - template: ci/build.yml
+      - template: ci/deploy.yml
