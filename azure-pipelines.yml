@@ -2,10 +2,15 @@ pool:
   vmImage: ubuntu-18.04
 
 variables:
-  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
-  configuration: Release
-  tagged: $[ startsWith(variables['Build.SourceBranch'], 'refs/tags') ]
-  project: SourceEngine.Demo.Parser
+  - group: NuGet
+  - name: NUGET_PACKAGES
+    value: $(Pipeline.Workspace)/.nuget/packages
+  - name: configuration
+    value: Release
+  - name: tagged
+    value: $[ startsWith(variables['Build.SourceBranch'], 'refs/tags') ]
+  - name: project
+    value: SourceEngine.Demo.Parser
 
 jobs:
   - job: build
