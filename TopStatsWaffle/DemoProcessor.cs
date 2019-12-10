@@ -201,7 +201,7 @@ namespace TopStatsWaffle
                     {
 						var text = message.Message;
 
-                        if (text.ToLower().StartsWith(">fb") || text.ToLower().StartsWith(">feedback"))
+                        if (text.ToLower().StartsWith(">fb") || text.ToLower().StartsWith(">feedback") || text.ToLower().StartsWith("!fb"))
                         {
                             //Sets round to 0 as anything before a match start event should always be classed as warmup
                             currentFeedbackMessages.Add(new FeedbackMessage() { Round = 0, SteamID = message.SteamID, TeamName = message.TeamName, Message = message.Message });
@@ -510,7 +510,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.2" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.3" };
             /* demo parser version end */
 
             /* Supported gamemodes */
