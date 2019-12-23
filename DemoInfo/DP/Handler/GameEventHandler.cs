@@ -138,7 +138,7 @@ namespace DemoInfo.DP.Handler
 				data = MapData (eventDescriptor, rawEvent);
 			
 				RoundMVPEventArgs roundMVPEvent = new RoundMVPEventArgs();
-                roundMVPEvent.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+                roundMVPEvent.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
                 roundMVPEvent.Reason = (RoundMVPReason)data["reason"];
 				
 				parser.RaiseRoundMVP (roundMVPEvent);
@@ -149,7 +149,7 @@ namespace DemoInfo.DP.Handler
 				data = MapData(eventDescriptor, rawEvent);
 
 				BotTakeOverEventArgs botTakeOverArgs = new BotTakeOverEventArgs();
-				botTakeOverArgs.Taker = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				botTakeOverArgs.Taker = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
 
                 //adds the player who took over the bot to currentRoundBotTakeovers
                 currentRoundBotTakeovers.Add(botTakeOverArgs.Taker);
@@ -328,14 +328,14 @@ namespace DemoInfo.DP.Handler
 				    data = MapData(eventDescriptor, rawEvent);
 
 				    if (parser.Players.ContainsKey((int)data["userid"])) {
-					    var blindPlayer = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+					    var blindPlayer = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
 
 					    if (blindPlayer != null && blindPlayer.Team != Team.Spectate)
 					    {
 						    BlindEventArgs blind = new BlindEventArgs();
 						    blind.Player = blindPlayer;
 						    if (data.ContainsKey("attacker") && parser.Players.ContainsKey((int)data["attacker"])) {
-							    blind.Attacker = parser.Players[(int)data["attacker"]];
+							    blind.Attacker = new Player(parser.Players[(int)data["attacker"]]);
 						    } else {
 							    blind.Attacker = null;
 						    }
@@ -349,7 +349,7 @@ namespace DemoInfo.DP.Handler
 					    }
 
 					    //previous blind implementation
-					    blindPlayers.Add(parser.Players[(int)data["userid"]]);
+					    blindPlayers.Add(new Player(parser.Players[(int)data["userid"]]));
 				    }
 
 				    break;
@@ -412,7 +412,7 @@ namespace DemoInfo.DP.Handler
 				    data = MapData(eventDescriptor, rawEvent);
 
 				    PlayerDisconnectEventArgs disconnect = new PlayerDisconnectEventArgs();
-				    disconnect.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				    disconnect.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
 				    parser.RaisePlayerDisconnect(disconnect);
 
 				    int toDelete = (int)data["userid"];
@@ -453,7 +453,7 @@ namespace DemoInfo.DP.Handler
 					    t = Team.CounterTerrorist;
 				    playerTeamEvent.OldTeam = t;
 
-				    playerTeamEvent.Swapped = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+				    playerTeamEvent.Swapped = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
 				    playerTeamEvent.IsBot = (bool)data["isbot"];
 				    playerTeamEvent.Silent = (bool)data["silent"];
 
@@ -467,7 +467,7 @@ namespace DemoInfo.DP.Handler
 				    data = MapData(eventDescriptor, rawEvent);
 
 				    var bombEventArgs = new BombEventArgs();
-                    bombEventArgs.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+                    bombEventArgs.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
 
 				    int site = (int)data["site"];
 
@@ -517,14 +517,14 @@ namespace DemoInfo.DP.Handler
 			    case "bomb_begindefuse":
 				    data = MapData(eventDescriptor, rawEvent);
 				    var e = new BombDefuseEventArgs();
-                    e.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+                    e.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
 				    e.HasKit = (bool)data["haskit"];
 				    parser.RaiseBombBeginDefuse(e);
 				    break;
 			    case "bomb_abortdefuse":
 				    data = MapData(eventDescriptor, rawEvent);
 				    var e2 = new BombDefuseEventArgs();
-                    e2.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+                    e2.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
 				    e2.HasKit = e2.Player.HasDefuseKit;
 				    parser.RaiseBombAbortDefuse(e2);
 				    break;
@@ -533,7 +533,7 @@ namespace DemoInfo.DP.Handler
                     data = MapData(eventDescriptor, rawEvent);
                     var rescued = new HostageRescuedEventArgs();
                     rescued.Round = 0; // worked out in DemoProcessor
-                    rescued.Player = parser.Players.ContainsKey((int)data["userid"]) ? parser.Players[(int)data["userid"]] : null;
+                    rescued.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
                     rescued.RescueZone = (int)data["site"];
 
                     int hostage = (int)data["hostage"];
@@ -578,7 +578,7 @@ namespace DemoInfo.DP.Handler
 			var nade = new T();
 
 			if (data.ContainsKey("userid") && parser.Players.ContainsKey((int)data["userid"]))
-				nade.ThrownBy = parser.Players[(int)data["userid"]];
+				nade.ThrownBy = new Player(parser.Players[(int)data["userid"]]);
 				
 			Vector vec = new Vector();
 			vec.X = (float)data["x"];
