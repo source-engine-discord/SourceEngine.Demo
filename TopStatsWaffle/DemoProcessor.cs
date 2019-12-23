@@ -510,7 +510,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.3" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.4" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -800,8 +800,13 @@ namespace TopStatsWaffle
                     if (bombsitePlantValues["BombsitePlants"].Any(p => p.Round == roundNum))
                     {
                         bombPlanted = bombsitePlantValues["BombsitePlants"].Where(p => p.Round == roundNum).FirstOrDefault();
-                        bombsite = bombPlanted.Bombsite.ToString();
-                    }
+						bombsite = bombPlanted.Bombsite.ToString();
+
+						string[] positions = SplitPositionString(bombPlanted.Player.LastAlivePosition.ToString());
+						bombPlanted.XPosition = double.Parse(positions[1]);
+						bombPlanted.YPosition = double.Parse(positions[2]);
+						bombPlanted.ZPosition = double.Parse(positions[3]);
+					}
                     if (bombsiteExplodeValues["BombsiteExplosions"].Any(p => p.Round == roundNum))
                     {
                         bombExploded = bombsiteExplodeValues["BombsiteExplosions"].Where(p => p.Round == roundNum).FirstOrDefault();
@@ -844,6 +849,9 @@ namespace TopStatsWaffle
                         Winners = roundsWonTeams[i].ToString(),
                         WinMethod = reason,
                         BombsitePlantedAt = bombsite,
+						BombPlantPositionX = bombPlanted?.XPosition,
+						BombPlantPositionY = bombPlanted?.YPosition,
+						BombPlantPositionZ = bombPlanted?.ZPosition,
                         RescuedHostageA = rescuedHostageA,
                         RescuedHostageB = rescuedHostageB,
                         RescuedAllHostages = rescuedAllHostages,
@@ -931,8 +939,7 @@ namespace TopStatsWaffle
 
                     foreach (var nade in nadeGroup)
                     {
-                        string[] positionSplit = nade.Position.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
-                        string positions = $"{ positionSplit[1] },{ positionSplit[2] },{ positionSplit[3] }";
+                        string[] positions = SplitPositionString(nade.Position.ToString());
 
                         //retrieve steam ID using player name if the event does not return it correctly
                         long steamId = (nade.ThrownBy.SteamID == 0) ? getSteamIdByPlayerName(playerNames, nade.ThrownBy.Name) : nade.ThrownBy.SteamID;
@@ -942,11 +949,11 @@ namespace TopStatsWaffle
                             var flash = nade as FlashEventArgs;
                             int numOfPlayersFlashed = flash.FlashedPlayers.Count();
 
-                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positionSplit[1]), YPosition = double.Parse(positionSplit[2]), ZPosition = double.Parse(positionSplit[3]), NumPlayersFlashed = numOfPlayersFlashed });
+                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[1]), YPosition = double.Parse(positions[2]), ZPosition = double.Parse(positions[3]), NumPlayersFlashed = numOfPlayersFlashed });
                         }
                         else
                         {
-                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positionSplit[1]), YPosition = double.Parse(positionSplit[2]), ZPosition = double.Parse(positionSplit[3]) });
+                            grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[1]), YPosition = double.Parse(positions[2]), ZPosition = double.Parse(positions[3]) });
                         }
                     }
                 }
@@ -1465,5 +1472,10 @@ namespace TopStatsWaffle
 
             return (newUserId != 0) ? newUserId : userId;
         }
+
+		public string[] SplitPositionString(string position)
+		{
+			return position.Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+		}
     }
 }

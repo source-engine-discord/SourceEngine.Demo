@@ -15,7 +15,10 @@ namespace TopStatsWaffle.Models
         public string Winners { get; set; }
         public string WinMethod { get; set; }
         public string BombsitePlantedAt { get; set; }
-        public bool RescuedHostageA { get; set; }
+		public double? BombPlantPositionX { get; set; }
+		public double? BombPlantPositionY { get; set; }
+		public double? BombPlantPositionZ { get; set; }
+		public bool RescuedHostageA { get; set; }
         public bool RescuedHostageB { get; set; }
         public bool RescuedAllHostages { get; set; }
         public double TimeInRoundPlanted { get; set; }
