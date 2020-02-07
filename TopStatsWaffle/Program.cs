@@ -315,7 +315,7 @@ namespace TopStatsWaffle
             //Process all the found demos
             for (int i = 0; i < demosInformation.Count(); i++)
             {
-				Console.WriteLine($"Began parsing demo {demosInformation[i][0]}.");
+				Console.WriteLine($"Parsing demo {demosInformation[i][0]}");
 
                 MatchData mdTest = MatchData.fromDemoFile(demosInformation[i][0], parseChickens, lowOutputMode);
 

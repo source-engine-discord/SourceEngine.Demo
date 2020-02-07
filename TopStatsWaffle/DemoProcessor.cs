@@ -510,7 +510,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.4" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.5" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -796,11 +796,19 @@ namespace TopStatsWaffle
                     // bombsite planted/exploded/defused at
                     string bombsite = null;
                     BombPlanted bombPlanted = null; BombExploded bombExploded = null; BombDefused bombDefused = null;
+					BombPlantedError bombPlantedError = null;
 
                     if (bombsitePlantValues["BombsitePlants"].Any(p => p.Round == roundNum))
                     {
                         bombPlanted = bombsitePlantValues["BombsitePlants"].Where(p => p.Round == roundNum).FirstOrDefault();
 						bombsite = bombPlanted.Bombsite.ToString();
+
+						//check to see if either of the bombsites have bugged out
+						if (bombsite == "?")
+						{
+							bombPlantedError = ValidateBombsite(bombsitePlantValues["BombsitePlants"], bombPlanted.Bombsite);
+							bombsite = bombPlantedError.Bombsite.ToString();
+						}
 
 						string[] positions = SplitPositionString(bombPlanted.Player.LastAlivePosition.ToString());
 						bombPlanted.XPosition = double.Parse(positions[1]);
@@ -852,7 +860,8 @@ namespace TopStatsWaffle
 						BombPlantPositionX = bombPlanted?.XPosition,
 						BombPlantPositionY = bombPlanted?.YPosition,
 						BombPlantPositionZ = bombPlanted?.ZPosition,
-                        RescuedHostageA = rescuedHostageA,
+						BombsiteErrorMessage = bombPlantedError?.ErrorMessage,
+						RescuedHostageA = rescuedHostageA,
                         RescuedHostageB = rescuedHostageB,
                         RescuedAllHostages = rescuedAllHostages,
                         TimeInRoundPlanted = timeInRoundPlanted,
@@ -1476,6 +1485,36 @@ namespace TopStatsWaffle
 		public string[] SplitPositionString(string position)
 		{
 			return position.Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+		}
+
+		public BombPlantedError ValidateBombsite(IEnumerable<BombPlanted> bombPlantedArray, char bombsite)
+		{
+			char validatedBombsite = bombsite;
+			string errorMessage = null;
+
+			if (bombsite == '?')
+			{
+				if (bombPlantedArray.Any(x => x.Bombsite == 'A') && !bombPlantedArray.Any(x => x.Bombsite == 'B'))
+				{
+					//assume B site trigger's bounding box is broken
+					validatedBombsite = 'B';
+					errorMessage = "Assuming plant was at B site.";
+				}
+				else if (!bombPlantedArray.Any(x => x.Bombsite == 'A') && bombPlantedArray.Any(x => x.Bombsite == 'B'))
+				{
+					//assume A site trigger's bounding box is broken
+					validatedBombsite = 'A';
+					errorMessage = "Assuming plant was at A site.";
+				}
+				else
+				{
+					//both bombsites are having issues
+					//may be an issue with instances?
+					errorMessage = "Couldn't assume either bombsite was the plant location.";
+				}
+			}
+
+			return new BombPlantedError() { Bombsite = validatedBombsite, ErrorMessage = errorMessage };
 		}
     }
 }

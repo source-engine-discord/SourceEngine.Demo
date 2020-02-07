@@ -60,6 +60,7 @@
     <Compile Include="Models\BombDefused.cs" />
     <Compile Include="Models\BombExploded.cs" />
     <Compile Include="Models\BombPlanted.cs" />
+    <Compile Include="Models\BombPlantedError.cs" />
     <Compile Include="Models\BombsiteStats.cs" />
     <Compile Include="Models\ChickenStats.cs" />
     <Compile Include="Models\DisconnectedPlayer.cs" />

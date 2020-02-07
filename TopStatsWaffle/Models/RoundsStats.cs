@@ -18,6 +18,7 @@ namespace TopStatsWaffle.Models
 		public double? BombPlantPositionX { get; set; }
 		public double? BombPlantPositionY { get; set; }
 		public double? BombPlantPositionZ { get; set; }
+		public string BombsiteErrorMessage { get; set; }
 		public bool RescuedHostageA { get; set; }
         public bool RescuedHostageB { get; set; }
         public bool RescuedAllHostages { get; set; }
