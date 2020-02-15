@@ -977,8 +977,8 @@ namespace TopStatsWaffle
             List<char> hostagePickedUps = new List<char>(hostageValues["PickedUpHostages"]);
             List<char> hostageRescues = new List<char>(hostageValues["RescuedHostages"]);
 
-            var hostageIndexA = hostageRescueValues["HostageRescues"].Where(r => r.Hostage == 'A').FirstOrDefault().HostageIndex;
-            var hostageIndexB = hostageRescueValues["HostageRescues"].Where(r => r.Hostage == 'B').FirstOrDefault().HostageIndex;
+            var hostageIndexA = hostageRescueValues["HostageRescues"].Where(r => r.Hostage == 'A').FirstOrDefault()?.HostageIndex;
+            var hostageIndexB = hostageRescueValues["HostageRescues"].Where(r => r.Hostage == 'B').FirstOrDefault()?.HostageIndex;
 
             int pickedUpsA = hostagePickedUps.Where(b => b.ToString().Equals("A")).Count();
             int pickedUpsB = hostagePickedUps.Where(b => b.ToString().Equals("B")).Count();
