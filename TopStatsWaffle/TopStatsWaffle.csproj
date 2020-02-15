@@ -65,6 +65,8 @@
     <Compile Include="Models\ChickenStats.cs" />
     <Compile Include="Models\DisconnectedPlayer.cs" />
     <Compile Include="Models\FeedbackMessage.cs" />
+    <Compile Include="Models\HostagePickedUp.cs" />
+    <Compile Include="Models\HostagePickedUpError.cs" />
     <Compile Include="Models\HostageRescued.cs" />
     <Compile Include="Models\HostageStats.cs" />
     <Compile Include="Models\KillsStats.cs" />

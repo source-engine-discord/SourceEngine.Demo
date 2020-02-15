@@ -385,9 +385,18 @@ namespace TopStatsWaffle
             dp.HostageRescued += (object sender, HostageRescuedEventArgs e) => {
                 int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
 
-                HostageRescued hostageRescued = new HostageRescued { Round = roundsCount + 1, TimeInRound = e.TimeInRound, Player = e.Player, Hostage = e.Hostage };
+                HostageRescued hostageRescued = new HostageRescued { Round = roundsCount + 1, TimeInRound = e.TimeInRound, Player = e.Player, Hostage = e.Hostage, HostageIndex = e.HostageIndex, RescueZone = e.RescueZone };
 
                 md.addEvent(typeof(HostageRescued), hostageRescued);
+            };
+
+            // HOSTAGE EVENTS =====================================================
+            dp.HostagePickedUp += (object sender, HostagePickedUpEventArgs e) => {
+                int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+
+                HostagePickedUp hostagePickedUp = new HostagePickedUp { Round = roundsCount + 1, TimeInRound = e.TimeInRound, Player = e.Player, Hostage = e.Hostage, HostageIndex = e.HostageIndex };
+
+                md.addEvent(typeof(HostagePickedUp), hostagePickedUp);
             };
 
             // WEAPON EVENTS ===================================================
@@ -498,9 +507,10 @@ namespace TopStatsWaffle
             Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues,
             Dictionary<string, IEnumerable<int>> penetrationValues, Dictionary<string, IEnumerable<BombPlanted>> bombsitePlantValues, Dictionary<string, IEnumerable<BombExploded>> bombsiteExplodeValues,
             Dictionary<string, IEnumerable<BombDefused>> bombsiteDefuseValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<HostageRescued>> hostageRescueValues,
-            Dictionary<string, IEnumerable<char>> hostageValues, Dictionary<string, IEnumerable<Team>> teamValues, Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues,
-            Dictionary<string, IEnumerable<double>> roundLengthValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues, Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues,
-            Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, Dictionary<string, IEnumerable<ShotFired>> shotsFiredValues, bool writeTicks = true
+            Dictionary<string, IEnumerable<HostagePickedUp>> hostagePickedUpValues, Dictionary<string, IEnumerable<char>> hostageValues, Dictionary<string, IEnumerable<Team>> teamValues,
+            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<double>> roundLengthValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues,
+            Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, Dictionary<string, IEnumerable<ShotFired>> shotsFiredValues,
+            bool writeTicks = true
         )
         {
             var mapDateSplit = (!string.IsNullOrWhiteSpace(demo[2]) && demo[2] != "unknown") ? demo[2].Split('/')  : null;
@@ -510,7 +520,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.5" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.6" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -806,10 +816,17 @@ namespace TopStatsWaffle
 						//check to see if either of the bombsites have bugged out
 						if (bombsite == "?")
 						{
-							bombPlantedError = ValidateBombsite(bombsitePlantValues["BombsitePlants"], bombPlanted.Bombsite);
-							bombsite = bombPlantedError.Bombsite.ToString();
+							bombPlantedError = ValidateBombsite(bombsitePlantValues["BombsitePlants"], bombPlanted.Round, bombPlanted.Bombsite);
+
+                            //update data to ensure that future references to it are also updated
+                            bombsitePlantValues["BombsitePlants"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
+                            bombsiteExplodeValues["BombsiteExplosions"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
+                            bombsiteDefuseValues["BombsiteDefuses"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
+
+                            bombsite = bombPlantedError.Bombsite.ToString();
 						}
 
+                        //plant position
 						string[] positions = SplitPositionString(bombPlanted.Player.LastAlivePosition.ToString());
 						bombPlanted.XPosition = double.Parse(positions[1]);
 						bombPlanted.YPosition = double.Parse(positions[2]);
@@ -826,27 +843,65 @@ namespace TopStatsWaffle
                         bombsite = (bombsite != null) ? bombsite : bombDefused.Bombsite.ToString();
                     }
 
-                    var timeInRoundPlanted = (bombPlanted != null) ? bombPlanted.TimeInRound : 0;
-                    var timeInRoundExploded = (bombExploded != null) ? bombExploded.TimeInRound : 0;
-                    var timeInRoundDefused = (bombDefused != null) ? bombDefused.TimeInRound : 0;
+                    var timeInRoundPlanted = bombPlanted?.TimeInRound;
+                    var timeInRoundExploded = bombExploded?.TimeInRound;
+                    var timeInRoundDefused = bombDefused?.TimeInRound;
 
-                    // hostage rescued
-                    bool rescuedHostageA = false, rescuedHostageB = false, rescuedAllHostages = false;
+                    // hostage picked up/rescued
+                    HostagePickedUp hostagePickedUpA = null, hostagePickedUpB = null;
                     HostageRescued hostageRescuedA = null, hostageRescuedB = null;
+                    HostagePickedUpError hostageAPickedUpError = null, hostageBPickedUpError = null;
 
                     if (hostageRescueValues["HostageRescues"].Any(r => r.Round == roundNum))
                     {
+                        hostagePickedUpA = hostagePickedUpValues["HostagePickedUps"].Where(r => r.Round == roundNum && r.Hostage == 'A').FirstOrDefault();
+                        hostagePickedUpB = hostagePickedUpValues["HostagePickedUps"].Where(r => r.Round == roundNum && r.Hostage == 'B').FirstOrDefault();
+                        
                         hostageRescuedA = hostageRescueValues["HostageRescues"].Where(r => r.Round == roundNum && r.Hostage == 'A').FirstOrDefault();
                         hostageRescuedB = hostageRescueValues["HostageRescues"].Where(r => r.Round == roundNum && r.Hostage == 'B').FirstOrDefault();
 
-                        rescuedHostageA = (hostageRescuedA != null) ? true : false;
-                        rescuedHostageB = (hostageRescuedB != null) ? true : false;
+                        if (hostagePickedUpA == null && hostageRescuedA != null)
+                        {
+                            hostagePickedUpA = GenerateNewHostagePickedUp(hostageRescuedA);
 
-                        rescuedAllHostages = (rescuedHostageA && rescuedHostageB) ? true : false;
+                            hostageAPickedUpError = new HostagePickedUpError()
+                            {
+                                Hostage = hostagePickedUpA.Hostage,
+                                HostageIndex = hostagePickedUpA.HostageIndex,
+                                ErrorMessage = "Assuming Hostage A was picked up; cannot assume TimeInRound."
+                            };
+                        }
+                        if (hostagePickedUpB == null && hostageRescuedB != null)
+                        {
+                            hostagePickedUpB = GenerateNewHostagePickedUp(hostageRescuedB);
+                            
+                            hostageBPickedUpError = new HostagePickedUpError() {
+                                Hostage = hostagePickedUpB.Hostage,
+                                HostageIndex = hostagePickedUpB.HostageIndex,
+                                ErrorMessage = "Assuming Hostage B was picked up; cannot assume TimeInRound."
+                            };
+                        }
+
+                        //rescue position
+                        string[] positionsRescueA = hostageRescuedA != null ? SplitPositionString(hostageRescuedA.Player.LastAlivePosition.ToString()) : null;
+                        if (positionsRescueA != null)
+                        {
+                            hostageRescuedA.XPosition = double.Parse(positionsRescueA[1]);
+                            hostageRescuedA.YPosition = double.Parse(positionsRescueA[2]);
+                            hostageRescuedA.ZPosition = double.Parse(positionsRescueA[3]);
+                        }
+
+                        string[] positionsRescueB = hostageRescuedB != null ? SplitPositionString(hostageRescuedB.Player.LastAlivePosition.ToString()) : null;
+                        if (positionsRescueB != null)
+                        {
+                            hostageRescuedB.XPosition = double.Parse(positionsRescueB[1]);
+                            hostageRescuedB.YPosition = double.Parse(positionsRescueB[2]);
+                            hostageRescuedB.ZPosition = double.Parse(positionsRescueB[3]);
+                        }
                     }
 
-                    var timeInRoundRescuedHostageA = (rescuedHostageA != false) ? hostageRescuedA.TimeInRound : 0;
-                    var timeInRoundRescuedHostageB = (rescuedHostageB != false) ? hostageRescuedB.TimeInRound : 0;
+                    var timeInRoundRescuedHostageA = hostageRescuedA?.TimeInRound;
+                    var timeInRoundRescuedHostageB = hostageRescuedB?.TimeInRound;
 
                     roundsStats.Add(new RoundsStats()
                     {
@@ -861,9 +916,20 @@ namespace TopStatsWaffle
 						BombPlantPositionY = bombPlanted?.YPosition,
 						BombPlantPositionZ = bombPlanted?.ZPosition,
 						BombsiteErrorMessage = bombPlantedError?.ErrorMessage,
-						RescuedHostageA = rescuedHostageA,
-                        RescuedHostageB = rescuedHostageB,
-                        RescuedAllHostages = rescuedAllHostages,
+                        PickedUpHostageA = hostagePickedUpA != null,
+                        PickedUpHostageB = hostagePickedUpB != null,
+                        PickedUpAllHostages = hostagePickedUpA != null && hostagePickedUpB != null,
+                        HostageAPickedUpErrorMessage = hostageAPickedUpError?.ErrorMessage,
+                        HostageBPickedUpErrorMessage = hostageBPickedUpError?.ErrorMessage,
+                        RescuedHostageA = hostageRescuedA != null,
+                        RescuedHostageB = hostageRescuedB != null,
+                        RescuedAllHostages = hostageRescuedA != null && hostageRescuedB != null,
+                        RescuedHostageAPositionX = hostageRescuedA?.XPosition,
+                        RescuedHostageAPositionY = hostageRescuedA?.YPosition,
+                        RescuedHostageAPositionZ = hostageRescuedA?.ZPosition,
+                        RescuedHostageBPositionX = hostageRescuedB?.XPosition,
+                        RescuedHostageBPositionY = hostageRescuedB?.YPosition,
+                        RescuedHostageBPositionZ = hostageRescuedB?.ZPosition,
                         TimeInRoundPlanted = timeInRoundPlanted,
                         TimeInRoundExploded = timeInRoundExploded,
                         TimeInRoundDefused = timeInRoundDefused,
@@ -908,13 +974,20 @@ namespace TopStatsWaffle
             /* hostage stats */
             List<HostageStats> hostageStats = new List<HostageStats>();
 
+            List<char> hostagePickedUps = new List<char>(hostageValues["PickedUpHostages"]);
             List<char> hostageRescues = new List<char>(hostageValues["RescuedHostages"]);
+
+            var hostageIndexA = hostageRescueValues["HostageRescues"].Where(r => r.Hostage == 'A').FirstOrDefault().HostageIndex;
+            var hostageIndexB = hostageRescueValues["HostageRescues"].Where(r => r.Hostage == 'B').FirstOrDefault().HostageIndex;
+
+            int pickedUpsA = hostagePickedUps.Where(b => b.ToString().Equals("A")).Count();
+            int pickedUpsB = hostagePickedUps.Where(b => b.ToString().Equals("B")).Count();
 
             int rescuesA = hostageRescues.Where(b => b.ToString().Equals("A")).Count();
             int rescuesB = hostageRescues.Where(b => b.ToString().Equals("B")).Count();
 
-            hostageStats.Add(new HostageStats() { Hostage = 'A', Rescues = rescuesA });
-            hostageStats.Add(new HostageStats() { Hostage = 'B', Rescues = rescuesB });
+            hostageStats.Add(new HostageStats() { Hostage = 'A', HostageIndex = hostageIndexA, PickedUps = pickedUpsA, Rescues = rescuesA });
+            hostageStats.Add(new HostageStats() { Hostage = 'B', HostageIndex = hostageIndexB, PickedUps = pickedUpsB, Rescues = rescuesB });
             /* hostage stats end */
 
             /* Grenades total stats */
@@ -1487,7 +1560,7 @@ namespace TopStatsWaffle
 			return position.Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
 		}
 
-		public BombPlantedError ValidateBombsite(IEnumerable<BombPlanted> bombPlantedArray, char bombsite)
+		public BombPlantedError ValidateBombsite(IEnumerable<BombPlanted> bombPlantedArray, int roundNum, char bombsite)
 		{
 			char validatedBombsite = bombsite;
 			string errorMessage = null;
@@ -1516,5 +1589,17 @@ namespace TopStatsWaffle
 
 			return new BombPlantedError() { Bombsite = validatedBombsite, ErrorMessage = errorMessage };
 		}
+
+        public HostagePickedUp GenerateNewHostagePickedUp(HostageRescued hostageRescued)
+        {
+            return new HostagePickedUp()
+            {
+                Hostage = hostageRescued.Hostage,
+                HostageIndex = hostageRescued.HostageIndex,
+                Player = new Player(hostageRescued.Player),
+                Round = hostageRescued.Round,
+                TimeInRound = -1
+            };
+        }
     }
 }

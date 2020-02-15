@@ -333,6 +333,7 @@ namespace TopStatsWaffle
                 Dictionary<string, IEnumerable<BombDefused>> bde = new Dictionary<string, IEnumerable<BombDefused>>();
                 Dictionary<string, IEnumerable<char>> he = new Dictionary<string, IEnumerable<char>>();
                 Dictionary<string, IEnumerable<HostageRescued>> hre = new Dictionary<string, IEnumerable<HostageRescued>>();
+                Dictionary<string, IEnumerable<HostagePickedUp>> hpu = new Dictionary<string, IEnumerable<HostagePickedUp>>();
                 Dictionary<string, IEnumerable<DisconnectedPlayer>> dpe = new Dictionary<string, IEnumerable<DisconnectedPlayer>>();
                 Dictionary<string, IEnumerable<Team>> te = new Dictionary<string, IEnumerable<Team>>();
                 Dictionary<string, IEnumerable<RoundEndReason>> re = new Dictionary<string, IEnumerable<RoundEndReason>>();
@@ -427,8 +428,14 @@ namespace TopStatsWaffle
                 hre.Add("HostageRescues", (from hostage in mdTest.getEvents<HostageRescued>()
                                            select hostage as HostageRescued));
 
+                hpu.Add("HostagePickedUps", (from hostage in mdTest.getEvents<HostagePickedUp>()
+                                           select hostage as HostagePickedUp));
+
                 he.Add("RescuedHostages", from rescue in mdTest.getEvents<HostageRescued>()
                                           select (rescue as HostageRescued).Hostage);
+
+                he.Add("PickedUpHostages", from pickedUp in mdTest.getEvents<HostagePickedUp>()
+                                          select (pickedUp as HostagePickedUp).Hostage);
 
                 dpe.Add("DisconnectedPlayers", from disconnection in mdTest.getEvents<DisconnectedPlayer>()
                                                select (disconnection as DisconnectedPlayer));
@@ -463,7 +470,7 @@ namespace TopStatsWaffle
 
                 if (mdTest.passed)
                 {
-                    mdTest.CreateFiles(demosInformation[i], sameFilename, sameFolderStructure, parseChickens, foldersToProcess, outputRootFolder, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, hre, he, te, re, le, tes, ge, cke, sfe);
+                    mdTest.CreateFiles(demosInformation[i], sameFilename, sameFolderStructure, parseChickens, foldersToProcess, outputRootFolder, tanookiStats, mse, sse, fme, tpe, pke, pe, pwe, poe, bpe, bee, bde, be, hre, hpu, he, te, re, le, tes, ge, cke, sfe);
                     passCount++;
 
 					Console.WriteLine($"Finished parsing demo {demosInformation[i][0]}.\n");
