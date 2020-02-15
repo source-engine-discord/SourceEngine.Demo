@@ -534,31 +534,38 @@ namespace DemoInfo.DP.Handler
                     var rescued = new HostageRescuedEventArgs();
                     rescued.Round = 0; // worked out in DemoProcessor
                     rescued.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
-                    rescued.RescueZone = (int)data["site"];
+
+					//currently assumes only one rescue zone,
+					//might be able to use "site" in 'eventDescriptor' or 'rawEvent' to determine which rescue zone was used ?
+					rescued.RescueZone = (int)data["site"];
 
                     int hostage = (int)data["hostage"];
 
-                    //works out which rescue zone the hostage was rescued at
+                    //works out which hostage was rescued
                     if (hostage == parser.hostageAIndex)
                     {
                         rescued.Hostage = 'A';
-                    }
+						rescued.HostageIndex = parser.hostageAIndex;
+					}
                     else if (hostage == parser.hostageBIndex)
                     {
                         rescued.Hostage = 'B';
-                    }
+						rescued.HostageIndex = parser.hostageBIndex;
+					}
                     else
                     {
                         if (parser.hostageAIndex == -1)
                         {
                             rescued.Hostage = 'A';
                             parser.hostageAIndex = hostage;
-                        }
+							rescued.HostageIndex = parser.hostageAIndex;
+						}
                         else if (parser.hostageBIndex == -1)
                         {
                             rescued.Hostage = 'B';
                             parser.hostageBIndex = hostage;
-                        }
+							rescued.HostageIndex = parser.hostageBIndex;
+						}
                         else
                         {
                             // a third hostage???
@@ -566,11 +573,57 @@ namespace DemoInfo.DP.Handler
                         }
                     }
 
-                    rescued.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
+					rescued.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 
                     parser.RaiseHostageRescued(rescued);
                     break;
-            }
+
+				case "hostage_follows":
+					data = MapData(eventDescriptor, rawEvent);
+					var pickedUp = new HostagePickedUpEventArgs();
+					pickedUp.Round = 0; // worked out in DemoProcessor
+					pickedUp.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+
+					hostage = (int)data["hostage"];
+
+					//works out which hostage was picked up
+					if (hostage == parser.hostageAIndex)
+					{
+						pickedUp.Hostage = 'A';
+						pickedUp.HostageIndex = parser.hostageAIndex;
+					}
+					else if (hostage == parser.hostageBIndex)
+					{
+						pickedUp.Hostage = 'B';
+						pickedUp.HostageIndex = parser.hostageBIndex;
+					}
+					else
+					{
+						if (parser.hostageAIndex == -1)
+						{
+							pickedUp.Hostage = 'A';
+							parser.hostageAIndex = hostage;
+							pickedUp.HostageIndex = parser.hostageAIndex;
+						}
+						else if (parser.hostageBIndex == -1)
+						{
+							pickedUp.Hostage = 'B';
+							parser.hostageBIndex = hostage;
+							pickedUp.HostageIndex = parser.hostageBIndex;
+						}
+						else
+						{
+							// a third hostage???
+							pickedUp.Hostage = '?';
+						}
+					}
+
+					pickedUp.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
+
+					parser.RaiseHostagePickedUp(pickedUp);
+					break;
+
+			}
 		}
 
 		private static T FillNadeEvent<T>(Dictionary<string, object> data, DemoParser parser) where T : NadeEventArgs, new()

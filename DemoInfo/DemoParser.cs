@@ -225,6 +225,11 @@ namespace DemoInfo
 		public event EventHandler<HostageRescuedEventArgs> HostageRescued;
 
 		/// <summary>
+		/// Occurs when someone picks up a hostage.
+		/// </summary>
+		public event EventHandler<HostagePickedUpEventArgs> HostagePickedUp;
+
+		/// <summary>
 		/// Occurs when an player is attacked by another player.
 		/// Hint: Only occurs in GOTV-demos. 
 		/// </summary>
@@ -1472,6 +1477,12 @@ namespace DemoInfo
 		{
 			if (HostageRescued != null)
                 HostageRescued(this, args);
+		}
+
+		internal void RaiseHostagePickedUp(HostagePickedUpEventArgs args)
+		{
+			if (HostagePickedUp != null)
+				HostagePickedUp(this, args);
 		}
 
 		internal void RaiseSayText(SayTextEventArgs args)
