@@ -41,6 +41,8 @@ namespace TopStatsWaffle
         const string winReasonTKills = "TerroristWin", winReasonCtKills = "CTWin", winReasonBombed = "TargetBombed", winReasonDefused = "BombDefused", winReasonRescued = "HostagesRescued", winReasonNotRescued = "HostagesNotRescued", winReasonTSaved = "TargetSaved";
         const string winReasonUnknown = "Unknown"; // Caused by an error where the round_end event was not triggered for a round
 
+        public bool changingPlantedRoundsToA = false, changingPlantedRoundsToB = false; // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
+
         public bool passed = false;
 
         void addEvent(Type type, object ev)
@@ -520,7 +522,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.6" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.7" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -816,12 +818,19 @@ namespace TopStatsWaffle
 						//check to see if either of the bombsites have bugged out
 						if (bombsite == "?")
 						{
-							bombPlantedError = ValidateBombsite(bombsitePlantValues["BombsitePlants"], bombPlanted.Round, bombPlanted.Bombsite);
+							bombPlantedError = ValidateBombsite(bombsitePlantValues["BombsitePlants"], bombPlanted.Bombsite);
 
                             //update data to ensure that future references to it are also updated
                             bombsitePlantValues["BombsitePlants"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
-                            bombsiteExplodeValues["BombsiteExplosions"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
-                            bombsiteDefuseValues["BombsiteDefuses"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
+
+                            if (bombsiteExplodeValues["BombsiteExplosions"].Where(p => p.Round == roundNum).FirstOrDefault() != null)
+                            {
+                                bombsiteExplodeValues["BombsiteExplosions"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
+                            }
+                            if (bombsiteDefuseValues["BombsiteDefuses"].Where(p => p.Round == roundNum).FirstOrDefault() != null)
+                            {
+                                bombsiteDefuseValues["BombsiteDefuses"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
+                            }
 
                             bombsite = bombPlantedError.Bombsite.ToString();
 						}
@@ -1560,23 +1569,25 @@ namespace TopStatsWaffle
 			return position.Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
 		}
 
-		public BombPlantedError ValidateBombsite(IEnumerable<BombPlanted> bombPlantedArray, int roundNum, char bombsite)
+		public BombPlantedError ValidateBombsite(IEnumerable<BombPlanted> bombPlantedArray, char bombsite)
 		{
 			char validatedBombsite = bombsite;
 			string errorMessage = null;
 
 			if (bombsite == '?')
 			{
-				if (bombPlantedArray.Any(x => x.Bombsite == 'A') && !bombPlantedArray.Any(x => x.Bombsite == 'B'))
+				if (bombPlantedArray.Any(x => x.Bombsite == 'A') && (!bombPlantedArray.Any(x => x.Bombsite == 'B') || changingPlantedRoundsToB))
 				{
-					//assume B site trigger's bounding box is broken
-					validatedBombsite = 'B';
+                    //assume B site trigger's bounding box is broken
+                    changingPlantedRoundsToB = true;
+                    validatedBombsite = 'B';
 					errorMessage = "Assuming plant was at B site.";
 				}
-				else if (!bombPlantedArray.Any(x => x.Bombsite == 'A') && bombPlantedArray.Any(x => x.Bombsite == 'B'))
+				else if (!bombPlantedArray.Any(x => x.Bombsite == 'A') && (bombPlantedArray.Any(x => x.Bombsite == 'B') || changingPlantedRoundsToA))
 				{
-					//assume A site trigger's bounding box is broken
-					validatedBombsite = 'A';
+                    //assume A site trigger's bounding box is broken
+                    changingPlantedRoundsToA = true;
+                    validatedBombsite = 'A';
 					errorMessage = "Assuming plant was at A site.";
 				}
 				else
