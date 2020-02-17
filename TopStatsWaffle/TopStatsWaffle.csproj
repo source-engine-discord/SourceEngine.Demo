@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>icon_8RJ_icon.ico</ApplicationIcon>
@@ -40,7 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,6 +58,7 @@
     <Compile Include="CollectorMethods.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="DemoProcessor.cs" />
+    <Compile Include="IMatchData.cs" />
     <Compile Include="Models\AllStats.cs" />
     <Compile Include="Models\BombDefused.cs" />
     <Compile Include="Models\BombExploded.cs" />
@@ -63,6 +66,7 @@
     <Compile Include="Models\BombPlantedError.cs" />
     <Compile Include="Models\BombsiteStats.cs" />
     <Compile Include="Models\ChickenStats.cs" />
+    <Compile Include="Models\DemoInformation.cs" />
     <Compile Include="Models\DisconnectedPlayer.cs" />
     <Compile Include="Models\FeedbackMessage.cs" />
     <Compile Include="Models\HostagePickedUp.cs" />
@@ -70,6 +74,7 @@
     <Compile Include="Models\HostageRescued.cs" />
     <Compile Include="Models\HostageStats.cs" />
     <Compile Include="Models\KillsStats.cs" />
+    <Compile Include="Models\ProcessedData.cs" />
     <Compile Include="Models\RoundsStats.cs" />
     <Compile Include="Models\GrenadesSpecificStats.cs" />
     <Compile Include="Models\GrenadesTotalStats.cs" />

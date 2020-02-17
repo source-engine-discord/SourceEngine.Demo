@@ -30,11 +30,11 @@ namespace TopStatsWaffle
         public string name;
     }
 
-    class MatchData
+    public class MatchData// : IMatchData
     {
         public Dictionary<Type, List<object>> events = new Dictionary<Type, List<object>>();
 
-        public Dictionary<int, TickCounter> playerTicks = new Dictionary<int, TickCounter>();
+        Dictionary<int, TickCounter> playerTicks = new Dictionary<int, TickCounter>();
         public Dictionary<int, long> playerLookups = new Dictionary<int, long>();
         public Dictionary<int, int> playerReplacements = new Dictionary<int, int>();
 
@@ -178,7 +178,7 @@ namespace TopStatsWaffle
             }
         }
 
-        public static MatchData fromDemoFile(string file, bool parseChickens, bool lowOutputMode)
+        public static MatchData FromDemoFile(string file, bool parseChickens, bool lowOutputMode)
         {
             MatchData md = new MatchData();
 
@@ -510,26 +510,16 @@ namespace TopStatsWaffle
 			return md;
 		}
 
-        public void CreateFiles(
-            List<string> demo, bool sameFilename, bool samefolderstructure, bool parseChickens, List<string> foldersToProcess, string outputRootFolder, TanookiStats tanookiStats, Dictionary<string, IEnumerable<MatchStartedEventArgs>> matchStartValues,
-            Dictionary<string, IEnumerable<SwitchSidesEventArgs>> switchSidesValues, Dictionary<string, IEnumerable<FeedbackMessage>> messagesValues, Dictionary<string, IEnumerable<TeamPlayers>> teamPlayersValues,
-            Dictionary<string, IEnumerable<PlayerKilledEventArgs>> playerKilledEventsValues, Dictionary<string, IEnumerable<Player>> playerValues, Dictionary<string, IEnumerable<Equipment>> weaponValues,
-            Dictionary<string, IEnumerable<int>> penetrationValues, Dictionary<string, IEnumerable<BombPlanted>> bombsitePlantValues, Dictionary<string, IEnumerable<BombExploded>> bombsiteExplodeValues,
-            Dictionary<string, IEnumerable<BombDefused>> bombsiteDefuseValues, Dictionary<string, IEnumerable<char>> bombsiteValues, Dictionary<string, IEnumerable<HostageRescued>> hostageRescueValues,
-            Dictionary<string, IEnumerable<HostagePickedUp>> hostagePickedUpValues, Dictionary<string, IEnumerable<char>> hostageValues, Dictionary<string, IEnumerable<Team>> teamValues,
-            Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues, Dictionary<string, IEnumerable<double>> roundLengthValues, Dictionary<string, IEnumerable<TeamEquipmentStats>> teamEquipmentValues,
-            Dictionary<string, IEnumerable<NadeEventArgs>> grenadeValues, Dictionary<string, IEnumerable<ChickenKilledEventArgs>> chickenValues, Dictionary<string, IEnumerable<ShotFired>> shotsFiredValues,
-            bool writeTicks = true
-        )
+        public void CreateFiles(ProcessedData processedData)
         {
-            var mapDateSplit = (!string.IsNullOrWhiteSpace(demo[2]) && demo[2] != "unknown") ? demo[2].Split('/')  : null;
+            var mapDateSplit = (!string.IsNullOrWhiteSpace(processedData.DemoInformation.TestDate) && processedData.DemoInformation.TestDate != "unknown") ? processedData.DemoInformation.TestDate.Split('/')  : null;
             var mapDateString = (mapDateSplit != null && mapDateSplit.Count() >= 3) ? (mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]) : string.Empty;
 
-            var mapNameSplit = (matchStartValues["MatchStarts"].Count() > 0) ? matchStartValues["MatchStarts"].ElementAt(0).Mapname.Split('/') : new string[] { demo[1] };
+            var mapNameSplit = (processedData.MatchStartValues.Count() > 0) ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/') : new string[] { processedData.DemoInformation.MapName };
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.8" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.9" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -537,18 +527,18 @@ namespace TopStatsWaffle
             /* Supported gamemodes end */
 
             /* map info */
-            MapInfo mapInfo = new MapInfo() { MapName = demo[1], TestDate = demo[2], TestType = demo[3] };
+            MapInfo mapInfo = new MapInfo() { MapName = processedData.DemoInformation.MapName, TestDate = processedData.DemoInformation.TestDate, TestType = processedData.DemoInformation.TestType };
 
             mapInfo.MapName = (mapNameSplit.Count() > 2) ? mapNameSplit[2] : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
             mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
-			mapInfo.DemoName = demo[0].Split('\\').Last().Replace(".dem", string.Empty); // the filename of the demo, for faceit games this is also in the "demo_url" value
+			mapInfo.DemoName = processedData.DemoInformation.DemoName.Split('\\').Last().Replace(".dem", string.Empty); // the filename of the demo, for faceit games this is also in the "demo_url" value
 
 			// attempts to get the gamemode
-			var roundsWonReasons = getRoundsWonReasons(roundEndReasonValues);
+			var roundsWonReasons = getRoundsWonReasons(processedData.RoundEndReasonValues);
 
-            if (matchStartValues["MatchStarts"].Any(m => m.HasBombsites) || bombsiteValues["PlantsSites"].Count() > 0 || roundsWonReasons.Any(w => w.ToString() == winReasonBombed) || roundsWonReasons.Any(w => w.ToString() == winReasonDefused) || roundsWonReasons.Any(w => w.ToString() == winReasonTSaved))
+            if (processedData.MatchStartValues.Any(m => m.HasBombsites) || processedData.BombsitePlantValues.Count() > 0 || roundsWonReasons.Any(w => w.ToString() == winReasonBombed) || roundsWonReasons.Any(w => w.ToString() == winReasonDefused) || roundsWonReasons.Any(w => w.ToString() == winReasonTSaved))
             {
-                if (teamPlayersValues["TeamPlayers"].Any(t => t.Terrorists.Count() > 2 && teamPlayersValues["TeamPlayers"].Any(ct => ct.CounterTerrorists.Count() > 2)))
+                if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() > 2)))
                 {
                     mapInfo.GameMode = "Defuse";
                 }
@@ -570,9 +560,9 @@ namespace TopStatsWaffle
             Dictionary<long, Dictionary<string, long>> data = new Dictionary<long, Dictionary<string, long>>();
             Dictionary<long, Dictionary<string, string>> playerNames = new Dictionary<long, Dictionary<string, string>>();
 
-            foreach (string catagory in playerValues.Keys)
+            foreach (string catagory in processedData.PlayerValues.Keys)
             {
-                foreach (Player p in playerValues[catagory])
+                foreach (Player p in processedData.PlayerValues[catagory])
                 {
                     //Skip players not in this catagory
                     if (p == null)
@@ -608,7 +598,7 @@ namespace TopStatsWaffle
             }
 
             // remove teamkills and suicides from kills (easy messy implementation)
-            foreach (var kill in playerKilledEventsValues["PlayerKilledEvents"])
+            foreach (var kill in processedData.PlayerKilledEventsValues)
             {
                 if (kill.Killer != null && kill.Killer.Name != "unconnected")
                 {
@@ -638,7 +628,7 @@ namespace TopStatsWaffle
                 var steamID = match.ElementAt(0).Key;
 
                 List<int> statsList1 = new List<int>();
-                foreach (string catagory in playerValues.Keys)
+                foreach (string catagory in processedData.PlayerValues.Keys)
                 {
                     if (data[player].ContainsKey(catagory))
                     {
@@ -651,7 +641,7 @@ namespace TopStatsWaffle
                 }
 
                 List<long> statsList2 = new List<long>();
-                if (writeTicks)
+                if (processedData.WriteTicks)
                 {
                     if (playerLookups.Any(p => p.Value == player))
                     {
@@ -671,9 +661,9 @@ namespace TopStatsWaffle
                     }
                 }
 
-                int numOfKillsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Killer != null) && (k.Killer.Name.ToString() == playerName.ToString()) && (k.KillerBotTakeover)).Count();
-                int numOfDeathsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Victim != null) && (k.Victim.Name.ToString() == playerName.ToString()) && (k.VictimBotTakeover)).Count();
-                int numOfAssistsAsBot = playerKilledEventsValues["PlayerKilledEvents"].Where(k => (k.Assister != null) && (k.Assister.Name.ToString() == playerName.ToString()) && (k.AssisterBotTakeover)).Count();
+                int numOfKillsAsBot = processedData.PlayerKilledEventsValues.Where(k => (k.Killer != null) && (k.Killer.Name.ToString() == playerName.ToString()) && (k.KillerBotTakeover)).Count();
+                int numOfDeathsAsBot = processedData.PlayerKilledEventsValues.Where(k => (k.Victim != null) && (k.Victim.Name.ToString() == playerName.ToString()) && (k.VictimBotTakeover)).Count();
+                int numOfAssistsAsBot = processedData.PlayerKilledEventsValues.Where(k => (k.Assister != null) && (k.Assister.Name.ToString() == playerName.ToString()) && (k.AssisterBotTakeover)).Count();
 
                 playerStats.Add(new PlayerStats()
                 {
@@ -705,8 +695,8 @@ namespace TopStatsWaffle
             List<RoundsStats> roundsStats = new List<RoundsStats>();
 
             // winning team & total rounds stats
-            IEnumerable<SwitchSidesEventArgs> switchSides = switchSidesValues["SwitchSides"];
-            var roundsWonTeams = getRoundsWonTeams(teamValues);
+            IEnumerable<SwitchSidesEventArgs> switchSides = processedData.SwitchSidesValues;
+            var roundsWonTeams = getRoundsWonTeams(processedData.TeamValues);
             int totalRoundsWonTeamAlpha = 0, totalRoundsWonTeamBeta = 0;
 
             for (int i = 0; i < roundsWonTeams.Count(); i++)
@@ -717,7 +707,7 @@ namespace TopStatsWaffle
                     string half = string.Empty;
                     bool isOvertime = ((switchSides.Count() >= 2) && (i >= switchSides.ElementAt(1).RoundBeforeSwitch)) ? true : false;
                     int overtimeNum = 0;
-                    double roundLength = roundLengthValues["RoundsLengths"].ElementAt(i);
+                    double roundLength = processedData.RoundLengthValues.ElementAt(i);
 
                     // determines which half / side it is
                     if (isOvertime)
@@ -792,7 +782,7 @@ namespace TopStatsWaffle
 
                     // team count values
                     int roundNum = i + 1;
-                    var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == roundNum).FirstOrDefault();
+                    var currentRoundTeams = processedData.TeamPlayersValues.Where(t => t.Round == roundNum).FirstOrDefault();
 
                     foreach (var player in currentRoundTeams.Terrorists) // make sure steamID's aren't 0
                     {
@@ -807,7 +797,7 @@ namespace TopStatsWaffle
                     int playerCountTeamB = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.CounterTerrorists.Count() : currentRoundTeams.Terrorists.Count()) : 0;
 
                     // equip values
-                    var teamEquipValues = teamEquipmentValues["TeamEquipmentStats"].Count() >= i ? teamEquipmentValues["TeamEquipmentStats"].ElementAt(i) : null;
+                    var teamEquipValues = processedData.TeamEquipmentValues.Count() >= i ? processedData.TeamEquipmentValues.ElementAt(i) : null;
                     int equipValueTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue) : 0;
                     int equipValueTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue) : 0;
                     int expenditureTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure) : 0;
@@ -818,26 +808,26 @@ namespace TopStatsWaffle
                     BombPlanted bombPlanted = null; BombExploded bombExploded = null; BombDefused bombDefused = null;
 					BombPlantedError bombPlantedError = null;
 
-                    if (bombsitePlantValues["BombsitePlants"].Any(p => p.Round == roundNum))
+                    if (processedData.BombsitePlantValues.Any(p => p.Round == roundNum))
                     {
-                        bombPlanted = bombsitePlantValues["BombsitePlants"].Where(p => p.Round == roundNum).FirstOrDefault();
+                        bombPlanted = processedData.BombsitePlantValues.Where(p => p.Round == roundNum).FirstOrDefault();
 						bombsite = bombPlanted.Bombsite.ToString();
 
 						//check to see if either of the bombsites have bugged out
 						if (bombsite == "?")
 						{
-							bombPlantedError = ValidateBombsite(bombsitePlantValues["BombsitePlants"], bombPlanted.Bombsite);
+							bombPlantedError = ValidateBombsite(processedData.BombsitePlantValues, bombPlanted.Bombsite);
 
-                            //update data to ensure that future references to it are also updated
-                            bombsitePlantValues["BombsitePlants"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
+							//update data to ensure that future references to it are also updated
+							processedData.BombsitePlantValues.Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
 
-                            if (bombsiteExplodeValues["BombsiteExplosions"].Where(p => p.Round == roundNum).FirstOrDefault() != null)
+                            if (processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum).FirstOrDefault() != null)
                             {
-                                bombsiteExplodeValues["BombsiteExplosions"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
+								processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
                             }
-                            if (bombsiteDefuseValues["BombsiteDefuses"].Where(p => p.Round == roundNum).FirstOrDefault() != null)
+                            if (processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum).FirstOrDefault() != null)
                             {
-                                bombsiteDefuseValues["BombsiteDefuses"].Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
+								processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
                             }
 
                             bombsite = bombPlantedError.Bombsite.ToString();
@@ -849,14 +839,14 @@ namespace TopStatsWaffle
 						bombPlanted.YPosition = double.Parse(positions[2]);
 						bombPlanted.ZPosition = double.Parse(positions[3]);
 					}
-                    if (bombsiteExplodeValues["BombsiteExplosions"].Any(p => p.Round == roundNum))
+                    if (processedData.BombsiteExplodeValues.Any(p => p.Round == roundNum))
                     {
-                        bombExploded = bombsiteExplodeValues["BombsiteExplosions"].Where(p => p.Round == roundNum).FirstOrDefault();
+                        bombExploded = processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum).FirstOrDefault();
                         bombsite = (bombsite != null) ? bombsite : bombExploded.Bombsite.ToString();
                     }
-                    if (bombsiteDefuseValues["BombsiteDefuses"].Any(p => p.Round == roundNum))
+                    if (processedData.BombsiteDefuseValues.Any(p => p.Round == roundNum))
                     {
-                        bombDefused = bombsiteDefuseValues["BombsiteDefuses"].Where(p => p.Round == roundNum).FirstOrDefault();
+                        bombDefused = processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum).FirstOrDefault();
                         bombsite = (bombsite != null) ? bombsite : bombDefused.Bombsite.ToString();
                     }
 
@@ -869,13 +859,13 @@ namespace TopStatsWaffle
                     HostageRescued hostageRescuedA = null, hostageRescuedB = null;
                     HostagePickedUpError hostageAPickedUpError = null, hostageBPickedUpError = null;
 
-                    if (hostageRescueValues["HostageRescues"].Any(r => r.Round == roundNum))
+                    if (processedData.HostageRescueValues.Any(r => r.Round == roundNum))
                     {
-                        hostagePickedUpA = hostagePickedUpValues["HostagePickedUps"].Where(r => r.Round == roundNum && r.Hostage == 'A').FirstOrDefault();
-                        hostagePickedUpB = hostagePickedUpValues["HostagePickedUps"].Where(r => r.Round == roundNum && r.Hostage == 'B').FirstOrDefault();
+                        hostagePickedUpA = processedData.HostagePickedUpValues.Where(r => r.Round == roundNum && r.Hostage == 'A').FirstOrDefault();
+                        hostagePickedUpB = processedData.HostagePickedUpValues.Where(r => r.Round == roundNum && r.Hostage == 'B').FirstOrDefault();
                         
-                        hostageRescuedA = hostageRescueValues["HostageRescues"].Where(r => r.Round == roundNum && r.Hostage == 'A').FirstOrDefault();
-                        hostageRescuedB = hostageRescueValues["HostageRescues"].Where(r => r.Round == roundNum && r.Hostage == 'B').FirstOrDefault();
+                        hostageRescuedA = processedData.HostageRescueValues.Where(r => r.Round == roundNum && r.Hostage == 'A').FirstOrDefault();
+                        hostageRescuedB = processedData.HostageRescueValues.Where(r => r.Round == roundNum && r.Hostage == 'B').FirstOrDefault();
 
                         if (hostagePickedUpA == null && hostageRescuedA != null)
                         {
@@ -972,11 +962,11 @@ namespace TopStatsWaffle
             /* bombsite stats */
             List<BombsiteStats> bombsiteStats = new List<BombsiteStats>();
 
-            List<char> bombsitePlants = new List<char>(bombsiteValues["PlantsSites"]);
-            List<char> bombsiteExplosions = new List<char>(bombsiteValues["ExplosionsSites"]);
-            List<char> bombsiteDefuses = new List<char>(bombsiteValues["DefusesSites"]);
+            List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => x.Bombsite));
+            List<char> bombsiteExplosions = new List<char>(processedData.BombsiteExplodeValues.Select(x => x.Bombsite));
+			List<char> bombsiteDefuses = new List<char>(processedData.BombsiteDefuseValues.Select(x => x.Bombsite));
 
-            int plantsA = bombsitePlants.Where(b => b.ToString().Equals("A")).Count();
+			int plantsA = bombsitePlants.Where(b => b.ToString().Equals("A")).Count();
             int explosionsA = bombsiteExplosions.Where(b => b.ToString().Equals("A")).Count();
             int defusesA = bombsiteDefuses.Where(b => b.ToString().Equals("A")).Count();
 
@@ -991,11 +981,11 @@ namespace TopStatsWaffle
             /* hostage stats */
             List<HostageStats> hostageStats = new List<HostageStats>();
 
-            List<char> hostagePickedUps = new List<char>(hostageValues["PickedUpHostages"]);
-            List<char> hostageRescues = new List<char>(hostageValues["RescuedHostages"]);
+            List<char> hostagePickedUps = new List<char>(processedData.HostagePickedUpValues.Select(x => x.Hostage));
+            List<char> hostageRescues = new List<char>(processedData.HostageRescueValues.Select(x => x.Hostage));
 
-            var hostageIndexA = hostageRescueValues["HostageRescues"].Where(r => r.Hostage == 'A').FirstOrDefault()?.HostageIndex;
-            var hostageIndexB = hostageRescueValues["HostageRescues"].Where(r => r.Hostage == 'B').FirstOrDefault()?.HostageIndex;
+			var hostageIndexA = processedData.HostageRescueValues.Where(r => r.Hostage == 'A').FirstOrDefault()?.HostageIndex;
+            var hostageIndexB = processedData.HostageRescueValues.Where(r => r.Hostage == 'B').FirstOrDefault()?.HostageIndex;
 
             int pickedUpsA = hostagePickedUps.Where(b => b.ToString().Equals("A")).Count();
             int pickedUpsB = hostagePickedUps.Where(b => b.ToString().Equals("B")).Count();
@@ -1012,12 +1002,11 @@ namespace TopStatsWaffle
 
             string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
 
-            List<NadeEventArgs> nades = new List<NadeEventArgs>(grenadeValues.ElementAt(0).Value);
-            var flashes = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[0]));
-            var smokes = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[1]));
-            var hegrenades = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[2]));
-            var incendiaries = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[3]));
-            var decoys = nades.Where(f => f.NadeType.ToString().Equals(nadeTypes[4]));
+            var flashes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[0]));
+            var smokes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[1]));
+            var hegrenades = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[2]));
+            var incendiaries = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[3]));
+            var decoys = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[4]));
 
             List<IEnumerable<NadeEventArgs>> nadeGroups = new List<IEnumerable<NadeEventArgs>>() { flashes, smokes, hegrenades, incendiaries, decoys };
 
@@ -1062,17 +1051,17 @@ namespace TopStatsWaffle
             /* Player Kills/Death Positions */
             List<KillsStats> killsStats = new List<KillsStats>();
 
-            List<Player> kills = new List<Player>(playerValues["Kills"].ToList());
-            List<Player> deaths = new List<Player>(playerValues["Deaths"].ToList());
+            List<Player> kills = new List<Player>(processedData.PlayerValues["Kills"].ToList());
+            List<Player> deaths = new List<Player>(processedData.PlayerValues["Deaths"].ToList());
 
-            List<Equipment> weaponKillers = new List<Equipment>(weaponValues["WeaponKillers"].ToList());
-            List<int> penetrations = new List<int>(penetrationValues["PenetratedObjects"].ToList());
+            List<Equipment> weaponKillers = new List<Equipment>(processedData.WeaponValues.ToList());
+            List<int> penetrations = new List<int>(processedData.PenetrationValues.ToList());
 
             for (int i = 0; i < deaths.Count(); i++)
             {
                 if (kills.ElementAt(i) != null && kills.ElementAt(i).LastAlivePosition != null && deaths.ElementAt(i) != null && deaths.ElementAt(i).LastAlivePosition != null)
                 {
-                    var playerKilledEvent = playerKilledEventsValues["PlayerKilledEvents"].ElementAt(i);
+                    var playerKilledEvent = processedData.PlayerKilledEventsValues.ElementAt(i);
 
                     if (playerKilledEvent != null)
                     {
@@ -1131,9 +1120,9 @@ namespace TopStatsWaffle
             /* Feedback Messages */
             List<FeedbackMessage> feedbackMessages = new List<FeedbackMessage>();
 
-            foreach (var message in messagesValues["Messages"])
+            foreach (var message in processedData.MessagesValues)
             {
-                var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == message.Round).FirstOrDefault();
+                var currentRoundTeams = processedData.TeamPlayersValues.Where(t => t.Round == message.Round).FirstOrDefault();
 
                 if (currentRoundTeams != null && (message.SteamID == 0 || message.TeamName == null)) // excludes warmup round
                 {
@@ -1167,9 +1156,9 @@ namespace TopStatsWaffle
 
             /* chickens killed stats */
             ChickenStats chickenStats = null;
-            if (parseChickens)
+            if (processedData.ParseChickens)
             {
-                chickenStats = new ChickenStats() { Killed = chickenValues["ChickensKilled"].Count() };
+                chickenStats = new ChickenStats() { Killed = processedData.ChickenValues.Count() };
             }
             /* chickens killed stats end */
 
@@ -1180,13 +1169,13 @@ namespace TopStatsWaffle
             int swappedSidesCount = 0;
             int currentRoundChecking = 1;
             
-            foreach (var teamPlayers in teamPlayersValues["TeamPlayers"])
+            foreach (var teamPlayers in processedData.TeamPlayersValues)
             {
                 // players in each team per round
                 swappedSidesCount = switchSides.Count() > swappedSidesCount ? (switchSides.ElementAt(swappedSidesCount).RoundBeforeSwitch == currentRoundChecking - 1 ? swappedSidesCount + 1 : swappedSidesCount) : swappedSidesCount;
                 firstHalf = (swappedSidesCount % 2 == 0) ? true : false;
 
-                var currentRoundTeams = teamPlayersValues["TeamPlayers"].Where(t => t.Round == teamPlayers.Round).FirstOrDefault();
+                var currentRoundTeams = processedData.TeamPlayersValues.Where(t => t.Round == teamPlayers.Round).FirstOrDefault();
 
                 var alphaPlayers = (currentRoundTeams != null) ? (firstHalf ? currentRoundTeams.Terrorists : currentRoundTeams.CounterTerrorists) : null;
                 var bravoPlayers = (currentRoundTeams != null) ? (firstHalf ? currentRoundTeams.CounterTerrorists : currentRoundTeams.Terrorists) : null;
@@ -1263,7 +1252,7 @@ namespace TopStatsWaffle
                 }
 
                 // kills/death stats this round
-                var deathsThisRound = playerKilledEventsValues["PlayerKilledEvents"].Where(k => k.Round == teamPlayers.Round);
+                var deathsThisRound = processedData.PlayerKilledEventsValues.Where(k => k.Round == teamPlayers.Round);
 
                 // kills this round
                 int alphaKills = deathsThisRound.Where(d => d.Killer != null
@@ -1374,7 +1363,7 @@ namespace TopStatsWaffle
                                                                             .Max();
 
                 // shots fired this round
-                var shotsFiredThisRound = shotsFiredValues["ShotsFired"].Where(s => s.Round == teamPlayers.Round);
+                var shotsFiredThisRound = processedData.ShotsFiredValues.Where(s => s.Round == teamPlayers.Round);
 
                 int alphaShotsFired = shotsFiredThisRound.Where(s => s.Shooter != null && alphaSteamIds.Contains(s.Shooter.SteamID)).Count();
                 int bravoShotsFired = shotsFiredThisRound.Where(s => s.Shooter != null && bravoSteamIds.Contains(s.Shooter.SteamID)).Count();
@@ -1417,7 +1406,7 @@ namespace TopStatsWaffle
                 VersionNumber = versionNumber,
                 SupportedGamemodes = supportedGamemodes,
                 MapInfo = mapInfo,
-                TanookiStats = tanookiStats,
+                TanookiStats = processedData.TanookiStats,
                 PlayerStats = playerStats,
                 WinnersStats = winnersStats,
                 RoundsStats = roundsStats,
@@ -1432,15 +1421,15 @@ namespace TopStatsWaffle
             };
 
             /* JSON creation */
-            string filename = sameFilename ? mapInfo.DemoName : Guid.NewGuid().ToString();
+            string filename = processedData.SameFilename ? mapInfo.DemoName : Guid.NewGuid().ToString();
 
             string path = string.Empty;
-            if (foldersToProcess.Count() > 0 && samefolderstructure)
+            if (processedData.FoldersToProcess.Count() > 0 && processedData.SameFolderStructure)
             {
-                foreach (var folder in foldersToProcess)
+                foreach (var folder in processedData.FoldersToProcess)
                 {
-                    string[] splitPath = Path.GetDirectoryName(demo[0]).Split(new string[] { string.Concat(folder, "\\") }, StringSplitOptions.None);
-                    path = splitPath.Count() > 1 ? string.Concat(outputRootFolder, "\\", splitPath.LastOrDefault(), "\\") : string.Concat(outputRootFolder, "\\");
+                    string[] splitPath = Path.GetDirectoryName(processedData.DemoInformation.DemoName).Split(new string[] { string.Concat(folder, "\\") }, StringSplitOptions.None);
+                    path = splitPath.Count() > 1 ? string.Concat(processedData.OutputRootFolder, "\\", splitPath.LastOrDefault(), "\\") : string.Concat(processedData.OutputRootFolder, "\\");
 
                     if (!string.IsNullOrWhiteSpace(path))
                     {
@@ -1453,7 +1442,7 @@ namespace TopStatsWaffle
             }
             else
             {
-                path = string.Concat(outputRootFolder, "\\");
+                path = string.Concat(processedData.OutputRootFolder, "\\");
             }
             
             if (mapDateString != string.Empty)
@@ -1470,7 +1459,7 @@ namespace TopStatsWaffle
                     versionNumber,
                     supportedGamemodes,
                     mapInfo,
-                    tanookiStats,
+					processedData.TanookiStats,
                     playerStats,
                     winnersStats,
                     roundsStats,
@@ -1520,9 +1509,9 @@ namespace TopStatsWaffle
             return new List<object>();
         }
 
-        public List<Team> getRoundsWonTeams(Dictionary<string, IEnumerable<Team>> teamValues)
+        public List<Team> getRoundsWonTeams(IEnumerable<Team> teamValues)
         {
-            var roundsWonTeams = teamValues["RoundsWonTeams"].ToList();
+            var roundsWonTeams = teamValues.ToList();
             roundsWonTeams.RemoveAll(r => !r.ToString().Equals("Terrorist")
                                        && !r.ToString().Equals("CounterTerrorist")
                                        && !r.ToString().Equals("Unknown")
@@ -1531,9 +1520,9 @@ namespace TopStatsWaffle
             return roundsWonTeams;
         }
 
-        public List<RoundEndReason> getRoundsWonReasons(Dictionary<string, IEnumerable<RoundEndReason>> roundEndReasonValues)
+        public List<RoundEndReason> getRoundsWonReasons(IEnumerable<RoundEndReason> roundEndReasonValues)
         {
-            var roundsWonReasons = roundEndReasonValues["RoundsWonReasons"].ToList();
+            var roundsWonReasons = roundEndReasonValues.ToList();
             roundsWonReasons.RemoveAll(r => !r.ToString().Equals(winReasonTKills)
                                          && !r.ToString().Equals(winReasonCtKills)
                                          && !r.ToString().Equals(winReasonBombed)
