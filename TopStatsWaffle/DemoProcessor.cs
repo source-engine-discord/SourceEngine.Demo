@@ -276,6 +276,13 @@ namespace TopStatsWaffle
 				if (!lowOutputMode)
 				{
 					int roundsCount = md.getEvents<RoundEndedEventArgs>().Count();
+
+					//stops the progress bar getting in the way of the first row
+					if (roundsCount == 1)
+					{
+						Console.WriteLine("\n");
+					}
+
 					Console.WriteLine("Round " + roundsCount + " complete.");
 				}
             };
@@ -522,7 +529,7 @@ namespace TopStatsWaffle
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             /* demo parser version */
-            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.7" };
+            VersionNumber versionNumber = new VersionNumber() { Version = "1.1.8" };
             /* demo parser version end */
 
             /* Supported gamemodes */
@@ -534,9 +541,10 @@ namespace TopStatsWaffle
 
             mapInfo.MapName = (mapNameSplit.Count() > 2) ? mapNameSplit[2] : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
             mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
+			mapInfo.DemoName = demo[0].Split('\\').Last().Replace(".dem", string.Empty); // the filename of the demo, for faceit games this is also in the "demo_url" value
 
-            // attempts to get the gamemode
-            var roundsWonReasons = getRoundsWonReasons(roundEndReasonValues);
+			// attempts to get the gamemode
+			var roundsWonReasons = getRoundsWonReasons(roundEndReasonValues);
 
             if (matchStartValues["MatchStarts"].Any(m => m.HasBombsites) || bombsiteValues["PlantsSites"].Count() > 0 || roundsWonReasons.Any(w => w.ToString() == winReasonBombed) || roundsWonReasons.Any(w => w.ToString() == winReasonDefused) || roundsWonReasons.Any(w => w.ToString() == winReasonTSaved))
             {
@@ -1424,7 +1432,7 @@ namespace TopStatsWaffle
             };
 
             /* JSON creation */
-            string filename = sameFilename ? demo[0].Split('\\').Last().Replace(".dem", string.Empty) : Guid.NewGuid().ToString();
+            string filename = sameFilename ? mapInfo.DemoName : Guid.NewGuid().ToString();
 
             string path = string.Empty;
             if (foldersToProcess.Count() > 0 && samefolderstructure)
