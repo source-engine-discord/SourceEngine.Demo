@@ -17,6 +17,18 @@ namespace TopStatsWaffle.Tests
 		{
 			MatchData = new MatchData();
 			MockData();
+
+			foreach(var teamPlayers in ProcessedData.TeamPlayersValues)
+			{
+				foreach(var player in teamPlayers.Terrorists)
+				{
+					MatchData.BindPlayer(player);
+				}
+				foreach(var player in teamPlayers.CounterTerrorists)
+				{
+					MatchData.BindPlayer(player);
+				}
+			}
 		}
 
 		public class DataValidationTests : TopStatsWaffleTests
@@ -117,7 +129,7 @@ namespace TopStatsWaffle.Tests
 				allStats.HostageStats.Count.ShouldBe(2);
 				allStats.HostageStats[0].Hostage.ShouldBe('A');
 				allStats.HostageStats[0].HostageIndex.ShouldBe(250);
-				allStats.HostageStats[0].PickedUps.ShouldBe(1);
+				allStats.HostageStats[0].PickedUps.ShouldBe(2);
 				allStats.HostageStats[0].Rescues.ShouldBe(1);
 				allStats.HostageStats[1].Hostage.ShouldBe('B');
 				allStats.HostageStats[1].HostageIndex.ShouldBe(251);
@@ -155,6 +167,199 @@ namespace TopStatsWaffle.Tests
 				allStats.MapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
 				allStats.MapInfo.TestType.ShouldBe("Defuse");
 			}
+
+			[Fact]
+			public void Should_return_player_stats_correctly()
+			{
+				// Arrange
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.PlayerStats.Count.ShouldBe(2);
+
+				allStats.PlayerStats[0].Assists.ShouldBe(0);
+				allStats.PlayerStats[0].AssistsIncludingBots.ShouldBe(0);
+				allStats.PlayerStats[0].Deaths.ShouldBe(0);
+				allStats.PlayerStats[0].DeathsIncludingBots.ShouldBe(0);
+				allStats.PlayerStats[0].Defuses.ShouldBe(1);
+				allStats.PlayerStats[0].Headshots.ShouldBe(1); // took over a bot for one of them
+				allStats.PlayerStats[0].Kills.ShouldBe(1); // took over a bot for one of them
+				allStats.PlayerStats[0].KillsIncludingBots.ShouldBe(2);
+				allStats.PlayerStats[0].MVPs.ShouldBe(2);
+				allStats.PlayerStats[0].Plants.ShouldBe(1);
+				allStats.PlayerStats[0].PlayerName.ShouldBe("JimWood");
+				allStats.PlayerStats[0].Rescues.ShouldBe(0);
+				allStats.PlayerStats[0].Shots.ShouldBe(6);
+				allStats.PlayerStats[0].SteamID.ShouldBe(32443298432);
+
+				allStats.PlayerStats[1].Assists.ShouldBe(1);
+				allStats.PlayerStats[1].AssistsIncludingBots.ShouldBe(1);
+				allStats.PlayerStats[1].Deaths.ShouldBe(1); // took over a bot for one of them
+				allStats.PlayerStats[1].DeathsIncludingBots.ShouldBe(2);
+				allStats.PlayerStats[1].Defuses.ShouldBe(0);
+				allStats.PlayerStats[1].Headshots.ShouldBe(0);
+				allStats.PlayerStats[1].Kills.ShouldBe(0);
+				allStats.PlayerStats[1].KillsIncludingBots.ShouldBe(0);
+				allStats.PlayerStats[1].MVPs.ShouldBe(0);
+				allStats.PlayerStats[1].Plants.ShouldBe(1);
+				allStats.PlayerStats[1].PlayerName.ShouldBe("TheWhaleMan");
+				allStats.PlayerStats[1].Rescues.ShouldBe(2);
+				allStats.PlayerStats[1].Shots.ShouldBe(1);
+				allStats.PlayerStats[1].SteamID.ShouldBe(12321313213);
+			}
+
+			[Fact]
+			public void Should_return_rounds_stats_correctly()
+			{
+				// Arrange
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.RoundsStats.Count.ShouldBe(2);
+
+				allStats.RoundsStats[0].BombPlantPositionX.ShouldBe(100);
+				allStats.RoundsStats[0].BombPlantPositionY.ShouldBe(100);
+				allStats.RoundsStats[0].BombPlantPositionZ.ShouldBe(100);
+				allStats.RoundsStats[0].BombsiteErrorMessage.ShouldBeNull();
+				allStats.RoundsStats[0].BombsitePlantedAt.ShouldBe("A");
+				allStats.RoundsStats[0].Half.ShouldBe("First");
+				allStats.RoundsStats[0].HostageAPickedUpErrorMessage.ShouldBeNull();
+				allStats.RoundsStats[0].HostageBPickedUpErrorMessage.ShouldBeNull();
+				allStats.RoundsStats[0].Length.ShouldBe(80);
+				allStats.RoundsStats[0].Overtime.ShouldBe(0);
+				allStats.RoundsStats[0].PickedUpAllHostages.ShouldBe(true);
+				allStats.RoundsStats[0].PickedUpHostageA.ShouldBe(true);
+				allStats.RoundsStats[0].PickedUpHostageB.ShouldBe(true);
+				allStats.RoundsStats[0].RescuedAllHostages.ShouldBe(true);
+				allStats.RoundsStats[0].RescuedHostageA.ShouldBe(true);
+				allStats.RoundsStats[0].RescuedHostageB.ShouldBe(true);
+				allStats.RoundsStats[0].Round.ShouldBe(1);
+				allStats.RoundsStats[0].TimeInRoundPlanted.ShouldBe(35);
+				allStats.RoundsStats[0].TimeInRoundExploded.ShouldBe(75);
+				allStats.RoundsStats[0].TimeInRoundDefused.ShouldBeNull();
+				allStats.RoundsStats[0].TimeInRoundRescuedHostageA.ShouldBe(50);
+				allStats.RoundsStats[0].TimeInRoundRescuedHostageB.ShouldBe(51);
+				allStats.RoundsStats[0].WinMethod.ShouldBe("Bombed");
+				allStats.RoundsStats[0].Winners.ShouldBe("Terrorist");
+
+				allStats.RoundsStats[1].BombPlantPositionX.ShouldBe(400);
+				allStats.RoundsStats[1].BombPlantPositionY.ShouldBe(400);
+				allStats.RoundsStats[1].BombPlantPositionZ.ShouldBe(400);
+				allStats.RoundsStats[1].BombsiteErrorMessage.ShouldBeNull();
+				allStats.RoundsStats[1].BombsitePlantedAt.ShouldBe("B");
+				allStats.RoundsStats[1].Half.ShouldBe("Second");
+				allStats.RoundsStats[1].HostageAPickedUpErrorMessage.ShouldBeNull();
+				allStats.RoundsStats[1].HostageBPickedUpErrorMessage.ShouldBeNull();
+				allStats.RoundsStats[1].Length.ShouldBe(105);
+				allStats.RoundsStats[1].Overtime.ShouldBe(0);
+				allStats.RoundsStats[1].PickedUpAllHostages.ShouldBe(false);
+				allStats.RoundsStats[1].PickedUpHostageA.ShouldBe(true);
+				allStats.RoundsStats[1].PickedUpHostageB.ShouldBe(false);
+				allStats.RoundsStats[1].RescuedAllHostages.ShouldBe(false);
+				allStats.RoundsStats[1].RescuedHostageA.ShouldBe(false);
+				allStats.RoundsStats[1].RescuedHostageB.ShouldBe(false);
+				allStats.RoundsStats[1].Round.ShouldBe(2);
+				allStats.RoundsStats[1].TimeInRoundPlanted.ShouldBe(60);
+				allStats.RoundsStats[1].TimeInRoundExploded.ShouldBeNull();
+				allStats.RoundsStats[1].TimeInRoundDefused.ShouldBe(100);
+				allStats.RoundsStats[1].TimeInRoundRescuedHostageA.ShouldBeNull();
+				allStats.RoundsStats[1].TimeInRoundRescuedHostageB.ShouldBeNull();
+				allStats.RoundsStats[1].WinMethod.ShouldBe("Defused");
+				allStats.RoundsStats[1].Winners.ShouldBe("CounterTerrorist");
+			}
+
+			[Fact]
+			public void Should_return_supported_gamemodes_correctly()
+			{
+				// Arrange
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.SupportedGamemodes.Count.ShouldBe(3);
+				allStats.SupportedGamemodes[0].ShouldBe("Defuse");
+				allStats.SupportedGamemodes[1].ShouldBe("Hostage");
+				allStats.SupportedGamemodes[2].ShouldBe("Wingman");
+			}
+
+			[Fact]
+			public void Should_return_tanooki_stats_correctly()
+			{
+				// Arrange
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.TanookiStats.Joined.ShouldBe(true);
+				allStats.TanookiStats.Left.ShouldBe(true);
+				allStats.TanookiStats.RoundJoined.ShouldBe(1);
+				allStats.TanookiStats.RoundLeft.ShouldBe(2);
+				allStats.TanookiStats.RoundsLasted.ShouldBe(1);
+			}
+
+			[Fact]
+			public void Should_return_team_stats_correctly()
+			{
+				// Arrange
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.TeamStats.Count.ShouldBe(2);
+
+				allStats.TeamStats[0].Round.ShouldBe(1);
+				allStats.TeamStats[0].TeamAlphaKills.ShouldBe(1);
+				allStats.TeamStats[0].TeamAlphaDeaths.ShouldBe(0);
+				allStats.TeamStats[0].TeamAlphaHeadshots.ShouldBe(1);
+				allStats.TeamStats[0].TeamBravoKills.ShouldBe(0);
+				allStats.TeamStats[0].TeamBravoDeaths.ShouldBe(1);
+				allStats.TeamStats[0].TeamBravoHeadshots.ShouldBe(0);
+				allStats.TeamStats[0].TeamAlphaShotsFired.ShouldBe(3);
+				allStats.TeamStats[0].TeamBravoShotsFired.ShouldBe(0);
+
+				allStats.TeamStats[1].Round.ShouldBe(2);
+				allStats.TeamStats[1].TeamAlphaKills.ShouldBe(1);
+				allStats.TeamStats[1].TeamAlphaDeaths.ShouldBe(0);
+				allStats.TeamStats[1].TeamAlphaHeadshots.ShouldBe(1);
+				allStats.TeamStats[1].TeamBravoKills.ShouldBe(0);
+				allStats.TeamStats[1].TeamBravoDeaths.ShouldBe(1);
+				allStats.TeamStats[1].TeamBravoHeadshots.ShouldBe(0);
+				allStats.TeamStats[1].TeamAlphaShotsFired.ShouldBe(3);
+				allStats.TeamStats[1].TeamBravoShotsFired.ShouldBe(1);
+			}
+
+			[Fact]
+			public void Should_return_version_number_correctly()
+			{
+				// Arrange
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.VersionNumber.Version.ShouldBe("1.1.9");
+			}
+
+			[Fact]
+			public void Should_return_winners_stats_correctly()
+			{
+				// Arrange
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.WinnersStats.TeamAlphaRounds.ShouldBe(2);
+				allStats.WinnersStats.TeamBetaRounds.ShouldBe(0);
+				allStats.WinnersStats.WinningTeam.ShouldBe("Team Alpha");
+			}
 		}
 
 		public void MockData()
@@ -189,7 +394,7 @@ namespace TopStatsWaffle.Tests
 			{
 				new SwitchSidesEventArgs
 				{
-					RoundBeforeSwitch = 15,
+					RoundBeforeSwitch = 1,
 				}
 			};
 
@@ -216,20 +421,21 @@ namespace TopStatsWaffle.Tests
 							Name = "JimWood",
 							SteamID = 32443298432,
 							EntityID = 45,
+							UserID = 1,
 							LastAlivePosition = new Vector()
 							{
-								X = 10,
+								X = 100,
 								Y = 100,
-								Z = 1000,
+								Z = 100,
 							},
 							Position = new Vector()
 							{
-								X = 20,
+								X = 200,
 								Y = 200,
-								Z = 2000,
+								Z = 200,
 							},
-							Money = 4000,
-							RoundStartEquipmentValue = 500,
+							Money = 200,
+							RoundStartEquipmentValue = 2700,
 						}
 					},
 					CounterTerrorists = new List<Player>()
@@ -239,6 +445,7 @@ namespace TopStatsWaffle.Tests
 							Name = "TheWhaleMan",
 							SteamID = 12321313213,
 							EntityID = 46,
+							UserID = 2,
 							LastAlivePosition = new Vector()
 							{
 								X = 90,
@@ -251,8 +458,60 @@ namespace TopStatsWaffle.Tests
 								Y = 800,
 								Z = 8000,
 							},
-							Money = 50,
-							RoundStartEquipmentValue = 100,
+							Money = 200,
+							RoundStartEquipmentValue = 200,
+						}
+					}
+				},
+				new TeamPlayers()
+				{
+					Round = 2,
+					Terrorists = new List<Player>()
+					{
+						new Player
+						{
+							Name = "TheWhaleMan",
+							SteamID = 12321313213,
+							EntityID = 46,
+							UserID = 2,
+							LastAlivePosition = new Vector()
+							{
+								X = 400,
+								Y = 400,
+								Z = 400,
+							},
+							Position = new Vector()
+							{
+								X = 500,
+								Y = 500,
+								Z = 500,
+							},
+							Money = 1000,
+							RoundStartEquipmentValue = 200,
+						}
+					},
+					CounterTerrorists = new List<Player>()
+					{
+						new Player
+						{
+							Name = "JimWood",
+							SteamID = 32443298432,
+							EntityID = 45,
+							UserID = 1,
+							LastAlivePosition = new Vector()
+							{
+								X = 70,
+								Y = 70,
+								Z = 70,
+							},
+							Position = new Vector()
+							{
+								X = 60,
+								Y = 60,
+								Z = 60,
+							},
+							Money = 5000,
+							RoundStartEquipmentValue = 4750,
 						}
 					}
 				}
@@ -264,11 +523,33 @@ namespace TopStatsWaffle.Tests
 				{
 					Round = 1,
 					TimeInRound = 40,
+					Killer = TeamPlayersValues[0].Terrorists[0],
+					Victim = TeamPlayersValues[0].CounterTerrorists[0],
+					Assister = null,
+					KillerBotTakeover = false,
+					VictimBotTakeover = false,
+					AssisterBotTakeover = false,
+					Headshot = true,
+					Suicide = false,
+					TeamKill = false,
+					PenetratedObjects = 0,
+					AssistedFlash = false,
 				},
 				new PlayerKilledEventArgs
 				{
 					Round = 2,
 					TimeInRound = 90,
+					Killer = TeamPlayersValues[1].CounterTerrorists[0],
+					Victim = TeamPlayersValues[1].Terrorists[0],
+					Assister = null,
+					KillerBotTakeover = true,
+					VictimBotTakeover = true,
+					AssisterBotTakeover = true,
+					Headshot = true,
+					Suicide = false,
+					TeamKill = false,
+					PenetratedObjects = 1,
+					AssistedFlash = true,
 				}
 			};
 
@@ -279,7 +560,7 @@ namespace TopStatsWaffle.Tests
 					new List<Player>()
 					{
 						TeamPlayersValues[0].Terrorists[0],
-						TeamPlayersValues[0].CounterTerrorists[0],
+						TeamPlayersValues[1].CounterTerrorists[0],
 					}
 				},
 				{
@@ -287,7 +568,7 @@ namespace TopStatsWaffle.Tests
 					new List<Player>()
 					{
 						TeamPlayersValues[0].CounterTerrorists[0],
-						TeamPlayersValues[0].Terrorists[0],
+						TeamPlayersValues[1].Terrorists[0],
 					}
 				},
 				{
@@ -309,7 +590,7 @@ namespace TopStatsWaffle.Tests
 					new List<Player>()
 					{
 						TeamPlayersValues[0].Terrorists[0],
-						TeamPlayersValues[0].CounterTerrorists[0],
+						TeamPlayersValues[1].CounterTerrorists[0],
 					}
 				},
 				{
@@ -319,9 +600,10 @@ namespace TopStatsWaffle.Tests
 						TeamPlayersValues[0].Terrorists[0],
 						TeamPlayersValues[0].Terrorists[0],
 						TeamPlayersValues[0].Terrorists[0],
-						TeamPlayersValues[0].CounterTerrorists[0],
-						TeamPlayersValues[0].CounterTerrorists[0],
-						TeamPlayersValues[0].CounterTerrorists[0],
+						TeamPlayersValues[1].Terrorists[0],
+						TeamPlayersValues[1].CounterTerrorists[0],
+						TeamPlayersValues[1].CounterTerrorists[0],
+						TeamPlayersValues[1].CounterTerrorists[0],
 					}
 				},
 				{
@@ -329,13 +611,14 @@ namespace TopStatsWaffle.Tests
 					new List<Player>()
 					{
 						TeamPlayersValues[0].Terrorists[0],
+						TeamPlayersValues[1].Terrorists[0],
 					}
 				},
 				{
 					"Defuses",
 					new List<Player>()
 					{
-						TeamPlayersValues[0].CounterTerrorists[0],
+						TeamPlayersValues[1].CounterTerrorists[0],
 					}
 				},
 				{
@@ -376,19 +659,19 @@ namespace TopStatsWaffle.Tests
 					Player = TeamPlayersValues[0].Terrorists[0],
 					Round = 1,
 					TimeInRound = 35,
-					XPosition = 50,
-					YPosition = 50,
-					ZPosition = 50,
+					XPosition = 100,
+					YPosition = 100,
+					ZPosition = 100,
 				},
 				new BombPlanted
 				{
 					Bombsite = 'B',
-					Player = TeamPlayersValues[0].Terrorists[0],
+					Player = TeamPlayersValues[1].Terrorists[0],
 					Round = 2,
 					TimeInRound = 60,
-					XPosition = 100,
-					YPosition = 100,
-					ZPosition = 100,
+					XPosition = 400,
+					YPosition = 400,
+					ZPosition = 400,
 				}
 			};
 
@@ -408,8 +691,8 @@ namespace TopStatsWaffle.Tests
 				new BombDefused
 				{
 					Bombsite = 'B',
-					Player = TeamPlayersValues[0].Terrorists[0],
-					Round = 1,
+					Player = TeamPlayersValues[1].CounterTerrorists[0],
+					Round = 2,
 					TimeInRound = 100,
 					HasKit = true,
 				}
@@ -436,7 +719,7 @@ namespace TopStatsWaffle.Tests
 					RescueZone = 0,
 					Player = TeamPlayersValues[0].CounterTerrorists[0],
 					Round = 1,
-					TimeInRound = 50,
+					TimeInRound = 51,
 					XPosition = 700,
 					YPosition = 700,
 					ZPosition = 700,
@@ -460,27 +743,53 @@ namespace TopStatsWaffle.Tests
 					Player = TeamPlayersValues[0].CounterTerrorists[0],
 					Round = 1,
 					TimeInRound = 35,
+				},
+				new HostagePickedUp
+				{
+					Hostage = 'A',
+					HostageIndex = 250,
+					Player = TeamPlayersValues[1].CounterTerrorists[0],
+					Round = 2,
+					TimeInRound = 40,
 				}
 			};
 
 			var TeamValues = new List<Team>()
 			{
-
+				Team.Terrorist,
+				Team.CounterTerrorist,
 			};
 
 			var RoundEndReasonValues = new List<RoundEndReason>()
 			{
-
+				RoundEndReason.TargetBombed,
+				RoundEndReason.BombDefused,
 			};
 
 			var RoundLengthValues = new List<double>()
 			{
-
+				80,
+				105,
 			};
 
 			var TeamEquipmentValues = new List<TeamEquipmentStats>()
 			{
-
+				new TeamEquipmentStats
+				{
+					Round = 1,
+					TEquipValue = 2900,
+					TExpenditure = 200,
+					CTEquipValue = 450,
+					CTExpenditure = 50,
+				},
+				new TeamEquipmentStats
+				{
+					Round = 2,
+					TEquipValue = 800,
+					TExpenditure = 600,
+					CTEquipValue = 5750,
+					CTExpenditure = 1000,
+				}
 			};
 
 			var GrenadeValues = new List<NadeEventArgs>()
@@ -582,17 +891,22 @@ namespace TopStatsWaffle.Tests
 				new ShotFired
 				{
 					Round = 2,
-					Shooter = TeamPlayersValues[0].CounterTerrorists[0]
+					Shooter = TeamPlayersValues[1].Terrorists[0]
 				},
 				new ShotFired
 				{
 					Round = 2,
-					Shooter = TeamPlayersValues[0].CounterTerrorists[0]
+					Shooter = TeamPlayersValues[1].CounterTerrorists[0]
 				},
 				new ShotFired
 				{
 					Round = 2,
-					Shooter = TeamPlayersValues[0].CounterTerrorists[0]
+					Shooter = TeamPlayersValues[1].CounterTerrorists[0]
+				},
+				new ShotFired
+				{
+					Round = 2,
+					Shooter = TeamPlayersValues[1].CounterTerrorists[0]
 				}
 			};
 

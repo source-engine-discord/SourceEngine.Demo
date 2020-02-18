@@ -58,7 +58,6 @@
     <Compile Include="CollectorMethods.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="DemoProcessor.cs" />
-    <Compile Include="IMatchData.cs" />
     <Compile Include="Models\AllStats.cs" />
     <Compile Include="Models\BombDefused.cs" />
     <Compile Include="Models\BombExploded.cs" />
@@ -66,6 +65,7 @@
     <Compile Include="Models\BombPlantedError.cs" />
     <Compile Include="Models\BombsiteStats.cs" />
     <Compile Include="Models\ChickenStats.cs" />
+    <Compile Include="Models\DataAndPlayerNames.cs" />
     <Compile Include="Models\DemoInformation.cs" />
     <Compile Include="Models\DisconnectedPlayer.cs" />
     <Compile Include="Models\FeedbackMessage.cs" />
@@ -75,6 +75,7 @@
     <Compile Include="Models\HostageStats.cs" />
     <Compile Include="Models\KillsStats.cs" />
     <Compile Include="Models\ProcessedData.cs" />
+    <Compile Include="Models\GeneralRoundsStats.cs" />
     <Compile Include="Models\RoundsStats.cs" />
     <Compile Include="Models\GrenadesSpecificStats.cs" />
     <Compile Include="Models\GrenadesTotalStats.cs" />
