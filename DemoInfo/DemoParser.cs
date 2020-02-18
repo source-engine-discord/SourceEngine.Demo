@@ -1536,7 +1536,7 @@ namespace DemoInfo
 			this.BombDefused = null;
 			this.BombExploded = null;
 			this.BombPlanted = null;
-            this.HostageRescued = null;
+			this.ChickenKilled = null;
 			this.DecoyNadeEnded = null;
 			this.DecoyNadeStarted = null;
 			this.ExplosiveNadeExploded = null;
@@ -1545,18 +1545,18 @@ namespace DemoInfo
 			this.FireNadeWithOwnerStarted = null;
 			this.FlashNadeExploded = null;
 			this.HeaderParsed = null;
+            this.HostageRescued = null;
 			this.MatchStarted = null;
-            this.SwitchSides = null;
 			this.NadeReachedTarget = null;
 			this.PlayerKilled = null;
 			this.OtherKilled = null;
-			this.ChickenKilled = null;
 			this.RoundStart = null;
-			this.SmokeNadeEnded = null;
-			this.SmokeNadeStarted = null;
-			this.WeaponFired = null;
             this.SayText = null;
             this.SayText2 = null;
+			this.SmokeNadeEnded = null;
+			this.SmokeNadeStarted = null;
+            this.SwitchSides = null;
+			this.WeaponFired = null;
 
 			Players.Clear ();
 		}

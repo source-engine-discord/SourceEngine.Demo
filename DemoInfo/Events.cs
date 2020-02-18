@@ -117,27 +117,27 @@ namespace DemoInfo
 		[Obsolete("Use \"Victim\" instead. This will be removed soon™", false)]
 		public Player DeathPerson { get { return Victim; } }
 
-		public Player Victim { get; internal set; }
+		public Player Victim { get; set; }
 
-        public bool VictimBotTakeover { get; internal set; }
+        public bool VictimBotTakeover { get; set; }
 
-        public Player Killer { get; internal set; }
+        public Player Killer { get; set; }
 
-        public bool KillerBotTakeover { get; internal set; }
+        public bool KillerBotTakeover { get; set; }
 
-        public Player Assister { get; internal set; }
+        public Player Assister { get; set; }
 
-        public bool AssisterBotTakeover { get; internal set; }
+        public bool AssisterBotTakeover { get; set; }
 
-        public bool Suicide { get; internal set; }
+        public bool Suicide { get; set; }
 
-        public bool TeamKill { get; internal set; }
+        public bool TeamKill { get; set; }
 
-        public int PenetratedObjects { get; internal set; }
+        public int PenetratedObjects { get; set; }
 
-		public bool Headshot { get; internal set; }
+		public bool Headshot { get; set; }
 
-	    public bool AssistedFlash { get; internal set; }
+	    public bool AssistedFlash { get; set; }
     }
 
 	public class BotTakeOverEventArgs : EventArgs
