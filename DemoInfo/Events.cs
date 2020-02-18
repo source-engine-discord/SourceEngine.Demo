@@ -154,11 +154,11 @@ namespace DemoInfo
 
 	public class NadeEventArgs : EventArgs
 	{
-		public Vector Position { get; internal set; }
-		public EquipmentElement NadeType { get; internal set; }
-		public Player ThrownBy { get; internal set; }
+		public Vector Position { get; set; }
+		public EquipmentElement NadeType { get; set; }
+		public Player ThrownBy { get; set; }
 
-		internal NadeEventArgs()
+		public NadeEventArgs()
 		{
 
 		}
@@ -193,7 +193,7 @@ namespace DemoInfo
 	public class FlashEventArgs : NadeEventArgs
 	{
 		//previous blind implementation
-		public Player[] FlashedPlayers { get; internal set; }
+		public Player[] FlashedPlayers { get; set; }
 		//
 
 		public FlashEventArgs() : base(EquipmentElement.Flash)
@@ -449,7 +449,7 @@ namespace DemoInfo
 			}
 		}
 
-		internal Equipment()
+		public Equipment()
 		{
 			this.Weapon = EquipmentElement.Unknown;
 		}
