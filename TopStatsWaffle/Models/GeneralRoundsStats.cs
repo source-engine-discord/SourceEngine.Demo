@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace TopStatsWaffle.Models
 {
-	public class GeneralRoundsStats
+	public class GeneralroundsStats
 	{
-		public List<RoundsStats> RoundsStats { get; set; }
-		public WinnersStats WinnersStats { get; set; }
+		public List<roundsStats> roundsStats { get; set; }
+		public winnersStats winnersStats { get; set; }
 		public IEnumerable<SwitchSidesEventArgs> SwitchSides { get;set; }
 
-		public GeneralRoundsStats() { }
+		public GeneralroundsStats() { }
 	}
 }

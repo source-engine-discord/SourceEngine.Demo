@@ -194,7 +194,7 @@ namespace TopStatsWaffle
             // SERVER EVENTS ===================================================
             dp.MatchStarted += (object sender, MatchStartedEventArgs e) =>
 			{
-                List<FeedbackMessage> currentFeedbackMessages = new List<FeedbackMessage>();
+                List<FeedbackMessage> currentfeedbackMessages = new List<FeedbackMessage>();
 
                 //stores all fb messages so that they aren't lost when stats are reset
                 if (md.events.Count() > 0 && md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
@@ -206,7 +206,7 @@ namespace TopStatsWaffle
                         if (text.ToLower().StartsWith(">fb") || text.ToLower().StartsWith(">feedback") || text.ToLower().StartsWith("!fb"))
                         {
                             //Sets round to 0 as anything before a match start event should always be classed as warmup
-                            currentFeedbackMessages.Add(new FeedbackMessage() { Round = 0, SteamID = message.SteamID, TeamName = message.TeamName, Message = message.Message });
+                            currentfeedbackMessages.Add(new FeedbackMessage() { Round = 0, SteamID = message.SteamID, TeamName = message.TeamName, Message = message.Message });
                         }
                     }
                 }
@@ -216,7 +216,7 @@ namespace TopStatsWaffle
                 md.addEvent(typeof(MatchStartedEventArgs), e);
 
                 //adds all stored fb messages back
-                foreach (var feedbackMessage in currentFeedbackMessages)
+                foreach (var feedbackMessage in currentfeedbackMessages)
                 {
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
                 }
@@ -523,33 +523,33 @@ namespace TopStatsWaffle
 
 			AllStats allStats = new AllStats();
 
-			allStats.VersionNumber = GetVersionNumber();
-			allStats.SupportedGamemodes = GetSupportedGamemodes();
-			allStats.MapInfo = GetMapInfo(processedData, mapNameSplit);
-			allStats.TanookiStats = processedData.TanookiStats;
-            allStats.PlayerStats = GetPlayerStats(processedData, dataAndPlayerNames.Data, dataAndPlayerNames.PlayerNames);
+			allStats.versionNumber = GetversionNumber();
+			allStats.supportedGamemodes = GetsupportedGamemodes();
+			allStats.mapInfo = GetmapInfo(processedData, mapNameSplit);
+			allStats.tanookiStats = processedData.tanookiStats;
+            allStats.playerStats = GetplayerStats(processedData, dataAndPlayerNames.Data, dataAndPlayerNames.PlayerNames);
 
-			var generalRoundsStats = GetGeneralRoundsStats(processedData, dataAndPlayerNames.PlayerNames);
-			allStats.WinnersStats = generalRoundsStats.WinnersStats;
-			allStats.RoundsStats = generalRoundsStats.RoundsStats;
+			var generalroundsStats = GetGeneralroundsStats(processedData, dataAndPlayerNames.PlayerNames);
+			allStats.winnersStats = generalroundsStats.winnersStats;
+			allStats.roundsStats = generalroundsStats.roundsStats;
 
-			allStats.BombsiteStats = GetBombsiteStats(processedData);
-			allStats.HostageStats = GetHostageStats(processedData);
+			allStats.bombsiteStats = GetbombsiteStats(processedData);
+			allStats.hostageStats = GethostageStats(processedData);
 
 			string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
 			var nadeGroups = GetNadeGroups(processedData, nadeTypes);
-			allStats.GrenadesTotalStats = GetGrenadesTotalStats(nadeGroups, nadeTypes);
-			allStats.GrenadesSpecificStats = GetGrenadesSpecificStats(nadeGroups, nadeTypes, dataAndPlayerNames.PlayerNames);
+			allStats.grenadesTotalStats = GetgrenadesTotalStats(nadeGroups, nadeTypes);
+			allStats.grenadesSpecificStats = GetgrenadesSpecificStats(nadeGroups, nadeTypes, dataAndPlayerNames.PlayerNames);
 
-			allStats.KillsStats = GetKillsStats(processedData, dataAndPlayerNames.PlayerNames);
-			allStats.FeedbackMessages = GetFeedbackMessages(processedData, dataAndPlayerNames.PlayerNames);
+			allStats.killsStats = GetkillsStats(processedData, dataAndPlayerNames.PlayerNames);
+			allStats.feedbackMessages = GetfeedbackMessages(processedData, dataAndPlayerNames.PlayerNames);
 
 			if (processedData.ParseChickens)
 			{
-				allStats.ChickenStats = GetChickenStats(processedData);
+				allStats.chickenStats = GetchickenStats(processedData);
 			}
 
-            allStats.TeamStats = GetTeamStats(processedData, allStats, dataAndPlayerNames.PlayerNames, generalRoundsStats.SwitchSides);
+            allStats.teamStats = GetteamStats(processedData, allStats, dataAndPlayerNames.PlayerNames, generalroundsStats.SwitchSides);
 
 			// JSON creation
 			if (createJsonFile)
@@ -605,19 +605,19 @@ namespace TopStatsWaffle
 			return new DataAndPlayerNames() { Data = data, PlayerNames = playerNames };
 		}
 
-		public VersionNumber GetVersionNumber()
+		public versionNumber GetversionNumber()
 		{
-			return new VersionNumber() { Version = "1.1.9" };
+			return new versionNumber() { Version = "1.1.10" };
 		}
 
-		public List<string> GetSupportedGamemodes()
+		public List<string> GetsupportedGamemodes()
 		{
 			return new List<string>() { "Defuse", "Hostage", "Wingman" };
 		}
 
-		public MapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
+		public mapInfo GetmapInfo(ProcessedData processedData, string[] mapNameSplit)
 		{
-			MapInfo mapInfo = new MapInfo() { MapName = processedData.DemoInformation.MapName, TestDate = processedData.DemoInformation.TestDate, TestType = processedData.DemoInformation.TestType };
+			mapInfo mapInfo = new mapInfo() { MapName = processedData.DemoInformation.MapName, TestDate = processedData.DemoInformation.TestDate, TestType = processedData.DemoInformation.TestType };
 
 			mapInfo.MapName = (mapNameSplit.Count() > 2) ? mapNameSplit[2] : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
 			mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
@@ -646,13 +646,13 @@ namespace TopStatsWaffle
 			return mapInfo;
 		}
 
-		public List<PlayerStats> GetPlayerStats(
+		public List<playerStats> GetplayerStats(
 			ProcessedData processedData,
 			Dictionary<long, Dictionary<string, long>> data,
 			Dictionary<long, Dictionary<string, string>> playerNames
 		)
 		{
-			List<PlayerStats> playerStats = new List<PlayerStats>();
+			List<playerStats> playerStats = new List<playerStats>();
 
 			// remove teamkills and suicides from kills (easy messy implementation)
 			foreach (var kill in processedData.PlayerKilledEventsValues)
@@ -722,7 +722,7 @@ namespace TopStatsWaffle
 				int numOfDeathsAsBot = processedData.PlayerKilledEventsValues.Where(k => (k.Victim != null) && (k.Victim.Name.ToString() == playerName.ToString()) && (k.VictimBotTakeover)).Count();
 				int numOfAssistsAsBot = processedData.PlayerKilledEventsValues.Where(k => (k.Assister != null) && (k.Assister.Name.ToString() == playerName.ToString()) && (k.AssisterBotTakeover)).Count();
 
-				playerStats.Add(new PlayerStats()
+				playerStats.Add(new playerStats()
 				{
 					PlayerName = playerName,
 					SteamID = steamID,
@@ -749,9 +749,9 @@ namespace TopStatsWaffle
 			return playerStats;
 		}
 
-		public GeneralRoundsStats GetGeneralRoundsStats(ProcessedData processedData, Dictionary<long, Dictionary<string, string>> playerNames)
+		public GeneralroundsStats GetGeneralroundsStats(ProcessedData processedData, Dictionary<long, Dictionary<string, string>> playerNames)
 		{
-			List<RoundsStats> roundsStats = new List<RoundsStats>();
+			List<roundsStats> roundsStats = new List<roundsStats>();
 
 			// winning team & total rounds stats
 			IEnumerable<SwitchSidesEventArgs> switchSides = processedData.SwitchSidesValues;
@@ -971,7 +971,7 @@ namespace TopStatsWaffle
 					var timeInRoundRescuedHostageA = hostageRescuedA?.TimeInRound;
 					var timeInRoundRescuedHostageB = hostageRescuedB?.TimeInRound;
 
-					roundsStats.Add(new RoundsStats()
+					roundsStats.Add(new roundsStats()
 					{
 						Round = i + 1,
 						Half = half,
@@ -1017,14 +1017,14 @@ namespace TopStatsWaffle
 			string winningTeam = (totalRoundsWonTeamAlpha >= totalRoundsWonTeamBeta) ? (totalRoundsWonTeamAlpha > totalRoundsWonTeamBeta) ? "Team Alpha" : "Draw" : "Team Bravo";
 
 			// winners stats
-			var winnersStats = new WinnersStats() { WinningTeam = winningTeam, TeamAlphaRounds = totalRoundsWonTeamAlpha, TeamBetaRounds = totalRoundsWonTeamBeta };
+			var winnersStats = new winnersStats() { WinningTeam = winningTeam, TeamAlphaRounds = totalRoundsWonTeamAlpha, TeamBetaRounds = totalRoundsWonTeamBeta };
 
-			return new GeneralRoundsStats() { RoundsStats = roundsStats, WinnersStats = winnersStats, SwitchSides = switchSides };
+			return new GeneralroundsStats() { roundsStats = roundsStats, winnersStats = winnersStats, SwitchSides = switchSides };
 		}
 
-		public List<BombsiteStats> GetBombsiteStats(ProcessedData processedData)
+		public List<bombsiteStats> GetbombsiteStats(ProcessedData processedData)
 		{
-			List<BombsiteStats> bombsiteStats = new List<BombsiteStats>();
+			List<bombsiteStats> bombsiteStats = new List<bombsiteStats>();
 
 			List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => x.Bombsite));
 			List<char> bombsiteExplosions = new List<char>(processedData.BombsiteExplodeValues.Select(x => x.Bombsite));
@@ -1038,15 +1038,15 @@ namespace TopStatsWaffle
 			int explosionsB = bombsiteExplosions.Where(b => b.ToString().Equals("B")).Count();
 			int defusesB = bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count();
 
-			bombsiteStats.Add(new BombsiteStats() { Bombsite = 'A', Plants = plantsA, Explosions = explosionsA, Defuses = defusesA });
-			bombsiteStats.Add(new BombsiteStats() { Bombsite = 'B', Plants = plantsB, Explosions = explosionsB, Defuses = defusesB });
+			bombsiteStats.Add(new bombsiteStats() { Bombsite = 'A', Plants = plantsA, Explosions = explosionsA, Defuses = defusesA });
+			bombsiteStats.Add(new bombsiteStats() { Bombsite = 'B', Plants = plantsB, Explosions = explosionsB, Defuses = defusesB });
 
 			return bombsiteStats;
 		}
 
-		public List<HostageStats> GetHostageStats(ProcessedData processedData)
+		public List<hostageStats> GethostageStats(ProcessedData processedData)
 		{
-			List<HostageStats> hostageStats = new List<HostageStats>();
+			List<hostageStats> hostageStats = new List<hostageStats>();
 
 			List<char> hostagePickedUps = new List<char>(processedData.HostagePickedUpValues.Select(x => x.Hostage));
 			List<char> hostageRescues = new List<char>(processedData.HostageRescueValues.Select(x => x.Hostage));
@@ -1060,8 +1060,8 @@ namespace TopStatsWaffle
 			int rescuesA = hostageRescues.Where(b => b.ToString().Equals("A")).Count();
 			int rescuesB = hostageRescues.Where(b => b.ToString().Equals("B")).Count();
 
-			hostageStats.Add(new HostageStats() { Hostage = 'A', HostageIndex = hostageIndexA, PickedUps = pickedUpsA, Rescues = rescuesA });
-			hostageStats.Add(new HostageStats() { Hostage = 'B', HostageIndex = hostageIndexB, PickedUps = pickedUpsB, Rescues = rescuesB });
+			hostageStats.Add(new hostageStats() { Hostage = 'A', HostageIndex = hostageIndexA, PickedUps = pickedUpsA, Rescues = rescuesA });
+			hostageStats.Add(new hostageStats() { Hostage = 'B', HostageIndex = hostageIndexB, PickedUps = pickedUpsB, Rescues = rescuesB });
 
 			return hostageStats;
 		}
@@ -1077,21 +1077,21 @@ namespace TopStatsWaffle
 			return new List<IEnumerable<NadeEventArgs>>() { flashes, smokes, hegrenades, incendiaries, decoys };
 		}
 
-		public List<GrenadesTotalStats> GetGrenadesTotalStats(List<IEnumerable<NadeEventArgs>> nadeGroups, string[] nadeTypes)
+		public List<grenadesTotalStats> GetgrenadesTotalStats(List<IEnumerable<NadeEventArgs>> nadeGroups, string[] nadeTypes)
 		{
-			List<GrenadesTotalStats> grenadesTotalStats = new List<GrenadesTotalStats>();
+			List<grenadesTotalStats> grenadesTotalStats = new List<grenadesTotalStats>();
 
 			for (int i = 0; i < nadeTypes.Count(); i++)
 			{
-				grenadesTotalStats.Add(new GrenadesTotalStats() { NadeType = nadeTypes[i], AmountUsed = nadeGroups.ElementAt(i).Count() });
+				grenadesTotalStats.Add(new grenadesTotalStats() { NadeType = nadeTypes[i], AmountUsed = nadeGroups.ElementAt(i).Count() });
 			}
 
 			return grenadesTotalStats;
 		}
 
-		public List<GrenadesSpecificStats> GetGrenadesSpecificStats(List<IEnumerable<NadeEventArgs>> nadeGroups, string[] nadeTypes, Dictionary<long, Dictionary<string, string>> playerNames)
+		public List<grenadesSpecificStats> GetgrenadesSpecificStats(List<IEnumerable<NadeEventArgs>> nadeGroups, string[] nadeTypes, Dictionary<long, Dictionary<string, string>> playerNames)
 		{
-			List<GrenadesSpecificStats> grenadesSpecificStats = new List<GrenadesSpecificStats>();
+			List<grenadesSpecificStats> grenadesSpecificStats = new List<grenadesSpecificStats>();
 
 			foreach (var nadeGroup in nadeGroups)
 			{
@@ -1111,11 +1111,11 @@ namespace TopStatsWaffle
 							var flash = nade as FlashEventArgs;
 							int numOfPlayersFlashed = flash.FlashedPlayers.Count();
 
-							grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[1]), YPosition = double.Parse(positions[2]), ZPosition = double.Parse(positions[3]), NumPlayersFlashed = numOfPlayersFlashed });
+							grenadesSpecificStats.Add(new grenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[1]), YPosition = double.Parse(positions[2]), ZPosition = double.Parse(positions[3]), NumPlayersFlashed = numOfPlayersFlashed });
 						}
 						else
 						{
-							grenadesSpecificStats.Add(new GrenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[1]), YPosition = double.Parse(positions[2]), ZPosition = double.Parse(positions[3]) });
+							grenadesSpecificStats.Add(new grenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[1]), YPosition = double.Parse(positions[2]), ZPosition = double.Parse(positions[3]) });
 						}
 					}
 				}
@@ -1124,9 +1124,9 @@ namespace TopStatsWaffle
 			return grenadesSpecificStats;
 		}
 
-		public List<KillsStats> GetKillsStats(ProcessedData processedData, Dictionary<long, Dictionary<string, string>> playerNames)
+		public List<killsStats> GetkillsStats(ProcessedData processedData, Dictionary<long, Dictionary<string, string>> playerNames)
 		{
-			List<KillsStats> killsStats = new List<KillsStats>();
+			List<killsStats> killsStats = new List<killsStats>();
 
 			List<Player> kills = new List<Player>(processedData.PlayerValues["Kills"].ToList());
 			List<Player> deaths = new List<Player>(processedData.PlayerValues["Deaths"].ToList());
@@ -1165,7 +1165,7 @@ namespace TopStatsWaffle
 
 						bool firstKillOfTheRound = (killsStats.Any(k => k.Round == round && k.FirstKillOfTheRound == true)) ? false : true;
 
-						killsStats.Add(new KillsStats()
+						killsStats.Add(new killsStats()
 						{
 							Round = round,
 							TimeInRound = playerKilledEvent.TimeInRound,
@@ -1196,7 +1196,7 @@ namespace TopStatsWaffle
 			return killsStats;
 		}
 
-		public List<FeedbackMessage> GetFeedbackMessages(ProcessedData processedData, Dictionary<long, Dictionary<string, string>> playerNames)
+		public List<FeedbackMessage> GetfeedbackMessages(ProcessedData processedData, Dictionary<long, Dictionary<string, string>> playerNames)
 		{
 			List<FeedbackMessage> feedbackMessages = new List<FeedbackMessage>();
 
@@ -1236,15 +1236,15 @@ namespace TopStatsWaffle
 			return feedbackMessages;
 		}
 
-		public ChickenStats GetChickenStats(ProcessedData processedData)
+		public chickenStats GetchickenStats(ProcessedData processedData)
 		{
-			return new ChickenStats() { Killed = processedData.ChickenValues.Count() };
+			return new chickenStats() { Killed = processedData.ChickenValues.Count() };
 			
 		}
 
-		public List<TeamStats> GetTeamStats(ProcessedData processedData, AllStats allStats, Dictionary<long, Dictionary<string, string>> playerNames, IEnumerable<SwitchSidesEventArgs> switchSides)
+		public List<teamStats> GetteamStats(ProcessedData processedData, AllStats allStats, Dictionary<long, Dictionary<string, string>> playerNames, IEnumerable<SwitchSidesEventArgs> switchSides)
 		{
-			List<TeamStats> teamStats = new List<TeamStats>();
+			List<teamStats> teamStats = new List<teamStats>();
 
 			var firstHalf = true;
 			int swappedSidesCount = 0;
@@ -1280,7 +1280,7 @@ namespace TopStatsWaffle
 				List<long> alphaSteamIdsToRemove = new List<long>();
 				List<long> bravoSteamIdsToRemove = new List<long>();
 
-				if (allStats.MapInfo.TestType.ToLower().Contains("comp") && alphaSteamIds.Count() > 5)
+				if (allStats.mapInfo.TestType.ToLower().Contains("comp") && alphaSteamIds.Count() > 5)
 				{
 					foreach (var steamId in alphaSteamIds)
 					{
@@ -1290,7 +1290,7 @@ namespace TopStatsWaffle
 						}
 					}
 				}
-				else if (allStats.MapInfo.TestType.ToLower().Contains("casual") && alphaSteamIds.Count() > 10)
+				else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && alphaSteamIds.Count() > 10)
 				{
 					foreach (var steamId in alphaSteamIds)
 					{
@@ -1301,7 +1301,7 @@ namespace TopStatsWaffle
 					}
 				}
 
-				if (allStats.MapInfo.TestType.ToLower().Contains("comp") && bravoSteamIds.Count() > 5)
+				if (allStats.mapInfo.TestType.ToLower().Contains("comp") && bravoSteamIds.Count() > 5)
 				{
 					foreach (var steamId in bravoSteamIds)
 					{
@@ -1311,7 +1311,7 @@ namespace TopStatsWaffle
 						}
 					}
 				}
-				else if (allStats.MapInfo.TestType.ToLower().Contains("casual") && bravoSteamIds.Count() > 10)
+				else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && bravoSteamIds.Count() > 10)
 				{
 					foreach (var steamId in bravoSteamIds)
 					{
@@ -1449,7 +1449,7 @@ namespace TopStatsWaffle
 				int alphaShotsFired = shotsFiredThisRound.Where(s => s.Shooter != null && alphaSteamIds.Contains(s.Shooter.SteamID)).Count();
 				int bravoShotsFired = shotsFiredThisRound.Where(s => s.Shooter != null && bravoSteamIds.Contains(s.Shooter.SteamID)).Count();
 
-				teamStats.Add(new TeamStats()
+				teamStats.Add(new teamStats()
 				{
 					Round = teamPlayers.Round,
 					TeamAlpha = alphaSteamIds,
@@ -1486,7 +1486,7 @@ namespace TopStatsWaffle
 
 		public void CreateJson(ProcessedData processedData, AllStats allStats, string mapNameString, string mapDateString)
 		{
-			string filename = processedData.SameFilename ? allStats.MapInfo.DemoName : Guid.NewGuid().ToString();
+			string filename = processedData.SameFilename ? allStats.mapInfo.DemoName : Guid.NewGuid().ToString();
 
 			string path = string.Empty;
 			if (processedData.FoldersToProcess.Count() > 0 && processedData.SameFolderStructure)
@@ -1522,21 +1522,21 @@ namespace TopStatsWaffle
 			string json = JsonConvert.SerializeObject(
 				new
 				{
-					allStats.VersionNumber,
-					allStats.SupportedGamemodes,
-					allStats.MapInfo,
-					allStats.TanookiStats,
-					allStats.PlayerStats,
-					allStats.WinnersStats,
-					allStats.RoundsStats,
-					allStats.BombsiteStats,
-					allStats.HostageStats,
-					allStats.GrenadesTotalStats,
-					allStats.GrenadesSpecificStats,
-					allStats.KillsStats,
-					allStats.FeedbackMessages,
-					allStats.ChickenStats,
-					allStats.TeamStats,
+					allStats.versionNumber,
+					allStats.supportedGamemodes,
+					allStats.mapInfo,
+					allStats.tanookiStats,
+					allStats.playerStats,
+					allStats.winnersStats,
+					allStats.roundsStats,
+					allStats.bombsiteStats,
+					allStats.hostageStats,
+					allStats.grenadesTotalStats,
+					allStats.grenadesSpecificStats,
+					allStats.killsStats,
+					allStats.feedbackMessages,
+					allStats.chickenStats,
+					allStats.teamStats,
 				},
 				Formatting.Indented
 			);

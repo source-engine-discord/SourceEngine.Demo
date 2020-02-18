@@ -2,7 +2,7 @@
 
 namespace TopStatsWaffle.Models
 {
-    public class TeamStats
+    public class teamStats
     {
         public int Round { get; set; }
         public IEnumerable<long> TeamAlpha { get; set; }
@@ -30,6 +30,6 @@ namespace TopStatsWaffle.Models
         public int TeamBravoWallbangsMostInOneKill { get; set; }
         public int TeamBravoShotsFired { get; set; }
 
-        public TeamStats() { }
+        public teamStats() { }
     }
 }

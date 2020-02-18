@@ -1,6 +1,6 @@
 ﻿namespace TopStatsWaffle.Models
 {
-    public class MapInfo
+    public class mapInfo
     {
         public string MapName { get; set; }
         public string WorkshopID { get; set; }
@@ -9,6 +9,6 @@
         public string TestType { get; set; }
 		public string DemoName { get; set; }
 
-        public MapInfo() { }
+        public mapInfo() { }
     }
 }

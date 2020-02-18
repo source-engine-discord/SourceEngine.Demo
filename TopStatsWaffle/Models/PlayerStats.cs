@@ -1,6 +1,6 @@
 ﻿namespace TopStatsWaffle.Models
 {
-    public class PlayerStats
+    public class playerStats
     {
         public string PlayerName { get; set; }
         public long SteamID { get; set; }
@@ -20,6 +20,6 @@
         public long TicksOnServer { get; set; }
         public long TicksPlaying { get; set; }
 
-        public PlayerStats() { }
+        public playerStats() { }
     }
 }

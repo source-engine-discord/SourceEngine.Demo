@@ -11,7 +11,7 @@ namespace TopStatsWaffle.Models
 		public bool ParseChickens { get; set; }
 		public List<string> FoldersToProcess { get; set; }
 		public string OutputRootFolder { get; set; }
-		public TanookiStats TanookiStats { get; set; }
+		public tanookiStats tanookiStats { get; set; }
 		public IEnumerable<MatchStartedEventArgs> MatchStartValues { get; set; }
 		public IEnumerable<SwitchSidesEventArgs> SwitchSidesValues { get; set; }
 		public IEnumerable<FeedbackMessage> MessagesValues { get; set; }

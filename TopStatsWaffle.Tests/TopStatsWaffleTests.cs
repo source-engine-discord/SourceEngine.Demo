@@ -42,13 +42,13 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.BombsiteStats.Count.ShouldBe(2);
-				allStats.BombsiteStats[0].Plants.ShouldBe(1);
-				allStats.BombsiteStats[0].Explosions.ShouldBe(1);
-				allStats.BombsiteStats[0].Defuses.ShouldBe(0);
-				allStats.BombsiteStats[1].Plants.ShouldBe(1);
-				allStats.BombsiteStats[1].Explosions.ShouldBe(0);
-				allStats.BombsiteStats[1].Defuses.ShouldBe(1);
+				allStats.bombsiteStats.Count.ShouldBe(2);
+				allStats.bombsiteStats[0].Plants.ShouldBe(1);
+				allStats.bombsiteStats[0].Explosions.ShouldBe(1);
+				allStats.bombsiteStats[0].Defuses.ShouldBe(0);
+				allStats.bombsiteStats[1].Plants.ShouldBe(1);
+				allStats.bombsiteStats[1].Explosions.ShouldBe(0);
+				allStats.bombsiteStats[1].Defuses.ShouldBe(1);
 			}
 
 			[Fact]
@@ -60,7 +60,7 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.ChickenStats.Killed.ShouldBe(1);
+				allStats.chickenStats.Killed.ShouldBe(1);
 			}
 
 			[Fact]
@@ -72,9 +72,9 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.FeedbackMessages.Count.ShouldBe(1);
-				allStats.FeedbackMessages[0].Round.ShouldBe(1);
-				allStats.FeedbackMessages[0].Message.ShouldBe("bad map");
+				allStats.feedbackMessages.Count.ShouldBe(1);
+				allStats.feedbackMessages[0].Round.ShouldBe(1);
+				allStats.feedbackMessages[0].Message.ShouldBe("bad map");
 			}
 
 			[Fact]
@@ -86,13 +86,13 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.GrenadesSpecificStats.Count.ShouldBe(6);
-				allStats.GrenadesSpecificStats[0].NadeType.ShouldBe(EquipmentElement.Flash.ToString());
-				allStats.GrenadesSpecificStats[1].NadeType.ShouldBe(EquipmentElement.Smoke.ToString());
-				allStats.GrenadesSpecificStats[2].NadeType.ShouldBe(EquipmentElement.HE.ToString());
-				allStats.GrenadesSpecificStats[3].NadeType.ShouldBe(EquipmentElement.Molotov.ToString());
-				allStats.GrenadesSpecificStats[4].NadeType.ShouldBe(EquipmentElement.Incendiary.ToString());
-				allStats.GrenadesSpecificStats[5].NadeType.ShouldBe(EquipmentElement.Decoy.ToString());
+				allStats.grenadesSpecificStats.Count.ShouldBe(6);
+				allStats.grenadesSpecificStats[0].NadeType.ShouldBe(EquipmentElement.Flash.ToString());
+				allStats.grenadesSpecificStats[1].NadeType.ShouldBe(EquipmentElement.Smoke.ToString());
+				allStats.grenadesSpecificStats[2].NadeType.ShouldBe(EquipmentElement.HE.ToString());
+				allStats.grenadesSpecificStats[3].NadeType.ShouldBe(EquipmentElement.Molotov.ToString());
+				allStats.grenadesSpecificStats[4].NadeType.ShouldBe(EquipmentElement.Incendiary.ToString());
+				allStats.grenadesSpecificStats[5].NadeType.ShouldBe(EquipmentElement.Decoy.ToString());
 			}
 
 			[Fact]
@@ -104,17 +104,17 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.GrenadesTotalStats.Count.ShouldBe(5);
-				allStats.GrenadesTotalStats[0].NadeType.ShouldBe(EquipmentElement.Flash.ToString());
-				allStats.GrenadesTotalStats[0].AmountUsed.ShouldBe(1);
-				allStats.GrenadesTotalStats[1].NadeType.ShouldBe(EquipmentElement.Smoke.ToString());
-				allStats.GrenadesTotalStats[1].AmountUsed.ShouldBe(1);
-				allStats.GrenadesTotalStats[2].NadeType.ShouldBe(EquipmentElement.HE.ToString());
-				allStats.GrenadesTotalStats[2].AmountUsed.ShouldBe(1);
-				allStats.GrenadesTotalStats[3].NadeType.ShouldBe(EquipmentElement.Incendiary.ToString());
-				allStats.GrenadesTotalStats[3].AmountUsed.ShouldBe(2);
-				allStats.GrenadesTotalStats[4].NadeType.ShouldBe(EquipmentElement.Decoy.ToString());
-				allStats.GrenadesTotalStats[4].AmountUsed.ShouldBe(1);
+				allStats.grenadesTotalStats.Count.ShouldBe(5);
+				allStats.grenadesTotalStats[0].NadeType.ShouldBe(EquipmentElement.Flash.ToString());
+				allStats.grenadesTotalStats[0].AmountUsed.ShouldBe(1);
+				allStats.grenadesTotalStats[1].NadeType.ShouldBe(EquipmentElement.Smoke.ToString());
+				allStats.grenadesTotalStats[1].AmountUsed.ShouldBe(1);
+				allStats.grenadesTotalStats[2].NadeType.ShouldBe(EquipmentElement.HE.ToString());
+				allStats.grenadesTotalStats[2].AmountUsed.ShouldBe(1);
+				allStats.grenadesTotalStats[3].NadeType.ShouldBe(EquipmentElement.Incendiary.ToString());
+				allStats.grenadesTotalStats[3].AmountUsed.ShouldBe(2);
+				allStats.grenadesTotalStats[4].NadeType.ShouldBe(EquipmentElement.Decoy.ToString());
+				allStats.grenadesTotalStats[4].AmountUsed.ShouldBe(1);
 			}
 
 			[Fact]
@@ -126,15 +126,15 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.HostageStats.Count.ShouldBe(2);
-				allStats.HostageStats[0].Hostage.ShouldBe('A');
-				allStats.HostageStats[0].HostageIndex.ShouldBe(250);
-				allStats.HostageStats[0].PickedUps.ShouldBe(2);
-				allStats.HostageStats[0].Rescues.ShouldBe(1);
-				allStats.HostageStats[1].Hostage.ShouldBe('B');
-				allStats.HostageStats[1].HostageIndex.ShouldBe(251);
-				allStats.HostageStats[1].PickedUps.ShouldBe(1);
-				allStats.HostageStats[1].Rescues.ShouldBe(1);
+				allStats.hostageStats.Count.ShouldBe(2);
+				allStats.hostageStats[0].Hostage.ShouldBe('A');
+				allStats.hostageStats[0].HostageIndex.ShouldBe(250);
+				allStats.hostageStats[0].PickedUps.ShouldBe(2);
+				allStats.hostageStats[0].Rescues.ShouldBe(1);
+				allStats.hostageStats[1].Hostage.ShouldBe('B');
+				allStats.hostageStats[1].HostageIndex.ShouldBe(251);
+				allStats.hostageStats[1].PickedUps.ShouldBe(1);
+				allStats.hostageStats[1].Rescues.ShouldBe(1);
 			}
 
 			[Fact]
@@ -146,11 +146,11 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.KillsStats.Count.ShouldBe(2);
-				allStats.KillsStats[0].Round.ShouldBe(1);
-				allStats.KillsStats[0].TimeInRound.ShouldBe(40);
-				allStats.KillsStats[1].Round.ShouldBe(2);
-				allStats.KillsStats[1].TimeInRound.ShouldBe(90);
+				allStats.killsStats.Count.ShouldBe(2);
+				allStats.killsStats[0].Round.ShouldBe(1);
+				allStats.killsStats[0].TimeInRound.ShouldBe(40);
+				allStats.killsStats[1].Round.ShouldBe(2);
+				allStats.killsStats[1].TimeInRound.ShouldBe(90);
 			}
 
 			[Fact]
@@ -162,10 +162,10 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.MapInfo.DemoName.ShouldBe("demo1");
-				allStats.MapInfo.MapName.ShouldBe("de_testmap");
-				allStats.MapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
-				allStats.MapInfo.TestType.ShouldBe("Defuse");
+				allStats.mapInfo.DemoName.ShouldBe("demo1");
+				allStats.mapInfo.MapName.ShouldBe("de_testmap");
+				allStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+				allStats.mapInfo.TestType.ShouldBe("Defuse");
 			}
 
 			[Fact]
@@ -177,37 +177,37 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.PlayerStats.Count.ShouldBe(2);
+				allStats.playerStats.Count.ShouldBe(2);
 
-				allStats.PlayerStats[0].Assists.ShouldBe(0);
-				allStats.PlayerStats[0].AssistsIncludingBots.ShouldBe(0);
-				allStats.PlayerStats[0].Deaths.ShouldBe(0);
-				allStats.PlayerStats[0].DeathsIncludingBots.ShouldBe(0);
-				allStats.PlayerStats[0].Defuses.ShouldBe(1);
-				allStats.PlayerStats[0].Headshots.ShouldBe(1); // took over a bot for one of them
-				allStats.PlayerStats[0].Kills.ShouldBe(1); // took over a bot for one of them
-				allStats.PlayerStats[0].KillsIncludingBots.ShouldBe(2);
-				allStats.PlayerStats[0].MVPs.ShouldBe(2);
-				allStats.PlayerStats[0].Plants.ShouldBe(1);
-				allStats.PlayerStats[0].PlayerName.ShouldBe("JimWood");
-				allStats.PlayerStats[0].Rescues.ShouldBe(0);
-				allStats.PlayerStats[0].Shots.ShouldBe(6);
-				allStats.PlayerStats[0].SteamID.ShouldBe(32443298432);
+				allStats.playerStats[0].Assists.ShouldBe(0);
+				allStats.playerStats[0].AssistsIncludingBots.ShouldBe(0);
+				allStats.playerStats[0].Deaths.ShouldBe(0);
+				allStats.playerStats[0].DeathsIncludingBots.ShouldBe(0);
+				allStats.playerStats[0].Defuses.ShouldBe(1);
+				allStats.playerStats[0].Headshots.ShouldBe(1); // took over a bot for one of them
+				allStats.playerStats[0].Kills.ShouldBe(1); // took over a bot for one of them
+				allStats.playerStats[0].KillsIncludingBots.ShouldBe(2);
+				allStats.playerStats[0].MVPs.ShouldBe(2);
+				allStats.playerStats[0].Plants.ShouldBe(1);
+				allStats.playerStats[0].PlayerName.ShouldBe("JimWood");
+				allStats.playerStats[0].Rescues.ShouldBe(0);
+				allStats.playerStats[0].Shots.ShouldBe(6);
+				allStats.playerStats[0].SteamID.ShouldBe(32443298432);
 
-				allStats.PlayerStats[1].Assists.ShouldBe(1);
-				allStats.PlayerStats[1].AssistsIncludingBots.ShouldBe(1);
-				allStats.PlayerStats[1].Deaths.ShouldBe(1); // took over a bot for one of them
-				allStats.PlayerStats[1].DeathsIncludingBots.ShouldBe(2);
-				allStats.PlayerStats[1].Defuses.ShouldBe(0);
-				allStats.PlayerStats[1].Headshots.ShouldBe(0);
-				allStats.PlayerStats[1].Kills.ShouldBe(0);
-				allStats.PlayerStats[1].KillsIncludingBots.ShouldBe(0);
-				allStats.PlayerStats[1].MVPs.ShouldBe(0);
-				allStats.PlayerStats[1].Plants.ShouldBe(1);
-				allStats.PlayerStats[1].PlayerName.ShouldBe("TheWhaleMan");
-				allStats.PlayerStats[1].Rescues.ShouldBe(2);
-				allStats.PlayerStats[1].Shots.ShouldBe(1);
-				allStats.PlayerStats[1].SteamID.ShouldBe(12321313213);
+				allStats.playerStats[1].Assists.ShouldBe(1);
+				allStats.playerStats[1].AssistsIncludingBots.ShouldBe(1);
+				allStats.playerStats[1].Deaths.ShouldBe(1); // took over a bot for one of them
+				allStats.playerStats[1].DeathsIncludingBots.ShouldBe(2);
+				allStats.playerStats[1].Defuses.ShouldBe(0);
+				allStats.playerStats[1].Headshots.ShouldBe(0);
+				allStats.playerStats[1].Kills.ShouldBe(0);
+				allStats.playerStats[1].KillsIncludingBots.ShouldBe(0);
+				allStats.playerStats[1].MVPs.ShouldBe(0);
+				allStats.playerStats[1].Plants.ShouldBe(1);
+				allStats.playerStats[1].PlayerName.ShouldBe("TheWhaleMan");
+				allStats.playerStats[1].Rescues.ShouldBe(2);
+				allStats.playerStats[1].Shots.ShouldBe(1);
+				allStats.playerStats[1].SteamID.ShouldBe(12321313213);
 			}
 
 			[Fact]
@@ -219,57 +219,57 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.RoundsStats.Count.ShouldBe(2);
+				allStats.roundsStats.Count.ShouldBe(2);
 
-				allStats.RoundsStats[0].BombPlantPositionX.ShouldBe(100);
-				allStats.RoundsStats[0].BombPlantPositionY.ShouldBe(100);
-				allStats.RoundsStats[0].BombPlantPositionZ.ShouldBe(100);
-				allStats.RoundsStats[0].BombsiteErrorMessage.ShouldBeNull();
-				allStats.RoundsStats[0].BombsitePlantedAt.ShouldBe("A");
-				allStats.RoundsStats[0].Half.ShouldBe("First");
-				allStats.RoundsStats[0].HostageAPickedUpErrorMessage.ShouldBeNull();
-				allStats.RoundsStats[0].HostageBPickedUpErrorMessage.ShouldBeNull();
-				allStats.RoundsStats[0].Length.ShouldBe(80);
-				allStats.RoundsStats[0].Overtime.ShouldBe(0);
-				allStats.RoundsStats[0].PickedUpAllHostages.ShouldBe(true);
-				allStats.RoundsStats[0].PickedUpHostageA.ShouldBe(true);
-				allStats.RoundsStats[0].PickedUpHostageB.ShouldBe(true);
-				allStats.RoundsStats[0].RescuedAllHostages.ShouldBe(true);
-				allStats.RoundsStats[0].RescuedHostageA.ShouldBe(true);
-				allStats.RoundsStats[0].RescuedHostageB.ShouldBe(true);
-				allStats.RoundsStats[0].Round.ShouldBe(1);
-				allStats.RoundsStats[0].TimeInRoundPlanted.ShouldBe(35);
-				allStats.RoundsStats[0].TimeInRoundExploded.ShouldBe(75);
-				allStats.RoundsStats[0].TimeInRoundDefused.ShouldBeNull();
-				allStats.RoundsStats[0].TimeInRoundRescuedHostageA.ShouldBe(50);
-				allStats.RoundsStats[0].TimeInRoundRescuedHostageB.ShouldBe(51);
-				allStats.RoundsStats[0].WinMethod.ShouldBe("Bombed");
-				allStats.RoundsStats[0].Winners.ShouldBe("Terrorist");
+				allStats.roundsStats[0].BombPlantPositionX.ShouldBe(100);
+				allStats.roundsStats[0].BombPlantPositionY.ShouldBe(100);
+				allStats.roundsStats[0].BombPlantPositionZ.ShouldBe(100);
+				allStats.roundsStats[0].BombsiteErrorMessage.ShouldBeNull();
+				allStats.roundsStats[0].BombsitePlantedAt.ShouldBe("A");
+				allStats.roundsStats[0].Half.ShouldBe("First");
+				allStats.roundsStats[0].HostageAPickedUpErrorMessage.ShouldBeNull();
+				allStats.roundsStats[0].HostageBPickedUpErrorMessage.ShouldBeNull();
+				allStats.roundsStats[0].Length.ShouldBe(80);
+				allStats.roundsStats[0].Overtime.ShouldBe(0);
+				allStats.roundsStats[0].PickedUpAllHostages.ShouldBe(true);
+				allStats.roundsStats[0].PickedUpHostageA.ShouldBe(true);
+				allStats.roundsStats[0].PickedUpHostageB.ShouldBe(true);
+				allStats.roundsStats[0].RescuedAllHostages.ShouldBe(true);
+				allStats.roundsStats[0].RescuedHostageA.ShouldBe(true);
+				allStats.roundsStats[0].RescuedHostageB.ShouldBe(true);
+				allStats.roundsStats[0].Round.ShouldBe(1);
+				allStats.roundsStats[0].TimeInRoundPlanted.ShouldBe(35);
+				allStats.roundsStats[0].TimeInRoundExploded.ShouldBe(75);
+				allStats.roundsStats[0].TimeInRoundDefused.ShouldBeNull();
+				allStats.roundsStats[0].TimeInRoundRescuedHostageA.ShouldBe(50);
+				allStats.roundsStats[0].TimeInRoundRescuedHostageB.ShouldBe(51);
+				allStats.roundsStats[0].WinMethod.ShouldBe("Bombed");
+				allStats.roundsStats[0].Winners.ShouldBe("Terrorist");
 
-				allStats.RoundsStats[1].BombPlantPositionX.ShouldBe(400);
-				allStats.RoundsStats[1].BombPlantPositionY.ShouldBe(400);
-				allStats.RoundsStats[1].BombPlantPositionZ.ShouldBe(400);
-				allStats.RoundsStats[1].BombsiteErrorMessage.ShouldBeNull();
-				allStats.RoundsStats[1].BombsitePlantedAt.ShouldBe("B");
-				allStats.RoundsStats[1].Half.ShouldBe("Second");
-				allStats.RoundsStats[1].HostageAPickedUpErrorMessage.ShouldBeNull();
-				allStats.RoundsStats[1].HostageBPickedUpErrorMessage.ShouldBeNull();
-				allStats.RoundsStats[1].Length.ShouldBe(105);
-				allStats.RoundsStats[1].Overtime.ShouldBe(0);
-				allStats.RoundsStats[1].PickedUpAllHostages.ShouldBe(false);
-				allStats.RoundsStats[1].PickedUpHostageA.ShouldBe(true);
-				allStats.RoundsStats[1].PickedUpHostageB.ShouldBe(false);
-				allStats.RoundsStats[1].RescuedAllHostages.ShouldBe(false);
-				allStats.RoundsStats[1].RescuedHostageA.ShouldBe(false);
-				allStats.RoundsStats[1].RescuedHostageB.ShouldBe(false);
-				allStats.RoundsStats[1].Round.ShouldBe(2);
-				allStats.RoundsStats[1].TimeInRoundPlanted.ShouldBe(60);
-				allStats.RoundsStats[1].TimeInRoundExploded.ShouldBeNull();
-				allStats.RoundsStats[1].TimeInRoundDefused.ShouldBe(100);
-				allStats.RoundsStats[1].TimeInRoundRescuedHostageA.ShouldBeNull();
-				allStats.RoundsStats[1].TimeInRoundRescuedHostageB.ShouldBeNull();
-				allStats.RoundsStats[1].WinMethod.ShouldBe("Defused");
-				allStats.RoundsStats[1].Winners.ShouldBe("CounterTerrorist");
+				allStats.roundsStats[1].BombPlantPositionX.ShouldBe(400);
+				allStats.roundsStats[1].BombPlantPositionY.ShouldBe(400);
+				allStats.roundsStats[1].BombPlantPositionZ.ShouldBe(400);
+				allStats.roundsStats[1].BombsiteErrorMessage.ShouldBeNull();
+				allStats.roundsStats[1].BombsitePlantedAt.ShouldBe("B");
+				allStats.roundsStats[1].Half.ShouldBe("Second");
+				allStats.roundsStats[1].HostageAPickedUpErrorMessage.ShouldBeNull();
+				allStats.roundsStats[1].HostageBPickedUpErrorMessage.ShouldBeNull();
+				allStats.roundsStats[1].Length.ShouldBe(105);
+				allStats.roundsStats[1].Overtime.ShouldBe(0);
+				allStats.roundsStats[1].PickedUpAllHostages.ShouldBe(false);
+				allStats.roundsStats[1].PickedUpHostageA.ShouldBe(true);
+				allStats.roundsStats[1].PickedUpHostageB.ShouldBe(false);
+				allStats.roundsStats[1].RescuedAllHostages.ShouldBe(false);
+				allStats.roundsStats[1].RescuedHostageA.ShouldBe(false);
+				allStats.roundsStats[1].RescuedHostageB.ShouldBe(false);
+				allStats.roundsStats[1].Round.ShouldBe(2);
+				allStats.roundsStats[1].TimeInRoundPlanted.ShouldBe(60);
+				allStats.roundsStats[1].TimeInRoundExploded.ShouldBeNull();
+				allStats.roundsStats[1].TimeInRoundDefused.ShouldBe(100);
+				allStats.roundsStats[1].TimeInRoundRescuedHostageA.ShouldBeNull();
+				allStats.roundsStats[1].TimeInRoundRescuedHostageB.ShouldBeNull();
+				allStats.roundsStats[1].WinMethod.ShouldBe("Defused");
+				allStats.roundsStats[1].Winners.ShouldBe("CounterTerrorist");
 			}
 
 			[Fact]
@@ -281,10 +281,10 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.SupportedGamemodes.Count.ShouldBe(3);
-				allStats.SupportedGamemodes[0].ShouldBe("Defuse");
-				allStats.SupportedGamemodes[1].ShouldBe("Hostage");
-				allStats.SupportedGamemodes[2].ShouldBe("Wingman");
+				allStats.supportedGamemodes.Count.ShouldBe(3);
+				allStats.supportedGamemodes[0].ShouldBe("Defuse");
+				allStats.supportedGamemodes[1].ShouldBe("Hostage");
+				allStats.supportedGamemodes[2].ShouldBe("Wingman");
 			}
 
 			[Fact]
@@ -296,11 +296,11 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.TanookiStats.Joined.ShouldBe(true);
-				allStats.TanookiStats.Left.ShouldBe(true);
-				allStats.TanookiStats.RoundJoined.ShouldBe(1);
-				allStats.TanookiStats.RoundLeft.ShouldBe(2);
-				allStats.TanookiStats.RoundsLasted.ShouldBe(1);
+				allStats.tanookiStats.Joined.ShouldBe(true);
+				allStats.tanookiStats.Left.ShouldBe(true);
+				allStats.tanookiStats.RoundJoined.ShouldBe(1);
+				allStats.tanookiStats.RoundLeft.ShouldBe(2);
+				allStats.tanookiStats.RoundsLasted.ShouldBe(1);
 			}
 
 			[Fact]
@@ -312,27 +312,27 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.TeamStats.Count.ShouldBe(2);
+				allStats.teamStats.Count.ShouldBe(2);
 
-				allStats.TeamStats[0].Round.ShouldBe(1);
-				allStats.TeamStats[0].TeamAlphaKills.ShouldBe(1);
-				allStats.TeamStats[0].TeamAlphaDeaths.ShouldBe(0);
-				allStats.TeamStats[0].TeamAlphaHeadshots.ShouldBe(1);
-				allStats.TeamStats[0].TeamBravoKills.ShouldBe(0);
-				allStats.TeamStats[0].TeamBravoDeaths.ShouldBe(1);
-				allStats.TeamStats[0].TeamBravoHeadshots.ShouldBe(0);
-				allStats.TeamStats[0].TeamAlphaShotsFired.ShouldBe(3);
-				allStats.TeamStats[0].TeamBravoShotsFired.ShouldBe(0);
+				allStats.teamStats[0].Round.ShouldBe(1);
+				allStats.teamStats[0].TeamAlphaKills.ShouldBe(1);
+				allStats.teamStats[0].TeamAlphaDeaths.ShouldBe(0);
+				allStats.teamStats[0].TeamAlphaHeadshots.ShouldBe(1);
+				allStats.teamStats[0].TeamBravoKills.ShouldBe(0);
+				allStats.teamStats[0].TeamBravoDeaths.ShouldBe(1);
+				allStats.teamStats[0].TeamBravoHeadshots.ShouldBe(0);
+				allStats.teamStats[0].TeamAlphaShotsFired.ShouldBe(3);
+				allStats.teamStats[0].TeamBravoShotsFired.ShouldBe(0);
 
-				allStats.TeamStats[1].Round.ShouldBe(2);
-				allStats.TeamStats[1].TeamAlphaKills.ShouldBe(1);
-				allStats.TeamStats[1].TeamAlphaDeaths.ShouldBe(0);
-				allStats.TeamStats[1].TeamAlphaHeadshots.ShouldBe(1);
-				allStats.TeamStats[1].TeamBravoKills.ShouldBe(0);
-				allStats.TeamStats[1].TeamBravoDeaths.ShouldBe(1);
-				allStats.TeamStats[1].TeamBravoHeadshots.ShouldBe(0);
-				allStats.TeamStats[1].TeamAlphaShotsFired.ShouldBe(3);
-				allStats.TeamStats[1].TeamBravoShotsFired.ShouldBe(1);
+				allStats.teamStats[1].Round.ShouldBe(2);
+				allStats.teamStats[1].TeamAlphaKills.ShouldBe(1);
+				allStats.teamStats[1].TeamAlphaDeaths.ShouldBe(0);
+				allStats.teamStats[1].TeamAlphaHeadshots.ShouldBe(1);
+				allStats.teamStats[1].TeamBravoKills.ShouldBe(0);
+				allStats.teamStats[1].TeamBravoDeaths.ShouldBe(1);
+				allStats.teamStats[1].TeamBravoHeadshots.ShouldBe(0);
+				allStats.teamStats[1].TeamAlphaShotsFired.ShouldBe(3);
+				allStats.teamStats[1].TeamBravoShotsFired.ShouldBe(1);
 			}
 
 			[Fact]
@@ -344,7 +344,7 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.VersionNumber.Version.ShouldBe("1.1.9");
+				allStats.versionNumber.Version.ShouldBe("1.1.10");
 			}
 
 			[Fact]
@@ -356,9 +356,9 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.WinnersStats.TeamAlphaRounds.ShouldBe(2);
-				allStats.WinnersStats.TeamBetaRounds.ShouldBe(0);
-				allStats.WinnersStats.WinningTeam.ShouldBe("Team Alpha");
+				allStats.winnersStats.TeamAlphaRounds.ShouldBe(2);
+				allStats.winnersStats.TeamBetaRounds.ShouldBe(0);
+				allStats.winnersStats.WinningTeam.ShouldBe("Team Alpha");
 			}
 		}
 
@@ -372,7 +372,7 @@ namespace TopStatsWaffle.Tests
 				TestType = "Defuse",
 			};
 
-			var TanookiStats = new TanookiStats()
+			var tanookiStats = new tanookiStats()
 			{
 				Joined = true,
 				Left = true,
@@ -919,7 +919,7 @@ namespace TopStatsWaffle.Tests
 				ParseChickens = true,
 				FoldersToProcess = new List<string>() { "someFolder" },
 				OutputRootFolder = "outputFolder",
-				TanookiStats = TanookiStats,
+				tanookiStats = tanookiStats,
 				MatchStartValues = MatchStartValues,
 				SwitchSidesValues = SwitchSidesValues,
 				MessagesValues = MessagesValues,

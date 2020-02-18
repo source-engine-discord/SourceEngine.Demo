@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TopStatsWaffle.Models
 {
-    public class RoundsStats
+    public class roundsStats
     {
         public int Round { get; set; }
         public string Half { get; set; }
@@ -45,6 +45,6 @@ namespace TopStatsWaffle.Models
         public int TeamAlphaExpenditure { get; set; }
         public int TeamBetaExpenditure { get; set; }
 
-        public RoundsStats() { }
+        public roundsStats() { }
     }
 }

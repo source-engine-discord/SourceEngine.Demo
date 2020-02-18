@@ -4,21 +4,21 @@ namespace TopStatsWaffle.Models
 {
     public class AllStats
     {
-        public VersionNumber VersionNumber { get; set; }
-        public List<string> SupportedGamemodes { get; set; }
-        public MapInfo MapInfo { get; set; }
-        public TanookiStats TanookiStats { get; set; }
-        public List<PlayerStats> PlayerStats { get; set; }
-        public WinnersStats WinnersStats { get; set; }
-        public List<RoundsStats> RoundsStats { get; set; }
-        public List<BombsiteStats> BombsiteStats { get; set; }
-        public List<HostageStats> HostageStats { get; set; }
-        public List<GrenadesTotalStats> GrenadesTotalStats { get; set; }
-        public List<GrenadesSpecificStats> GrenadesSpecificStats { get; set; }
-        public List<KillsStats> KillsStats { get; set; }
-        public List<FeedbackMessage> FeedbackMessages { get; set; }
-        public ChickenStats ChickenStats { get; set; }
-        public List<TeamStats> TeamStats { get; set; }
+        public versionNumber versionNumber { get; set; }
+        public List<string> supportedGamemodes { get; set; }
+        public mapInfo mapInfo { get; set; }
+        public tanookiStats tanookiStats { get; set; }
+        public List<playerStats> playerStats { get; set; }
+        public winnersStats winnersStats { get; set; }
+        public List<roundsStats> roundsStats { get; set; }
+        public List<bombsiteStats> bombsiteStats { get; set; }
+        public List<hostageStats> hostageStats { get; set; }
+        public List<grenadesTotalStats> grenadesTotalStats { get; set; }
+        public List<grenadesSpecificStats> grenadesSpecificStats { get; set; }
+        public List<killsStats> killsStats { get; set; }
+        public List<FeedbackMessage> feedbackMessages { get; set; }
+        public chickenStats chickenStats { get; set; }
+        public List<teamStats> teamStats { get; set; }
 
         public AllStats() { }
     }

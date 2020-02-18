@@ -1,6 +1,6 @@
 ﻿namespace TopStatsWaffle.Models
 {
-    public class KillsStats
+    public class killsStats
     {
         public int Round { get; set; }
         public double TimeInRound { get; set; }
@@ -24,6 +24,6 @@
         public bool Headshot { get; internal set; }
         public bool AssistedFlash { get; internal set; }
 
-        public KillsStats() { }
+        public killsStats() { }
     }
 }

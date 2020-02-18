@@ -1,9 +1,9 @@
 ﻿namespace TopStatsWaffle.Models
 {
-    public class VersionNumber
+    public class versionNumber
     {
         public string Version { get; set; }
 
-        public VersionNumber() { }
+        public versionNumber() { }
     }
 }

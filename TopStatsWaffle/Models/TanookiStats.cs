@@ -1,6 +1,6 @@
 ﻿namespace TopStatsWaffle.Models
 {
-    public class TanookiStats
+    public class tanookiStats
     {
         public bool Joined { get; set; }
         public bool Left { get; set; }
@@ -8,6 +8,6 @@
         public int RoundLeft { get; set; }
         public int RoundsLasted { get; set; }
 
-        public TanookiStats() { }
+        public tanookiStats() { }
     }
 }

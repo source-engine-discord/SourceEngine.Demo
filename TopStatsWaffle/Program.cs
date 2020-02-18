@@ -442,7 +442,7 @@ namespace TopStatsWaffle
                 sfe = (from shot in mdTest.getEvents<ShotFired>()
                       select (shot as ShotFired));
 
-                TanookiStats tanookiStats = TanookiStatsCreator(tpe, dpe);
+                tanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
 
 
                 if (mdTest.passed)
@@ -456,7 +456,7 @@ namespace TopStatsWaffle
 						ParseChickens = parseChickens,
 						FoldersToProcess = foldersToProcess,
 						OutputRootFolder = outputRootFolder,
-						TanookiStats = tanookiStats,
+						tanookiStats = tanookiStats,
 						MatchStartValues = mse,
 						SwitchSidesValues = sse,
 						MessagesValues = fme,
@@ -502,9 +502,9 @@ namespace TopStatsWaffle
             Debug.White("Failed: {0}\n", demosInformation.Count() - passCount);
         }
 
-        private static TanookiStats TanookiStatsCreator(IEnumerable<TeamPlayers> tpe, IEnumerable<DisconnectedPlayer> dpe)
+        private static tanookiStats tanookiStatsCreator(IEnumerable<TeamPlayers> tpe, IEnumerable<DisconnectedPlayer> dpe)
         {
-            TanookiStats tanookiStats = new TanookiStats() { Joined = false, Left = false, RoundJoined = -1, RoundLeft = -1, RoundsLasted = -1 };
+            tanookiStats tanookiStats = new tanookiStats() { Joined = false, Left = false, RoundJoined = -1, RoundLeft = -1, RoundsLasted = -1 };
             long tanookiId = 76561198123165941;
 
             if (tpe.Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId)) || tpe.Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
