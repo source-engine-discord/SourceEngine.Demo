@@ -480,7 +480,8 @@ namespace TopStatsWaffle
 						WriteTicks = true
 					};
 
-                    mdTest.CreateFiles(processedData);
+                    var allStats = mdTest.CreateFiles(processedData);
+
                     passCount++;
 
 					Console.WriteLine($"Finished parsing demo {demosInformation[i].DemoName}.\n");

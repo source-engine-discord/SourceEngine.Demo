@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopStatsWaffle", "TopStatsW
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoInfo", "..\demoinfo\DemoInfo\DemoInfo.csproj", "{22D4CFC7-6810-4C18-A353-71A49782394F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopStatsWaffle.Tests", "TopStatsWaffle.Tests\TopStatsWaffle.Tests.csproj", "{000571C6-8000-4D00-ACD1-E6197B279CB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TopStatsWaffle.Tests", "TopStatsWaffle.Tests\TopStatsWaffle.Tests.csproj", "{000571C6-8000-4D00-ACD1-E6197B279CB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

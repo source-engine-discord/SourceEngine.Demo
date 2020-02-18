@@ -510,7 +510,7 @@ namespace TopStatsWaffle
 			return md;
 		}
 
-        public void CreateFiles(ProcessedData processedData)
+        public AllStats CreateFiles(ProcessedData processedData, bool createJsonFile = true)
         {
             var mapDateSplit = (!string.IsNullOrWhiteSpace(processedData.DemoInformation.TestDate) && processedData.DemoInformation.TestDate != "unknown") ? processedData.DemoInformation.TestDate.Split('/')  : null;
             var mapDateString = (mapDateSplit != null && mapDateSplit.Count() >= 3) ? (mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]) : string.Empty;
@@ -1005,7 +1005,7 @@ namespace TopStatsWaffle
             var flashes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[0]));
             var smokes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[1]));
             var hegrenades = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[2]));
-            var incendiaries = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[3]));
+            var incendiaries = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[3]) || f.NadeType.ToString().Equals("Molotov")); // should never be "Molotov" as all molotovs are down as incendiaries, specified why in DemoParser.cs, search for "FireNadeStarted".
             var decoys = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[4]));
 
             List<IEnumerable<NadeEventArgs>> nadeGroups = new List<IEnumerable<NadeEventArgs>>() { flashes, smokes, hegrenades, incendiaries, decoys };
@@ -1420,65 +1420,72 @@ namespace TopStatsWaffle
                 TeamStats = teamStats,
             };
 
+
             /* JSON creation */
-            string filename = processedData.SameFilename ? mapInfo.DemoName : Guid.NewGuid().ToString();
-
-            string path = string.Empty;
-            if (processedData.FoldersToProcess.Count() > 0 && processedData.SameFolderStructure)
+            if (createJsonFile)
             {
-                foreach (var folder in processedData.FoldersToProcess)
+                string filename = processedData.SameFilename ? mapInfo.DemoName : Guid.NewGuid().ToString();
+
+                string path = string.Empty;
+                if (processedData.FoldersToProcess.Count() > 0 && processedData.SameFolderStructure)
                 {
-                    string[] splitPath = Path.GetDirectoryName(processedData.DemoInformation.DemoName).Split(new string[] { string.Concat(folder, "\\") }, StringSplitOptions.None);
-                    path = splitPath.Count() > 1 ? string.Concat(processedData.OutputRootFolder, "\\", splitPath.LastOrDefault(), "\\") : string.Concat(processedData.OutputRootFolder, "\\");
-
-                    if (!string.IsNullOrWhiteSpace(path))
+                    foreach (var folder in processedData.FoldersToProcess)
                     {
-                        if (!Directory.Exists(path))
-                            Directory.CreateDirectory(path);
+                        string[] splitPath = Path.GetDirectoryName(processedData.DemoInformation.DemoName).Split(new string[] { string.Concat(folder, "\\") }, StringSplitOptions.None);
+                        path = splitPath.Count() > 1 ? string.Concat(processedData.OutputRootFolder, "\\", splitPath.LastOrDefault(), "\\") : string.Concat(processedData.OutputRootFolder, "\\");
 
-                        break;
+                        if (!string.IsNullOrWhiteSpace(path))
+                        {
+                            if (!Directory.Exists(path))
+                                Directory.CreateDirectory(path);
+
+                            break;
+                        }
                     }
                 }
+                else
+                {
+                    path = string.Concat(processedData.OutputRootFolder, "\\");
+                }
+
+                if (mapDateString != string.Empty)
+                {
+                    path += mapDateString + "_";
+                }
+
+                path += mapNameString + "_" + filename + ".json";
+
+                StreamWriter sw = new StreamWriter(path, false);
+
+                string json = JsonConvert.SerializeObject(
+                    new
+                    {
+                        versionNumber,
+                        supportedGamemodes,
+                        mapInfo,
+                        processedData.TanookiStats,
+                        playerStats,
+                        winnersStats,
+                        roundsStats,
+                        bombsiteStats,
+                        hostageStats,
+                        grenadesTotalStats,
+                        grenadesSpecificStats,
+                        killsStats,
+                        feedbackMessages,
+                        chickenStats,
+                        teamStats,
+                    },
+                    Formatting.Indented
+                );
+
+                sw.WriteLine(json);
+                /* JSON creation end*/
+
+                sw.Close();
             }
-            else
-            {
-                path = string.Concat(processedData.OutputRootFolder, "\\");
-            }
-            
-            if (mapDateString != string.Empty)
-            {
-                path += mapDateString + "_";
-            }
 
-            path += mapNameString + "_" + filename + ".json";
-
-            StreamWriter sw = new StreamWriter(path, false);
-
-            string json = JsonConvert.SerializeObject(
-                new {
-                    versionNumber,
-                    supportedGamemodes,
-                    mapInfo,
-					processedData.TanookiStats,
-                    playerStats,
-                    winnersStats,
-                    roundsStats,
-                    bombsiteStats,
-                    hostageStats,
-                    grenadesTotalStats,
-                    grenadesSpecificStats,
-                    killsStats,
-                    feedbackMessages,
-                    chickenStats,
-                    teamStats,
-                },
-                Formatting.Indented
-            );
-
-            sw.WriteLine(json);
-            /* JSON creation end*/
-
-            sw.Close();
+            return allStats;
         }
 
         public long getSteamIdByPlayerName(Dictionary<long, Dictionary<string, string>> playerNames, string name)
