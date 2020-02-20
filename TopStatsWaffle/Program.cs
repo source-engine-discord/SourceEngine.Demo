@@ -346,100 +346,100 @@ namespace TopStatsWaffle
 				IEnumerable<ChickenKilledEventArgs> cke = new List<ChickenKilledEventArgs>();
 				IEnumerable<ShotFired> sfe = new List<ShotFired>();
 
-                mse = (from start in mdTest.getEvents<MatchStartedEventArgs>()
+                mse = (from start in mdTest.GetEvents<MatchStartedEventArgs>()
                       select (start as MatchStartedEventArgs));
 
-                sse = (from switchSide in mdTest.getEvents<SwitchSidesEventArgs>()
+                sse = (from switchSide in mdTest.GetEvents<SwitchSidesEventArgs>()
                       select (switchSide as SwitchSidesEventArgs));
 
-                fme = (from message in mdTest.getEvents<FeedbackMessage>()
+                fme = (from message in mdTest.GetEvents<FeedbackMessage>()
                       select (message as FeedbackMessage));
 
-				pke = (from player in mdTest.getEvents<PlayerKilledEventArgs>()
+				pke = (from player in mdTest.GetEvents<PlayerKilledEventArgs>()
                       select (player as PlayerKilledEventArgs));
 
-                pe.Add("Kills", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                pe.Add("Kills", from player in mdTest.GetEvents<PlayerKilledEventArgs>()
                                 select (player as PlayerKilledEventArgs).Killer);
 
-                pe.Add("Deaths", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                pe.Add("Deaths", from player in mdTest.GetEvents<PlayerKilledEventArgs>()
                                  select (player as PlayerKilledEventArgs).Victim);
 
-                pe.Add("Headshots", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                pe.Add("Headshots", from player in mdTest.GetEvents<PlayerKilledEventArgs>()
                                     where (player as PlayerKilledEventArgs).Headshot
                                     select (player as PlayerKilledEventArgs).Killer);
 
-                pe.Add("Assists", from player in mdTest.getEvents<PlayerKilledEventArgs>()
+                pe.Add("Assists", from player in mdTest.GetEvents<PlayerKilledEventArgs>()
                                   where (player as PlayerKilledEventArgs).Assister != null
                                   select (player as PlayerKilledEventArgs).Assister);
 
-                pwe = (from weapon in mdTest.getEvents<PlayerKilledEventArgs>()
+                pwe = (from weapon in mdTest.GetEvents<PlayerKilledEventArgs>()
                       select (weapon as PlayerKilledEventArgs).Weapon);
 
-				poe = (from penetration in mdTest.getEvents<PlayerKilledEventArgs>()
+				poe = (from penetration in mdTest.GetEvents<PlayerKilledEventArgs>()
                       select (penetration as PlayerKilledEventArgs).PenetratedObjects);
 
-                pe.Add("MVPs", from player in mdTest.getEvents<RoundMVPEventArgs>()
+                pe.Add("MVPs", from player in mdTest.GetEvents<RoundMVPEventArgs>()
                                select (player as RoundMVPEventArgs).Player);
 
-                pe.Add("Shots", from player in mdTest.getEvents<WeaponFiredEventArgs>()
+                pe.Add("Shots", from player in mdTest.GetEvents<WeaponFiredEventArgs>()
                                 select (player as WeaponFiredEventArgs).Shooter);
 
-                pe.Add("Plants", from player in mdTest.getEvents<BombPlanted>()
+                pe.Add("Plants", from player in mdTest.GetEvents<BombPlanted>()
                                  select (player as BombPlanted).Player);
 
-                pe.Add("Defuses", from player in mdTest.getEvents<BombDefused>()
+                pe.Add("Defuses", from player in mdTest.GetEvents<BombDefused>()
                                   select (player as BombDefused).Player);
 
-                pe.Add("Rescues", from player in mdTest.getEvents<HostageRescued>()
+                pe.Add("Rescues", from player in mdTest.GetEvents<HostageRescued>()
                                   select (player as HostageRescued).Player);
 
-				bpe = (from plant in mdTest.getEvents<BombPlanted>()
+				bpe = (from plant in mdTest.GetEvents<BombPlanted>()
                       select plant as BombPlanted)
                       .GroupBy(p => p.Round)
                       .Select(p => p.FirstOrDefault());
 
-                bee = (from explode in mdTest.getEvents<BombExploded>()
+                bee = (from explode in mdTest.GetEvents<BombExploded>()
                       select explode as BombExploded)
                       .GroupBy(p => p.Round)
                       .Select(p => p.FirstOrDefault());
 
-                bde = (from defuse in mdTest.getEvents<BombDefused>()
+                bde = (from defuse in mdTest.GetEvents<BombDefused>()
                       select defuse as BombDefused)
                       .GroupBy(p => p.Round)
                       .Select(p => p.FirstOrDefault());
 
-                hre = (from hostage in mdTest.getEvents<HostageRescued>()
+                hre = (from hostage in mdTest.GetEvents<HostageRescued>()
                       select hostage as HostageRescued);
 
-                hpu = (from hostage in mdTest.getEvents<HostagePickedUp>()
+                hpu = (from hostage in mdTest.GetEvents<HostagePickedUp>()
                       select hostage as HostagePickedUp);
 
-                dpe = (from disconnection in mdTest.getEvents<DisconnectedPlayer>()
+                dpe = (from disconnection in mdTest.GetEvents<DisconnectedPlayer>()
                       select (disconnection as DisconnectedPlayer));
 
-                te = (from team in mdTest.getEvents<RoundEndedEventArgs>()
+                te = (from team in mdTest.GetEvents<RoundEndedEventArgs>()
                      select (team as RoundEndedEventArgs).Winner);
 
-                re = (from reason in mdTest.getEvents<RoundEndedEventArgs>()
+                re = (from reason in mdTest.GetEvents<RoundEndedEventArgs>()
                      select (reason as RoundEndedEventArgs).Reason);
 
-                le = (from length in mdTest.getEvents<RoundEndedEventArgs>()
+                le = (from length in mdTest.GetEvents<RoundEndedEventArgs>()
                      select (length as RoundEndedEventArgs).Length);
 
-                tpe = (from teamPlayers in mdTest.getEvents<TeamPlayers>()
+                tpe = (from teamPlayers in mdTest.GetEvents<TeamPlayers>()
                       where (teamPlayers as TeamPlayers).Round <= te.Count() // removes extra TeamPlayers if freezetime_end event triggers once a playtest is finished
                       select (teamPlayers as TeamPlayers));
 
-                tes = (from round in mdTest.getEvents<TeamEquipmentStats>()
+                tes = (from round in mdTest.GetEvents<TeamEquipmentStats>()
                       select (round as TeamEquipmentStats));
 
-                ge = (from nade in mdTest.getEvents<NadeEventArgs>()
+                ge = (from nade in mdTest.GetEvents<NadeEventArgs>()
                      select (nade as NadeEventArgs));
 
-                cke = (from chickenKill in mdTest.getEvents<ChickenKilledEventArgs>()
+                cke = (from chickenKill in mdTest.GetEvents<ChickenKilledEventArgs>()
                       select (chickenKill as ChickenKilledEventArgs));
 
-                sfe = (from shot in mdTest.getEvents<ShotFired>()
+                sfe = (from shot in mdTest.GetEvents<ShotFired>()
                       select (shot as ShotFired));
 
                 tanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);

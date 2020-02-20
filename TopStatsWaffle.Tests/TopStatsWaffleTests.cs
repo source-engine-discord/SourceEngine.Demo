@@ -344,7 +344,7 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.versionNumber.Version.ShouldBe("1.1.10");
+				allStats.versionNumber.Version.ShouldBe("1.1.11");
 			}
 
 			[Fact]
