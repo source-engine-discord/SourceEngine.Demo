@@ -205,8 +205,20 @@ namespace TopStatsWaffle
 
                         if (text.ToLower().StartsWith(">fb") || text.ToLower().StartsWith(">feedback") || text.ToLower().StartsWith("!fb"))
                         {
-                            //Sets round to 0 as anything before a match start event should always be classed as warmup
-                            currentfeedbackMessages.Add(new FeedbackMessage() { Round = 0, SteamID = message.SteamID, TeamName = message.TeamName, Message = message.Message });
+							//Sets round to 0 as anything before a match start event should always be classed as warmup
+							currentfeedbackMessages.Add(new FeedbackMessage()
+							{
+								Round = 0,
+								SteamID = message.SteamID,
+								TeamName = message.TeamName,
+								XCurrentPosition = message.XCurrentPosition,
+								YCurrentPosition = message.YCurrentPosition,
+								ZCurrentPosition = message.ZCurrentPosition,
+								XLastAlivePosition = message.XLastAlivePosition,
+								YLastAlivePosition = message.YLastAlivePosition,
+								ZLastAlivePosition = message.ZLastAlivePosition,
+								Message = message.Message
+							});
                         }
                     }
                 }
@@ -250,7 +262,23 @@ namespace TopStatsWaffle
                     var teamName = (player != null) ? player.Team.ToString() : null;
                     teamName = (teamName == "Spectate") ? "Spectator" : teamName;
 
-                    FeedbackMessage feedbackMessage = new FeedbackMessage() { Round = round, SteamID = steamId, TeamName = teamName, Message = text }; // works out TeamName in SaveFiles() if it is null
+					bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(md, player, round);
+					string[] currentPositions = SplitPositionString(player?.Position.ToString());
+					string[] lastAlivePositions = playerAlive ? null : SplitPositionString(player?.LastAlivePosition.ToString());
+
+					FeedbackMessage feedbackMessage = new FeedbackMessage()
+					{
+						Round = round,
+						SteamID = steamId,
+						TeamName = teamName, // works out TeamName in GetFeedbackMessages() if it is null
+						XCurrentPosition = double.Parse(currentPositions[1]),
+						YCurrentPosition = double.Parse(currentPositions[2]),
+						ZCurrentPosition = double.Parse(currentPositions[3]),
+						XLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[1]) : null,
+						YLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[2]) : null,
+						ZLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[3]) : null,
+						Message = text
+					};
 
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
                 }
@@ -607,7 +635,7 @@ namespace TopStatsWaffle
 
 		public versionNumber GetVersionNumber()
 		{
-			return new versionNumber() { Version = "1.1.11" };
+			return new versionNumber() { Version = "1.1.12" };
 		}
 
 		public List<string> GetSupportedGamemodes()
@@ -1630,6 +1658,15 @@ namespace TopStatsWaffle
             return round;
         }
 
+		public static bool CheckIfPlayerAliveAtThisPointInRound(MatchData md, Player player, int round)
+		{
+			long steamId = player == null ? 0 : player.SteamID;
+
+			var kills = md.events.Where(k => k.Key.Name.ToString() == "PlayerKilledEventArgs").Select(v => (PlayerKilledEventArgs)v.Value.ElementAt(0));
+
+			return !kills.Any(x => x.Round == round && x.Victim.SteamID == player.SteamID);
+		}
+
         public int CheckForUpdatedUserId(int userId)
         {
             int newUserId = playerReplacements.Where(u => u.Key == userId).Select(u => u.Value).FirstOrDefault();
@@ -1637,7 +1674,7 @@ namespace TopStatsWaffle
             return (newUserId == 0) ? userId : newUserId;
         }
 
-		public string[] SplitPositionString(string position)
+		public static string[] SplitPositionString(string position)
 		{
 			return position.Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
 		}

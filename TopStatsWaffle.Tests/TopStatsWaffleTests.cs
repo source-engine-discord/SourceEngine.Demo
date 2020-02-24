@@ -403,8 +403,14 @@ namespace TopStatsWaffle.Tests
 				new FeedbackMessage()
 				{
 					Round = 1,
-					SteamID = 32443298432,
+					SteamID = 12321313213,
 					TeamName = "AlphaTeam",
+					XCurrentPosition = 50,
+					YCurrentPosition = 60,
+					ZCurrentPosition = 70,
+					XLastAlivePosition = 120,
+					YLastAlivePosition = 130,
+					ZLastAlivePosition = 140,
 					Message = "bad map",
 				}
 			};
