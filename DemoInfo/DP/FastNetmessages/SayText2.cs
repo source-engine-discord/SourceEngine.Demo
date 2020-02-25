@@ -63,7 +63,8 @@ namespace DemoInfo.DP.FastNetmessages
 				Sender = parser.Players.Values.FirstOrDefault(x => x.Name == parameters[0]),
 				Text = Params[1],
 				IsChat = Chat,
-				IsChatAll = TextAllChat
+				IsChatAll = TextAllChat,
+				TimeSent = parser.CurrentTime
 			};
 
 			parser.RaiseSayText2(e);

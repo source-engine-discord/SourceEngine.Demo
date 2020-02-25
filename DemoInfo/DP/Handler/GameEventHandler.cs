@@ -196,7 +196,12 @@ namespace DemoInfo.DP.Handler
                 //round length
                 timestampFreezetimeEnded = parser.CurrentTime;
 
-                parser.RaiseFreezetimeEnded();
+				FreezetimeEndedEventArgs freezetimeEnd = new FreezetimeEndedEventArgs()
+				{
+					TimeEnd = parser.CurrentTime,
+				};
+
+				parser.RaiseFreezetimeEnded(freezetimeEnd);
             }
 
 			//if (eventDescriptor.Name != "player_footstep" && eventDescriptor.Name != "weapon_fire" && eventDescriptor.Name != "player_jump") {

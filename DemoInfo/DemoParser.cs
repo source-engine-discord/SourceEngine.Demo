@@ -1292,10 +1292,10 @@ namespace DemoInfo
 
 		}
 
-		public void RaiseFreezetimeEnded ()
+		public void RaiseFreezetimeEnded (FreezetimeEndedEventArgs fe)
 		{
 			if (FreezetimeEnded != null)
-				FreezetimeEnded(this, new FreezetimeEndedEventArgs());
+				FreezetimeEnded(this, fe);
 		}
 
 		internal void RaiseOtherKilled()

@@ -83,6 +83,10 @@ namespace DemoInfo
 
 	public class FreezetimeEndedEventArgs : EventArgs
 	{
+		/// <summary>
+		/// The current time value of the DemoParser
+		/// </summary>
+		public float TimeEnd { get; set; }
 	}
 
 	public class PlayerTeamEventArgs : EventArgs
@@ -383,6 +387,11 @@ namespace DemoInfo
 		/// true if the message is for all players ?
 		/// </summary>
 		public bool IsChatAll { get; set; }
+
+		/// <summary>
+		/// The time through the demo that the message was sent (manually added to the event in SayText2.cs)
+		/// </summary>
+		public float TimeSent { get; set; }
 	}
 
 	/// <summary>
