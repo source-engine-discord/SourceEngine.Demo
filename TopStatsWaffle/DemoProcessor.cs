@@ -266,6 +266,19 @@ namespace TopStatsWaffle
 					string[] currentPositions = SplitPositionString(player?.Position.ToString());
 					string[] lastAlivePositions = playerAlive ? null : SplitPositionString(player?.LastAlivePosition.ToString());
 
+					var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
+					var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value).ElementAt(0);
+
+					int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
+					int numOfFreezetimesEnded = freezetimesEndedEvents.Count();
+
+					float timeInRound = 0; // Stays as '0' if sent during freezetime
+					if (numOfFreezetimesEnded > numOfRoundsEnded)
+					{
+						var freezetimeEnded = (FreezetimeEndedEventArgs)freezetimesEndedEvents.LastOrDefault(); // would it be better to use '.OrderByDescending(f => f.TimeEnd).FirstOrDefault()' ?
+						timeInRound = dp.CurrentTime - freezetimeEnded.TimeEnd;
+					}
+
 					FeedbackMessage feedbackMessage = new FeedbackMessage()
 					{
 						Round = round,
@@ -277,7 +290,8 @@ namespace TopStatsWaffle
 						XLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[1]) : null,
 						YLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[2]) : null,
 						ZLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[3]) : null,
-						Message = text
+						Message = text,
+						TimeInRound = timeInRound, // counts messages sent after the round_end event fires as the next round, set to '0' as if it was the next round's warmup (done this way instead of using round starts to avoid potential issues when restarting rounds)
 					};
 
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
@@ -294,9 +308,24 @@ namespace TopStatsWaffle
                 // if round_freeze_end event did not get fired in this round due to error
                 while (numOfFreezetimesEnded <= numOfRoundsEnded)
                 {
-                    dp.RaiseFreezetimeEnded();
+                    dp.RaiseFreezetimeEnded(new FreezetimeEndedEventArgs()
+					{
+						TimeEnd = -1, // no idea when this actually ended without guessing
+					});
                     numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count();
-                }
+
+					// set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
+					if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
+					{
+						foreach (FeedbackMessage message in md.events.Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value)?.ElementAt(0))
+						{
+							if (message.Round == numOfFreezetimesEnded)
+							{
+								message.TimeInRound = -1;
+							}
+						}
+					}
+				}
 
                 md.addEvent(typeof(RoundEndedEventArgs), e);
 
@@ -635,7 +664,7 @@ namespace TopStatsWaffle
 
 		public versionNumber GetVersionNumber()
 		{
-			return new versionNumber() { Version = "1.1.12" };
+			return new versionNumber() { Version = "1.1.13" };
 		}
 
 		public List<string> GetSupportedGamemodes()

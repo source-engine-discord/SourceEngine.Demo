@@ -12,7 +12,8 @@
 		public double? YLastAlivePosition { get; set; }
 		public double? ZLastAlivePosition { get; set; }
 		public string Message { get; set; }
+		public double TimeInRound { get; set; }
 
-        public FeedbackMessage() { }
+		public FeedbackMessage() { }
     }
 }

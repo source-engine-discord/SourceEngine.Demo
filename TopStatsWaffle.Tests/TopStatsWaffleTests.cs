@@ -344,7 +344,7 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.versionNumber.Version.ShouldBe("1.1.11");
+				allStats.versionNumber.Version.ShouldBe("1.1.13");
 			}
 
 			[Fact]
@@ -412,6 +412,7 @@ namespace TopStatsWaffle.Tests
 					YLastAlivePosition = 130,
 					ZLastAlivePosition = 140,
 					Message = "bad map",
+					TimeInRound = 31.7568,
 				}
 			};
 
