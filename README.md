@@ -1,7 +1,7 @@
 # IDemO
 Extended from CSGODemoCSV, utilises DemoInfo.
 
-Latest release **v1.1.11**: https://github.com/JamesT-W/IDemO/releases/tag/v1.1.11
+Latest release **v1.1.13**: https://github.com/JamesT-W/IDemO/releases/tag/v1.1.13
 
 ![Program output](https://i.imgur.com/RALmTAR.png)
 
