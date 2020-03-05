@@ -44,10 +44,15 @@ namespace DemoInfo.DP.Handler
 					}
 				} else {
 					Entity e = parser.Entities[currentEntity];
-					e.ServerClass.AnnounceDestroyedEntity(e);
+					
+					if (e != null) // why is it sometimes null?
+					{
+						e.ServerClass.AnnounceDestroyedEntity(e);
 
-					// leave / destroy
-					e.Leave ();
+						// leave / destroy
+						e.Leave();
+					}
+
 					parser.Entities[currentEntity] = null;
 
 					//dunno, but you gotta read this.
