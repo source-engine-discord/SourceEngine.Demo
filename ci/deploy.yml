@@ -49,4 +49,4 @@ steps:
 
     - publish: $(Build.ArtifactStagingDirectory)/app
       displayName: 'Publish app artifacts'
-      artifact: IDemO
+      artifact: IDemO_win-x64
