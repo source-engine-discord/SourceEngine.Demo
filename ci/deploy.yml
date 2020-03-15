@@ -42,6 +42,7 @@ steps:
         arguments: '--output $(Build.ArtifactStagingDirectory)/app'
         configuration: $(configuration)
         nobuild: true
+        zipAfterPublish: false
         publishWebProjects: false
 
     - publish: $(Build.ArtifactStagingDirectory)/app
