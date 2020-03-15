@@ -31,4 +31,9 @@
         <None Remove="packages.lock.json" />
     </ItemGroup>
 
+    <!-- Workaround for https://github.com/dotnet/runtime/issues/3735 -->
+    <ItemGroup>
+        <None Update="..\..\LICENSE.txt" CopyToPublishDirectory="Never" />
+    </ItemGroup>
+
 </Project>
