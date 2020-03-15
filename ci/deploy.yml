@@ -39,7 +39,9 @@ steps:
       inputs:
         command: publish
         projects: src/$(project).App/$(project).App.csproj
-        arguments: '--output $(Build.ArtifactStagingDirectory)/app'
+        arguments: >-
+          --output $(Build.ArtifactStagingDirectory)/app
+          --no-build
         configuration: $(configuration)
         nobuild: true
         zipAfterPublish: false
