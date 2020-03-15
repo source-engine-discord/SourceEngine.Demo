@@ -46,6 +46,7 @@ steps:
         nobuild: true
         zipAfterPublish: false
         publishWebProjects: false
+        modifyOutputPath: false
 
     - publish: $(Build.ArtifactStagingDirectory)/app
       displayName: 'Publish app artifacts'
