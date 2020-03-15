@@ -14,8 +14,9 @@
         </None>
     </ItemGroup>
 
-    <Target Name="CopyLicense" AfterTargets="Publish">
+    <Target Name="CopyFilesToPublish" AfterTargets="Publish">
         <Copy SourceFiles="..\..\LICENSE.txt" DestinationFolder="$(PublishDir)"/>
+        <Copy SourceFiles="..\..\README.md" DestinationFolder="$(PublishDir)"/>
     </Target>
 
 </Project>
