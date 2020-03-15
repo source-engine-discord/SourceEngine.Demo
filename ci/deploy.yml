@@ -33,3 +33,17 @@ steps:
           push $(Build.ArtifactStagingDirectory)/*.nupkg
           -s $(NuGet.SourceUrl)
           -k $(NuGet.ApiKey)
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish app'
+      inputs:
+        command: publish
+        projects: src/$(project).App/$(project).App.csproj
+        arguments: '--output $(Build.ArtifactStagingDirectory)/app'
+        configuration: $(configuration)
+        nobuild: true
+        publishWebProjects: false
+
+    - publish: $(Build.ArtifactStagingDirectory)/app
+      displayName: 'Publish app artifacts'
+      artifact: IDemO
