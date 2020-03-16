@@ -1,6 +1,7 @@
 # SourceEngine.Demo.Stats
 
-Outputs game statistics from CS:GO demos as JSON. Extended from CSGODemoCSV and utilises DemoInfo.
+Outputs game statistics from CS:GO demos as JSON. Extended from CSGODemoCSV and utilises [
+SourceEngine.Demo.Parser][9]. Available as both a class library on nuget.org and a CLI binary (named _IDemO_).
 
 ![Program output](https://i.imgur.com/RALmTAR.png)
 
@@ -10,9 +11,11 @@ Outputs game statistics from CS:GO demos as JSON. Extended from CSGODemoCSV and 
 - Hostage
 - Wingman
 
-## Running
+## Running IDemO
 
 ### Releases
+
+Only builds/releases for Windows are currently automated.
 
 Latest release:
 
@@ -75,3 +78,4 @@ dotnet publish -c Release -r linux-x64
 [6]: https://docs.microsoft.com/en-us/dotnet/core/deploying/index#self-contained-deployments-scd
 [7]: https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#single-file-executables
 [8]: https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
+[9]: https://github.com/source-engine-discord/SourceEngine.Demo.Parser
