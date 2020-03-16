@@ -25,6 +25,9 @@ ProjectSection(SolutionItems) = preProject
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{DE87757F-4689-42C7-9DF5-ED954450BAA6}"
+ProjectSection(SolutionItems) = preProject
+	tests\Directory.Build.props = tests\Directory.Build.props
+EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +57,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{10BBC6A5-335B-46EB-8F1F-4B648533D41E} = {C852A71E-BBF3-4D71-8B11-D244C1751EF3}
 		{EC684D65-2C2E-43DF-A8A6-1EAD03FB5F11} = {C852A71E-BBF3-4D71-8B11-D244C1751EF3}
-        {000571C6-8000-4D00-ACD1-E6197B279CB2} = {DE87757F-4689-42C7-9DF5-ED954450BAA6}
+		{000571C6-8000-4D00-ACD1-E6197B279CB2} = {DE87757F-4689-42C7-9DF5-ED954450BAA6}
 	EndGlobalSection
 EndGlobal
