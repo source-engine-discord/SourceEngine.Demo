@@ -8,7 +8,7 @@ variables:
   - name: configuration
     value: Release
   - name: tagged
-    value: $[ startsWith(variables['Build.SourceBranch'], 'refs/tags') ]
+    value: $[ startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ]
   - name: project
     value: SourceEngine.Demo.Stats
 
