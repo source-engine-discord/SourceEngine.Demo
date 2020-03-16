@@ -13,7 +13,7 @@
 
     <PropertyGroup Label="Assembly Metadata">
         <Company>Source Engine Discord</Company>
-        <Copyright>© 2014 EHVAG, 2019 Source Engine Discord and contributors</Copyright>
+        <Copyright>© 2014 EHVAG, 2020 Source Engine Discord and contributors</Copyright>
         <Product>SourceEngine.Demo.Parser</Product>
     </PropertyGroup>
 
