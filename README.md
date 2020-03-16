@@ -45,7 +45,7 @@ IDemO -folders "demos" -output "parsed" -recursive -nochickens -samefilename -sa
 
 ### Requirements
 
-* [.NET Core 3.0 SDK][2] or higher.
+* [.NET Core 3.1 SDK][2] or higher.
 * [Visual Studio 2019][3], [JetBrains Rider][4], or [Visual Studio Code][5] recommended.
 
 ### Building
@@ -71,7 +71,7 @@ dotnet publish -c Release -r linux-x64
 ```
 
 [1]: https://github.com/source-engine-discord/SourceEngine.Demo.Stats/releases/download/latest/IDemO_win-x64.zip
-[2]: https://dotnet.microsoft.com/download/dotnet-core/3.0
+[2]: https://dotnet.microsoft.com/download/dotnet-core/3.1
 [3]: https://visualstudio.microsoft.com/
 [4]: https://www.jetbrains.com/rider/
 [5]: https://code.visualstudio.com/

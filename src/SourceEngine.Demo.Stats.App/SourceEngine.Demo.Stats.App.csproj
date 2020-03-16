@@ -5,7 +5,7 @@
         <OutputType>Exe</OutputType>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <StartupObject>SourceEngine.Demo.Stats.App.Program</StartupObject>
-        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup Label="Publish Settings">
