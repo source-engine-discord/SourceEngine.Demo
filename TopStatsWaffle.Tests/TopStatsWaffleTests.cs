@@ -154,7 +154,7 @@ namespace TopStatsWaffle.Tests
 			}
 
 			[Fact]
-			public void Should_return_map_info_correctly()
+			public void Should_return_map_info_correctly_for_defuse_maps()
 			{
 				// Arrange
 
@@ -166,6 +166,99 @@ namespace TopStatsWaffle.Tests
 				allStats.mapInfo.MapName.ShouldBe("de_testmap");
 				allStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
 				allStats.mapInfo.TestType.ShouldBe("Defuse");
+			}
+
+			[Fact]
+			public void Should_return_map_info_correctly_for_hostage_maps()
+			{
+				// Arrange
+				var ProcessedData2 = ProcessedData;
+				ProcessedData2.DemoInformation = new DemoInformation()
+				{
+					DemoName = "demo2",
+					MapName = "de_testmap2",
+					TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
+					TestType = "Hostage",
+				};
+				ProcessedData2.MatchStartValues = new List<MatchStartedEventArgs>()
+				{
+					new MatchStartedEventArgs
+					{
+						Mapname = "de_testmap2",
+						HasBombsites = false,
+					}
+				};
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.mapInfo.DemoName.ShouldBe("demo2");
+				allStats.mapInfo.MapName.ShouldBe("de_testmap2");
+				allStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+				allStats.mapInfo.TestType.ShouldBe("Hostage");
+			}
+
+			[Fact]
+			public void Should_return_map_info_correctly_for_wingman_defuse_maps()
+			{
+				// Arrange
+				var ProcessedData3 = ProcessedData;
+				ProcessedData3.DemoInformation = new DemoInformation()
+				{
+					DemoName = "demo3",
+					MapName = "de_testmap3",
+					TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
+					TestType = "Wingman",
+				};
+				ProcessedData3.MatchStartValues = new List<MatchStartedEventArgs>()
+				{
+					new MatchStartedEventArgs
+					{
+						Mapname = "de_testmap3",
+						HasBombsites = true,
+					}
+				};
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.mapInfo.DemoName.ShouldBe("demo3");
+				allStats.mapInfo.MapName.ShouldBe("de_testmap3");
+				allStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+				allStats.mapInfo.TestType.ShouldBe("Wingman");
+			}
+
+			[Fact]
+			public void Should_return_map_info_correctly_for_wingman_hostage_maps()
+			{
+				// Arrange
+				var ProcessedData3 = ProcessedData;
+				ProcessedData3.DemoInformation = new DemoInformation()
+				{
+					DemoName = "demo4",
+					MapName = "de_testmap4",
+					TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
+					TestType = "Wingman",
+				};
+				ProcessedData3.MatchStartValues = new List<MatchStartedEventArgs>()
+				{
+					new MatchStartedEventArgs
+					{
+						Mapname = "de_testmap4",
+						HasBombsites = false,
+					}
+				};
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.mapInfo.DemoName.ShouldBe("demo4");
+				allStats.mapInfo.MapName.ShouldBe("de_testmap4");
+				allStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+				allStats.mapInfo.TestType.ShouldBe("Wingman");
 			}
 
 			[Fact]
@@ -344,7 +437,7 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.versionNumber.Version.ShouldBe("1.1.13");
+				allStats.versionNumber.Version.ShouldBe("1.1.14");
 			}
 
 			[Fact]

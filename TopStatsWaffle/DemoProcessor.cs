@@ -32,6 +32,8 @@ namespace TopStatsWaffle
 
     public class MatchData
     {
+		private static DemoParser dp;
+
         public Dictionary<Type, List<object>> events = new Dictionary<Type, List<object>>();
 
         Dictionary<int, TickCounter> playerTicks = new Dictionary<int, TickCounter>();
@@ -183,7 +185,7 @@ namespace TopStatsWaffle
             MatchData md = new MatchData();
 
             //Create demo parser instance
-            DemoParser dp = new DemoParser(File.OpenRead(file), parseChickens);
+            dp = new DemoParser(File.OpenRead(file), parseChickens);
 
             dp.ParseHeader();
 
@@ -578,13 +580,14 @@ namespace TopStatsWaffle
 
 			var dataAndPlayerNames = GetDataAndPlayerNames(processedData);
 
-			AllStats allStats = new AllStats();
-
-			allStats.versionNumber = GetVersionNumber();
-			allStats.supportedGamemodes = GetSupportedGamemodes();
-			allStats.mapInfo = GetMapInfo(processedData, mapNameSplit);
-			allStats.tanookiStats = processedData.tanookiStats;
-            allStats.playerStats = GetPlayerStats(processedData, dataAndPlayerNames.Data, dataAndPlayerNames.PlayerNames);
+			AllStats allStats = new AllStats
+			{
+				versionNumber = GetVersionNumber(),
+				supportedGamemodes = GetSupportedGamemodes(),
+				mapInfo = GetMapInfo(processedData, mapNameSplit),
+				tanookiStats = processedData.tanookiStats,
+				playerStats = GetPlayerStats(processedData, dataAndPlayerNames.Data, dataAndPlayerNames.PlayerNames)
+			};
 
 			var generalroundsStats = GetGeneralRoundsStats(processedData, dataAndPlayerNames.PlayerNames);
 			allStats.winnersStats = generalroundsStats.winnersStats;
@@ -664,7 +667,7 @@ namespace TopStatsWaffle
 
 		public versionNumber GetVersionNumber()
 		{
-			return new versionNumber() { Version = "1.1.13" };
+			return new versionNumber() { Version = "1.1.14" };
 		}
 
 		public List<string> GetSupportedGamemodes()
@@ -683,21 +686,24 @@ namespace TopStatsWaffle
 			// attempts to get the gamemode
 			var roundsWonReasons = GetRoundsWonReasons(processedData.RoundEndReasonValues);
 
-			if (processedData.MatchStartValues.Any(m => m.HasBombsites) || processedData.BombsitePlantValues.Count() > 0 || roundsWonReasons.Any(w => w.ToString() == winReasonBombed) || roundsWonReasons.Any(w => w.ToString() == winReasonDefused) || roundsWonReasons.Any(w => w.ToString() == winReasonTSaved))
+			if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() > 2)))
 			{
-				if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() > 2)))
+				if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1 || processedData.MatchStartValues.Any(m => m.HasBombsites))
 				{
 					mapInfo.GameMode = "Defuse";
 				}
-				else
+				else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1) && !processedData.MatchStartValues.Any(m => m.HasBombsites))
 				{
-					mapInfo.GameMode = "Wingman";
+					mapInfo.GameMode = "Hostage";
+				}
+				else // what the hell is this gamemode ??
+				{
+					mapInfo.GameMode = "Unknown";
 				}
 			}
-			else // assumes it's hostage if no bomb events are triggered --- is there a better way to decide this since matches with no plants will fall into this category ???
-				 // maybe instead check the entity list for entities that are bombs or hostages?
+			else
 			{
-				mapInfo.GameMode = "Hostage";
+				mapInfo.GameMode = "Wingman";
 			}
 
 			return mapInfo;
