@@ -365,14 +365,17 @@ namespace DemoInfo
 		/// The indicies of the bombsites - useful to find out
 		/// where the bomb is planted
 		/// </summary>
-		internal int bombsiteAIndex = -1, bombsiteBIndex = -1;
-		internal Vector bombsiteACenter, bombsiteBCenter;
+		public int bombsiteAIndex { get; internal set; } = -1;
+		public int bombsiteBIndex { get; internal set; } = -1;
+		public Vector bombsiteACenter { get; internal set; }
+		public Vector bombsiteBCenter { get; internal set; }
 
 		/// <summary>
 		/// The indicies of the hostages - useful to find out
 		/// which hostage has been rescued
 		/// </summary>
-		internal int hostageAIndex = -1, hostageBIndex = -1;
+		public int hostageAIndex { get; internal set; } = -1;
+		public int hostageBIndex { get; internal set; } = -1;
 
 		/// <summary>
 		/// The ID of the CT-Team
