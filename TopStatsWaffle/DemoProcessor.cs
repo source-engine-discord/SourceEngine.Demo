@@ -205,7 +205,7 @@ namespace TopStatsWaffle
                     {
 						var text = message.Message;
 
-                        if (text.ToLower().StartsWith(">fb") || text.ToLower().StartsWith(">feedback") || text.ToLower().StartsWith("!fb"))
+                        if (IsMessageFeedback(text))
                         {
 							//Sets round to 0 as anything before a match start event should always be classed as warmup
 							currentfeedbackMessages.Add(new FeedbackMessage()
@@ -219,7 +219,11 @@ namespace TopStatsWaffle
 								XLastAlivePosition = message.XLastAlivePosition,
 								YLastAlivePosition = message.YLastAlivePosition,
 								ZLastAlivePosition = message.ZLastAlivePosition,
-								Message = message.Message
+								XCurrentViewAngle = message.XCurrentViewAngle,
+								YCurrentViewAngle = message.YCurrentViewAngle,
+								SetPosCommandCurrentPosition = message.SetPosCommandCurrentPosition,
+								Message = message.Message,
+								TimeInRound = 0, // overwrites whatever the TimeInRound value was before, 0 is generally used for messages sent in Warmup
 							});
                         }
                     }
@@ -245,7 +249,7 @@ namespace TopStatsWaffle
 
 				var text = e.Text.ToString();
 
-                if (text.ToLower().StartsWith(">fb") || text.ToLower().StartsWith(">feedback"))
+                if (IsMessageFeedback(text))
                 {
                     int round = GetCurrentRoundNum(md);
 
@@ -268,6 +272,8 @@ namespace TopStatsWaffle
 					string[] currentPositions = SplitPositionString(player?.Position.ToString());
 					string[] lastAlivePositions = playerAlive ? null : SplitPositionString(player?.LastAlivePosition.ToString());
 
+					string setPosCurrentPosition = GenerateSetPosCommand(currentPositions, player?.ViewDirectionX, player?.ViewDirectionY);
+
 					var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
 					var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value).ElementAt(0);
 
@@ -286,12 +292,15 @@ namespace TopStatsWaffle
 						Round = round,
 						SteamID = steamId,
 						TeamName = teamName, // works out TeamName in GetFeedbackMessages() if it is null
-						XCurrentPosition = double.Parse(currentPositions[1]),
-						YCurrentPosition = double.Parse(currentPositions[2]),
-						ZCurrentPosition = double.Parse(currentPositions[3]),
-						XLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[1]) : null,
-						YLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[2]) : null,
-						ZLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[3]) : null,
+						XCurrentPosition = double.Parse(currentPositions[0]),
+						YCurrentPosition = double.Parse(currentPositions[1]),
+						ZCurrentPosition = double.Parse(currentPositions[2]),
+						XLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[0]) : null,
+						YLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[1]) : null,
+						ZLastAlivePosition = (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[2]) : null,
+						XCurrentViewAngle = player?.ViewDirectionX,
+						YCurrentViewAngle = player?.ViewDirectionY,
+						SetPosCommandCurrentPosition = setPosCurrentPosition,
 						Message = text,
 						TimeInRound = timeInRound, // counts messages sent after the round_end event fires as the next round, set to '0' as if it was the next round's warmup (done this way instead of using round starts to avoid potential issues when restarting rounds)
 					};
@@ -667,7 +676,7 @@ namespace TopStatsWaffle
 
 		public versionNumber GetVersionNumber()
 		{
-			return new versionNumber() { Version = "1.1.14" };
+			return new versionNumber() { Version = "1.1.15" };
 		}
 
 		public List<string> GetSupportedGamemodes()
@@ -958,9 +967,9 @@ namespace TopStatsWaffle
 
 						//plant position
 						string[] positions = SplitPositionString(bombPlanted.Player.LastAlivePosition.ToString());
-						bombPlanted.XPosition = double.Parse(positions[1]);
-						bombPlanted.YPosition = double.Parse(positions[2]);
-						bombPlanted.ZPosition = double.Parse(positions[3]);
+						bombPlanted.XPosition = double.Parse(positions[0]);
+						bombPlanted.YPosition = double.Parse(positions[1]);
+						bombPlanted.ZPosition = double.Parse(positions[2]);
 					}
 					if (processedData.BombsiteExplodeValues.Any(p => p.Round == roundNum))
 					{
@@ -1027,17 +1036,17 @@ namespace TopStatsWaffle
 						string[] positionsRescueA = hostageRescuedA != null ? SplitPositionString(hostageRescuedA.Player.LastAlivePosition.ToString()) : null;
 						if (positionsRescueA != null)
 						{
-							hostageRescuedA.XPosition = double.Parse(positionsRescueA[1]);
-							hostageRescuedA.YPosition = double.Parse(positionsRescueA[2]);
-							hostageRescuedA.ZPosition = double.Parse(positionsRescueA[3]);
+							hostageRescuedA.XPosition = double.Parse(positionsRescueA[0]);
+							hostageRescuedA.YPosition = double.Parse(positionsRescueA[1]);
+							hostageRescuedA.ZPosition = double.Parse(positionsRescueA[2]);
 						}
 
 						string[] positionsRescueB = hostageRescuedB != null ? SplitPositionString(hostageRescuedB.Player.LastAlivePosition.ToString()) : null;
 						if (positionsRescueB != null)
 						{
-							hostageRescuedB.XPosition = double.Parse(positionsRescueB[1]);
-							hostageRescuedB.YPosition = double.Parse(positionsRescueB[2]);
-							hostageRescuedB.ZPosition = double.Parse(positionsRescueB[3]);
+							hostageRescuedB.XPosition = double.Parse(positionsRescueB[0]);
+							hostageRescuedB.YPosition = double.Parse(positionsRescueB[1]);
+							hostageRescuedB.ZPosition = double.Parse(positionsRescueB[2]);
 						}
 					}
 
@@ -1184,11 +1193,11 @@ namespace TopStatsWaffle
 							var flash = nade as FlashEventArgs;
 							int numOfPlayersFlashed = flash.FlashedPlayers.Count();
 
-							grenadesSpecificStats.Add(new grenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[1]), YPosition = double.Parse(positions[2]), ZPosition = double.Parse(positions[3]), NumPlayersFlashed = numOfPlayersFlashed });
+							grenadesSpecificStats.Add(new grenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[0]), YPosition = double.Parse(positions[1]), ZPosition = double.Parse(positions[2]), NumPlayersFlashed = numOfPlayersFlashed });
 						}
 						else
 						{
-							grenadesSpecificStats.Add(new grenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[1]), YPosition = double.Parse(positions[2]), ZPosition = double.Parse(positions[3]) });
+							grenadesSpecificStats.Add(new grenadesSpecificStats() { NadeType = nade.NadeType.ToString(), SteamID = steamId, XPosition = double.Parse(positions[0]), YPosition = double.Parse(positions[1]), ZPosition = double.Parse(positions[2]) });
 						}
 					}
 				}
@@ -1216,12 +1225,12 @@ namespace TopStatsWaffle
 					if (playerKilledEvent != null)
 					{
 						int round = playerKilledEvent.Round;
+						
+						string[] killPositionSplit = SplitPositionString(kills.ElementAt(i).LastAlivePosition.ToString());
+						string killPositions = $"{ killPositionSplit[0] },{ killPositionSplit[1] },{ killPositionSplit[2] }";
 
-						string[] killPositionSplit = kills.ElementAt(i).LastAlivePosition.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
-						string killPositions = $"{ killPositionSplit[1] },{ killPositionSplit[2] },{ killPositionSplit[3] }";
-
-						string[] deathPositionSplit = deaths.ElementAt(i).LastAlivePosition.ToString().Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
-						string deathPositions = $"{ deathPositionSplit[1] },{ deathPositionSplit[2] },{ deathPositionSplit[3] }";
+						string[] deathPositionSplit = SplitPositionString(deaths.ElementAt(i).LastAlivePosition.ToString());
+						string deathPositions = $"{ deathPositionSplit[0] },{ deathPositionSplit[1] },{ deathPositionSplit[2] }";
 
 						//retrieve steam ID using player name if the event does not return it correctly
 						long killerSteamId = kills.ElementAt(i) != null ? ((kills.ElementAt(i).SteamID == 0) ? GetSteamIdByPlayerName(playerNames, kills.ElementAt(i).Name) : kills.ElementAt(i).SteamID) : 0;
@@ -1245,14 +1254,14 @@ namespace TopStatsWaffle
 							Weapon = weaponUsed,
 							KillerSteamID = killerSteamId,
 							KillerBotTakeover = playerKilledEvent.KillerBotTakeover,
-							XPositionKill = double.Parse(killPositionSplit[1]),
-							YPositionKill = double.Parse(killPositionSplit[2]),
-							ZPositionKill = double.Parse(killPositionSplit[3]),
+							XPositionKill = double.Parse(killPositionSplit[0]),
+							YPositionKill = double.Parse(killPositionSplit[1]),
+							ZPositionKill = double.Parse(killPositionSplit[2]),
 							VictimSteamID = victimSteamId,
 							VictimBotTakeover = playerKilledEvent.VictimBotTakeover,
-							XPositionDeath = double.Parse(deathPositionSplit[1]),
-							YPositionDeath = double.Parse(deathPositionSplit[2]),
-							ZPositionDeath = double.Parse(deathPositionSplit[3]),
+							XPositionDeath = double.Parse(deathPositionSplit[0]),
+							YPositionDeath = double.Parse(deathPositionSplit[1]),
+							ZPositionDeath = double.Parse(deathPositionSplit[2]),
 							AssisterSteamID = assisterSteamId,
 							AssisterBotTakeover = playerKilledEvent.AssisterBotTakeover,
 							FirstKillOfTheRound = firstKillOfTheRound,
@@ -1711,7 +1720,20 @@ namespace TopStatsWaffle
 
 		public static string[] SplitPositionString(string position)
 		{
-			return position.Split(new string[] { "{X: ", ", Y: ", ", Z: ", "}" }, StringSplitOptions.None);
+			var positionString = position.Split(new string[] { "{X: ", ", Y: ", ", Z: ", " }" }, StringSplitOptions.None);
+			return positionString.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+		}
+
+		public static string GenerateSetPosCommand(string[] currentPositions, float? viewDirectionX, float? viewDirectionY)
+		{
+			return string.Concat("setpos ", currentPositions[0], " ", currentPositions[1], " ", currentPositions[2], "; setang ",
+								 (Convert.ToString(viewDirectionX) ?? "0.0"), " ", (Convert.ToString(viewDirectionY) ?? "0.0") // Z axis is optional
+			);
+		}
+
+		public static bool IsMessageFeedback(string text)
+		{
+			return text.ToLower().StartsWith(">fb") || text.ToLower().StartsWith(">feedback") || text.ToLower().StartsWith("!fb") || text.ToLower().StartsWith("!feedback");
 		}
 
 		public BombPlantedError ValidateBombsite(IEnumerable<BombPlanted> bombPlantedArray, char bombsite)

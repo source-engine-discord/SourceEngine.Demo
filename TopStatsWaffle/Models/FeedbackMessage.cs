@@ -11,6 +11,9 @@
 		public double? XLastAlivePosition { get; set; } // If alive, LastAlivePosition values are set to null in dp.SayText2 +=
 		public double? YLastAlivePosition { get; set; }
 		public double? ZLastAlivePosition { get; set; }
+		public float? XCurrentViewAngle { get; set; }
+		public float? YCurrentViewAngle { get; set; }
+		public string SetPosCommandCurrentPosition { get; set; }
 		public string Message { get; set; }
 		public double TimeInRound { get; set; }
 

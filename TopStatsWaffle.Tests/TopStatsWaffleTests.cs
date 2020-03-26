@@ -437,7 +437,7 @@ namespace TopStatsWaffle.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.versionNumber.Version.ShouldBe("1.1.14");
+				allStats.versionNumber.Version.ShouldBe("1.1.15");
 			}
 
 			[Fact]
@@ -504,6 +504,9 @@ namespace TopStatsWaffle.Tests
 					XLastAlivePosition = 120,
 					YLastAlivePosition = 130,
 					ZLastAlivePosition = 140,
+					XCurrentViewAngle = 45.0f,
+					YCurrentViewAngle = 225.0f,
+					SetPosCommandCurrentPosition = "setpos 50 60 70; setang 45 225",
 					Message = "bad map",
 					TimeInRound = 31.7568,
 				}
