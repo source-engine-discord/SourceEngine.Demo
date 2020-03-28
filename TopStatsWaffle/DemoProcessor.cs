@@ -274,11 +274,15 @@ namespace TopStatsWaffle
 
 					string setPosCurrentPosition = GenerateSetPosCommand(currentPositions, player?.ViewDirectionX, player?.ViewDirectionY);
 
-					var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
-					var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value).ElementAt(0);
+					var roundsEndedEvents = md.events.Any(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
+						? md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value).ElementAt(0)
+						: null;
+					var freezetimesEndedEvents = md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
+						? md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value).ElementAt(0)
+						: null;
 
-					int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
-					int numOfFreezetimesEnded = freezetimesEndedEvents.Count();
+					int numOfRoundsEnded = roundsEndedEvents?.Count() > 0 ? roundsEndedEvents.Count() : 0;
+					int numOfFreezetimesEnded = freezetimesEndedEvents?.Count() > 0 ? freezetimesEndedEvents.Count() : 0;
 
 					float timeInRound = 0; // Stays as '0' if sent during freezetime
 					if (numOfFreezetimesEnded > numOfRoundsEnded)
@@ -676,7 +680,7 @@ namespace TopStatsWaffle
 
 		public versionNumber GetVersionNumber()
 		{
-			return new versionNumber() { Version = "1.1.15" };
+			return new versionNumber() { Version = "1.1.16" };
 		}
 
 		public List<string> GetSupportedGamemodes()
