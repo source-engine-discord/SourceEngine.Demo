@@ -1,5 +1,5 @@
 steps:
-  - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))) }}:
+  - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
     - script: |
         set -euo pipefail
 
@@ -20,9 +20,6 @@ steps:
         includesymbols: true
         nobuild: true
         verbosityPack: normal
-        ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
-          versioningScheme: byEnvVar
-          versionEnvVar: VERSION
 
     - task: DotNetCoreCLI@2
       displayName: 'Push packages'
