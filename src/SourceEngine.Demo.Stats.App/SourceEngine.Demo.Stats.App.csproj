@@ -16,7 +16,6 @@
     <PropertyGroup Label="Assembly Metadata">
         <ApplicationIcon>icon_8RJ_icon.ico</ApplicationIcon>
         <Description>Command-line utility for parsing CS:GO demos and outputting game statistics as JSON.</Description>
-        <Version>2.0.0</Version>
     </PropertyGroup>
 
     <PropertyGroup>
