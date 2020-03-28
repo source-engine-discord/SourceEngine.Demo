@@ -3,7 +3,7 @@ steps:
     - script: |
         set -euo pipefail
 
-        version="$(grep -Po '<Version>\K.+(?=<)' src/${PROJECT}/${PROJECT}.csproj)-build.${BUILD_BUILDID}"
+        version="$(grep -Po '<Version>\K.+(?=<)' src/${PROJECT}.Stats/${PROJECT}.Stats.csproj)-build.${BUILD_BUILDID}"
 
         printf '%s\n' "Version read from project file: ${version}"
         printf '%s\n' "##vso[task.setvariable variable=VERSION]${version}"
@@ -38,7 +38,7 @@ steps:
       displayName: 'Publish app'
       inputs:
         command: publish
-        projects: src/$(project).App/$(project).App.csproj
+        projects: src/$(project).Stats.App/$(project).Stats.App.csproj
         arguments: >-
           --output $(Build.ArtifactStagingDirectory)/app
           --no-build

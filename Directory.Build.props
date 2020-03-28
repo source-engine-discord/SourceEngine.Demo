@@ -13,17 +13,17 @@
 
     <PropertyGroup Label="Assembly Metadata">
         <Company>Source Engine Discord</Company>
-        <Copyright>© 2020 Source Engine Discord and contributors</Copyright>
-        <Product>SourceEngine.Demo.Stats</Product>
+        <Copyright>© 2014 EHVAG, 2020 Source Engine Discord and contributors</Copyright>
+        <Product>SourceEngine.Demo</Product>
     </PropertyGroup>
 
     <PropertyGroup Label="Package Metadata">
-        <Authors>source-engine-discord</Authors>
+        <Authors>source-engine-discord;main</Authors>
         <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
         <PackageProjectUrl>https://discord.gg/SourceEngine</PackageProjectUrl>
-        <PackageTags>source engine;demo;csgo;counter-strike;stats;json</PackageTags>
+        <PackageTags>source engine;demo;csgo;counter-strike;stats;json;parser</PackageTags>
         <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/source-engine-discord/SourceEngine.Demo.Stats</RepositoryUrl>
+        <RepositoryUrl>https://github.com/source-engine-discord/SourceEngine.Demo</RepositoryUrl>
     </PropertyGroup>
 
 </Project>

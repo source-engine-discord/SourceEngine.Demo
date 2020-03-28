@@ -1,6 +1,11 @@
 MIT License
 
-Copyright (c) 2020 Source Engine Discord
+Copyright (c) 2014
+
+Note: the above copyright notice has no copyright holders specified but it was
+copied verbatim from the original DemoInfo project.
+
+Copyright (c) 2020 Source Engine Discord and Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

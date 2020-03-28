@@ -304,11 +304,6 @@
         "resolved": "4.3.0",
         "contentHash": "VB5cn/7OzUfzdnC8tqAIMQciVLiq2epm2NrAm1E9OjNRyG4lVhfR61SMcLizejzQP8R8Uf/0l5qOIbUEi+RdEg=="
       },
-      "SourceEngine.Demo.Parser": {
-        "type": "Transitive",
-        "resolved": "2.0.0-build.64",
-        "contentHash": "suagC2FVZLli8IirJsMYt1C1mhYMChZgKmc4GRk+jJL9BkQ+yUllKm/HCKG0RBaPX9iIyhbCfUK7B7WduMlaJA=="
-      },
       "System.AppContext": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -1195,11 +1190,14 @@
           "xunit.extensibility.core": "[2.4.1]"
         }
       },
+      "sourceengine.demo.parser": {
+        "type": "Project"
+      },
       "sourceengine.demo.stats": {
         "type": "Project",
         "dependencies": {
           "Newtonsoft.Json": "12.0.3",
-          "SourceEngine.Demo.Parser": "2.0.0-build.64"
+          "SourceEngine.Demo.Parser": "2.0.0"
         }
       }
     }

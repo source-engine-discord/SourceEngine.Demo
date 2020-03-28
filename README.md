@@ -1,7 +1,6 @@
-# SourceEngine.Demo.Stats
+# SourceEngine.Demo
 
-Outputs game statistics from CS:GO demos as JSON. Extended from CSGODemoCSV and utilises [
-SourceEngine.Demo.Parser][9]. Available as both a class library on nuget.org and a CLI binary (named _IDemO_).
+Outputs game statistics from CS:GO demos as JSON. Extended from CSGODemoCSV. Utilises SourceEngine.Demo.Parser, a library which extends [DemoInfo][9]. Available as both a class library on nuget.org and a CLI binary (named _IDemO_).
 
 ![Program output](https://i.imgur.com/RALmTAR.png)
 
@@ -70,7 +69,7 @@ By default, this publishes for the `win-x64` runtime. To build for another runti
 dotnet publish -c Release -r linux-x64
 ```
 
-[1]: https://github.com/source-engine-discord/SourceEngine.Demo.Stats/releases/download/latest/IDemO_win-x64.zip
+[1]: https://github.com/source-engine-discord/SourceEngine.Demo/releases/download/latest/IDemO_win-x64.zip
 [2]: https://dotnet.microsoft.com/download/dotnet-core/3.1
 [3]: https://visualstudio.microsoft.com/
 [4]: https://www.jetbrains.com/rider/
@@ -78,4 +77,4 @@ dotnet publish -c Release -r linux-x64
 [6]: https://docs.microsoft.com/en-us/dotnet/core/deploying/index#self-contained-deployments-scd
 [7]: https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#single-file-executables
 [8]: https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
-[9]: https://github.com/source-engine-discord/SourceEngine.Demo.Parser
+[9]: https://github.com/StatsHelix/demoinfo/

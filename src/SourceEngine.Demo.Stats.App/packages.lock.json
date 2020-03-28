@@ -7,16 +7,14 @@
         "resolved": "12.0.3",
         "contentHash": "6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg=="
       },
-      "SourceEngine.Demo.Parser": {
-        "type": "Transitive",
-        "resolved": "2.0.0-build.64",
-        "contentHash": "suagC2FVZLli8IirJsMYt1C1mhYMChZgKmc4GRk+jJL9BkQ+yUllKm/HCKG0RBaPX9iIyhbCfUK7B7WduMlaJA=="
+      "sourceengine.demo.parser": {
+        "type": "Project"
       },
       "sourceengine.demo.stats": {
         "type": "Project",
         "dependencies": {
           "Newtonsoft.Json": "12.0.3",
-          "SourceEngine.Demo.Parser": "2.0.0-build.64"
+          "SourceEngine.Demo.Parser": "2.0.0"
         }
       }
     },

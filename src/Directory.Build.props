@@ -6,6 +6,10 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
     <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
         <None Include="..\..\LICENSE.txt"  Visible="false">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

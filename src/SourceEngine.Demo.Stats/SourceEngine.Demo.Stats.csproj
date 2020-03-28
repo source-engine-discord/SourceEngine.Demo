@@ -16,9 +16,12 @@
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-        <PackageReference Include="SourceEngine.Demo.Parser" Version="2.0.0-build.64" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\SourceEngine.Demo.Parser\SourceEngine.Demo.Parser.csproj" />
+    </ItemGroup>
+    
     <ItemGroup>
         <None Remove="packages.lock.json" />
     </ItemGroup>

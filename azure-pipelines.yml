@@ -10,7 +10,7 @@ variables:
   - name: tagged
     value: $[ startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ]
   - name: project
-    value: SourceEngine.Demo.Stats
+    value: SourceEngine.Demo
 
 jobs:
   - job: build
