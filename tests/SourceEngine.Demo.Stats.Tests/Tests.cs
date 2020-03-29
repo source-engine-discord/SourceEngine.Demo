@@ -438,7 +438,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.versionNumber.Version.ShouldBe(Assembly.GetExecutingAssembly().GetName().Version.ToString());
+				allStats.versionNumber.Version.ShouldBe(Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
 			}
 
 			[Fact]

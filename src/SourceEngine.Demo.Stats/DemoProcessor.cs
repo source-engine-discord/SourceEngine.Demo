@@ -682,7 +682,7 @@ namespace SourceEngine.Demo.Stats
 
 		public versionNumber GetVersionNumber()
 		{
-			return new versionNumber() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString() };
+			return new versionNumber() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3) };
 		}
 
 		public List<string> GetSupportedGamemodes()
