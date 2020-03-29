@@ -69,6 +69,22 @@ By default, this publishes for the `win-x64` runtime. To build for another runti
 dotnet publish -c Release -r linux-x64
 ```
 
+### Creating a Release
+
+Update the version number in [`Directory.Build.props`][10] and commit the change. Then, create a tag with git. It is recommended to use annotated tags:
+
+```
+git tag -a v3.5.0 -m 'A brief description of the release'
+```
+
+Note that CI enforces [SemVer 2.0.0][11] format compliance as well as the versions in the tag and the project being equal.
+
+Finally, push the tag along with the commit for the version bump:
+
+```
+git push --follow-tags
+```
+
 [1]: https://github.com/source-engine-discord/SourceEngine.Demo/releases/latest/download/IDemO_win-x64.zip
 [2]: https://dotnet.microsoft.com/download/dotnet-core/3.1
 [3]: https://visualstudio.microsoft.com/
