@@ -1,6 +1,12 @@
 # SourceEngine.Demo
 
-Outputs game statistics from CS:GO demos as JSON. Extended from CSGODemoCSV. Utilises SourceEngine.Demo.Parser, a library which extends [DemoInfo][9]. Available as both a class library on nuget.org and a CLI binary (named _IDemO_).
+Outputs game statistics from CS:GO demos as JSON. The solution has three projects:
+
+**SourceEngine.Demo.Parser** - A library used to parse CS:GO demos. It is based on [DemoInfo][9].
+
+**SourceEngine.Demo.Stats** - A library for gathering statistics from demos and outputting them as JSON. It is based on [CSGODemoCSV][12] and is available as a package on nuget.org.
+
+**SourceEngine.Demo.Stats.App** - A .NET Core app which provides a command line interface for SourceEngine.Demo.Stats. Also known as _IDemO_.
 
 ![Program output](https://i.imgur.com/RALmTAR.png)
 
@@ -96,3 +102,4 @@ git push --follow-tags
 [9]: https://github.com/StatsHelix/demoinfo/
 [10]: Directory.Build.props
 [11]: https://semver.org/spec/v2.0.0.html
+[12]: https://github.com/Terri00/CSGODemoCSV
