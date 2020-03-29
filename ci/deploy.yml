@@ -2,7 +2,7 @@ steps:
   - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
     - task: PowerShell@2
       inputs:
-        scriptPath: ci/check_version.ps1
+        filePath: ci/check_version.ps1
       displayName: 'Check version'
 
     - task: DotNetCoreCLI@2
