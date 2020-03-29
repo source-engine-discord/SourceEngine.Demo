@@ -1,6 +1,7 @@
 ﻿using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
@@ -437,7 +438,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allStats.versionNumber.Version.ShouldBe("1.1.16");
+				allStats.versionNumber.Version.ShouldBe(Assembly.GetExecutingAssembly().GetName().Version.ToString());
 			}
 
 			[Fact]

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Reflection;
 
 using Newtonsoft.Json;
 
@@ -681,7 +682,7 @@ namespace SourceEngine.Demo.Stats
 
 		public versionNumber GetVersionNumber()
 		{
-			return new versionNumber() { Version = "1.1.16" };
+			return new versionNumber() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString() };
 		}
 
 		public List<string> GetSupportedGamemodes()
@@ -1230,7 +1231,7 @@ namespace SourceEngine.Demo.Stats
 					if (playerKilledEvent != null)
 					{
 						int round = playerKilledEvent.Round;
-						
+
 						string[] killPositionSplit = SplitPositionString(kills.ElementAt(i).LastAlivePosition.ToString());
 						string killPositions = $"{ killPositionSplit[0] },{ killPositionSplit[1] },{ killPositionSplit[2] }";
 
