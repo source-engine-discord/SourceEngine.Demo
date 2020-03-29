@@ -69,7 +69,7 @@ By default, this publishes for the `win-x64` runtime. To build for another runti
 dotnet publish -c Release -r linux-x64
 ```
 
-[1]: https://github.com/source-engine-discord/SourceEngine.Demo/releases/download/latest/IDemO_win-x64.zip
+[1]: https://github.com/source-engine-discord/SourceEngine.Demo/releases/latest/download/IDemO_win-x64.zip
 [2]: https://dotnet.microsoft.com/download/dotnet-core/3.1
 [3]: https://visualstudio.microsoft.com/
 [4]: https://www.jetbrains.com/rider/
