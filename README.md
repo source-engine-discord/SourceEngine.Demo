@@ -53,11 +53,11 @@ The `SourceEngine.Demo.Stats.App` project will build the executable. By default,
 
 #### Visual Studio
 
-Right-click the `SourceEngine.Demo.Stats.App` project and click `Publish`. A new tab will open and it should have the `win_x64_self_contained` profile already selected. Take note of the target location shown (i.e. where the resulting exe will be) and then click the `Publish` button.
+Build as one normally would. To publish, right-click the `SourceEngine.Demo.Stats.App` project and click `Publish`. A new tab will open and it should have the `win_x64_self_contained` profile already selected. Take note of the target location shown (i.e. where the resulting exe will be) and then click the `Publish` button.
 
 #### Command Line
 
-Run
+To build and publish a release, run
 
 ```
 dotnet publish -c Release
@@ -78,3 +78,5 @@ dotnet publish -c Release -r linux-x64
 [7]: https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#single-file-executables
 [8]: https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
 [9]: https://github.com/StatsHelix/demoinfo/
+[10]: Directory.Build.props
+[11]: https://semver.org/spec/v2.0.0.html
