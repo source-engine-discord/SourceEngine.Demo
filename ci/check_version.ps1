@@ -1,6 +1,6 @@
 [xml]$doc = Get-Content -Path ./Directory.Build.props
 $version = $doc.SelectSingleNode('//Version').InnerText
-$tag = $env:BUILD_SOURCEBRANCH.substring(1)
+$tag = $env:BUILD_SOURCEBRANCH.substring('refs/tags/v'.Length)
 
 if ($tag -ne $version) {
     Write-Error "The tagged version does not equal the projects' version: $tag != $version"
