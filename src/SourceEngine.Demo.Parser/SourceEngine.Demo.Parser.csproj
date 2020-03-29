@@ -35,6 +35,10 @@
         <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
     <ItemGroup>
         <None Remove="packages.lock.json" />
     </ItemGroup>
