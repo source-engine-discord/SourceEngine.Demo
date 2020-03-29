@@ -1,14 +1,9 @@
 steps:
   - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
-    - script: |
-        set -euo pipefail
-
-        version="$(grep -Po '<Version>\K.+(?=<)' Directory.Build.props)-build.${BUILD_BUILDID}"
-
-        printf '%s\n' "Version read from project file: ${version}"
-        printf '%s\n' "##vso[task.setvariable variable=VERSION]${version}"
-      displayName: 'Read version'
-      condition: and(succeeded(), eq(variables.tagged, False))
+    - task: PowerShell@2
+      inputs:
+        scriptPath: ci/check_version.ps1
+      displayName: 'Check version'
 
     - task: DotNetCoreCLI@2
       displayName: 'Pack projects'

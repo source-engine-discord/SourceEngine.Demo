@@ -7,8 +7,6 @@ variables:
     value: $(Pipeline.Workspace)/.nuget/packages
   - name: configuration
     value: Release
-  - name: tagged
-    value: $[ startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ]
   - name: project
     value: SourceEngine.Demo
 
