@@ -24,6 +24,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ci", "ci", "{7DC9398B-B4EB-4D1C-8645-D74A2AC5D09D}"
+	ProjectSection(SolutionItems) = preProject
+		azure-pipelines.yml = azure-pipelines.yml
+		ci\build.yml = ci\build.yml
+		ci\check_version.ps1 = ci\check_version.ps1
+		ci\deploy.yml = ci\deploy.yml
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C852A71E-BBF3-4D71-8B11-D244C1751EF3}"
 	ProjectSection(SolutionItems) = preProject
