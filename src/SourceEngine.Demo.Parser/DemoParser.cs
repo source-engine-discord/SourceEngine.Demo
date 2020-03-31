@@ -80,7 +80,7 @@ namespace SourceEngine.Demo.Parser
 		/// <summary>
 		/// Occurs when round really ended
 		/// </summary>
-		public event EventHandler<RoundOfficiallyEndedEventArgs> RoundOfficiallyEnd;
+		public event EventHandler<RoundOfficiallyEndedEventArgs> RoundOfficiallyEnded;
 
 		/// <summary>
 		/// Occurs on round end with the MVP
@@ -1283,10 +1283,10 @@ namespace SourceEngine.Demo.Parser
                 SwitchSides(this, new SwitchSidesEventArgs());
         }
 
-        internal void RaiseRoundOfficiallyEnd()
+		public void RaiseRoundOfficiallyEnded(RoundOfficiallyEndedEventArgs roe)
 		{
-			if (RoundOfficiallyEnd != null)
-				RoundOfficiallyEnd(this, new RoundOfficiallyEndedEventArgs());
+			if (RoundOfficiallyEnded != null)
+				RoundOfficiallyEnded(this, roe);
 
 		}
 

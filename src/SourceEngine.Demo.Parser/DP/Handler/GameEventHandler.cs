@@ -90,32 +90,48 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 			if (eventDescriptor.Name == "round_announce_last_round_half")
 				parser.RaiseLastRoundHalf();
 
-			if (eventDescriptor.Name == "round_end") {
-                // resets the list of players that have taken over bots in the round
-                currentRoundBotTakeovers = new List<Player>();
+			// this occurs at the same time as the round_win_reason is decided, NOT directly before warmup
+			if (eventDescriptor.Name == "round_end")
+			{
+				// resets the list of players that have taken over bots in the round
+				currentRoundBotTakeovers = new List<Player>();
 
-                data = MapData (eventDescriptor, rawEvent);
+				data = MapData(eventDescriptor, rawEvent);
 
 				Team t = Team.Spectate;
 
-				int winner = (int)data ["winner"];
+				int winner = (int)data["winner"];
 
 				if (winner == parser.tID)
 					t = Team.Terrorist;
 				else if (winner == parser.ctID)
 					t = Team.CounterTerrorist;
 
-                //round length
-                double roundLength = parser.CurrentTime - timestampFreezetimeEnded;
+				//round length
+				double roundLength = parser.CurrentTime - timestampFreezetimeEnded;
 
-                RoundEndedEventArgs roundEnd = new RoundEndedEventArgs() {
-                    Reason = (RoundEndReason)data["reason"],
-                    Winner = t,
-                    Message = (string)data["message"],
-                    Length = roundLength,
-                };
+				RoundEndedEventArgs roundEnd = new RoundEndedEventArgs()
+				{
+					Reason = (RoundEndReason)data["reason"],
+					Winner = t,
+					Message = (string)data["message"],
+					Length = roundLength + 4, //gets overwritten when round_officially_ended event occurs, but is here as a backup incase that event does not trigger, as a backup estimate
+				};
 
 				parser.RaiseRoundEnd(roundEnd);
+			}
+
+			if (eventDescriptor.Name == "round_officially_ended")
+			{
+				//round length
+				double roundLength = parser.CurrentTime - timestampFreezetimeEnded;
+
+				RoundOfficiallyEndedEventArgs roundOfficiallyEnded = new RoundOfficiallyEndedEventArgs()
+				{
+					Length = roundLength + 4,
+				};
+
+				parser.RaiseRoundOfficiallyEnded(roundOfficiallyEnded);
 
                 numOfChickensAliveExpected = 0; //sets expected number of chickens to 0 until the start of the next round to avoid edge cases
             }
@@ -130,9 +146,6 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 
             if (eventDescriptor.Name == "announce_phase_end")
                 parser.RaiseSwitchSides();
-
-            if (eventDescriptor.Name == "round_officially_ended")
-				parser.RaiseRoundOfficiallyEnd ();
 
 			if (eventDescriptor.Name == "round_mvp") {
 				data = MapData (eventDescriptor, rawEvent);

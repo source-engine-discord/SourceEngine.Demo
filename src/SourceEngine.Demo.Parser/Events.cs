@@ -53,6 +53,16 @@ namespace SourceEngine.Demo.Parser
 
     public class RoundOfficiallyEndedEventArgs : EventArgs
 	{
+		public RoundEndReason Reason { get; set; }
+
+		public string Message { get; set; }
+
+		/// <summary>
+		/// The winning team. Spectate for everything that isn't CT or T. 
+		/// </summary>
+		public Team Winner;
+
+		public double Length { get; set; }
 	}
 
 	public class RoundMVPEventArgs : EventArgs

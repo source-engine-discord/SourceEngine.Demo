@@ -191,6 +191,15 @@ namespace SourceEngine.Demo.Stats.App
                 }
             }
 
+            //Ensure all folders to get demos from are created to avoid exceptions
+            foreach (var folder in foldersToProcess)
+            {
+                if (!Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+            }
+
             //Clear by recreating folder
             if (clear && Directory.Exists(outputRootFolder))
             {
@@ -418,14 +427,14 @@ namespace SourceEngine.Demo.Stats.App
                 dpe = (from disconnection in mdTest.GetEvents<DisconnectedPlayer>()
                       select (disconnection as DisconnectedPlayer));
 
-                te = (from team in mdTest.GetEvents<RoundEndedEventArgs>()
-                     select (team as RoundEndedEventArgs).Winner);
+                te = (from team in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
+                     select (team as RoundOfficiallyEndedEventArgs).Winner);
 
-                re = (from reason in mdTest.GetEvents<RoundEndedEventArgs>()
-                     select (reason as RoundEndedEventArgs).Reason);
+                re = (from reason in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
+                     select (reason as RoundOfficiallyEndedEventArgs).Reason);
 
-                le = (from length in mdTest.GetEvents<RoundEndedEventArgs>()
-                     select (length as RoundEndedEventArgs).Length);
+                le = (from length in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
+                     select (length as RoundOfficiallyEndedEventArgs).Length);
 
                 tpe = (from teamPlayers in mdTest.GetEvents<TeamPlayers>()
                       where (teamPlayers as TeamPlayers).Round <= te.Count() // removes extra TeamPlayers if freezetime_end event triggers once a playtest is finished

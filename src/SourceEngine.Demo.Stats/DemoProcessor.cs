@@ -239,8 +239,17 @@ namespace SourceEngine.Demo.Stats
                 foreach (var feedbackMessage in currentfeedbackMessages)
                 {
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
-                }
-            };
+				}
+
+				//print rounds complete out to console
+				if (!lowOutputMode)
+				{
+					int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+
+					Console.WriteLine("\n");
+					Console.WriteLine("Match restarted.");
+				}
+			};
 
             dp.ChickenKilled += (object sender, ChickenKilledEventArgs e) => {
                 md.addEvent(typeof(ChickenKilledEventArgs), e);
@@ -276,14 +285,14 @@ namespace SourceEngine.Demo.Stats
 
 					string setPosCurrentPosition = GenerateSetPosCommand(currentPositions, player?.ViewDirectionX, player?.ViewDirectionY);
 
-					var roundsEndedEvents = md.events.Any(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
-						? md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value).ElementAt(0)
+					var roundsOfficiallyEndedEvents = md.events.Any(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
+						? md.events.Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value).ElementAt(0)
 						: null;
 					var freezetimesEndedEvents = md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
 						? md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value).ElementAt(0)
 						: null;
 
-					int numOfRoundsEnded = roundsEndedEvents?.Count() > 0 ? roundsEndedEvents.Count() : 0;
+					int numOfRoundsEnded = roundsOfficiallyEndedEvents?.Count() > 0 ? roundsOfficiallyEndedEvents.Count() : 0;
 					int numOfFreezetimesEnded = freezetimesEndedEvents?.Count() > 0 ? freezetimesEndedEvents.Count() : 0;
 
 					float timeInRound = 0; // Stays as '0' if sent during freezetime
@@ -316,20 +325,54 @@ namespace SourceEngine.Demo.Stats
             };
 
             dp.RoundEnd += (object sender, RoundEndedEventArgs e) => {
-                var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
-                var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
+				var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
+				var roundsOfficiallyEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
-                int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
-                int numOfFreezetimesEnded = freezetimesEndedEvents.Count() > 0 ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+				int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
+				int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Count() > 0 ? roundsOfficiallyEndedEvents.ElementAt(0).Count() : 0;
 
-                // if round_freeze_end event did not get fired in this round due to error
-                while (numOfFreezetimesEnded <= numOfRoundsEnded)
-                {
-                    dp.RaiseFreezetimeEnded(new FreezetimeEndedEventArgs()
+				// if round_officially_ended event did not get fired in this round due to error
+				while (numOfRoundsEnded > numOfRoundsOfficiallyEnded)
+				{
+					var roundEndedEvent = (RoundEndedEventArgs)roundsEndedEvents.ElementAt(0).ElementAt(numOfRoundsOfficiallyEnded - 1);
+
+					dp.RaiseRoundOfficiallyEnded(new RoundOfficiallyEndedEventArgs() // adds the missing RoundOfficiallyEndedEvent
+					{
+						Message = roundEndedEvent.Message,
+						Reason = roundEndedEvent.Reason,
+						Winner = roundEndedEvent.Winner,
+						Length = roundEndedEvent.Length + 4 // guesses the round length
+					});
+					numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count();
+				}
+
+				md.addEvent(typeof(RoundEndedEventArgs), e);
+            };
+
+			dp.RoundOfficiallyEnded += (object sender, RoundOfficiallyEndedEventArgs e) => {
+				var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
+				var roundsOfficiallyEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
+				var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
+
+				int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
+				int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Count() > 0 ? roundsOfficiallyEndedEvents.ElementAt(0).Count() : 0;
+				int numOfFreezetimesEnded = freezetimesEndedEvents.Count() > 0 ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+
+				// if round_end event did not get fired in this round due to error
+				while (numOfRoundsOfficiallyEnded >= numOfRoundsEnded)
+				{
+					dp.RaiseRoundEnd(new RoundEndedEventArgs() { Winner = Team.Unknown, Message = "Unknown", Reason = RoundEndReason.Unknown, Length = 0 });
+					numOfRoundsEnded = roundsEndedEvents.ElementAt(0).Count();
+				}
+
+				// if round_freeze_end event did not get fired in this round due to error
+				while (numOfFreezetimesEnded <= numOfRoundsOfficiallyEnded)
+				{
+					dp.RaiseFreezetimeEnded(new FreezetimeEndedEventArgs()
 					{
 						TimeEnd = -1, // no idea when this actually ended without guessing
 					});
-                    numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count();
+					numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count();
 
 					// set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
 					if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
@@ -344,12 +387,18 @@ namespace SourceEngine.Demo.Stats
 					}
 				}
 
-                md.addEvent(typeof(RoundEndedEventArgs), e);
+				// update round length round_end event for this round
+				var roundEndedEvent = (RoundEndedEventArgs)roundsEndedEvents.ElementAt(0).LastOrDefault();
+				e.Message = roundEndedEvent.Message;
+				e.Reason = roundEndedEvent.Reason;
+				e.Winner = roundEndedEvent.Winner;
 
-                //print rounds complete out to console
+				md.addEvent(typeof(RoundOfficiallyEndedEventArgs), e);
+
+				//print rounds complete out to console
 				if (!lowOutputMode)
 				{
-					int roundsCount = md.GetEvents<RoundEndedEventArgs>().Count();
+					int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
 
 					//stops the progress bar getting in the way of the first row
 					if (roundsCount == 1)
@@ -359,10 +408,10 @@ namespace SourceEngine.Demo.Stats
 
 					Console.WriteLine("Round " + roundsCount + " complete.");
 				}
-            };
+			};
 
-            dp.SwitchSides += (object sender, SwitchSidesEventArgs e) => {
-                int roundsCount = md.GetEvents<RoundEndedEventArgs>().Count();
+			dp.SwitchSides += (object sender, SwitchSidesEventArgs e) => {
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
 
                 SwitchSidesEventArgs switchSidesEventArgs = new SwitchSidesEventArgs() { RoundBeforeSwitch = roundsCount };
 
@@ -371,7 +420,7 @@ namespace SourceEngine.Demo.Stats
 
             dp.FreezetimeEnded += (object sender, FreezetimeEndedEventArgs e) => {
                 var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
-                var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
+                var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
                 int numOfFreezetimesEnded = freezetimesEndedEvents.Count() > 0 ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
                 int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
@@ -379,14 +428,14 @@ namespace SourceEngine.Demo.Stats
                 // if round_end event did not get fired in the previous round due to error
                 while (numOfFreezetimesEnded > numOfRoundsEnded)
                 {
-                    dp.RaiseRoundEnd(new RoundEndedEventArgs() { Winner = Team.Unknown, Message = "Unknown", Reason = RoundEndReason.Unknown, Length = 0 } );
+                    dp.RaiseRoundOfficiallyEnded(new RoundOfficiallyEndedEventArgs() { Winner = Team.Unknown, Message = "Unknown", Reason = RoundEndReason.Unknown, Length = 0 });
                     numOfRoundsEnded = roundsEndedEvents.ElementAt(0).Count();
                 }
 
                 md.addEvent(typeof(FreezetimeEndedEventArgs), e);
 
                 //work out teams at current round
-                int roundsCount = md.GetEvents<RoundEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
                 var players = dp.PlayingParticipants;
 
                 TeamPlayers teams = new TeamPlayers()
@@ -441,7 +490,7 @@ namespace SourceEngine.Demo.Stats
 
             // BOMB EVENTS =====================================================
             dp.BombPlanted += (object sender, BombEventArgs e) => {
-                int roundsCount = md.GetEvents<RoundEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
 
                 BombPlanted bombPlanted = new BombPlanted() { Round = roundsCount + 1, TimeInRound = e.TimeInRound, Player = e.Player, Bombsite = e.Site };
 
@@ -449,7 +498,7 @@ namespace SourceEngine.Demo.Stats
             };
 
             dp.BombExploded += (object sender, BombEventArgs e) => {
-                int roundsCount = md.GetEvents<RoundEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
 
                 BombExploded bombExploded = new BombExploded() { Round = roundsCount + 1, TimeInRound = e.TimeInRound, Player = e.Player, Bombsite = e.Site };
 
@@ -457,7 +506,7 @@ namespace SourceEngine.Demo.Stats
             };
 
             dp.BombDefused += (object sender, BombEventArgs e) => {
-                int roundsCount = md.GetEvents<RoundEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
 
                 BombDefused bombDefused = new BombDefused() { Round = roundsCount + 1, TimeInRound = e.TimeInRound, Player = e.Player, Bombsite = e.Site, HasKit = e.Player.HasDefuseKit };
 
@@ -466,7 +515,7 @@ namespace SourceEngine.Demo.Stats
 
             // HOSTAGE EVENTS =====================================================
             dp.HostageRescued += (object sender, HostageRescuedEventArgs e) => {
-                int roundsCount = md.GetEvents<RoundEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
 
                 HostageRescued hostageRescued = new HostageRescued { Round = roundsCount + 1, TimeInRound = e.TimeInRound, Player = e.Player, Hostage = e.Hostage, HostageIndex = e.HostageIndex, RescueZone = e.RescueZone };
 
@@ -475,7 +524,7 @@ namespace SourceEngine.Demo.Stats
 
             // HOSTAGE EVENTS =====================================================
             dp.HostagePickedUp += (object sender, HostagePickedUpEventArgs e) => {
-                int roundsCount = md.GetEvents<RoundEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
 
                 HostagePickedUp hostagePickedUp = new HostagePickedUp { Round = roundsCount + 1, TimeInRound = e.TimeInRound, Player = e.Player, Hostage = e.Hostage, HostageIndex = e.HostageIndex };
 
@@ -1692,7 +1741,7 @@ namespace SourceEngine.Demo.Stats
 
         public static int GetCurrentRoundNum(MatchData md)
         {
-            int roundsCount = md.GetEvents<RoundEndedEventArgs>().Count();
+            int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
             List<TeamPlayers> teamPlayersList = md.GetEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
 
             int round = 0;
