@@ -1039,7 +1039,9 @@ namespace SourceEngine.Demo.Parser
 						equipmentMapping.Add (sc, EquipmentElement.Knife);
 					} else if (sc.Name == "CWeaponNOVA" || sc.Name == "CWeaponSawedoff" || sc.Name == "CWeaponXM1014") {
 						equipmentMapping.Add (sc, Equipment.MapEquipment (sc.Name.Substring (7).ToLower()));
-					}
+					} else if (sc.Name == "CBreachCharge") {
+						equipmentMapping.Add(sc, EquipmentElement.BreachCharge);
+                    }
 				}
 			}
 
