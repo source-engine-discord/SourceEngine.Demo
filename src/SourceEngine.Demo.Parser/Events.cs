@@ -648,6 +648,9 @@ namespace SourceEngine.Demo.Parser
 					case "mp5sd":
 						weapon = EquipmentElement.MP5SD;
 						break;
+					case "breachcharge":
+                        weapon = EquipmentElement.BreachCharge;
+                        break;
 					case "scar17"://These crash the game when given via give weapon_[mp5navy|...], and cannot be purchased ingame.
 					case "sg550"://yet the server-classes are networked, so I need to resolve them. 
 					case "mp5navy":
@@ -728,7 +731,8 @@ namespace SourceEngine.Demo.Parser
 		Incendiary = 503,
 		Flash = 504,
 		Smoke = 505,
-		HE = 506
+		HE = 506,
+        BreachCharge = 507,
 	}
 
 	public enum EquipmentClass
