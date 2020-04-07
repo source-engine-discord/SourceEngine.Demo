@@ -26,14 +26,15 @@ namespace SourceEngine.Demo.Parser
 		const int MAXPLAYERS = 64;
 		const int MAXWEAPONS = 64;
 
-        bool parseChickens = true;
+		public bool stopParsingDemo = false;
+		bool parseChickens = true;
 
 
-        #region Events
-        /// <summary>
-        /// Raised once when the Header of the demo is parsed
-        /// </summary>
-        public event EventHandler<HeaderParsedEventArgs> HeaderParsed;
+		#region Events
+		/// <summary>
+		/// Raised once when the Header of the demo is parsed
+		/// </summary>
+		public event EventHandler<HeaderParsedEventArgs> HeaderParsed;
 
 		/// <summary>
 		/// Occurs when the match started, so when the "begin_new_match"-GameEvent is dropped.
@@ -585,7 +586,7 @@ namespace SourceEngine.Demo.Parser
 		{
 			while (ParseNextTick())
 			{
-				if (token.IsCancellationRequested) return;
+				if (token.IsCancellationRequested || stopParsingDemo) return;
 			}
 		}
 
@@ -1302,7 +1303,9 @@ namespace SourceEngine.Demo.Parser
 		public void RaiseFreezetimeEnded (FreezetimeEndedEventArgs fe)
 		{
 			if (FreezetimeEnded != null)
+			{
 				FreezetimeEnded(this, fe);
+			}
 		}
 
 		internal void RaiseOtherKilled()

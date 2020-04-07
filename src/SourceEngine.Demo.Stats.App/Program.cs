@@ -327,7 +327,7 @@ namespace SourceEngine.Demo.Stats.App
             {
 				Console.WriteLine($"Parsing demo {demosInformation[i].DemoName}");
 
-                MatchData mdTest = MatchData.FromDemoFile(demosInformation[i].DemoName, parseChickens, lowOutputMode);
+                MatchData mdTest = MatchData.FromDemoFile(demosInformation[i].DemoName, parseChickens, lowOutputMode, demosInformation[i].TestType);
 
 				IEnumerable<MatchStartedEventArgs> mse = new List<MatchStartedEventArgs>();
 				IEnumerable<SwitchSidesEventArgs> sse = new List<SwitchSidesEventArgs>();

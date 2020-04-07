@@ -90,12 +90,9 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 			if (eventDescriptor.Name == "round_announce_last_round_half")
 				parser.RaiseLastRoundHalf();
 
-			// this occurs at the same time as the round_win_reason is decided, NOT directly before warmup
+			// this occurs at the same time as the round_win_reason is decided, NOT directly before freezetime
 			if (eventDescriptor.Name == "round_end")
 			{
-				// resets the list of players that have taken over bots in the round
-				currentRoundBotTakeovers = new List<Player>();
-
 				data = MapData(eventDescriptor, rawEvent);
 
 				Team t = Team.Spectate;
@@ -123,12 +120,15 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 
 			if (eventDescriptor.Name == "round_officially_ended")
 			{
+				// resets the list of players that have taken over bots in the round
+				currentRoundBotTakeovers = new List<Player>();
+
 				//round length
 				double roundLength = parser.CurrentTime - timestampFreezetimeEnded;
 
 				RoundOfficiallyEndedEventArgs roundOfficiallyEnded = new RoundOfficiallyEndedEventArgs()
 				{
-					Length = roundLength + 4,
+					Length = roundLength,
 				};
 
 				parser.RaiseRoundOfficiallyEnded(roundOfficiallyEnded);
