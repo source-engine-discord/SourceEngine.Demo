@@ -1373,11 +1373,15 @@ namespace SourceEngine.Demo.Stats
 						long assisterSteamId = playerKilledEvent.Assister != null ? ((playerKilledEvent.Assister.SteamID == 0) ? GetSteamIdByPlayerName(playerNames, playerKilledEvent.Assister.Name) : playerKilledEvent.Assister.SteamID) : 0;
 
 						var weaponUsed = weaponKillers.ElementAt(i).Weapon.ToString();
+						var weaponUsedClass = weaponKillers.ElementAt(i).Class.ToString();
+						var weaponUsedType = weaponKillers.ElementAt(i).Type.ToString();
 						var numOfPenetrations = penetrations.ElementAt(i);
 
 						if (weaponUsed == null || weaponUsed == string.Empty)
 						{
 							weaponUsed = weaponKillers.ElementAt(i).OriginalString.ToString();
+							weaponUsedClass = "Unknown";
+							weaponUsedType = "Unknown";
 						}
 
 						bool firstKillOfTheRound = (killsStats.Any(k => k.Round == round && k.FirstKillOfTheRound == true)) ? false : true;
@@ -1387,6 +1391,8 @@ namespace SourceEngine.Demo.Stats
 							Round = round,
 							TimeInRound = playerKilledEvent.TimeInRound,
 							Weapon = weaponUsed,
+							WeaponClass = weaponUsedClass,
+                            WeaponType = weaponUsedType,
 							KillerSteamID = killerSteamId,
 							KillerBotTakeover = playerKilledEvent.KillerBotTakeover,
 							XPositionKill = double.Parse(killPositionSplit[0]),

@@ -5,6 +5,8 @@ namespace SourceEngine.Demo.Stats.Models
         public int Round { get; set; }
         public double TimeInRound { get; set; }
         public string Weapon { get; set; }
+        public string WeaponClass { get; set; }
+        public string WeaponType { get; set; }
         public long KillerSteamID { get; set; }
         public bool KillerBotTakeover { get; internal set; }
         public double XPositionKill { get; set; }

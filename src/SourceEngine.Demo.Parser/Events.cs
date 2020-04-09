@@ -449,6 +449,13 @@ namespace SourceEngine.Demo.Parser
 				return (EquipmentClass)(((int)Weapon / 100) + 1);
 			}
 		}
+		public EquipmentType Type
+		{
+			get
+			{
+				return GetEquipmentType(Weapon, Class);
+			}
+		}
 
 		public string OriginalString { get; set; }
 
@@ -490,6 +497,39 @@ namespace SourceEngine.Demo.Parser
 		}
 
 		const string WEAPON_PREFIX = "weapon_";
+
+		private EquipmentType GetEquipmentType(EquipmentElement weapon, EquipmentClass weaponClass)
+		{
+			switch (weaponClass)
+			{
+				case EquipmentClass.Heavy:
+					if (weapon == EquipmentElement.M249 || weapon == EquipmentElement.Negev)
+						return EquipmentType.LMG;
+					else
+						return EquipmentType.Shotgun;
+				case EquipmentClass.Rifle:
+					if (weapon == EquipmentElement.Scout || weapon == EquipmentElement.AWP)
+						return EquipmentType.Sniper;
+					else
+						return EquipmentType.AssaultRifle;
+				case EquipmentClass.Equipment:
+					if (weapon == EquipmentElement.Zeus)
+						return EquipmentType.Zeus;
+					else if (weapon == EquipmentElement.Knife)
+						return EquipmentType.Knife;
+					else
+						return EquipmentType.Shotgun;
+				case EquipmentClass.Pistol:
+					return EquipmentType.Pistol;
+				case EquipmentClass.SMG:
+					return EquipmentType.SMG;
+				case EquipmentClass.Grenade:
+					return EquipmentType.Grenade;
+				default:
+					return EquipmentType.Unknown;
+
+			}
+		}
 
 		public static EquipmentElement MapEquipment(string OriginalString)
 		{
@@ -674,7 +714,7 @@ namespace SourceEngine.Demo.Parser
 	{
 		Unknown = 0,
 
-		//Pistoles
+		//Pistols
 		P2000 = 1,
 		Glock = 2,
 		P250 = 3,
@@ -744,5 +784,20 @@ namespace SourceEngine.Demo.Parser
 		Rifle = 4,
 		Equipment = 5,
 		Grenade = 6,
+	}
+
+	public enum EquipmentType // added to separate weapon groups better
+	{
+		Unknown = 0,
+		Pistol = 1,
+		SMG = 2,
+		LMG = 3,
+		Shotgun = 4,
+		AssaultRifle = 5,
+		Sniper = 6,
+		Grenade = 7,
+		Zeus = 8,
+		Knife = 9,
+		Equipment = 10,
 	}
 }
