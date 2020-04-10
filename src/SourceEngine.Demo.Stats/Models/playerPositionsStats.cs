@@ -3,7 +3,7 @@
 	public class playerPositionsStats
     {
         public int Round { get; set; }
-        public double TimeInRound { get; set; }
+        public int TimeInRound { get; set; }
         public long PlayerSteamID { get; set; }
         public double XPosition { get; set; }
         public double YPosition { get; set; }

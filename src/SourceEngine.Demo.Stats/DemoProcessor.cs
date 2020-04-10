@@ -214,7 +214,7 @@ namespace SourceEngine.Demo.Stats
 								var playerPositionStat = new playerPositionsStats()
 								{
 									Round = round,
-									TimeInRound = e.CurrentTime - freezetimeEndedEventLast.TimeEnd,
+									TimeInRound = (int)(e.CurrentTime - freezetimeEndedEventLast.TimeEnd),
 									PlayerSteamID = playerPosition.Player.SteamID,
 									XPosition = playerPosition.Player.Position.X,
 									YPosition = playerPosition.Player.Position.Y,
