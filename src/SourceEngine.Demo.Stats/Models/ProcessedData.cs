@@ -10,6 +10,7 @@ namespace SourceEngine.Demo.Stats.Models
 		public bool SameFilename { get; set; }
 		public bool SameFolderStructure { get; set; }
 		public bool ParseChickens { get; set; }
+		public bool ParsePlayerPositions { get; set; }
 		public List<string> FoldersToProcess { get; set; }
 		public string OutputRootFolder { get; set; }
 		public tanookiStats tanookiStats { get; set; }
@@ -29,10 +30,11 @@ namespace SourceEngine.Demo.Stats.Models
 		public IEnumerable<Team> TeamValues { get; set; }
 		public IEnumerable<RoundEndReason> RoundEndReasonValues { get; set; }
 		public IEnumerable<double> RoundLengthValues { get; set; }
-		public IEnumerable<TeamEquipmentStats> TeamEquipmentValues { get; set; }
+		public IEnumerable<TeamEquipment> TeamEquipmentValues { get; set; }
 		public IEnumerable<NadeEventArgs> GrenadeValues { get; set; }
 		public IEnumerable<ChickenKilledEventArgs> ChickenValues { get; set; }
 		public IEnumerable<ShotFired> ShotsFiredValues { get; set; }
+		public IEnumerable<playerPositionsStats> PlayerPositionsValues { get; set; }
 		public bool WriteTicks { get; set; }
 	}
 }

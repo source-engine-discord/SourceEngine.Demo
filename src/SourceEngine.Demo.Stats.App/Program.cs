@@ -53,6 +53,7 @@ namespace SourceEngine.Demo.Stats.App
                         "-steaminfo                               Takes steam names from steam\n" +
                         "-clear                                   Clears the data folder\n" +
                         "-nochickens                              Disables checks for number of chickens killed when parsing\n" +
+                        "-noplayerpositions                       Disables checks for player positions when parsing\n" +
                         "-samefilename                            Uses the demo's filename as the output filename\n" +
                         "-samefolderstructure                     Uses the demo's folder structure inside the root folder for the output json file\n" +
 						"-lowoutputmode							  Does not print out the progress bar and round completed messages to console\n" +
@@ -69,6 +70,7 @@ namespace SourceEngine.Demo.Stats.App
             bool steaminfo = false;
             bool clear = false;
             bool parseChickens = true;
+            bool parsePlayerPositions = true;
             string outputRootFolder = "parsed";
             bool sameFilename = false;
             bool sameFolderStructure = false;
@@ -147,6 +149,10 @@ namespace SourceEngine.Demo.Stats.App
                 else if (arg == "-nochickens")
                 {
                     parseChickens = false;
+                }
+                else if (arg == "-noplayerpositions")
+                {
+                    parsePlayerPositions = false;
                 }
                 else if (arg == "-samefilename")
                 {
@@ -327,7 +333,7 @@ namespace SourceEngine.Demo.Stats.App
             {
 				Console.WriteLine($"Parsing demo {demosInformation[i].DemoName}");
 
-                MatchData mdTest = MatchData.FromDemoFile(demosInformation[i].DemoName, parseChickens, lowOutputMode, demosInformation[i].TestType);
+                MatchData mdTest = MatchData.FromDemoFile(demosInformation[i].DemoName, parseChickens, parsePlayerPositions, lowOutputMode, demosInformation[i].TestType);
 
 				IEnumerable<MatchStartedEventArgs> mse = new List<MatchStartedEventArgs>();
 				IEnumerable<SwitchSidesEventArgs> sse = new List<SwitchSidesEventArgs>();
@@ -346,7 +352,7 @@ namespace SourceEngine.Demo.Stats.App
 				IEnumerable<Team> te = new List<Team>();
 				IEnumerable<RoundEndReason> re = new List<RoundEndReason>();
 				IEnumerable<double> le = new List<double>();
-				IEnumerable<TeamEquipmentStats> tes = new List<TeamEquipmentStats>();
+				IEnumerable<TeamEquipment> tes = new List<TeamEquipment>();
 				IEnumerable<NadeEventArgs> ge = new List<NadeEventArgs>();
 				//IEnumerable<SmokeEventArgs> gse = new List<SmokeEventArgs>();
 				//IEnumerable<FlashEventArgs> gfe = new List<FlashEventArgs>();
@@ -355,6 +361,8 @@ namespace SourceEngine.Demo.Stats.App
 				//IEnumerable<DecoyEventArgs> gde = new List<DecoyEventArgs>();
 				IEnumerable<ChickenKilledEventArgs> cke = new List<ChickenKilledEventArgs>();
 				IEnumerable<ShotFired> sfe = new List<ShotFired>();
+                IEnumerable<playerPositionsStats> ppe = new List<playerPositionsStats>();
+
 
                 mse = (from start in mdTest.GetEvents<MatchStartedEventArgs>()
                       select (start as MatchStartedEventArgs));
@@ -440,8 +448,8 @@ namespace SourceEngine.Demo.Stats.App
                       where (teamPlayers as TeamPlayers).Round <= te.Count() // removes extra TeamPlayers if freezetime_end event triggers once a playtest is finished
                       select (teamPlayers as TeamPlayers));
 
-                tes = (from round in mdTest.GetEvents<TeamEquipmentStats>()
-                      select (round as TeamEquipmentStats));
+                tes = (from round in mdTest.GetEvents<TeamEquipment>()
+                      select (round as TeamEquipment));
 
                 ge = (from nade in mdTest.GetEvents<NadeEventArgs>()
                      select (nade as NadeEventArgs));
@@ -451,6 +459,9 @@ namespace SourceEngine.Demo.Stats.App
 
                 sfe = (from shot in mdTest.GetEvents<ShotFired>()
                       select (shot as ShotFired));
+
+                ppe = (from playerPos in mdTest.GetEvents<playerPositionsStats>()
+                       select (playerPos as playerPositionsStats));
 
                 tanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
 
@@ -464,7 +475,8 @@ namespace SourceEngine.Demo.Stats.App
 						SameFilename = sameFilename,
 						SameFolderStructure = sameFolderStructure,
 						ParseChickens = parseChickens,
-						FoldersToProcess = foldersToProcess,
+                        ParsePlayerPositions = parsePlayerPositions,
+                        FoldersToProcess = foldersToProcess,
 						OutputRootFolder = outputRootFolder,
 						tanookiStats = tanookiStats,
 						MatchStartValues = mse,
@@ -487,6 +499,7 @@ namespace SourceEngine.Demo.Stats.App
 						GrenadeValues = ge,
 						ChickenValues = cke,
 						ShotsFiredValues = sfe,
+                        PlayerPositionsValues = ppe,
 						WriteTicks = true
 					};
 

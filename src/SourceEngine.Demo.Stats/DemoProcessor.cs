@@ -182,12 +182,12 @@ namespace SourceEngine.Demo.Stats
             }
         }
 
-        public static MatchData FromDemoFile(string file, bool parseChickens, bool lowOutputMode, string testType)
+        public static MatchData FromDemoFile(string file, bool parseChickens, bool parsePlayerPositions, bool lowOutputMode, string testType)
         {
             MatchData md = new MatchData();
 
             //Create demo parser instance
-            dp = new DemoParser(File.OpenRead(file), parseChickens);
+            dp = new DemoParser(File.OpenRead(file), parseChickens, parsePlayerPositions);
 
             dp.ParseHeader();
 
@@ -195,8 +195,41 @@ namespace SourceEngine.Demo.Stats
                 md.BindPlayer(e.Player);
             };
 
-            // SERVER EVENTS ===================================================
-            dp.MatchStarted += (object sender, MatchStartedEventArgs e) =>
+			dp.PlayerPositions += (object sender, PlayerPositionsEventArgs e) => {
+				foreach (PlayerPositionEventArgs playerPosition in e.PlayerPositions)
+				{
+					if (md.events.Count() > 0 && md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs"))
+					{
+						int round = GetCurrentRoundNum(md);
+
+						if (round > 0)
+						{
+							bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(md, playerPosition.Player, round);
+							var freezetimeEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value).ElementAt(0);
+							var freezetimeEndedEventLast = (FreezetimeEndedEventArgs)freezetimeEndedEvents.LastOrDefault();
+							var freezetimeEndedThisRound = freezetimeEndedEvents.Count() >= round;
+
+							if (playerAlive && freezetimeEndedThisRound)
+							{
+								var playerPositionStat = new playerPositionsStats()
+								{
+									Round = round,
+									TimeInRound = e.CurrentTime - freezetimeEndedEventLast.TimeEnd,
+									PlayerSteamID = playerPosition.Player.SteamID,
+									XPosition = playerPosition.Player.Position.X,
+									YPosition = playerPosition.Player.Position.Y,
+									ZPosition = playerPosition.Player.Position.Z,
+								};
+
+								md.addEvent(typeof(playerPositionsStats), playerPositionStat);
+							}
+						}
+					}
+				}
+			};
+
+			// SERVER EVENTS ===================================================
+			dp.MatchStarted += (object sender, MatchStartedEventArgs e) =>
 			{
                 List<FeedbackMessage> currentfeedbackMessages = new List<FeedbackMessage>();
 
@@ -541,9 +574,9 @@ namespace SourceEngine.Demo.Stats
                     ctExpenditure += (player.CurrentEquipmentValue - player.RoundStartEquipmentValue); // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
                 }
 
-                TeamEquipmentStats teamEquipmentStats = new TeamEquipmentStats() { Round = roundsCount + 1, TEquipValue = tEquipValue, CTEquipValue = ctEquipValue, TExpenditure = tExpenditure, CTExpenditure = ctExpenditure };
+                TeamEquipment teamEquipmentStats = new TeamEquipment() { Round = roundsCount + 1, TEquipValue = tEquipValue, CTEquipValue = ctEquipValue, TExpenditure = tExpenditure, CTExpenditure = ctExpenditure };
 
-                md.addEvent(typeof(TeamEquipmentStats), teamEquipmentStats);
+                md.addEvent(typeof(TeamEquipment), teamEquipmentStats);
             };
 
             // PLAYER EVENTS ===================================================
@@ -754,6 +787,11 @@ namespace SourceEngine.Demo.Stats
 			}
 
             allStats.teamStats = GetTeamStats(processedData, allStats, dataAndPlayerNames.PlayerNames, generalroundsStats.SwitchSides);
+
+			if (processedData.ParsePlayerPositions)
+			{
+				allStats.playerPositionsStats = GetPlayerPositionsStats(processedData);
+			}
 
 			// JSON creation
 			if (createJsonFile)
@@ -1707,6 +1745,11 @@ namespace SourceEngine.Demo.Stats
 			return teamStats;
 		}
 
+		public List<playerPositionsStats> GetPlayerPositionsStats(ProcessedData processedData)
+		{
+			return processedData.PlayerPositionsValues.ToList();
+		}
+
 		public void CreateJson(ProcessedData processedData, AllStats allStats, string mapNameString, string mapDateString)
 		{
 			string filename = processedData.SameFilename ? allStats.mapInfo.DemoName : Guid.NewGuid().ToString();
@@ -1760,6 +1803,7 @@ namespace SourceEngine.Demo.Stats
 					allStats.feedbackMessages,
 					allStats.chickenStats,
 					allStats.teamStats,
+					allStats.playerPositionsStats,
 				},
 				Formatting.Indented
 			);

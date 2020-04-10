@@ -28,9 +28,16 @@ namespace SourceEngine.Demo.Parser
 
 		public bool stopParsingDemo = false;
 		bool parseChickens = true;
+		bool parsePlayerPositions = true;
 
 
 		#region Events
+		/// <summary>
+		/// Raised once when finished parsing the demo
+		/// Shows player locations every second
+		/// </summary>
+		public event EventHandler<PlayerPositionsEventArgs> PlayerPositions;
+
 		/// <summary>
 		/// Raised once when the Header of the demo is parsed
 		/// </summary>
@@ -533,7 +540,7 @@ namespace SourceEngine.Demo.Parser
 		/// Hint: ParseHeader() is propably what you want to look into next.
 		/// </summary>
 		/// <param name="input">An input-stream.</param>
-		public DemoParser(Stream input, bool parseChickens = true)
+		public DemoParser(Stream input, bool parseChickens = true, bool parsePlayerPositions = true)
 		{
 			BitStream = BitStreamUtil.Create(input);
 
@@ -542,6 +549,7 @@ namespace SourceEngine.Demo.Parser
 			}
 
             this.parseChickens = parseChickens;
+            this.parsePlayerPositions = parsePlayerPositions;
 		}
 
 
@@ -584,10 +592,49 @@ namespace SourceEngine.Demo.Parser
 		/// <param name="token"></param>
 		public void ParseToEnd(CancellationToken token)
 		{
-			while (ParseNextTick())
+			if (parsePlayerPositions)
 			{
-				if (token.IsCancellationRequested || stopParsingDemo) return;
+				int secondsPassed = 0;
+
+				while (ParseNextTick())
+				{
+					if (token.IsCancellationRequested || stopParsingDemo) return;
+
+					if ((int)CurrentTime > secondsPassed)
+					{
+						RecordPlayerPositions();
+						secondsPassed = (int)CurrentTime;
+					}
+				}
 			}
+			else
+			{
+				while (ParseNextTick())
+				{
+					if (token.IsCancellationRequested || stopParsingDemo) return;
+				}
+			}
+		}
+
+		private void RecordPlayerPositions()
+		{
+			var playerPositionsEventArgs = new PlayerPositionsEventArgs()
+			{
+				CurrentTime = CurrentTime,
+				PlayerPositions = new List<PlayerPositionEventArgs>(),
+			};
+
+			foreach (var participant in PlayingParticipants)
+			{
+				var player = new Player(participant);
+
+				playerPositionsEventArgs.PlayerPositions.Add(new PlayerPositionEventArgs()
+				{
+					Player = player,
+				});
+			}
+
+			RaisePlayerPositions(playerPositionsEventArgs);
 		}
 
 		/// <summary>
@@ -1238,6 +1285,12 @@ namespace SourceEngine.Demo.Parser
 
 		#region EventCaller
 
+		internal void RaisePlayerPositions(PlayerPositionsEventArgs playerPositionsEventArgs)
+		{
+			if (PlayerPositions != null)
+				PlayerPositions(this, playerPositionsEventArgs);
+		}
+
 		internal void RaiseMatchStarted(MatchStartedEventArgs matchStartedEventArgs)
 		{
 			if (MatchStarted != null)
@@ -1559,6 +1612,7 @@ namespace SourceEngine.Demo.Parser
 			this.MatchStarted = null;
 			this.NadeReachedTarget = null;
 			this.PlayerKilled = null;
+			this.PlayerPositions = null;
 			this.OtherKilled = null;
 			this.RoundStart = null;
             this.SayText = null;

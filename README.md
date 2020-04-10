@@ -36,14 +36,16 @@ Latest release:
   -steaminfo                                        Takes steam names from steam.
   -clear                                            Clears the data folder.
   -nochickens                                       Disables checks for number of chickens killed when parsing.
+  -noplayerpositions                       			Disables checks for player positions when parsing.
   -samefilename                                     Uses the demo's filename as the output filename.
   -samefolderstructure                              Uses the demo's folder structure inside the root folder for the output json file.
+  -lowoutputmode							  		Does not print out the progress bar and round completed messages to console.
 ```
 
 Example:
 
 ```
-IDemO -folders "demos" -output "parsed" -recursive -nochickens -samefilename -samefolderstructure
+IDemO -folders "demos" -output "parsed" -recursive -nochickens -noplayerpositions -samefilename -samefolderstructure
 ```
 
 ## Development

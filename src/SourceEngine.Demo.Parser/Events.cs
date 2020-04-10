@@ -7,6 +7,17 @@ using System.Diagnostics;
 
 namespace SourceEngine.Demo.Parser
 {
+	public class PlayerPositionsEventArgs : EventArgs
+	{
+		public double CurrentTime { get; set; }
+		public List<PlayerPositionEventArgs> PlayerPositions { get; set; }
+	}
+
+	public class PlayerPositionEventArgs : EventArgs
+	{
+		public Player Player { get; set; }
+	}
+
 	public class HeaderParsedEventArgs : EventArgs
 	{
 		public DemoHeader Header { get; private set; }

@@ -263,6 +263,23 @@ namespace SourceEngine.Demo.Stats.Tests
 			}
 
 			[Fact]
+			public void Should_return_player_positions_stats_correctly()
+			{
+				// Arrange
+				
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.playerPositionsStats.Count.ShouldBe(1);
+				allStats.playerPositionsStats[0].PlayerSteamID.ShouldBe(32443298432);
+				allStats.playerPositionsStats[0].TimeInRound.ShouldBe(1.01);
+				allStats.playerPositionsStats[0].XPosition.ShouldBe(20);
+				allStats.playerPositionsStats[0].YPosition.ShouldBe(200);
+				allStats.playerPositionsStats[0].ZPosition.ShouldBe(2000);
+			}
+
+			[Fact]
 			public void Should_return_player_stats_correctly()
 			{
 				// Arrange
@@ -876,9 +893,9 @@ namespace SourceEngine.Demo.Stats.Tests
 				105,
 			};
 
-			var TeamEquipmentValues = new List<TeamEquipmentStats>()
+			var TeamEquipmentValues = new List<TeamEquipment>()
 			{
-				new TeamEquipmentStats
+				new TeamEquipment
 				{
 					Round = 1,
 					TEquipValue = 2900,
@@ -886,7 +903,7 @@ namespace SourceEngine.Demo.Stats.Tests
 					CTEquipValue = 450,
 					CTExpenditure = 50,
 				},
-				new TeamEquipmentStats
+				new TeamEquipment
 				{
 					Round = 2,
 					TEquipValue = 800,
@@ -1014,6 +1031,19 @@ namespace SourceEngine.Demo.Stats.Tests
 				}
 			};
 
+			var playerPositionsStats = new List<playerPositionsStats>()
+			{
+				new playerPositionsStats
+				{
+					Round = 1,
+					PlayerSteamID = TeamPlayersValues[0].Terrorists[0].SteamID,
+					TimeInRound = 1.01,
+					XPosition = 20,
+					YPosition = 200,
+					ZPosition = 2000
+				}
+			};
+
 
 			ProcessedData = new ProcessedData()
 			{
@@ -1021,6 +1051,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				SameFilename = true,
 				SameFolderStructure = true,
 				ParseChickens = true,
+				ParsePlayerPositions = true,
 				FoldersToProcess = new List<string>() { "someFolder" },
 				OutputRootFolder = "outputFolder",
 				tanookiStats = tanookiStats,
@@ -1044,6 +1075,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				GrenadeValues = GrenadeValues,
 				ChickenValues = ChickenValues,
 				ShotsFiredValues = ShotsFiredValues,
+				PlayerPositionsValues = playerPositionsStats,
 				WriteTicks = true
 			};
 		}
