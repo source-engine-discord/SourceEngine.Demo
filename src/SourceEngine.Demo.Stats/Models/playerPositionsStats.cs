@@ -1,13 +1,11 @@
-﻿namespace SourceEngine.Demo.Stats.Models
+﻿using System.Collections.Generic;
+
+namespace SourceEngine.Demo.Stats.Models
 {
 	public class playerPositionsStats
     {
         public int Round { get; set; }
-        public int TimeInRound { get; set; }
-        public long PlayerSteamID { get; set; }
-        public double XPosition { get; set; }
-        public double YPosition { get; set; }
-        public double ZPosition { get; set; }
+        public List<PlayerPositionByTimeInRound> PlayerPositionByTimeInRound { get; set; }
 
         public playerPositionsStats() { }
     }

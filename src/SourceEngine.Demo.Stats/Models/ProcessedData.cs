@@ -34,7 +34,7 @@ namespace SourceEngine.Demo.Stats.Models
 		public IEnumerable<NadeEventArgs> GrenadeValues { get; set; }
 		public IEnumerable<ChickenKilledEventArgs> ChickenValues { get; set; }
 		public IEnumerable<ShotFired> ShotsFiredValues { get; set; }
-		public IEnumerable<playerPositionsStats> PlayerPositionsValues { get; set; }
+		public IEnumerable<PlayerPositionsInstance> PlayerPositionsValues { get; set; }
 		public bool WriteTicks { get; set; }
 	}
 }

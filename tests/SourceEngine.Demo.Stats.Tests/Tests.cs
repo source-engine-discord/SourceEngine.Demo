@@ -6,6 +6,7 @@ using System.Reflection;
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
 using Xunit;
+using System.Linq;
 
 namespace SourceEngine.Demo.Stats.Tests
 {
@@ -272,11 +273,12 @@ namespace SourceEngine.Demo.Stats.Tests
 
 				// Assess
 				allStats.playerPositionsStats.Count.ShouldBe(1);
-				allStats.playerPositionsStats[0].PlayerSteamID.ShouldBe(32443298432);
-				allStats.playerPositionsStats[0].TimeInRound.ShouldBe(1);
-				allStats.playerPositionsStats[0].XPosition.ShouldBe(20);
-				allStats.playerPositionsStats[0].YPosition.ShouldBe(200);
-				allStats.playerPositionsStats[0].ZPosition.ShouldBe(2000);
+				allStats.playerPositionsStats[0].Round.ShouldBe(1);
+				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().TimeInRound.ShouldBe(1);
+				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().SteamID.ShouldBe(32443298432);
+				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().XPosition.ShouldBe(20);
+				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().YPosition.ShouldBe(200);
+				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().ZPosition.ShouldBe(2000);
 			}
 
 			[Fact]
@@ -1031,13 +1033,13 @@ namespace SourceEngine.Demo.Stats.Tests
 				}
 			};
 
-			var playerPositionsStats = new List<playerPositionsStats>()
+			var playerPositionsStats = new List<PlayerPositionsInstance>()
 			{
-				new playerPositionsStats
+				new PlayerPositionsInstance
 				{
 					Round = 1,
-					PlayerSteamID = TeamPlayersValues[0].Terrorists[0].SteamID,
 					TimeInRound = 1,
+					SteamID = TeamPlayersValues[0].Terrorists[0].SteamID,
 					XPosition = 20,
 					YPosition = 200,
 					ZPosition = 2000

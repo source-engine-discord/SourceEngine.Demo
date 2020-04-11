@@ -361,7 +361,7 @@ namespace SourceEngine.Demo.Stats.App
 				//IEnumerable<DecoyEventArgs> gde = new List<DecoyEventArgs>();
 				IEnumerable<ChickenKilledEventArgs> cke = new List<ChickenKilledEventArgs>();
 				IEnumerable<ShotFired> sfe = new List<ShotFired>();
-                IEnumerable<playerPositionsStats> ppe = new List<playerPositionsStats>();
+                IEnumerable<PlayerPositionsInstance> ppe = new List<PlayerPositionsInstance>();
 
 
                 mse = (from start in mdTest.GetEvents<MatchStartedEventArgs>()
@@ -460,8 +460,8 @@ namespace SourceEngine.Demo.Stats.App
                 sfe = (from shot in mdTest.GetEvents<ShotFired>()
                       select (shot as ShotFired));
 
-                ppe = (from playerPos in mdTest.GetEvents<playerPositionsStats>()
-                       select (playerPos as playerPositionsStats));
+                ppe = (from playerPos in mdTest.GetEvents<PlayerPositionsInstance>()
+                       select (playerPos as PlayerPositionsInstance));
 
                 tanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
 

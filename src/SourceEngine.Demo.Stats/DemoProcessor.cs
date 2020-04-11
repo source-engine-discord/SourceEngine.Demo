@@ -202,7 +202,7 @@ namespace SourceEngine.Demo.Stats
 					{
 						int round = GetCurrentRoundNum(md);
 
-						if (round > 0)
+						if (round > 0 && playerPosition.Player.SteamID > 0)
 						{
 							bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(md, playerPosition.Player, round);
 							var freezetimeEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value).ElementAt(0);
@@ -211,17 +211,17 @@ namespace SourceEngine.Demo.Stats
 
 							if (playerAlive && freezetimeEndedThisRound)
 							{
-								var playerPositionStat = new playerPositionsStats()
+								var playerPositionsInstance = new PlayerPositionsInstance()
 								{
 									Round = round,
 									TimeInRound = (int)(e.CurrentTime - freezetimeEndedEventLast.TimeEnd),
-									PlayerSteamID = playerPosition.Player.SteamID,
+									SteamID = playerPosition.Player.SteamID,
 									XPosition = playerPosition.Player.Position.X,
 									YPosition = playerPosition.Player.Position.Y,
 									ZPosition = playerPosition.Player.Position.Z,
 								};
 
-								md.addEvent(typeof(playerPositionsStats), playerPositionStat);
+								md.addEvent(typeof(PlayerPositionsInstance), playerPositionsInstance);
 							}
 						}
 					}
@@ -1747,7 +1747,61 @@ namespace SourceEngine.Demo.Stats
 
 		public List<playerPositionsStats> GetPlayerPositionsStats(ProcessedData processedData)
 		{
-			return processedData.PlayerPositionsValues.ToList();
+			List<playerPositionsStats> playerPositionsStats = new List<playerPositionsStats>();
+
+			// create playerPositionsStats with empty PlayerPositionByTimeInRound
+			foreach (var roundsGroup in processedData.PlayerPositionsValues.GroupBy(x => x.Round))
+			{
+				int lastRound = processedData.RoundEndReasonValues.Count();
+
+				foreach (var round in roundsGroup.Where(x => x.Round > 0 && x.Round <= lastRound).Select(x => x.Round).Distinct())
+				{
+					playerPositionsStats.Add(new playerPositionsStats()
+					{
+						Round = round,
+						PlayerPositionByTimeInRound = new List<PlayerPositionByTimeInRound>(),
+					});
+				}
+			}
+
+			//create PlayerPositionByTimeInRound with empty PlayerPositionBySteamId
+			foreach (var playerPositionsStat in playerPositionsStats)
+			{
+				foreach (var timeInRoundsGroup in processedData.PlayerPositionsValues.Where(x => x.Round == playerPositionsStat.Round).GroupBy(x => x.TimeInRound))
+				{
+					foreach (var timeInRound in timeInRoundsGroup.Select(x => x.TimeInRound).Distinct())
+					{
+						playerPositionsStat.PlayerPositionByTimeInRound.Add(new PlayerPositionByTimeInRound()
+						{
+							TimeInRound = timeInRound,
+							PlayerPositionBySteamID = new List<PlayerPositionBySteamID>(),
+						});
+					}
+				}
+			}
+
+			//create PlayerPositionBySteamId
+			foreach (var playerPositionsStat in playerPositionsStats)
+			{
+				foreach (var playerPositionByTimeInRound in playerPositionsStat.PlayerPositionByTimeInRound)
+				{
+					foreach (var steamIdsGroup in processedData.PlayerPositionsValues.Where(x => x.Round == playerPositionsStat.Round && x.TimeInRound == playerPositionByTimeInRound.TimeInRound).GroupBy(x => x.SteamID).Distinct())
+					{
+						foreach (var playerPositionsInstance in steamIdsGroup)
+						{
+							playerPositionByTimeInRound.PlayerPositionBySteamID.Add(new PlayerPositionBySteamID()
+							{
+								SteamID = playerPositionsInstance.SteamID,
+								XPosition = playerPositionsInstance.XPosition,
+								YPosition = playerPositionsInstance.YPosition,
+								ZPosition = playerPositionsInstance.ZPosition,
+							});
+						}
+					}
+				}
+			}
+
+			return playerPositionsStats;
 		}
 
 		public void CreateJson(ProcessedData processedData, AllStats allStats, string mapNameString, string mapDateString)
