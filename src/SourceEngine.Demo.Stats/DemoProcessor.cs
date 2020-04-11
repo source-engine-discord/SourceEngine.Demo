@@ -1011,7 +1011,7 @@ namespace SourceEngine.Demo.Stats
 					string reason = string.Empty;
 					string half = string.Empty;
 					bool isOvertime = ((switchSides.Count() >= 2) && (i >= switchSides.ElementAt(1).RoundBeforeSwitch)) ? true : false;
-					int overtimeNum = 0;
+					int overtimeCount = 0;
 					double roundLength = processedData.RoundLengthValues.ElementAt(i);
 
 					// determines which half / side it is
@@ -1022,9 +1022,9 @@ namespace SourceEngine.Demo.Stats
 						int roundsPerOT = roundsPerOTHalf * 2;
 
 						int roundsIntoOT = (i + 1) - lastNormalTimeRound;
-						overtimeNum = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOT);
+						overtimeCount = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOT);
 
-						double currentOTHalf = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOTHalf);
+						int currentOTHalf = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOTHalf);
 						half = currentOTHalf % 2 == 1 ? "First" : "Second";
 					}
 					else
@@ -1033,7 +1033,7 @@ namespace SourceEngine.Demo.Stats
 					}
 
 					// total rounds calculation
-					if (half == "First")
+					if (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount))
 					{
 						if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
 						{
@@ -1044,7 +1044,7 @@ namespace SourceEngine.Demo.Stats
 							totalRoundsWonTeamBeta++;
 						}
 					}
-					else if (half == "Second")
+					else
 					{
 						if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
 						{
@@ -1098,15 +1098,15 @@ namespace SourceEngine.Demo.Stats
 						player.SteamID = (player.SteamID == 0) ? GetSteamIdByPlayerName(playerNames, player.Name) : player.SteamID;
 					}
 
-					int playerCountTeamA = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.Terrorists.Count() : currentRoundTeams.CounterTerrorists.Count()) : 0;
-					int playerCountTeamB = (currentRoundTeams != null) ? (half == "First" ? currentRoundTeams.CounterTerrorists.Count() : currentRoundTeams.Terrorists.Count()) : 0;
+					int playerCountTeamA = (currentRoundTeams != null) ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount) ? currentRoundTeams.Terrorists.Count() : currentRoundTeams.CounterTerrorists.Count()) : 0;
+					int playerCountTeamB = (currentRoundTeams != null) ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount) ? currentRoundTeams.CounterTerrorists.Count() : currentRoundTeams.Terrorists.Count()) : 0;
 
 					// equip values
 					var teamEquipValues = processedData.TeamEquipmentValues.Count() >= i ? processedData.TeamEquipmentValues.ElementAt(i) : null;
-					int equipValueTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue) : 0;
-					int equipValueTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue) : 0;
-					int expenditureTeamA = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure) : 0;
-					int expenditureTeamB = (teamEquipValues != null) ? (half == "First" ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure) : 0;
+					int equipValueTeamA = (teamEquipValues != null) ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount) ? teamEquipValues.TEquipValue : teamEquipValues.CTEquipValue) : 0;
+					int equipValueTeamB = (teamEquipValues != null) ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount) ? teamEquipValues.CTEquipValue : teamEquipValues.TEquipValue) : 0;
+					int expenditureTeamA = (teamEquipValues != null) ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount) ? teamEquipValues.TExpenditure : teamEquipValues.CTExpenditure) : 0;
+					int expenditureTeamB = (teamEquipValues != null) ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount) ? teamEquipValues.CTExpenditure : teamEquipValues.TExpenditure) : 0;
 
 					// bombsite planted/exploded/defused at
 					string bombsite = null;
@@ -1230,7 +1230,7 @@ namespace SourceEngine.Demo.Stats
 					{
 						Round = i + 1,
 						Half = half,
-						Overtime = overtimeNum,
+						Overtime = overtimeCount,
 						Length = roundLength,
 						Winners = roundsWonTeams[i].ToString(),
 						WinMethod = reason,
@@ -2018,6 +2018,11 @@ namespace SourceEngine.Demo.Stats
                 TimeInRound = -1
             };
         }
+
+		public bool GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(string half, int overtimeCount)
+		{
+			return (half == "First" && overtimeCount % 2 == 0) || (half == "Second" && overtimeCount % 2 == 1); // the team playing T Side first switches each OT for example, this checks the OT count for swaps
+		}
 
 		public static int? GetMinRoundsForWin(string testType)
 		{
