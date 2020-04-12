@@ -214,7 +214,7 @@ namespace SourceEngine.Demo.Stats
 								var playerPositionsInstance = new PlayerPositionsInstance()
 								{
 									Round = round,
-									TimeInRound = (int)(e.CurrentTime - freezetimeEndedEventLast.TimeEnd),
+									TimeInRound = (int)e.CurrentTime - (int)freezetimeEndedEventLast.TimeEnd,
 									SteamID = playerPosition.Player.SteamID,
 									XPosition = playerPosition.Player.Position.X,
 									YPosition = playerPosition.Player.Position.Y,
@@ -1789,13 +1789,17 @@ namespace SourceEngine.Demo.Stats
 					{
 						foreach (var playerPositionsInstance in steamIdsGroup)
 						{
-							playerPositionByTimeInRound.PlayerPositionBySteamID.Add(new PlayerPositionBySteamID()
+							// skip players who have died this round
+							if (!processedData.PlayerKilledEventsValues.Any(x => x.Round == playerPositionsStat.Round && x.Victim.SteamID == playerPositionsInstance.SteamID && x.TimeInRound <= playerPositionByTimeInRound.TimeInRound ))
 							{
-								SteamID = playerPositionsInstance.SteamID,
-								XPosition = playerPositionsInstance.XPosition,
-								YPosition = playerPositionsInstance.YPosition,
-								ZPosition = playerPositionsInstance.ZPosition,
-							});
+								playerPositionByTimeInRound.PlayerPositionBySteamID.Add(new PlayerPositionBySteamID()
+								{
+									SteamID = playerPositionsInstance.SteamID,
+									XPosition = playerPositionsInstance.XPosition,
+									YPosition = playerPositionsInstance.YPosition,
+									ZPosition = playerPositionsInstance.ZPosition,
+								});
+							}
 						}
 					}
 				}
