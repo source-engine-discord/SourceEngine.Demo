@@ -273,52 +273,52 @@ namespace SourceEngine.Demo.Parser.DP.Handler
                     kill.TeamKill = false;
                     kill.Suicide = false;
 
-                    if (kill.Victim != null && kill.Killer != null)
-                    {
-                        if (kill.Victim.SteamID != 0 && kill.Victim.SteamID == kill.Killer.SteamID)
-                        {
-                            kill.Suicide = true;
-                        }
-                        else if (kill.Victim.Team == kill.Killer.Team)
-                        {
-                            kill.TeamKill = true;
-                        }
-                    }
+					if (kill.Victim != null && kill.Killer != null)
+					{
+						if (kill.Victim.SteamID != 0 && kill.Victim.SteamID == kill.Killer.SteamID)
+						{
+							kill.Suicide = true;
+						}
+						else if (kill.Victim.Team == kill.Killer.Team)
+						{
+							kill.TeamKill = true;
+						}
 
-                    // works out if either the killer or victim have taken over bots
-                    kill.KillerBotTakeover = false;
-                    kill.VictimBotTakeover = false;
-                    kill.AssisterBotTakeover = false;
+						// works out if either the killer or victim have taken over bots
+						kill.KillerBotTakeover = false;
+						kill.VictimBotTakeover = false;
+						kill.AssisterBotTakeover = false;
 
-                    if (kill.Killer != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
-                    {
-                        kill.KillerBotTakeover = true;
-                    }
-                    if (kill.Victim != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
-                    {
-                        kill.VictimBotTakeover = true;
-                    }
-                    if (kill.Assister != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name.ToString()))
-                    {
-                        kill.AssisterBotTakeover = true;
-                    }
-                
-                    if (data.ContainsKey("assistedflash"))
-                    kill.AssistedFlash = (bool)data["assistedflash"];
+						if (kill.Killer != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
+						{
+							kill.KillerBotTakeover = true;
+						}
+						if (kill.Victim != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
+						{
+							kill.VictimBotTakeover = true;
+						}
+						if (kill.Assister != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name.ToString()))
+						{
+							kill.AssisterBotTakeover = true;
+						}
 
-                    kill.PenetratedObjects = (int)data["penetrated"];
+						if (data.ContainsKey("assistedflash"))
+							kill.AssistedFlash = (bool)data["assistedflash"];
 
-                    /*if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade
-                        && kill.Weapon.Weapon != EquipmentElement.Revolver
-                        && kill.Killer.Weapons.Any() && kill.Weapon.Weapon != EquipmentElement.World) {
-                    #if DEBUG
-                    if(kill.Weapon.Weapon != kill.Killer.ActiveWeapon.Weapon)
-                        throw new InvalidDataException();
-                    #endif
-                    kill.Weapon = kill.Killer.ActiveWeapon;
-                    }*/
+						kill.PenetratedObjects = (int)data["penetrated"];
 
-                    parser.RaisePlayerKilled(kill);
+						/*if (kill.Killer != null && kill.Weapon.Class != EquipmentClass.Grenade
+							&& kill.Weapon.Weapon != EquipmentElement.Revolver
+							&& kill.Killer.Weapons.Any() && kill.Weapon.Weapon != EquipmentElement.World) {
+						#if DEBUG
+						if(kill.Weapon.Weapon != kill.Killer.ActiveWeapon.Weapon)
+							throw new InvalidDataException();
+						#endif
+						kill.Weapon = kill.Killer.ActiveWeapon;
+						}*/
+
+						parser.RaisePlayerKilled(kill);
+					}
 				    break;
 			    case "player_hurt":
 				    data = MapData (eventDescriptor, rawEvent);
