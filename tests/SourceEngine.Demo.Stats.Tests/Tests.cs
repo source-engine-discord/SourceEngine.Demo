@@ -276,6 +276,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				allStats.playerPositionsStats[0].Round.ShouldBe(1);
 				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().TimeInRound.ShouldBe(1);
 				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().SteamID.ShouldBe(32443298432);
+				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().TeamSide.ShouldBe("Terrorist");
 				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().XPosition.ShouldBe(20);
 				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().YPosition.ShouldBe(200);
 				allStats.playerPositionsStats[0].PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().ZPosition.ShouldBe(2000);
@@ -1039,6 +1040,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				{
 					Round = 1,
 					TimeInRound = 1,
+					TeamSide = Team.Terrorist.ToString(),
 					SteamID = TeamPlayersValues[0].Terrorists[0].SteamID,
 					XPosition = 20,
 					YPosition = 200,

@@ -216,6 +216,7 @@ namespace SourceEngine.Demo.Stats
 									Round = round,
 									TimeInRound = (int)e.CurrentTime - (int)freezetimeEndedEventLast.TimeEnd,
 									SteamID = playerPosition.Player.SteamID,
+									TeamSide = playerPosition.Player.Team.ToString(),
 									XPosition = playerPosition.Player.Position.X,
 									YPosition = playerPosition.Player.Position.Y,
 									ZPosition = playerPosition.Player.Position.Z,
@@ -1795,6 +1796,7 @@ namespace SourceEngine.Demo.Stats
 								playerPositionByTimeInRound.PlayerPositionBySteamID.Add(new PlayerPositionBySteamID()
 								{
 									SteamID = playerPositionsInstance.SteamID,
+									TeamSide = playerPositionsInstance.TeamSide,
 									XPosition = playerPositionsInstance.XPosition,
 									YPosition = playerPositionsInstance.YPosition,
 									ZPosition = playerPositionsInstance.ZPosition,

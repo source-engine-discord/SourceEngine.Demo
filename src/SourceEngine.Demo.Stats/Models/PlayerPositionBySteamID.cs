@@ -3,6 +3,7 @@
 	public class PlayerPositionBySteamID
 	{
 		public long SteamID { get; set; }
+		public string TeamSide { get; set; }
 		public double XPosition { get; set; }
 		public double YPosition { get; set; }
 		public double ZPosition { get; set; }
