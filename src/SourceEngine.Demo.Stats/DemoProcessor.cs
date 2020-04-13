@@ -587,6 +587,32 @@ namespace SourceEngine.Demo.Stats
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
 
+            dp.PlayerHurt += (object sender, PlayerHurtEventArgs e) => { // only interested in player_hurt events when it is possible that a player_death event is not triggered due to death by bomb explosion
+				if (e.PossiblyKilledByBombExplosion)
+				{
+					var round = GetCurrentRoundNum(md);
+
+					var playerKilledEventArgs = new PlayerKilledEventArgs()
+					{
+						Round = round,
+						TimeInRound = e.TimeInRound,
+						Killer = e.Attacker,
+						KillerBotTakeover = false, // ?
+						Victim = e.Player,
+						VictimBotTakeover = false, // ?
+						Assister = null,
+						AssisterBotTakeover = false, // ?
+						Suicide = false,
+						TeamKill = false,
+						PenetratedObjects = 0,
+						Headshot = false,
+						AssistedFlash = false,
+					};
+
+					md.addEvent(typeof(PlayerKilledEventArgs), playerKilledEventArgs);
+				}
+            };
+
             dp.RoundMVP += (object sender, RoundMVPEventArgs e) => {
                 md.addEvent(typeof(RoundMVPEventArgs), e);
             };
@@ -1791,7 +1817,7 @@ namespace SourceEngine.Demo.Stats
 						foreach (var playerPositionsInstance in steamIdsGroup)
 						{
 							// skip players who have died this round
-							if (!processedData.PlayerKilledEventsValues.Any(x => x.Round == playerPositionsStat.Round && x.Victim.SteamID == playerPositionsInstance.SteamID && x.TimeInRound <= playerPositionByTimeInRound.TimeInRound ))
+							if (!processedData.PlayerKilledEventsValues.Any(x => x.Round == playerPositionsStat.Round && (x.Victim?.SteamID != 0 && x.Victim.SteamID == playerPositionsInstance.SteamID) && x.TimeInRound <= playerPositionByTimeInRound.TimeInRound ))
 							{
 								playerPositionByTimeInRound.PlayerPositionBySteamID.Add(new PlayerPositionBySteamID()
 								{
@@ -1953,7 +1979,7 @@ namespace SourceEngine.Demo.Stats
 
 			var kills = md.events.Where(k => k.Key.Name.ToString() == "PlayerKilledEventArgs").Select(v => (PlayerKilledEventArgs)v.Value.ElementAt(0));
 
-			return !kills.Any(x => x.Round == round && x.Victim.SteamID == player.SteamID);
+			return !kills.Any(x => x.Round == round && (x.Victim?.SteamID != 0 && x.Victim.SteamID == player?.SteamID));
 		}
 
         public int CheckForUpdatedUserId(int userId)

@@ -15,7 +15,7 @@
         <Company>Source Engine Discord</Company>
         <Copyright>© 2014 EHVAG, 2020 Source Engine Discord and contributors</Copyright>
         <Product>SourceEngine.Demo</Product>
-        <Version>2.0.8</Version>
+        <Version>2.0.9</Version>
     </PropertyGroup>
 
     <PropertyGroup Label="Package Metadata">

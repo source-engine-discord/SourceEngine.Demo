@@ -283,6 +283,11 @@ namespace SourceEngine.Demo.Parser
     public class PlayerHurtEventArgs : EventArgs
 	{
 		/// <summary>
+		/// The time in the round the event has occurred
+		/// </summary>
+		public double TimeInRound { get; set; }
+
+		/// <summary>
 		/// The hurt player
 		/// </summary>
 		public Player Player { get; set; }
@@ -335,6 +340,12 @@ namespace SourceEngine.Demo.Parser
 		/// </summary>
 		/// <value>The hitgroup.</value>
 		public Hitgroup Hitgroup { get; set; }
+
+		/// <summary>
+		/// Shows if it is possible that the player was killed by a bomb explosion (player_death is not triggered when it is due to the bomb (unsure if this is always or just sometimes)). 
+		/// </summary>
+		/// <value>The hitgroup.</value>
+		public bool PossiblyKilledByBombExplosion { get; set; }
 	}
 
 	public class BlindEventArgs : EventArgs
@@ -723,7 +734,7 @@ namespace SourceEngine.Demo.Parser
 
 	public enum EquipmentElement
 	{
-		Unknown = 0,
+		Unknown = -100,
 
 		//Pistols
 		P2000 = 1,

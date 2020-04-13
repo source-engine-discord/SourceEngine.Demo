@@ -273,13 +273,13 @@ namespace SourceEngine.Demo.Parser.DP.Handler
                     kill.TeamKill = false;
                     kill.Suicide = false;
 
-					if (kill.Victim != null && kill.Killer != null)
+					if (kill.Victim != null)
 					{
-						if (kill.Victim.SteamID != 0 && kill.Victim.SteamID == kill.Killer.SteamID)
+						if (kill.Victim.SteamID != 0 && kill.Victim.SteamID == kill.Killer?.SteamID)
 						{
 							kill.Suicide = true;
 						}
-						else if (kill.Victim.Team == kill.Killer.Team)
+						else if (kill.Killer != null && kill.Victim.Team == kill.Killer.Team)
 						{
 							kill.TeamKill = true;
 						}
@@ -334,11 +334,20 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 
 				    hurt.Weapon = new Equipment ((string)data ["weapon"], "");
 
-				    if (hurt.Attacker != null && hurt.Weapon.Class != EquipmentClass.Grenade && hurt.Attacker.Weapons.Any ()) {
+					if (hurt.Attacker != null && hurt.Weapon.Class != EquipmentClass.Grenade && hurt.Attacker.Weapons.Any ()) {
 					    hurt.Weapon = hurt.Attacker.ActiveWeapon;
-				    }
+					}
 
-				    parser.RaisePlayerHurt (hurt);
+					hurt.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
+
+					hurt.PossiblyKilledByBombExplosion = (hurt.Health == 0 &&
+														  string.IsNullOrWhiteSpace(hurt.Weapon.OriginalString) &&
+														  hurt.Weapon.Weapon == EquipmentElement.Unknown &&
+														  hurt.Weapon.Class == EquipmentClass.Unknown)
+															  ? true
+															  : false;
+
+				    parser.RaisePlayerHurt(hurt);
 				    break;
 
 				    #region Nades
