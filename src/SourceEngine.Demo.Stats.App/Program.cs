@@ -339,7 +339,8 @@ namespace SourceEngine.Demo.Stats.App
 				IEnumerable<SwitchSidesEventArgs> sse = new List<SwitchSidesEventArgs>();
 				IEnumerable<FeedbackMessage> fme = new List<FeedbackMessage>();
 				IEnumerable<TeamPlayers> tpe = new List<TeamPlayers>();
-				IEnumerable<PlayerKilledEventArgs> pke = new List<PlayerKilledEventArgs>();
+                IEnumerable<PlayerHurt> ph = new List<PlayerHurt>();
+                IEnumerable<PlayerKilledEventArgs> pke = new List<PlayerKilledEventArgs>();
 				Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
 				IEnumerable<Equipment> pwe = new List<Equipment>();
 				IEnumerable<int> poe = new List<int>();
@@ -372,6 +373,9 @@ namespace SourceEngine.Demo.Stats.App
 
                 fme = (from message in mdTest.GetEvents<FeedbackMessage>()
                       select (message as FeedbackMessage));
+
+                ph = (from player in mdTest.GetEvents<PlayerHurt>()
+                     select (player as PlayerHurt));
 
 				pke = (from player in mdTest.GetEvents<PlayerKilledEventArgs>()
                       select (player as PlayerKilledEventArgs));
@@ -483,7 +487,8 @@ namespace SourceEngine.Demo.Stats.App
 						SwitchSidesValues = sse,
 						MessagesValues = fme,
 						TeamPlayersValues = tpe,
-						PlayerKilledEventsValues = pke,
+                        PlayerHurtValues = ph,
+                        PlayerKilledEventsValues = pke,
 						PlayerValues = pe,
 						WeaponValues = pwe,
 						PenetrationValues = poe,

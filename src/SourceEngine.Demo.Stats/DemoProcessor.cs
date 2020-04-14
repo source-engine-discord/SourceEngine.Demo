@@ -587,11 +587,11 @@ namespace SourceEngine.Demo.Stats
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
 
-            dp.PlayerHurt += (object sender, PlayerHurtEventArgs e) => { // only interested in player_hurt events when it is possible that a player_death event is not triggered due to death by bomb explosion
-				if (e.PossiblyKilledByBombExplosion)
-				{
-					var round = GetCurrentRoundNum(md);
+            dp.PlayerHurt += (object sender, PlayerHurtEventArgs e) => {
+				var round = GetCurrentRoundNum(md);
 
+				if (e.PossiblyKilledByBombExplosion) // a player_death event is not triggered due to death by bomb explosion
+				{
 					var playerKilledEventArgs = new PlayerKilledEventArgs()
 					{
 						Round = round,
@@ -611,7 +611,11 @@ namespace SourceEngine.Demo.Stats
 
 					md.addEvent(typeof(PlayerKilledEventArgs), playerKilledEventArgs);
 				}
-            };
+
+				var playerHurt = new PlayerHurt(e, round);
+
+				md.addEvent(typeof(PlayerHurt), playerHurt);
+			};
 
             dp.RoundMVP += (object sender, RoundMVPEventArgs e) => {
                 md.addEvent(typeof(RoundMVPEventArgs), e);
@@ -677,7 +681,7 @@ namespace SourceEngine.Demo.Stats
 
                 var round = GetCurrentRoundNum(md);
 
-                ShotFired shotFired = new ShotFired() { Round = round, Shooter = e.Shooter, Weapon = e.Weapon };
+                ShotFired shotFired = new ShotFired() { Round = round, TimeInRound = e.TimeInRound, Shooter = e.Shooter, TeamSide = e.Shooter.Team.ToString(), Weapon = new Equipment(e.Weapon) };
 
                 md.addEvent(typeof(ShotFired), shotFired);
             };
@@ -814,6 +818,8 @@ namespace SourceEngine.Demo.Stats
 			}
 
             allStats.teamStats = GetTeamStats(processedData, allStats, dataAndPlayerNames.PlayerNames, generalroundsStats.SwitchSides);
+
+			allStats.firstDamageStats = GetFirstDamageStats(processedData);
 
 			if (processedData.ParsePlayerPositions)
 			{
@@ -1772,6 +1778,64 @@ namespace SourceEngine.Demo.Stats
 			return teamStats;
 		}
 
+		public List<firstDamageStats> GetFirstDamageStats(ProcessedData processedData)
+		{
+			List<firstDamageStats> firstDamageStats = new List<firstDamageStats>();
+
+			foreach (var round in processedData.PlayerHurtValues.Select(x => x.Round).Distinct())
+			{
+				firstDamageStats.Add(new firstDamageStats()
+				{
+					Round = round,
+					FirstDamageToEnemyByPlayers = new List<DamageGivenByPlayerInRound>(),
+				});
+			}
+
+
+			foreach (var roundsGroup in processedData.PlayerHurtValues.GroupBy(x => x.Round))
+			{
+				int lastRound = processedData.RoundEndReasonValues.Count();
+
+				foreach (var round in roundsGroup.Where(x => x.Round > 0 && x.Round <= lastRound).Select(x => x.Round).Distinct())
+				{
+					foreach (var steamIdsGroup in roundsGroup
+						.Where(x => x.Round == round &&
+									x.Player?.SteamID != 0 && x.Player?.SteamID != x.Attacker?.SteamID &&
+									x.Weapon.Class != EquipmentClass.Grenade && x.Weapon.Class != EquipmentClass.Equipment &&
+									x.Weapon.Class != EquipmentClass.Unknown && x.Weapon.Weapon != EquipmentElement.Unknown &&
+									x.Weapon.Weapon != EquipmentElement.Bomb && x.Weapon.Weapon != EquipmentElement.World
+						)
+						.OrderBy(x => x.TimeInRound)
+						.GroupBy(x => x.Attacker.SteamID))
+					{
+						var firstDamage = steamIdsGroup.FirstOrDefault();
+
+						var firstDamageByPlayer = new DamageGivenByPlayerInRound()
+						{
+							TimeInRound = firstDamage.TimeInRound,
+							TeamSideShooter = firstDamage.Attacker.Team.ToString(),
+							SteamIDShooter = firstDamage.Attacker.SteamID,
+							XPositionShooter = firstDamage.Attacker.Position.X,
+							YPositionShooter = firstDamage.Attacker.Position.Y,
+							ZPositionShooter = firstDamage.Attacker.Position.Z,
+							TeamSideVictim = firstDamage.Player.Team.ToString(),
+							SteamIDVictim = firstDamage.Player.SteamID,
+							XPositionVictim = firstDamage.Player.Position.X,
+							YPositionVictim = firstDamage.Player.Position.Y,
+							ZPositionVictim = firstDamage.Player.Position.Z,
+							Weapon = firstDamage.Weapon.Weapon.ToString(),
+							WeaponClass = firstDamage.Weapon.Class.ToString(),
+							WeaponType = firstDamage.Weapon.Type.ToString(),
+						};
+
+						firstDamageStats[round - 1].FirstDamageToEnemyByPlayers.Add(firstDamageByPlayer);
+					}
+				}
+			}
+
+			return firstDamageStats;
+		}
+
 		public List<playerPositionsStats> GetPlayerPositionsStats(ProcessedData processedData)
 		{
 			List<playerPositionsStats> playerPositionsStats = new List<playerPositionsStats>();
@@ -1871,28 +1935,7 @@ namespace SourceEngine.Demo.Stats
 
 			StreamWriter sw = new StreamWriter(path, false);
 
-			string json = JsonConvert.SerializeObject(
-				new
-				{
-					allStats.versionNumber,
-					allStats.supportedGamemodes,
-					allStats.mapInfo,
-					allStats.tanookiStats,
-					allStats.playerStats,
-					allStats.winnersStats,
-					allStats.roundsStats,
-					allStats.bombsiteStats,
-					allStats.hostageStats,
-					allStats.grenadesTotalStats,
-					allStats.grenadesSpecificStats,
-					allStats.killsStats,
-					allStats.feedbackMessages,
-					allStats.chickenStats,
-					allStats.teamStats,
-					allStats.playerPositionsStats,
-				},
-				Formatting.Indented
-			);
+			string json = JsonConvert.SerializeObject(allStats, Formatting.Indented);
 
 			sw.WriteLine(json);
 			/* JSON creation end*/

@@ -80,6 +80,33 @@ namespace SourceEngine.Demo.Stats.Tests
 			}
 
 			[Fact]
+			public void Should_return_first_shot_stats_stats_correctly()
+			{
+				// Arrange
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.firstDamageStats.Count.ShouldBe(2);
+				allStats.firstDamageStats[0].Round.ShouldBe(1);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TimeInRound.ShouldBe(40);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideShooter.ShouldBe("Terrorist");
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDShooter.ShouldBe(32443298432);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionShooter.ShouldBe(200);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionShooter.ShouldBe(200);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionShooter.ShouldBe(200);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideVictim.ShouldBe("CounterTerrorist");
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDVictim.ShouldBe(12321313213);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionVictim.ShouldBe(80);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionVictim.ShouldBe(800);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionVictim.ShouldBe(8000);
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().Weapon.ShouldBe("AK47");
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponClass.ShouldBe("Rifle");
+				allStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponType.ShouldBe("AssaultRifle");
+			}
+
+			[Fact]
 			public void Should_return_grenade_specific_stats_correctly()
 			{
 				// Arrange
@@ -544,6 +571,7 @@ namespace SourceEngine.Demo.Stats.Tests
 						{
 							Name = "JimWood",
 							SteamID = 32443298432,
+							Team = Team.Terrorist,
 							EntityID = 45,
 							UserID = 1,
 							LastAlivePosition = new Vector()
@@ -568,6 +596,7 @@ namespace SourceEngine.Demo.Stats.Tests
 						{
 							Name = "TheWhaleMan",
 							SteamID = 12321313213,
+							Team = Team.CounterTerrorist,
 							EntityID = 46,
 							UserID = 2,
 							LastAlivePosition = new Vector()
@@ -638,6 +667,38 @@ namespace SourceEngine.Demo.Stats.Tests
 							RoundStartEquipmentValue = 4750,
 						}
 					}
+				}
+			};
+
+			var PlayerHurtValues = new List<PlayerHurt>()
+			{
+				new PlayerHurt
+				{
+					Round = 1,
+					TimeInRound = 40,
+					Player = TeamPlayersValues[0].CounterTerrorists[0],
+					Attacker = TeamPlayersValues[0].Terrorists[0],
+					Health = 0,
+					Armor = 50,
+					Weapon = new Equipment("weapon_ak47"),
+					HealthDamage = 100,
+					ArmorDamage = 50,
+					Hitgroup = Hitgroup.Head,
+					PossiblyKilledByBombExplosion = false
+	},
+				new PlayerHurt
+				{
+					Round = 2,
+					TimeInRound = 90,
+					Player = TeamPlayersValues[1].Terrorists[0],
+					Attacker = TeamPlayersValues[1].CounterTerrorists[0],
+					Health = 0,
+					Armor = 25,
+					Weapon = new Equipment("weapon_awp"),
+					HealthDamage = 150,
+					ArmorDamage = 75,
+					Hitgroup = Hitgroup.Head,
+					PossiblyKilledByBombExplosion = false
 				}
 			};
 
@@ -1000,36 +1061,50 @@ namespace SourceEngine.Demo.Stats.Tests
 				new ShotFired
 				{
 					Round = 1,
+					TimeInRound = 1,
+					TeamSide = Team.Terrorist.ToString(),
 					Shooter = TeamPlayersValues[0].Terrorists[0]
 				},
 				new ShotFired
 				{
 					Round = 1,
+					TimeInRound = 1,
+					TeamSide = Team.Terrorist.ToString(),
 					Shooter = TeamPlayersValues[0].Terrorists[0]
 				},
 				new ShotFired
 				{
 					Round = 1,
+					TimeInRound = 1,
+					TeamSide = Team.Terrorist.ToString(),
 					Shooter = TeamPlayersValues[0].Terrorists[0]
 				},
 				new ShotFired
 				{
 					Round = 2,
+					TimeInRound = 1,
+					TeamSide = Team.Terrorist.ToString(),
 					Shooter = TeamPlayersValues[1].Terrorists[0]
 				},
 				new ShotFired
 				{
 					Round = 2,
+					TimeInRound = 1,
+					TeamSide = Team.CounterTerrorist.ToString(),
 					Shooter = TeamPlayersValues[1].CounterTerrorists[0]
 				},
 				new ShotFired
 				{
 					Round = 2,
+					TimeInRound = 1,
+					TeamSide = Team.CounterTerrorist.ToString(),
 					Shooter = TeamPlayersValues[1].CounterTerrorists[0]
 				},
 				new ShotFired
 				{
 					Round = 2,
+					TimeInRound = 1,
+					TeamSide = Team.CounterTerrorist.ToString(),
 					Shooter = TeamPlayersValues[1].CounterTerrorists[0]
 				}
 			};
@@ -1063,6 +1138,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				SwitchSidesValues = SwitchSidesValues,
 				MessagesValues = MessagesValues,
 				TeamPlayersValues = TeamPlayersValues,
+				PlayerHurtValues = PlayerHurtValues,
 				PlayerKilledEventsValues = PlayerKilledEventsValues,
 				PlayerValues = PlayerValues,
 				WeaponValues = WeaponValues,
@@ -1080,6 +1156,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				ChickenValues = ChickenValues,
 				ShotsFiredValues = ShotsFiredValues,
 				PlayerPositionsValues = playerPositionsStats,
+				
 				WriteTicks = true
 			};
 		}

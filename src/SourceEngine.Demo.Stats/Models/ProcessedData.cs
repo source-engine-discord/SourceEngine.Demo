@@ -18,6 +18,7 @@ namespace SourceEngine.Demo.Stats.Models
 		public IEnumerable<SwitchSidesEventArgs> SwitchSidesValues { get; set; }
 		public IEnumerable<FeedbackMessage> MessagesValues { get; set; }
 		public IEnumerable<TeamPlayers> TeamPlayersValues { get; set; }
+		public IEnumerable<PlayerHurt> PlayerHurtValues { get; set; }
 		public IEnumerable<PlayerKilledEventArgs> PlayerKilledEventsValues { get; set; }
 		public Dictionary<string, IEnumerable<Player>> PlayerValues { get; set; }
 		public IEnumerable<Equipment> WeaponValues { get; set; }

@@ -227,15 +227,21 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 				    data = MapData (eventDescriptor, rawEvent);
 
 				    WeaponFiredEventArgs fire = new WeaponFiredEventArgs ();
-				    fire.Shooter = parser.Players.ContainsKey ((int)data ["userid"]) ? parser.Players [(int)data ["userid"]] : null;
+				    fire.Shooter = parser.Players.ContainsKey ((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
 				    fire.Weapon = new Equipment ((string)data ["weapon"]);
 
 				    if (fire.Shooter != null && fire.Shooter.ActiveWeapon != null && fire.Weapon.Class != EquipmentClass.Grenade) {
-					    fire.Weapon = fire.Shooter.ActiveWeapon;
-				    }
+						var originalString = fire.Weapon.OriginalString; // original string is lost when setting hurt.Weapon to hurt.Attacker.ActiveWeapon
+						fire.Weapon = new Player(fire.Shooter).ActiveWeapon;
+						fire.Weapon.Owner = new Player(fire.Weapon.Owner);
+						fire.Weapon.OriginalString = originalString;
+					}
 
-				    parser.RaiseWeaponFired(fire);
+					fire.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
+
+					parser.RaiseWeaponFired(fire);
 				    break;
+
                 /* doesn't seem to trigger this event currently */
                 /*
                     case "other_death":
@@ -324,8 +330,8 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 				    data = MapData (eventDescriptor, rawEvent);
 
 				    PlayerHurtEventArgs hurt = new PlayerHurtEventArgs ();
-				    hurt.Player = parser.Players.ContainsKey ((int)data ["userid"]) ? parser.Players [(int)data ["userid"]] : null;
-				    hurt.Attacker = parser.Players.ContainsKey ((int)data ["attacker"]) ? parser.Players [(int)data ["attacker"]] : null;
+				    hurt.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+				    hurt.Attacker = parser.Players.ContainsKey((int)data["attacker"]) ? new Player(parser.Players[(int)data ["attacker"]]) : null;
 				    hurt.Health = (int)data ["health"];
 				    hurt.Armor = (int)data ["armor"];
 				    hurt.HealthDamage = (int)data ["dmg_health"];
@@ -335,7 +341,11 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 				    hurt.Weapon = new Equipment ((string)data ["weapon"], "");
 
 					if (hurt.Attacker != null && hurt.Weapon.Class != EquipmentClass.Grenade && hurt.Attacker.Weapons.Any ()) {
-					    hurt.Weapon = hurt.Attacker.ActiveWeapon;
+						var originalString = hurt.Weapon.OriginalString; // original string is lost when setting hurt.Weapon to hurt.Attacker.ActiveWeapon
+					    hurt.Weapon = new Player(hurt.Attacker).ActiveWeapon;
+						hurt.Weapon.Owner = new Player(hurt.Weapon.Owner);
+						hurt.Weapon.OriginalString = originalString;
+						hurt.WeaponString = originalString;
 					}
 
 					hurt.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;

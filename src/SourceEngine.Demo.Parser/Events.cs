@@ -175,6 +175,8 @@ namespace SourceEngine.Demo.Parser
 		public Equipment Weapon { get; internal set; }
 
 		public Player Shooter { get; internal set; }
+
+		public double TimeInRound { get; set; }
 	}
 
 	public class NadeEventArgs : EventArgs
@@ -282,6 +284,11 @@ namespace SourceEngine.Demo.Parser
 
     public class PlayerHurtEventArgs : EventArgs
 	{
+		/// <summary>
+		/// The round the event has occurred
+		/// </summary>
+		public int Round { get; set; }
+
 		/// <summary>
 		/// The time in the round the event has occurred
 		/// </summary>
@@ -502,20 +509,34 @@ namespace SourceEngine.Demo.Parser
 			this.Weapon = EquipmentElement.Unknown;
 		}
 
-		internal Equipment(string originalString)
+		public Equipment(string originalString)
 		{
 			OriginalString = originalString;
 
 			this.Weapon = MapEquipment(originalString);
 		}
 
-		internal Equipment(string originalString, string skin)
+		public Equipment(string originalString, string skin)
 		{
 			OriginalString = originalString;
 
 			this.Weapon = MapEquipment(originalString);
 
 			SkinID = skin;
+		}
+
+		public Equipment(Equipment equipment)
+		{
+			if (equipment != null)
+			{
+				this.EntityID = equipment.EntityID;
+				this.Weapon = equipment.Weapon;
+				this.OriginalString = equipment.OriginalString;
+				this.SkinID = equipment.SkinID;
+				this.AmmoInMagazine = equipment.AmmoInMagazine;
+				this.AmmoType = equipment.AmmoType;
+				this.Owner = new Player(equipment.Owner);
+			}
 		}
 
 		const string WEAPON_PREFIX = "weapon_";
