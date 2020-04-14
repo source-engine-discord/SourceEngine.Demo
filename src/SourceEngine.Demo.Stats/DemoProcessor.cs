@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -211,12 +211,16 @@ namespace SourceEngine.Demo.Stats
 
 							if (playerAlive && freezetimeEndedThisRound)
 							{
+								var teamSide = playerPosition.Player.Team.ToString().ToLower() == "terrorist"
+													? "T"
+													: "CT";
+
 								var playerPositionsInstance = new PlayerPositionsInstance()
 								{
 									Round = round,
 									TimeInRound = (int)e.CurrentTime - (int)freezetimeEndedEventLast.TimeEnd,
 									SteamID = playerPosition.Player.SteamID,
-									TeamSide = playerPosition.Player.Team.ToString(),
+									TeamSide = teamSide,
 									XPosition = playerPosition.Player.Position.X,
 									YPosition = playerPosition.Player.Position.Y,
 									ZPosition = playerPosition.Player.Position.Z,
@@ -1909,9 +1913,9 @@ namespace SourceEngine.Demo.Stats
 								{
 									SteamID = playerPositionsInstance.SteamID,
 									TeamSide = playerPositionsInstance.TeamSide,
-									XPosition = playerPositionsInstance.XPosition,
-									YPosition = playerPositionsInstance.YPosition,
-									ZPosition = playerPositionsInstance.ZPosition,
+									XPosition = (int)playerPositionsInstance.XPosition,
+									YPosition = (int)playerPositionsInstance.YPosition,
+									ZPosition = (int)playerPositionsInstance.ZPosition,
 								});
 							}
 						}
