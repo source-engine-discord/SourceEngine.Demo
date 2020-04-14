@@ -612,7 +612,29 @@ namespace SourceEngine.Demo.Stats
 					md.addEvent(typeof(PlayerKilledEventArgs), playerKilledEventArgs);
 				}
 
-				var playerHurt = new PlayerHurt(e, round);
+				var player = new Player(e.Player);
+				var attacker = new Player(e.Attacker);
+
+				var playerHurt = new PlayerHurt()
+				{
+					Round = round,
+					TimeInRound = e.TimeInRound,
+					Player = player,
+					XPositionPlayer = player.Position.X,
+					YPositionPlayer = player.Position.Y,
+					ZPositionPlayer = player.Position.Z,
+					Attacker = attacker ?? null,
+					XPositionAttacker = (attacker != null && attacker.Position != null) ? attacker.Position.X : 0,
+					YPositionAttacker = (attacker != null && attacker.Position != null) ? attacker.Position.Y : 0,
+					ZPositionAttacker = (attacker != null && attacker.Position != null) ? attacker.Position.Z : 0,
+					Health = e.Health,
+					Armor = e.Armor,
+					Weapon = attacker != null ? e.Weapon : null,
+					HealthDamage = e.HealthDamage,
+					ArmorDamage = e.ArmorDamage,
+					Hitgroup = e.Hitgroup,
+					PossiblyKilledByBombExplosion = e.PossiblyKilledByBombExplosion,
+				};
 
 				md.addEvent(typeof(PlayerHurt), playerHurt);
 			};
@@ -1815,14 +1837,14 @@ namespace SourceEngine.Demo.Stats
 							TimeInRound = firstDamage.TimeInRound,
 							TeamSideShooter = firstDamage.Attacker.Team.ToString(),
 							SteamIDShooter = firstDamage.Attacker.SteamID,
-							XPositionShooter = firstDamage.Attacker.Position.X,
-							YPositionShooter = firstDamage.Attacker.Position.Y,
-							ZPositionShooter = firstDamage.Attacker.Position.Z,
+							XPositionShooter = firstDamage.XPositionAttacker,
+							YPositionShooter = firstDamage.YPositionAttacker,
+							ZPositionShooter = firstDamage.ZPositionAttacker,
 							TeamSideVictim = firstDamage.Player.Team.ToString(),
 							SteamIDVictim = firstDamage.Player.SteamID,
-							XPositionVictim = firstDamage.Player.Position.X,
-							YPositionVictim = firstDamage.Player.Position.Y,
-							ZPositionVictim = firstDamage.Player.Position.Z,
+							XPositionVictim = firstDamage.XPositionPlayer,
+							YPositionVictim = firstDamage.YPositionPlayer,
+							ZPositionVictim = firstDamage.ZPositionPlayer,
 							Weapon = firstDamage.Weapon.Weapon.ToString(),
 							WeaponClass = firstDamage.Weapon.Class.ToString(),
 							WeaponType = firstDamage.Weapon.Type.ToString(),
