@@ -386,6 +386,7 @@ namespace SourceEngine.Demo.Parser
 		/// </summary>
 		public int hostageAIndex { get; internal set; } = -1;
 		public int hostageBIndex { get; internal set; } = -1;
+		public int rescueZoneIndex { get; internal set; } = -1;
 
 		/// <summary>
 		/// The ID of the CT-Team
@@ -1196,7 +1197,7 @@ namespace SourceEngine.Demo.Parser
 			}
 		}
 
-		internal List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
+		public List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
 		public void HandleBombSites()
 		{
 			SendTableParser.FindByName("CCSPlayerResource").OnNewEntity += (s1, newResource) => {

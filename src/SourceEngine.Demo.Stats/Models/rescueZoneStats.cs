@@ -1,18 +1,13 @@
 ﻿namespace SourceEngine.Demo.Stats.Models
 {
-    public class bombsiteStats
+	public class rescueZoneStats
     {
-        public char Bombsite { get; set; }
-        public int Plants { get; set; }
-        public int Explosions { get; set; }
-        public int Defuses { get; set; }
+        public int? rescueZoneIndex { get; set; } // doesn't line up with the trigger Entity ID
         public double? XPositionMin { get; set; }
         public double? YPositionMin { get; set; }
         public double? ZPositionMin { get; set; }
         public double? XPositionMax { get; set; }
         public double? YPositionMax { get; set; }
         public double? ZPositionMax { get; set; }
-
-        public bombsiteStats() { }
     }
 }

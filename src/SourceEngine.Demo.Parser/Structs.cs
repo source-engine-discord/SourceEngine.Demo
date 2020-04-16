@@ -286,7 +286,7 @@ namespace SourceEngine.Demo.Parser
 	/// <summary>
 	/// This contains information about Collideables (specific edicts), mostly used for bombsites. 
 	/// </summary>
-	class BoundingBoxInformation
+	public class BoundingBoxInformation
 	{
 		public int Index { get; private set; }
 		public Vector Min { get; set; }

@@ -829,6 +829,7 @@ namespace SourceEngine.Demo.Stats
 
 			allStats.bombsiteStats = GetBombsiteStats(processedData);
 			allStats.hostageStats = GetHostageStats(processedData);
+			allStats.rescueZoneStats = GetRescueZoneStats();
 
 			string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
 			var nadeGroups = GetNadeGroups(processedData, nadeTypes);
@@ -1340,6 +1341,9 @@ namespace SourceEngine.Demo.Stats
 		{
 			List<bombsiteStats> bombsiteStats = new List<bombsiteStats>();
 
+			var bombsiteATrigger = dp.triggers.Where(x => x.Index == dp.bombsiteAIndex).FirstOrDefault();
+			var bombsiteBTrigger = dp.triggers.Where(x => x.Index == dp.bombsiteBIndex).FirstOrDefault();
+
 			List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => x.Bombsite));
 			List<char> bombsiteExplosions = new List<char>(processedData.BombsiteExplodeValues.Select(x => x.Bombsite));
 			List<char> bombsiteDefuses = new List<char>(processedData.BombsiteDefuseValues.Select(x => x.Bombsite));
@@ -1352,8 +1356,32 @@ namespace SourceEngine.Demo.Stats
 			int explosionsB = bombsiteExplosions.Where(b => b.ToString().Equals("B")).Count();
 			int defusesB = bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count();
 
-			bombsiteStats.Add(new bombsiteStats() { Bombsite = 'A', Plants = plantsA, Explosions = explosionsA, Defuses = defusesA });
-			bombsiteStats.Add(new bombsiteStats() { Bombsite = 'B', Plants = plantsB, Explosions = explosionsB, Defuses = defusesB });
+			bombsiteStats.Add(new bombsiteStats()
+			{
+				Bombsite = 'A',
+				Plants = plantsA,
+				Explosions = explosionsA,
+				Defuses = defusesA,
+				XPositionMin = bombsiteATrigger?.Min.X,
+				YPositionMin = bombsiteATrigger?.Min.Y,
+				ZPositionMin = bombsiteATrigger?.Min.Z,
+				XPositionMax = bombsiteATrigger?.Max.X,
+				YPositionMax = bombsiteATrigger?.Max.Y,
+				ZPositionMax = bombsiteATrigger?.Max.Z,
+			});
+			bombsiteStats.Add(new bombsiteStats()
+			{
+				Bombsite = 'B',
+				Plants = plantsB,
+				Explosions = explosionsB,
+				Defuses = defusesB,
+				XPositionMin = bombsiteBTrigger?.Min.X,
+				YPositionMin = bombsiteBTrigger?.Min.Y,
+				ZPositionMin = bombsiteBTrigger?.Min.Z,
+				XPositionMax = bombsiteBTrigger?.Max.X,
+				YPositionMax = bombsiteBTrigger?.Max.Y,
+				ZPositionMax = bombsiteBTrigger?.Max.Z,
+			});
 
 			return bombsiteStats;
 		}
@@ -1365,19 +1393,48 @@ namespace SourceEngine.Demo.Stats
 			List<char> hostagePickedUps = new List<char>(processedData.HostagePickedUpValues.Select(x => x.Hostage));
 			List<char> hostageRescues = new List<char>(processedData.HostageRescueValues.Select(x => x.Hostage));
 
-			var hostageIndexA = processedData.HostageRescueValues.Where(r => r.Hostage == 'A').FirstOrDefault()?.HostageIndex;
-			var hostageIndexB = processedData.HostageRescueValues.Where(r => r.Hostage == 'B').FirstOrDefault()?.HostageIndex;
-
 			int pickedUpsA = hostagePickedUps.Where(b => b.ToString().Equals("A")).Count();
 			int pickedUpsB = hostagePickedUps.Where(b => b.ToString().Equals("B")).Count();
 
 			int rescuesA = hostageRescues.Where(b => b.ToString().Equals("A")).Count();
 			int rescuesB = hostageRescues.Where(b => b.ToString().Equals("B")).Count();
 
-			hostageStats.Add(new hostageStats() { Hostage = 'A', HostageIndex = hostageIndexA, PickedUps = pickedUpsA, Rescues = rescuesA });
-			hostageStats.Add(new hostageStats() { Hostage = 'B', HostageIndex = hostageIndexB, PickedUps = pickedUpsB, Rescues = rescuesB });
+			hostageStats.Add(new hostageStats()
+			{
+				Hostage = 'A',
+				HostageIndex = dp.hostageAIndex,
+				PickedUps = pickedUpsA,
+				Rescues = rescuesA,
+			});
+			hostageStats.Add(new hostageStats()
+			{
+				Hostage = 'B',
+				HostageIndex = dp.hostageBIndex,
+				PickedUps = pickedUpsB,
+				Rescues = rescuesB,
+			});
 
 			return hostageStats;
+		}
+
+		public List<rescueZoneStats> GetRescueZoneStats()
+		{
+			List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
+
+			var rescueZoneTrigger = dp.triggers.FirstOrDefault(); // assume only one rescue zone, (int)data["site"] in GameEventHandler.cs does not line up with newResource.Entity.ID at SendTableParser.FindByName("CBaseTrigger").OnNewEntity
+
+			rescueZoneStats.Add(new rescueZoneStats()
+			{
+				rescueZoneIndex = dp.rescueZoneIndex, // doesn't line up with the trigger Entity ID
+				XPositionMin = rescueZoneTrigger?.Min.X,
+				YPositionMin = rescueZoneTrigger?.Min.Y,
+				ZPositionMin = rescueZoneTrigger?.Min.Z,
+				XPositionMax = rescueZoneTrigger?.Max.X,
+				YPositionMax = rescueZoneTrigger?.Max.Y,
+				ZPositionMax = rescueZoneTrigger?.Max.Z,
+			});
+
+			return rescueZoneStats;
 		}
 
 		public List<IEnumerable<NadeEventArgs>> GetNadeGroups(ProcessedData processedData, string[] nadeTypes)

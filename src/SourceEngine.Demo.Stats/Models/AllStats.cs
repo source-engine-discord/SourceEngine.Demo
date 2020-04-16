@@ -13,6 +13,7 @@ namespace SourceEngine.Demo.Stats.Models
         public List<roundsStats> roundsStats { get; set; }
         public List<bombsiteStats> bombsiteStats { get; set; }
         public List<hostageStats> hostageStats { get; set; }
+        public List<rescueZoneStats> rescueZoneStats { get; set; }
         public List<grenadesTotalStats> grenadesTotalStats { get; set; }
         public List<grenadesSpecificStats> grenadesSpecificStats { get; set; }
         public List<killsStats> killsStats { get; set; }

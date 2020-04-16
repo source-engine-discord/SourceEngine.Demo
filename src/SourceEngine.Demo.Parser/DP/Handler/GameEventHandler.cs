@@ -574,9 +574,11 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 
 					//currently assumes only one rescue zone,
 					//might be able to use "site" in 'eventDescriptor' or 'rawEvent' to determine which rescue zone was used ?
-					rescued.RescueZone = (int)data["site"];
+					int rescueZone = (int)data["site"];
+					parser.rescueZoneIndex = rescueZone;
+					rescued.RescueZone = rescueZone;
 
-                    int hostage = (int)data["hostage"];
+					int hostage = (int)data["hostage"];
 
                     //works out which hostage was rescued
                     if (hostage == parser.hostageAIndex)
@@ -594,13 +596,13 @@ namespace SourceEngine.Demo.Parser.DP.Handler
                         if (parser.hostageAIndex == -1)
                         {
                             rescued.Hostage = 'A';
-                            parser.hostageAIndex = hostage;
+							parser.hostageAIndex = hostage;
 							rescued.HostageIndex = parser.hostageAIndex;
 						}
                         else if (parser.hostageBIndex == -1)
                         {
                             rescued.Hostage = 'B';
-                            parser.hostageBIndex = hostage;
+							parser.hostageBIndex = hostage;
 							rescued.HostageIndex = parser.hostageBIndex;
 						}
                         else
