@@ -2,7 +2,6 @@
 {
 	public class rescueZoneStats
     {
-        public int? rescueZoneIndex { get; set; } // doesn't line up with the trigger Entity ID
         public double? XPositionMin { get; set; }
         public double? YPositionMin { get; set; }
         public double? ZPositionMin { get; set; }

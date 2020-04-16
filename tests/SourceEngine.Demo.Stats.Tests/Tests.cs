@@ -13,6 +13,7 @@ namespace SourceEngine.Demo.Stats.Tests
 	public class TopStatsWaffleTests
 	{
 		protected MatchData MatchData;
+		protected DemoParser DemoParser;
 		protected ProcessedData ProcessedData;
 
 		public TopStatsWaffleTests()
@@ -164,6 +165,18 @@ namespace SourceEngine.Demo.Stats.Tests
 				allStats.hostageStats[1].HostageIndex.ShouldBe(251);
 				allStats.hostageStats[1].PickedUps.ShouldBe(1);
 				allStats.hostageStats[1].Rescues.ShouldBe(1);
+			}
+
+			[Fact]
+			public void Should_return_rescue_zone_stats_correctly()
+			{
+				// Arrange
+
+				// Act
+				AllStats allStats = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allStats.rescueZoneStats.Count.ShouldBe(1); // cannot test positions as is currently, as DemoParser is not implemented
 			}
 
 			[Fact]

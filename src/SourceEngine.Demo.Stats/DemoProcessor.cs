@@ -829,7 +829,7 @@ namespace SourceEngine.Demo.Stats
 
 			allStats.bombsiteStats = GetBombsiteStats(processedData);
 			allStats.hostageStats = GetHostageStats(processedData);
-			allStats.rescueZoneStats = GetRescueZoneStats();
+			allStats.rescueZoneStats = GetRescueZoneStats(processedData);
 
 			string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
 			var nadeGroups = GetNadeGroups(processedData, nadeTypes);
@@ -1341,8 +1341,8 @@ namespace SourceEngine.Demo.Stats
 		{
 			List<bombsiteStats> bombsiteStats = new List<bombsiteStats>();
 
-			var bombsiteATrigger = dp.triggers.Where(x => x.Index == dp.bombsiteAIndex).FirstOrDefault();
-			var bombsiteBTrigger = dp.triggers.Where(x => x.Index == dp.bombsiteBIndex).FirstOrDefault();
+			var bombsiteATrigger = dp?.triggers.Count() > 0 ? dp.triggers.Where(x => x.Index == dp.bombsiteAIndex).FirstOrDefault() : null;
+			var bombsiteBTrigger = dp?.triggers.Count() > 0 ? dp.triggers.Where(x => x.Index == dp.bombsiteBIndex).FirstOrDefault() : null;
 
 			List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => x.Bombsite));
 			List<char> bombsiteExplosions = new List<char>(processedData.BombsiteExplodeValues.Select(x => x.Bombsite));
@@ -1390,6 +1390,9 @@ namespace SourceEngine.Demo.Stats
 		{
 			List<hostageStats> hostageStats = new List<hostageStats>();
 
+			var hostageIndexA = processedData.HostageRescueValues.Where(r => r.Hostage == 'A').FirstOrDefault()?.HostageIndex;	
+			var hostageIndexB = processedData.HostageRescueValues.Where(r => r.Hostage == 'B').FirstOrDefault()?.HostageIndex;
+
 			List<char> hostagePickedUps = new List<char>(processedData.HostagePickedUpValues.Select(x => x.Hostage));
 			List<char> hostageRescues = new List<char>(processedData.HostageRescueValues.Select(x => x.Hostage));
 
@@ -1402,14 +1405,14 @@ namespace SourceEngine.Demo.Stats
 			hostageStats.Add(new hostageStats()
 			{
 				Hostage = 'A',
-				HostageIndex = dp.hostageAIndex,
+				HostageIndex = hostageIndexA,
 				PickedUps = pickedUpsA,
 				Rescues = rescuesA,
 			});
 			hostageStats.Add(new hostageStats()
 			{
 				Hostage = 'B',
-				HostageIndex = dp.hostageBIndex,
+				HostageIndex = hostageIndexB,
 				PickedUps = pickedUpsB,
 				Rescues = rescuesB,
 			});
@@ -1417,15 +1420,15 @@ namespace SourceEngine.Demo.Stats
 			return hostageStats;
 		}
 
-		public List<rescueZoneStats> GetRescueZoneStats()
+		public List<rescueZoneStats> GetRescueZoneStats(ProcessedData processedData)
 		{
 			List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
 
-			var rescueZoneTrigger = dp.triggers.FirstOrDefault(); // assume only one rescue zone, (int)data["site"] in GameEventHandler.cs does not line up with newResource.Entity.ID at SendTableParser.FindByName("CBaseTrigger").OnNewEntity
+			// assume only one rescue zone, (int)data["site"] in GameEventHandler.cs does not line up with newResource.Entity.ID at SendTableParser.FindByName("CBaseTrigger").OnNewEntity
+			var rescueZoneTrigger = dp?.triggers.Count() > 0 ? dp.triggers.Where(x => x.Index != dp.bombsiteAIndex && x.Index != dp.bombsiteBIndex).FirstOrDefault() : null;
 
 			rescueZoneStats.Add(new rescueZoneStats()
 			{
-				rescueZoneIndex = dp.rescueZoneIndex, // doesn't line up with the trigger Entity ID
 				XPositionMin = rescueZoneTrigger?.Min.X,
 				YPositionMin = rescueZoneTrigger?.Min.Y,
 				ZPositionMin = rescueZoneTrigger?.Min.Z,
