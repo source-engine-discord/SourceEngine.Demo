@@ -187,7 +187,7 @@ namespace SourceEngine.Demo.Parser.DP.Handler
                 }
 
                 //makes sure that bombsite triggers' vector values have been set if they exist
-                parser.HandleBombSites();
+                parser.HandleBombSitesAndRescueZones();
 
                 //checks if the map contains bombsite triggers to figure out the gamemode
                 var bombsiteCenterA = parser.bombsiteACenter;
@@ -343,9 +343,13 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 					if (hurt.Attacker != null && hurt.Weapon.Class != EquipmentClass.Grenade && hurt.Attacker.Weapons.Any ()) {
 						var originalString = hurt.Weapon.OriginalString; // original string is lost when setting hurt.Weapon to hurt.Attacker.ActiveWeapon
 					    hurt.Weapon = new Player(hurt.Attacker).ActiveWeapon;
-						hurt.Weapon.Owner = new Player(hurt.Weapon.Owner);
-						hurt.Weapon.OriginalString = originalString;
-						hurt.WeaponString = originalString;
+
+						if (hurt.Weapon != null)
+						{
+							hurt.Weapon.Owner = new Player(hurt.Weapon.Owner);
+							hurt.Weapon.OriginalString = originalString;
+							hurt.WeaponString = originalString;
+						}
 					}
 
 					hurt.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;

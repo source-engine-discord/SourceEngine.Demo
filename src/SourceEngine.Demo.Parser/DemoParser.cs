@@ -387,6 +387,7 @@ namespace SourceEngine.Demo.Parser
 		public int hostageAIndex { get; internal set; } = -1;
 		public int hostageBIndex { get; internal set; } = -1;
 		public int rescueZoneIndex { get; internal set; } = -1;
+		public Vector rescueZoneCenter { get; internal set; } = new Vector();
 
 		/// <summary>
 		/// The ID of the CT-Team
@@ -784,7 +785,7 @@ namespace SourceEngine.Demo.Parser
 			//Okay, first the team-stuff.
 			HandleTeamScores();
 
-			HandleBombSites();
+			HandleBombSitesAndRescueZones();
 
 			HandlePlayers();
 
@@ -1198,14 +1199,38 @@ namespace SourceEngine.Demo.Parser
 		}
 
 		public List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
-		public void HandleBombSites()
+		public void HandleBombSitesAndRescueZones()
 		{
 			SendTableParser.FindByName("CCSPlayerResource").OnNewEntity += (s1, newResource) => {
+				// defuse
 				newResource.Entity.FindProperty("m_bombsiteCenterA").VectorRecived += (s2, center) => {
 					bombsiteACenter = center.Value;
 				};
 				newResource.Entity.FindProperty("m_bombsiteCenterB").VectorRecived += (s3, center) => {
 					bombsiteBCenter = center.Value;
+				};
+
+				// hostage (for multiple hostage rescue zones, use 001, 002 and 003)
+				newResource.Entity.FindProperty("m_hostageRescueX.000").DataRecivedDontUse += (s4, center) =>
+				{
+					if (!(rescueZoneCenter.X != 0 && Convert.ToSingle(center.Value) == 0))
+					{
+						rescueZoneCenter.X = Convert.ToSingle(center.Value);
+					}
+				};
+				newResource.Entity.FindProperty("m_hostageRescueY.000").DataRecivedDontUse += (s5, center) =>
+				{
+					if (!(rescueZoneCenter.Y != 0 && Convert.ToSingle(center.Value) == 0))
+					{
+						rescueZoneCenter.Y = Convert.ToSingle(center.Value);
+					}
+				};
+				newResource.Entity.FindProperty("m_hostageRescueZ.000").DataRecivedDontUse += (s6, center) =>
+				{
+					if (!(rescueZoneCenter.Z != 0 && Convert.ToSingle(center.Value) == 0))
+					{
+						rescueZoneCenter.Z = Convert.ToSingle(center.Value);
+					}
 				};
 			};
 
@@ -1214,12 +1239,38 @@ namespace SourceEngine.Demo.Parser
 				BoundingBoxInformation trigger = new BoundingBoxInformation(newResource.Entity.ID);
 				triggers.Add(trigger);
 
+				// if bombsites, it gets x,y,z values from the world origin (0,0,0)
+				// if hostage rescue zones, it gets x,y,z values relative to the entity's origin
 				newResource.Entity.FindProperty("m_Collision.m_vecMins").VectorRecived += (s2, vector) => {
-					trigger.Min = vector.Value;
+					if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage
+					{
+						trigger.Min = new Vector()
+						{
+							X = rescueZoneCenter.X + vector.Value.X,
+							Y = rescueZoneCenter.Y + vector.Value.Y,
+							Z = rescueZoneCenter.Z + vector.Value.Z,
+						};
+					}
+					else // is defuse
+					{
+						trigger.Min = vector.Value;
+					}
 				};
 
 				newResource.Entity.FindProperty("m_Collision.m_vecMaxs").VectorRecived += (s3, vector) => {
-					trigger.Max = vector.Value;
+					if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage
+					{
+						trigger.Max = new Vector()
+						{
+							X = rescueZoneCenter.X + vector.Value.X,
+							Y = rescueZoneCenter.Y + vector.Value.Y,
+							Z = rescueZoneCenter.Z + vector.Value.Z,
+						};
+					}
+					else // is defuse
+					{
+						trigger.Max = vector.Value;
+					}
 				};
 			};
 

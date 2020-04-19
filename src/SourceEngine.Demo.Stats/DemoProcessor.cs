@@ -829,7 +829,7 @@ namespace SourceEngine.Demo.Stats
 
 			allStats.bombsiteStats = GetBombsiteStats(processedData);
 			allStats.hostageStats = GetHostageStats(processedData);
-			allStats.rescueZoneStats = GetRescueZoneStats(processedData);
+			allStats.rescueZoneStats = GetRescueZoneStats();
 
 			string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
 			var nadeGroups = GetNadeGroups(processedData, nadeTypes);
@@ -1420,7 +1420,7 @@ namespace SourceEngine.Demo.Stats
 			return hostageStats;
 		}
 
-		public List<rescueZoneStats> GetRescueZoneStats(ProcessedData processedData)
+		public List<rescueZoneStats> GetRescueZoneStats()
 		{
 			List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
 

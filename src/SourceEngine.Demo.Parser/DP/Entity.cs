@@ -140,35 +140,27 @@ namespace SourceEngine.Demo.Parser.DP
 		 * The single purpose for this is to see what kind of values an entity has. You can check this faster with this thing.
 		 * Really, ignore it if you don't know what you're doing.
 		 */
-		[Obsolete("Don't use this attribute. It is only avaible for debugging. Bind to the correct event instead."
-		#if !DEBUG
-			, true
-		#endif
-			)]
+		[Obsolete("Don't use this attribute. It is only avaible for debugging. Bind to the correct event instead.", false)]
 		#pragma warning disable 0067 // this is unused in release builds, just as it should be
-		public event EventHandler<PropertyUpdateEventArgs<object>>  DataRecivedDontUse;
+		public event EventHandler<PropertyUpdateEventArgs<object>> DataRecivedDontUse;
 		#pragma warning restore 0067
 
-		[Conditional("DEBUG")]
+		//[Conditional("DEBUG")]
 		private void FireDataReceived_DebugEvent(object val, Entity e)
 		{
-			#if DEBUG
 			#pragma warning disable 0618
 			if (DataRecivedDontUse != null)
 				DataRecivedDontUse(this, new PropertyUpdateEventArgs<object>(val, e, this));
 			#pragma warning restore 0618
-			#endif
 		}
 
 
-		[Conditional("DEBUG")]
+		//[Conditional("DEBUG")]
 		private void DeleteDataRecived()
 		{
-			#if DEBUG
 			#pragma warning disable 0618
 			DataRecivedDontUse = null;
 			#pragma warning restore 0618
-			#endif
 		}
 
 		public void Decode(IBitStream stream, Entity e)
@@ -291,7 +283,7 @@ namespace SourceEngine.Demo.Parser.DP
 			return string.Format("[PropertyEntry: Entry={0}]", Entry);
 		}
 
-		[Conditional("DEBUG")]
+		//[Conditional("DEBUG")]
 		public void CheckBindings(Entity e)
 		{
 			if (IntRecived != null && this.Entry.Prop.Type != SendPropertyType.Int)
