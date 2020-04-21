@@ -21,7 +21,6 @@ namespace SourceEngine.Demo.Stats.Models
         public chickenStats chickenStats { get; set; }
         public List<teamStats> teamStats { get; set; }
         public List<firstDamageStats> firstDamageStats { get; set; }
-        public List<playerPositionsStats> playerPositionsStats { get; set; }
 
         public AllStats() { }
     }

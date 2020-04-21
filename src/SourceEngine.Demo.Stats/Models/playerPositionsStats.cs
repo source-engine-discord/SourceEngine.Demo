@@ -2,11 +2,11 @@
 
 namespace SourceEngine.Demo.Stats.Models
 {
-	public class playerPositionsStats
+	public class PlayerPositionsStats
     {
-        public int Round { get; set; }
-        public List<PlayerPositionByTimeInRound> PlayerPositionByTimeInRound { get; set; }
+        public string DemoName { get; set; }
+        public List<PlayerPositionByRound> PlayerPositionByRound { get; set; }
 
-        public playerPositionsStats() { }
+        public PlayerPositionsStats() { }
     }
 }

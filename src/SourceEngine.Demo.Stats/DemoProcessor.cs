@@ -803,7 +803,7 @@ namespace SourceEngine.Demo.Stats
 			return md;
 		}
 
-        public AllStats CreateFiles(ProcessedData processedData, bool createJsonFile = true)
+        public AllOutputData CreateFiles(ProcessedData processedData, bool createJsonFile = true)
         {
             var mapDateSplit = (!string.IsNullOrWhiteSpace(processedData.DemoInformation.TestDate) && processedData.DemoInformation.TestDate != "unknown") ? processedData.DemoInformation.TestDate.Split('/')  : null;
             var mapDateString = (mapDateSplit != null && mapDateSplit.Count() >= 3) ? (mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]) : string.Empty;
@@ -811,8 +811,10 @@ namespace SourceEngine.Demo.Stats
             var mapNameSplit = (processedData.MatchStartValues.Count() > 0) ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/') : new string[] { processedData.DemoInformation.MapName };
             var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
-
 			var dataAndPlayerNames = GetDataAndPlayerNames(processedData);
+
+
+			PlayerPositionsStats playerPositionsStats = null;
 
 			AllStats allStats = new AllStats
 			{
@@ -848,18 +850,24 @@ namespace SourceEngine.Demo.Stats
 
 			allStats.firstDamageStats = GetFirstDamageStats(processedData);
 
-			if (processedData.ParsePlayerPositions)
-			{
-				allStats.playerPositionsStats = GetPlayerPositionsStats(processedData);
-			}
-
 			// JSON creation
 			if (createJsonFile)
 			{
-				CreateJson(processedData, allStats, mapNameString, mapDateString);
+				CreateJsonAllStats(processedData, allStats, mapNameString, mapDateString);
 			}
 
-            return allStats;
+			if (processedData.ParsePlayerPositions)
+			{
+				playerPositionsStats = GetPlayerPositionsStats(processedData, allStats);
+				CreateJsonPlayerPositionsStats(processedData, allStats, playerPositionsStats, mapNameString, mapDateString);
+			}
+
+			// return for testing purposes
+			return new AllOutputData()
+			{
+				AllStats = allStats,
+				PlayerPositionsStats = playerPositionsStats,
+			};
         }
 
 		public DataAndPlayerNames GetDataAndPlayerNames(ProcessedData processedData)
@@ -1922,18 +1930,20 @@ namespace SourceEngine.Demo.Stats
 			return firstDamageStats;
 		}
 
-		public List<playerPositionsStats> GetPlayerPositionsStats(ProcessedData processedData)
+		public PlayerPositionsStats GetPlayerPositionsStats(ProcessedData processedData, AllStats allStats)
 		{
-			List<playerPositionsStats> playerPositionsStats = new List<playerPositionsStats>();
+			PlayerPositionsStats playerPositionsStats;
 
-			// create playerPositionsStats with empty PlayerPositionByTimeInRound
+			List<PlayerPositionByRound> playerPositionByRound = new List<PlayerPositionByRound>();
+
+			// create playerPositionByRound with empty PlayerPositionByTimeInRound
 			foreach (var roundsGroup in processedData.PlayerPositionsValues.GroupBy(x => x.Round))
 			{
 				int lastRound = processedData.RoundEndReasonValues.Count();
 
 				foreach (var round in roundsGroup.Where(x => x.Round > 0 && x.Round <= lastRound).Select(x => x.Round).Distinct())
 				{
-					playerPositionsStats.Add(new playerPositionsStats()
+					playerPositionByRound.Add(new PlayerPositionByRound()
 					{
 						Round = round,
 						PlayerPositionByTimeInRound = new List<PlayerPositionByTimeInRound>(),
@@ -1942,7 +1952,7 @@ namespace SourceEngine.Demo.Stats
 			}
 
 			//create PlayerPositionByTimeInRound with empty PlayerPositionBySteamId
-			foreach (var playerPositionsStat in playerPositionsStats)
+			foreach (var playerPositionsStat in playerPositionByRound)
 			{
 				foreach (var timeInRoundsGroup in processedData.PlayerPositionsValues.Where(x => x.Round == playerPositionsStat.Round).GroupBy(x => x.TimeInRound))
 				{
@@ -1958,7 +1968,7 @@ namespace SourceEngine.Demo.Stats
 			}
 
 			//create PlayerPositionBySteamId
-			foreach (var playerPositionsStat in playerPositionsStats)
+			foreach (var playerPositionsStat in playerPositionByRound)
 			{
 				foreach (var playerPositionByTimeInRound in playerPositionsStat.PlayerPositionByTimeInRound)
 				{
@@ -1983,10 +1993,16 @@ namespace SourceEngine.Demo.Stats
 				}
 			}
 
+			playerPositionsStats = new PlayerPositionsStats()
+			{
+				DemoName = allStats.mapInfo.DemoName,
+				PlayerPositionByRound = playerPositionByRound,
+			};
+
 			return playerPositionsStats;
 		}
 
-		public void CreateJson(ProcessedData processedData, AllStats allStats, string mapNameString, string mapDateString)
+		public string GetOutputJsonFilepath(ProcessedData processedData, AllStats allStats, PlayerPositionsStats playerPositionsStats, string mapNameString, string mapDateString)
 		{
 			string filename = processedData.SameFilename ? allStats.mapInfo.DemoName : Guid.NewGuid().ToString();
 
@@ -2017,16 +2033,66 @@ namespace SourceEngine.Demo.Stats
 				path += mapDateString + "_";
 			}
 
-			path += mapNameString + "_" + filename + ".json";
+			path += mapNameString + "_" + filename;
 
-			StreamWriter sw = new StreamWriter(path, false);
+			if (playerPositionsStats != null)
+			{
+				path += "_playerpositions";
+			}
 
-			string json = JsonConvert.SerializeObject(allStats, Formatting.Indented);
+			path += ".json";
 
-			sw.WriteLine(json);
-			/* JSON creation end*/
+			return path;
+		}
 
-			sw.Close();
+		public void CreateJsonAllStats(ProcessedData processedData, AllStats allStats, string mapNameString, string mapDateString)
+		{
+			var outputFilepath = string.Empty;
+
+			try
+			{
+				outputFilepath = GetOutputJsonFilepath(processedData, allStats, null, mapNameString, mapDateString);
+
+				StreamWriter sw = new StreamWriter(outputFilepath, false);
+
+				string json = JsonConvert.SerializeObject(allStats, Formatting.Indented);
+
+				sw.WriteLine(json);
+				/* JSON creation end*/
+
+				sw.Close();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("Could not create json file.");
+				Console.WriteLine(string.Concat("Filename: ", outputFilepath));
+				Console.WriteLine(string.Concat("Demoname: ", allStats.mapInfo.DemoName));
+			}
+		}
+
+		public void CreateJsonPlayerPositionsStats(ProcessedData processedData, AllStats allStats, PlayerPositionsStats playerPositionsStats, string mapNameString, string mapDateString)
+		{
+			var outputFilepath = string.Empty;
+
+			try
+			{
+				outputFilepath = GetOutputJsonFilepath(processedData, allStats, playerPositionsStats, mapNameString, mapDateString);
+
+				StreamWriter sw = new StreamWriter(outputFilepath, false);
+
+				string json = JsonConvert.SerializeObject(playerPositionsStats, Formatting.Indented);
+
+				sw.WriteLine(json);
+				/* JSON creation end*/
+
+				sw.Close();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("Could not create json file.");
+				Console.WriteLine(string.Concat("Filename: ", outputFilepath));
+				Console.WriteLine(string.Concat("Demoname: ", allStats.mapInfo.DemoName));
+			}
 		}
 
         public long GetSteamIdByPlayerName(Dictionary<long, Dictionary<string, string>> playerNames, string name)

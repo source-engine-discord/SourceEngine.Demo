@@ -508,7 +508,7 @@ namespace SourceEngine.Demo.Stats.App
 						WriteTicks = true
 					};
 
-                    var allStats = mdTest.CreateFiles(processedData);
+                    AllOutputData allOutputData = mdTest.CreateFiles(processedData);
 
                     passCount++;
 
