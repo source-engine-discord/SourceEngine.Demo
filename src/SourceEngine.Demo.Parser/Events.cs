@@ -474,27 +474,23 @@ namespace SourceEngine.Demo.Parser
 
 		public EquipmentClass Class => (EquipmentClass)((int)Weapon / 100 + 1);
 
-		public EquipmentType Type
+		public string SubclassName
 		{
 			get
 			{
 				return Weapon switch
 				{
-					EquipmentElement.M249 => EquipmentType.LMG,
-					EquipmentElement.Negev => EquipmentType.LMG,
-					EquipmentElement.Scout => EquipmentType.Sniper,
-					EquipmentElement.AWP => EquipmentType.Sniper,
-					EquipmentElement.Zeus => EquipmentType.Zeus,
-					EquipmentElement.Knife => EquipmentType.Knife,
+					EquipmentElement.M249 => "LMG",
+					EquipmentElement.Negev => "LMG",
+					EquipmentElement.Scout => "Sniper",
+					EquipmentElement.AWP => "Sniper",
+					EquipmentElement.Zeus => "Zeus",
+					EquipmentElement.Knife => "Knife",
 					_ => Class switch
 					{
-						EquipmentClass.Heavy => EquipmentType.Shotgun,
-						EquipmentClass.Rifle => EquipmentType.AssaultRifle,
-						EquipmentClass.Equipment => EquipmentType.Equipment,
-						EquipmentClass.Pistol => EquipmentType.Pistol,
-						EquipmentClass.SMG => EquipmentType.SMG,
-						EquipmentClass.Grenade => EquipmentType.Grenade,
-						_ => EquipmentType.Unknown
+						EquipmentClass.Heavy => "Shotgun",
+						EquipmentClass.Rifle => "AssaultRifle",
+						_ => Class.ToString()
 					}
 				};
 			}
@@ -753,20 +749,5 @@ namespace SourceEngine.Demo.Parser
 		Rifle = 4,
 		Equipment = 5,
 		Grenade = 6,
-	}
-
-	public enum EquipmentType // added to separate weapon groups better
-	{
-		Unknown = 0,
-		Pistol = 1,
-		SMG = 2,
-		LMG = 3,
-		Shotgun = 4,
-		AssaultRifle = 5,
-		Sniper = 6,
-		Grenade = 7,
-		Zeus = 8,
-		Knife = 9,
-		Equipment = 10,
 	}
 }

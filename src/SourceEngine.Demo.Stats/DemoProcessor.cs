@@ -1398,7 +1398,7 @@ namespace SourceEngine.Demo.Stats
 		{
 			List<hostageStats> hostageStats = new List<hostageStats>();
 
-			var hostageIndexA = processedData.HostageRescueValues.Where(r => r.Hostage == 'A').FirstOrDefault()?.HostageIndex;	
+			var hostageIndexA = processedData.HostageRescueValues.Where(r => r.Hostage == 'A').FirstOrDefault()?.HostageIndex;
 			var hostageIndexB = processedData.HostageRescueValues.Where(r => r.Hostage == 'B').FirstOrDefault()?.HostageIndex;
 
 			List<char> hostagePickedUps = new List<char>(processedData.HostagePickedUpValues.Select(x => x.Hostage));
@@ -1539,7 +1539,7 @@ namespace SourceEngine.Demo.Stats
 
 						var weaponUsed = weaponKillers.ElementAt(i).Weapon.ToString();
 						var weaponUsedClass = weaponKillers.ElementAt(i).Class.ToString();
-						var weaponUsedType = weaponKillers.ElementAt(i).Type.ToString();
+						var weaponUsedType = weaponKillers.ElementAt(i).SubclassName;
 						var numOfPenetrations = penetrations.ElementAt(i);
 
 						if (weaponUsed == null || weaponUsed == string.Empty)
@@ -1919,7 +1919,7 @@ namespace SourceEngine.Demo.Stats
 							ZPositionVictim = firstDamage.ZPositionPlayer,
 							Weapon = firstDamage.Weapon.Weapon.ToString(),
 							WeaponClass = firstDamage.Weapon.Class.ToString(),
-							WeaponType = firstDamage.Weapon.Type.ToString(),
+							WeaponType = firstDamage.Weapon.SubclassName,
 						};
 
 						firstDamageStats[round - 1].FirstDamageToEnemyByPlayers.Add(firstDamageByPlayer);
@@ -2254,7 +2254,7 @@ namespace SourceEngine.Demo.Stats
 		public static int? GetMinRoundsForWin(string testType)
 		{
 			string gamemode = testType.ToLower();
-			
+
 			if (gamemode == "unknown")
 			{
 				return null;
