@@ -1,7 +1,7 @@
 <Project>
 
     <PropertyGroup Label="Build Settings">
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>9.0</LangVersion>
         <DebugType>portable</DebugType>
         <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     </PropertyGroup>

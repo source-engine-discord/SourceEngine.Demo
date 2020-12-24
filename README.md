@@ -52,7 +52,7 @@ IDemO -folders "demos" -output "parsed" -recursive -nochickens -noplayerposition
 
 ### Requirements
 
-* [.NET Core 3.1 SDK][2] or higher.
+* [.NET Core 5.0 SDK][2]
 * [Visual Studio 2019][3], [JetBrains Rider][4], or [Visual Studio Code][5] recommended.
 
 ### Building
@@ -94,7 +94,7 @@ git push --follow-tags
 ```
 
 [1]: https://github.com/source-engine-discord/SourceEngine.Demo/releases/latest/download/IDemO_win-x64.zip
-[2]: https://dotnet.microsoft.com/download/dotnet-core/3.1
+[2]: https://dotnet.microsoft.com/download/dotnet/5.0
 [3]: https://visualstudio.microsoft.com/
 [4]: https://www.jetbrains.com/rider/
 [5]: https://code.visualstudio.com/
