@@ -1072,15 +1072,13 @@ namespace SourceEngine.Demo.Parser
 
 				if (sc.BaseClasses.Count > 6 && sc.BaseClasses [6].Name == "CWeaponCSBase") {
 					//It is a "weapon" (Gun, C4, ... (...is the cz still a "weapon" after the nerf? (fml, it was buffed again)))
-					if (sc.BaseClasses.Count > 7) {
-						if (sc.BaseClasses [7].Name == "CWeaponCSBaseGun") {
-							//it is a ratatatata-weapon.
-							var s = sc.DTName.Substring (9).ToLower ();
-							equipmentMapping.Add (sc, Equipment.MapEquipment (s));
-						} else if (sc.BaseClasses [7].Name == "CBaseCSGrenade") {
-							//"boom"-weapon.
-							equipmentMapping.Add (sc, Equipment.MapEquipment (sc.DTName.Substring (3).ToLower ()));
-						}
+					if (sc.BaseClasses.ElementAtOrDefault(7)?.Name == "CWeaponCSBaseGun") {
+						//it is a ratatatata-weapon.
+						var s = sc.DTName.Substring (9).ToLower ();
+						equipmentMapping.Add (sc, Equipment.MapEquipment (s));
+					} else if (sc.BaseClasses.ElementAtOrDefault(7)?.Name == "CBaseCSGrenade") {
+						//"boom"-weapon.
+						equipmentMapping.Add (sc, Equipment.MapEquipment (sc.DTName.Substring (3).ToLower ()));
 					} else if (sc.Name == "CC4") {
 						//Bomb is neither "ratatata" nor "boom", its "booooooom".
 						equipmentMapping.Add (sc, EquipmentElement.Bomb);
@@ -1091,7 +1089,9 @@ namespace SourceEngine.Demo.Parser
 						equipmentMapping.Add (sc, Equipment.MapEquipment (sc.Name.Substring (7).ToLower()));
 					} else if (sc.Name == "CBreachCharge") {
 						equipmentMapping.Add(sc, EquipmentElement.BreachCharge);
-                    }
+                    } else if (sc.Name == "CItem_Healthshot") {
+						equipmentMapping.Add(sc, EquipmentElement.HealthShot);
+					}
 				}
 			}
 

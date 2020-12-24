@@ -734,6 +734,9 @@ namespace SourceEngine.Demo.Parser
 					case "breachcharge":
                         weapon = EquipmentElement.BreachCharge;
                         break;
+					case "healthshot":
+						weapon = EquipmentElement.HealthShot;
+						break;
 					case "scar17"://These crash the game when given via give weapon_[mp5navy|...], and cannot be purchased ingame.
 					case "sg550"://yet the server-classes are networked, so I need to resolve them. 
 					case "mp5navy":
@@ -807,6 +810,7 @@ namespace SourceEngine.Demo.Parser
 		Knife = 405,
 		DefuseKit = 406,
 		World = 407,
+		HealthShot = 408,
 
 		//Grenades
 		Decoy = 501,
