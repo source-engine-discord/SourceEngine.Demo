@@ -561,7 +561,7 @@ namespace SourceEngine.Demo.Parser
 					else if (weapon == EquipmentElement.Knife)
 						return EquipmentType.Knife;
 					else
-						return EquipmentType.Shotgun;
+						return EquipmentType.Equipment;
 				case EquipmentClass.Pistol:
 					return EquipmentType.Pistol;
 				case EquipmentClass.SMG:
