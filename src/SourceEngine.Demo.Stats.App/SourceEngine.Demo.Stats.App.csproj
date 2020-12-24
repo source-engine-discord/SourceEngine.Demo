@@ -10,7 +10,7 @@
 
     <PropertyGroup Label="Publish Settings">
         <PublishSingleFile>true</PublishSingleFile>
-        <PublishTrimmed>true</PublishTrimmed>
+        <PublishTrimmed>false</PublishTrimmed>
     </PropertyGroup>
 
     <PropertyGroup Label="Assembly Metadata">
