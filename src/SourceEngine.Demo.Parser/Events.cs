@@ -24,7 +24,7 @@ namespace SourceEngine.Demo.Parser
 
 		public HeaderParsedEventArgs(DemoHeader header)
 		{
-			this.Header = header;
+			Header = header;
 		}
 	}
 
@@ -192,7 +192,7 @@ namespace SourceEngine.Demo.Parser
 
 		internal NadeEventArgs(EquipmentElement type)
 		{
-			this.NadeType = type;
+			NadeType = type;
 		}
 	}
 
@@ -471,18 +471,32 @@ namespace SourceEngine.Demo.Parser
 		internal int EntityID { get; set; }
 
 		public EquipmentElement Weapon { get; set; }
-		public EquipmentClass Class
-		{
-			get
-			{
-				return (EquipmentClass)(((int)Weapon / 100) + 1);
-			}
-		}
+
+		public EquipmentClass Class => (EquipmentClass)((int)Weapon / 100 + 1);
+
 		public EquipmentType Type
 		{
 			get
 			{
-				return GetEquipmentType(Weapon, Class);
+				return Weapon switch
+				{
+					EquipmentElement.M249 => EquipmentType.LMG,
+					EquipmentElement.Negev => EquipmentType.LMG,
+					EquipmentElement.Scout => EquipmentType.Sniper,
+					EquipmentElement.AWP => EquipmentType.Sniper,
+					EquipmentElement.Zeus => EquipmentType.Zeus,
+					EquipmentElement.Knife => EquipmentType.Knife,
+					_ => Class switch
+					{
+						EquipmentClass.Heavy => EquipmentType.Shotgun,
+						EquipmentClass.Rifle => EquipmentType.AssaultRifle,
+						EquipmentClass.Equipment => EquipmentType.Equipment,
+						EquipmentClass.Pistol => EquipmentType.Pistol,
+						EquipmentClass.SMG => EquipmentType.SMG,
+						EquipmentClass.Grenade => EquipmentType.Grenade,
+						_ => EquipmentType.Unknown
+					}
+				};
 			}
 		}
 
@@ -496,32 +510,23 @@ namespace SourceEngine.Demo.Parser
 
 		public Player Owner { get; set; }
 
-		public int ReserveAmmo
-		{
-			get
-			{
-				return (Owner != null && AmmoType != -1) ? Owner.AmmoLeft[AmmoType] : -1;
-			}
-		}
+		public int ReserveAmmo => (Owner != null && AmmoType != -1) ? Owner.AmmoLeft[AmmoType] : -1;
 
 		public Equipment()
 		{
-			this.Weapon = EquipmentElement.Unknown;
+			Weapon = EquipmentElement.Unknown;
 		}
 
 		public Equipment(string originalString)
 		{
 			OriginalString = originalString;
-
-			this.Weapon = MapEquipment(originalString);
+			Weapon = MapEquipment(originalString);
 		}
 
 		public Equipment(string originalString, string skin)
 		{
 			OriginalString = originalString;
-
-			this.Weapon = MapEquipment(originalString);
-
+			Weapon = MapEquipment(originalString);
 			SkinID = skin;
 		}
 
@@ -529,50 +534,17 @@ namespace SourceEngine.Demo.Parser
 		{
 			if (equipment != null)
 			{
-				this.EntityID = equipment.EntityID;
-				this.Weapon = equipment.Weapon;
-				this.OriginalString = equipment.OriginalString;
-				this.SkinID = equipment.SkinID;
-				this.AmmoInMagazine = equipment.AmmoInMagazine;
-				this.AmmoType = equipment.AmmoType;
-				this.Owner = new Player(equipment.Owner);
+				EntityID = equipment.EntityID;
+				Weapon = equipment.Weapon;
+				OriginalString = equipment.OriginalString;
+				SkinID = equipment.SkinID;
+				AmmoInMagazine = equipment.AmmoInMagazine;
+				AmmoType = equipment.AmmoType;
+				Owner = new Player(equipment.Owner);
 			}
 		}
 
 		const string WEAPON_PREFIX = "weapon_";
-
-		private EquipmentType GetEquipmentType(EquipmentElement weapon, EquipmentClass weaponClass)
-		{
-			switch (weaponClass)
-			{
-				case EquipmentClass.Heavy:
-					if (weapon == EquipmentElement.M249 || weapon == EquipmentElement.Negev)
-						return EquipmentType.LMG;
-					else
-						return EquipmentType.Shotgun;
-				case EquipmentClass.Rifle:
-					if (weapon == EquipmentElement.Scout || weapon == EquipmentElement.AWP)
-						return EquipmentType.Sniper;
-					else
-						return EquipmentType.AssaultRifle;
-				case EquipmentClass.Equipment:
-					if (weapon == EquipmentElement.Zeus)
-						return EquipmentType.Zeus;
-					else if (weapon == EquipmentElement.Knife)
-						return EquipmentType.Knife;
-					else
-						return EquipmentType.Equipment;
-				case EquipmentClass.Pistol:
-					return EquipmentType.Pistol;
-				case EquipmentClass.SMG:
-					return EquipmentType.SMG;
-				case EquipmentClass.Grenade:
-					return EquipmentType.Grenade;
-				default:
-					return EquipmentType.Unknown;
-
-			}
-		}
 
 		public static EquipmentElement MapEquipment(string name)
 		{
@@ -710,7 +682,7 @@ namespace SourceEngine.Demo.Parser
 	{
 		Unknown = -100,
 
-		//Pistols
+		// Pistols
 		P2000 = 1,
 		Glock = 2,
 		P250 = 3,
@@ -722,7 +694,7 @@ namespace SourceEngine.Demo.Parser
 		USP = 9,
 		Revolver = 10,
 
-		//SMGs
+		// SMGs
 		MP7 = 101,
 		MP9 = 102,
 		Bizon = 103,
@@ -731,7 +703,7 @@ namespace SourceEngine.Demo.Parser
 		P90 = 106,
 		MP5SD = 107,
 
-		//Heavy
+		// Heavy
 		SawedOff = 201,
 		Nova = 202,
 		Swag7 = 203,
@@ -739,7 +711,7 @@ namespace SourceEngine.Demo.Parser
 		M249 = 205,
 		Negev = 206,
 
-		//Rifle
+		// Rifle
 		Gallil = 301,
 		Famas = 302,
 		AK47 = 303,
@@ -752,7 +724,7 @@ namespace SourceEngine.Demo.Parser
 		Scar20 = 310,
 		G3SG1 = 311,
 
-		//Equipment
+		// Equipment
 		Zeus = 401,
 		Kevlar = 402,
 		Helmet = 403,
@@ -762,7 +734,7 @@ namespace SourceEngine.Demo.Parser
 		World = 407,
 		HealthShot = 408,
 
-		//Grenades
+		// Grenades
 		Decoy = 501,
 		Molotov = 502,
 		Incendiary = 503,
