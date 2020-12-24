@@ -1067,34 +1067,53 @@ namespace SourceEngine.Demo.Parser
 
 		private void MapEquipment()
 		{
-			for (int i = 0; i < SendTableParser.ServerClasses.Count; i++) {
-				var sc = SendTableParser.ServerClasses[i];
+			foreach (var sc in SendTableParser.ServerClasses)
+			{
+				if (sc.BaseClasses.ElementAtOrDefault(6)?.Name != "CWeaponCSBase") continue;
+				// It is a "weapon" (Gun, C4, ... (...is the cz still a "weapon" after the nerf? (fml, it was buffed again)))
 
-				if (sc.BaseClasses.Count > 6 && sc.BaseClasses [6].Name == "CWeaponCSBase") {
-					//It is a "weapon" (Gun, C4, ... (...is the cz still a "weapon" after the nerf? (fml, it was buffed again)))
-					if (sc.BaseClasses.ElementAtOrDefault(7)?.Name == "CWeaponCSBaseGun") {
-						//it is a ratatatata-weapon.
-						var s = sc.DTName.Substring (9).ToLower ();
-						equipmentMapping.Add (sc, Equipment.MapEquipment (s));
-					} else if (sc.BaseClasses.ElementAtOrDefault(7)?.Name == "CBaseCSGrenade") {
-						//"boom"-weapon.
-						equipmentMapping.Add (sc, Equipment.MapEquipment (sc.DTName.Substring (3).ToLower ()));
-					} else if (sc.Name == "CC4") {
-						//Bomb is neither "ratatata" nor "boom", its "booooooom".
-						equipmentMapping.Add (sc, EquipmentElement.Bomb);
-					} else if (sc.Name == "CKnife" || (sc.BaseClasses.Count > 6 && sc.BaseClasses [6].Name == "CKnife")) {
-						//tsching weapon
-						equipmentMapping.Add (sc, EquipmentElement.Knife);
-					} else if (sc.Name == "CWeaponNOVA" || sc.Name == "CWeaponSawedoff" || sc.Name == "CWeaponXM1014") {
-						equipmentMapping.Add (sc, Equipment.MapEquipment (sc.Name.Substring (7).ToLower()));
-					} else if (sc.Name == "CBreachCharge") {
-						equipmentMapping.Add(sc, EquipmentElement.BreachCharge);
-                    } else if (sc.Name == "CItem_Healthshot") {
-						equipmentMapping.Add(sc, EquipmentElement.HealthShot);
+				switch (sc.BaseClasses.ElementAtOrDefault(7)?.Name)
+				{
+					case "CWeaponCSBaseGun":
+					{
+						// it is a ratatatata-weapon.
+						var name = sc.DTName.Substring("DT_Weapon".Length).ToLower();
+						equipmentMapping.Add(sc, Equipment.MapEquipment(name));
+						continue;
+					}
+					case "CBaseCSGrenade":
+					{
+						// "boom"-weapon.
+						var name = sc.DTName.Substring("DT_".Length).ToLower();
+						equipmentMapping.Add(sc, Equipment.MapEquipment(name));
+						continue;
 					}
 				}
-			}
 
+				// Check the name iff the above switch matches nothing.
+				switch (sc.Name) {
+					case "CC4":
+						// Bomb is neither "ratatata" nor "boom", its "booooooom".
+						equipmentMapping.Add(sc, EquipmentElement.Bomb);
+						break;
+					case "CKnife":
+						// tsching weapon
+						equipmentMapping.Add(sc, EquipmentElement.Knife);
+						break;
+					case "CWeaponNOVA":
+					case "CWeaponSawedoff":
+					case "CWeaponXM1014":
+						var name = sc.Name.Substring("CWeapon".Length).ToLower();
+						equipmentMapping.Add(sc, Equipment.MapEquipment(name));
+						break;
+					case "CBreachCharge":
+						equipmentMapping.Add(sc, EquipmentElement.BreachCharge);
+						break;
+					case "CItem_Healthshot":
+						equipmentMapping.Add(sc, EquipmentElement.HealthShot);
+						break;
+				}
+			}
 		}
 
 		private bool AttributeWeapon(int weaponEntityIndex, Player p)

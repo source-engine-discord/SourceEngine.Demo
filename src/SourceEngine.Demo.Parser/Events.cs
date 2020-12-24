@@ -50,7 +50,7 @@ namespace SourceEngine.Demo.Parser
 		public string Message { get; set; }
 
 		/// <summary>
-		/// The winning team. Spectate for everything that isn't CT or T. 
+		/// The winning team. Spectate for everything that isn't CT or T.
 		/// </summary>
 		public Team Winner;
 
@@ -69,7 +69,7 @@ namespace SourceEngine.Demo.Parser
 		public string Message { get; set; }
 
 		/// <summary>
-		/// The winning team. Spectate for everything that isn't CT or T. 
+		/// The winning team. Spectate for everything that isn't CT or T.
 		/// </summary>
 		public Team Winner;
 
@@ -315,7 +315,7 @@ namespace SourceEngine.Demo.Parser
 		public int Armor { get; set; }
 
 		/// <summary>
-		/// The Weapon used to attack. 
+		/// The Weapon used to attack.
 		/// Note: This might be not the same as the raw event
 		/// we replace "hpk2000" with "usp-s" if the attacker
 		/// is currently holding it - this value is originally
@@ -326,7 +326,7 @@ namespace SourceEngine.Demo.Parser
 		public Equipment Weapon { get; set; }
 
 		/// <summary>
-		/// The original "weapon"-value from the event. 
+		/// The original "weapon"-value from the event.
 		/// Might be wrong for USP, CZ and M4A1-S
 		/// </summary>
 		/// <value>The weapon string.</value>
@@ -343,13 +343,13 @@ namespace SourceEngine.Demo.Parser
 		public int ArmorDamage { get; set; }
 
 		/// <summary>
-		/// Where the Player was hit. 
+		/// Where the Player was hit.
 		/// </summary>
 		/// <value>The hitgroup.</value>
 		public Hitgroup Hitgroup { get; set; }
 
 		/// <summary>
-		/// Shows if it is possible that the player was killed by a bomb explosion (player_death is not triggered when it is due to the bomb (unsure if this is always or just sometimes)). 
+		/// Shows if it is possible that the player was killed by a bomb explosion (player_death is not triggered when it is due to the bomb (unsure if this is always or just sometimes)).
 		/// </summary>
 		/// <value>The hitgroup.</value>
 		public bool PossiblyKilledByBombExplosion { get; set; }
@@ -574,185 +574,135 @@ namespace SourceEngine.Demo.Parser
 			}
 		}
 
-		public static EquipmentElement MapEquipment(string OriginalString)
+		public static EquipmentElement MapEquipment(string name)
 		{
-			EquipmentElement weapon = EquipmentElement.Unknown;
+			name = name.ToLower();
 
-			OriginalString = OriginalString.StartsWith(WEAPON_PREFIX)
-				? OriginalString.Substring(WEAPON_PREFIX.Length)
-				: OriginalString;
+			if (name.StartsWith(WEAPON_PREFIX))
+				name = name.Substring(WEAPON_PREFIX.Length);
 
-			if (OriginalString.Contains("knife") || OriginalString == "bayonet")
+			if (name.Contains("knife"))
+				return EquipmentElement.Knife;
+
+			switch (name)
 			{
-				weapon = EquipmentElement.Knife;
-			}
+				case "ak47":
+					return EquipmentElement.AK47;
+				case "aug":
+					return EquipmentElement.AUG;
+				case "awp":
+					return EquipmentElement.AWP;
+				case "bayonet":
+					return EquipmentElement.Knife;
+				case "bizon":
+					return EquipmentElement.Bizon;
+				case "c4":
+					return EquipmentElement.Bomb;
+				case "deagle":
+					return EquipmentElement.Deagle;
+				case "decoy":
+				case "decoygrenade":
+					return EquipmentElement.Decoy;
+				case "elite":
+					return EquipmentElement.DualBarettas;
+				case "famas":
+					return EquipmentElement.Famas;
+				case "fiveseven":
+					return EquipmentElement.FiveSeven;
+				case "flashbang":
+					return EquipmentElement.Flash;
+				case "g3sg1":
+					return EquipmentElement.G3SG1;
+				case "galil":
+				case "galilar":
+					return EquipmentElement.Gallil;
+				case "glock":
+					return EquipmentElement.Glock;
+				case "hegrenade":
+					return EquipmentElement.HE;
+				case "hkp2000":
+					return EquipmentElement.P2000;
+				case "incgrenade":
+				case "incendiarygrenade":
+					return EquipmentElement.Incendiary;
+				case "m249":
+					return EquipmentElement.M249;
+				case "m4a1":
+					return EquipmentElement.M4A4;
+				case "mac10":
+					return EquipmentElement.Mac10;
+				case "mag7":
+					return EquipmentElement.Swag7;
+				case "molotov":
+				case "molotovgrenade":
+				case "molotov_projectile":
+					return EquipmentElement.Molotov;
+				case "mp7":
+					return EquipmentElement.MP7;
+				case "mp9":
+					return EquipmentElement.MP9;
+				case "negev":
+					return EquipmentElement.Negev;
+				case "nova":
+					return EquipmentElement.Nova;
+				case "p250":
+					return EquipmentElement.P250;
+				case "p90":
+					return EquipmentElement.P90;
+				case "sawedoff":
+					return EquipmentElement.SawedOff;
+				case "scar20":
+					return EquipmentElement.Scar20;
+				case "sg556":
+					return EquipmentElement.SG556;
+				case "smokegrenade":
+					return EquipmentElement.Smoke;
+				case "ssg08":
+					return EquipmentElement.Scout;
+				case "taser":
+					return EquipmentElement.Zeus;
+				case "tec9":
+					return EquipmentElement.Tec9;
+				case "ump45":
+					return EquipmentElement.UMP;
+				case "xm1014":
+					return EquipmentElement.XM1014;
+				case "m4a1_silencer":
+				case "m4a1_silencer_off":
+					return EquipmentElement.M4A1;
+				case "cz75a":
+					return EquipmentElement.CZ;
+				case "usp":
+				case "usp_silencer":
+				case "usp_silencer_off":
+					return EquipmentElement.USP;
+				case "world":
+					return EquipmentElement.World;
+				case "inferno":
+					return EquipmentElement.Incendiary;
+				case "revolver":
+					return EquipmentElement.Revolver;
+				case "mp5sd":
+					return EquipmentElement.MP5SD;
+				case "breachcharge":
+					return EquipmentElement.BreachCharge;
+				case "healthshot":
+					return EquipmentElement.HealthShot;
 
-			if (weapon == EquipmentElement.Unknown)
-			{
-				switch (OriginalString)
-				{
-					case "ak47":
-						weapon = EquipmentElement.AK47;
-						break;
-					case "aug":
-						weapon = EquipmentElement.AUG;
-						break;
-					case "awp":
-						weapon = EquipmentElement.AWP;
-						break;
-					case "bizon":
-						weapon = EquipmentElement.Bizon;
-						break;
-					case "c4":
-						weapon = EquipmentElement.Bomb;
-						break;
-					case "deagle":
-						weapon = EquipmentElement.Deagle;
-						break;
-					case "decoy":
-					case "decoygrenade":
-						weapon = EquipmentElement.Decoy;
-						break;
-					case "elite":
-						weapon = EquipmentElement.DualBarettas;
-						break;
-					case "famas":
-						weapon = EquipmentElement.Famas;
-						break;
-					case "fiveseven":
-						weapon = EquipmentElement.FiveSeven;
-						break;
-					case "flashbang":
-						weapon = EquipmentElement.Flash;
-						break;
-					case "g3sg1":
-						weapon = EquipmentElement.G3SG1;
-						break;
-					case "galil":
-					case "galilar":
-						weapon = EquipmentElement.Gallil;
-						break;
-					case "glock":
-						weapon = EquipmentElement.Glock;
-						break;
-					case "hegrenade":
-						weapon = EquipmentElement.HE;
-						break;
-					case "hkp2000":
-						weapon = EquipmentElement.P2000;
-						break;
-					case "incgrenade":
-					case "incendiarygrenade":
-						weapon = EquipmentElement.Incendiary;
-						break;
-					case "m249":
-						weapon = EquipmentElement.M249;
-						break;
-					case "m4a1":
-						weapon = EquipmentElement.M4A4;
-						break;
-					case "mac10":
-						weapon = EquipmentElement.Mac10;
-						break;
-					case "mag7":
-						weapon = EquipmentElement.Swag7;
-						break;
-					case "molotov":
-					case "molotovgrenade":
-					case "molotov_projectile":
-						weapon = EquipmentElement.Molotov;
-						break;
-					case "mp7":
-						weapon = EquipmentElement.MP7;
-						break;
-					case "mp9":
-						weapon = EquipmentElement.MP9;
-						break;
-					case "negev":
-						weapon = EquipmentElement.Negev;
-						break;
-					case "nova":
-						weapon = EquipmentElement.Nova;
-						break;
-					case "p250":
-						weapon = EquipmentElement.P250;
-						break;
-					case "p90":
-						weapon = EquipmentElement.P90;
-						break;
-					case "sawedoff":
-						weapon = EquipmentElement.SawedOff;
-						break;
-					case "scar20":
-						weapon = EquipmentElement.Scar20;
-						break;
-					case "sg556":
-						weapon = EquipmentElement.SG556;
-						break;
-					case "smokegrenade":
-						weapon = EquipmentElement.Smoke;
-						break;
-					case "ssg08":
-						weapon = EquipmentElement.Scout;
-						break;
-					case "taser":
-						weapon = EquipmentElement.Zeus;
-						break;
-					case "tec9":
-						weapon = EquipmentElement.Tec9;
-						break;
-					case "ump45":
-						weapon = EquipmentElement.UMP;
-						break;
-					case "xm1014":
-						weapon = EquipmentElement.XM1014;
-						break;
-					case "m4a1_silencer":
-					case "m4a1_silencer_off":
-						weapon = EquipmentElement.M4A1;
-						break;
-					case "cz75a":
-						weapon = EquipmentElement.CZ;
-						break;
-					case "usp":
-					case "usp_silencer":
-					case "usp_silencer_off":
-						weapon = EquipmentElement.USP;
-						break;
-					case "world":
-						weapon = EquipmentElement.World;
-						break;
-					case "inferno":
-						weapon = EquipmentElement.Incendiary;
-						break;
-					case "revolver":
-						weapon = EquipmentElement.Revolver;
-						break;
-					case "mp5sd":
-						weapon = EquipmentElement.MP5SD;
-						break;
-					case "breachcharge":
-                        weapon = EquipmentElement.BreachCharge;
-                        break;
-					case "healthshot":
-						weapon = EquipmentElement.HealthShot;
-						break;
-					case "scar17"://These crash the game when given via give weapon_[mp5navy|...], and cannot be purchased ingame.
-					case "sg550"://yet the server-classes are networked, so I need to resolve them. 
-					case "mp5navy":
-					case "p228":
-					case "scout":
-					case "sg552":
-					case "tmp":
-						weapon = EquipmentElement.Unknown;
-						break;
-					default:
-						Trace.WriteLine("Unknown weapon. " + OriginalString, "Equipment.MapEquipment()");
-						break;
-				}
+				// These crash the game when given via give weapon_[mp5navy|...], and cannot be purchased ingame.
+				// yet the server-classes are networked, so I need to resolve them.
+				case "scar17":
+				case "sg550":
+				case "mp5navy":
+				case "p228":
+				case "scout":
+				case "sg552":
+				case "tmp":
+					return EquipmentElement.Unknown;
+				default:
+					Trace.WriteLine($"Unknown weapon {name}", "Equipment.MapEquipment()");
+					return EquipmentElement.Unknown;
 			}
-
-			return weapon;
 		}
 	}
 
