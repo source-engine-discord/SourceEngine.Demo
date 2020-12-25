@@ -14,7 +14,7 @@ namespace SourceEngine.Demo.Parser.DataTable
 		public bool IsEnd { get; set; }
 
 		public SendTable(IBitStream bitstream) {
-			Packet.FastNetmessages.SendTable dataTable = new Packet.FastNetmessages.SendTable();
+			Messages.Fast.Net.SendTable dataTable = new Messages.Fast.Net.SendTable();
 
 			foreach (var prop in dataTable.Parse(bitstream)) {
 				SendTableProperty property = new SendTableProperty () {

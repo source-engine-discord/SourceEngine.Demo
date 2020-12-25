@@ -1,8 +1,6 @@
 ﻿using System;
 
-using SourceEngine.Demo.Parser.Messages;
-
-namespace SourceEngine.Demo.Parser.Packet.FastNetmessages
+namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
 	/// <summary>
 	/// FastNetMessage adaptation of CSVCMsg_UserMessage protobuf message

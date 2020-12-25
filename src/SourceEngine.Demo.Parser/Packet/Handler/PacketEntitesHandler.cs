@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 using SourceEngine.Demo.Parser.DataTable;
-using SourceEngine.Demo.Parser.Packet.FastNetmessages;
+using SourceEngine.Demo.Parser.Messages.Fast.Net;
 
 namespace SourceEngine.Demo.Parser.Packet.Handler
 {

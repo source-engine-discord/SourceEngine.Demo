@@ -3,7 +3,7 @@ using System.IO;
 
 using SourceEngine.Demo.Parser.Packet.Handler;
 
-namespace SourceEngine.Demo.Parser.Packet.FastNetmessages
+namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
 	public struct CreateStringTable
 	{

@@ -3,12 +3,18 @@ using System.IO;
 
 using SourceEngine.Demo.Parser.Packet.Handler;
 
-namespace SourceEngine.Demo.Parser.Packet.FastNetmessages
+namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
-	public struct UpdateStringTable
+	public struct PacketEntities
 	{
-		public Int32 TableId;
-		public Int32 NumChangedEntries;
+		public Int32 MaxEntries;
+		public Int32 UpdatedEntries;
+		private Int32 _IsDelta;
+		public bool IsDelta { get { return _IsDelta != 0; } }
+		private Int32 _UpdateBaseline;
+		public bool UpdateBaseline { get { return _UpdateBaseline != 0; } }
+		public Int32 Baseline;
+		public Int32 DeltaFrom;
 
 		public void Parse(IBitStream bitstream, DemoParser parser)
 		{
@@ -17,13 +23,14 @@ namespace SourceEngine.Demo.Parser.Packet.FastNetmessages
 				var wireType = desc & 7;
 				var fieldnum = desc >> 3;
 
-				if ((wireType == 2) && (fieldnum == 3)) {
-					// String data is special.
+				if ((fieldnum == 7) && (wireType == 2)) {
+					// Entity data is special.
 					// We'll simply hope that gaben is nice and sends
-					// string_data last, just like he should.
+					// entity_data last, just like he should.
+
 					var len = bitstream.ReadProtobufVarInt();
 					bitstream.BeginChunk(len * 8);
-					UpdateStringTableUserInfoHandler.Apply(this, bitstream, parser);
+					PacketEntitesHandler.Apply(this, bitstream, parser);
 					bitstream.EndChunk();
 					if (!bitstream.ChunkFinished)
 						throw new NotImplementedException("Lord Gaben wasn't nice to us :/");
@@ -37,10 +44,22 @@ namespace SourceEngine.Demo.Parser.Packet.FastNetmessages
 
 				switch (fieldnum) {
 				case 1:
-					TableId = val;
+					MaxEntries = val;
 					break;
 				case 2:
-					NumChangedEntries = val;
+					UpdatedEntries = val;
+					break;
+				case 3:
+					_IsDelta = val;
+					break;
+				case 4:
+					_UpdateBaseline = val;
+					break;
+				case 5:
+					Baseline = val;
+					break;
+				case 6:
+					DeltaFrom = val;
 					break;
 				default:
 					// silently drop

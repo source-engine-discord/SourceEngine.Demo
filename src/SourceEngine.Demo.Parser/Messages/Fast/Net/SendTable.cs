@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace SourceEngine.Demo.Parser.Packet.FastNetmessages
+namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
 	public struct SendTable
 	{

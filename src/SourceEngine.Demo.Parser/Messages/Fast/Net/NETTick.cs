@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace SourceEngine.Demo.Parser.Packet.FastNetmessages
+namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
 	public struct NETTick
 	{

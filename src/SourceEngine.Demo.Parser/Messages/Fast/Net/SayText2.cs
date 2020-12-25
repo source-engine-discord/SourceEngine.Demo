@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace SourceEngine.Demo.Parser.Packet.FastNetmessages
+namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
 	/// <summary>
 	/// FastNetMessage adaptation of CCSUsrMsg_SayText2 protobuf message

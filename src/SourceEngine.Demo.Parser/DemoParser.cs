@@ -7,8 +7,8 @@ using System.Threading;
 
 using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Parser.DataTable;
+using SourceEngine.Demo.Parser.Messages.Fast.Net;
 using SourceEngine.Demo.Parser.Packet;
-using SourceEngine.Demo.Parser.Packet.FastNetmessages;
 using SourceEngine.Demo.Parser.StringTable;
 
 namespace SourceEngine.Demo.Parser
