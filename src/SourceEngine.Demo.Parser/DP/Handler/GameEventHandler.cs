@@ -5,7 +5,7 @@ using System.Linq;
 namespace SourceEngine.Demo.Parser.DP.Handler
 {
 	/// <summary>
-	/// This class manages all GameEvents for a demo-parser. 
+	/// This class manages all GameEvents for a demo-parser.
 	/// </summary>
 	public static class GameEventHandler
 	{
@@ -17,9 +17,9 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 
         public static void HandleGameEventList(IEnumerable<GameEventList.Descriptor> gel, DemoParser parser)
 		{
-			parser.GEH_Descriptors = new Dictionary<int, GameEventList.Descriptor>();
+			parser.EventDescriptors = new Dictionary<int, GameEventList.Descriptor>();
 			foreach (var d in gel)
-				parser.GEH_Descriptors[d.EventId] = d;
+				parser.EventDescriptors[d.EventId] = d;
 		}
 
         /// <summary>
@@ -54,9 +54,9 @@ namespace SourceEngine.Demo.Parser.DP.Handler
                 numOfChickensAlive = CountChickensAlive(parser); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
             }
 
-            var descriptors = parser.GEH_Descriptors;
+            var descriptors = parser.EventDescriptors;
 			//previous blind implementation
-			var blindPlayers = parser.GEH_BlindPlayers;
+			var blindPlayers = parser.BlindPlayers;
 
             if (descriptors == null)
 				return;
@@ -70,7 +70,7 @@ namespace SourceEngine.Demo.Parser.DP.Handler
             if (eventDescriptor.Name == "round_start") {
 				data = MapData (eventDescriptor, rawEvent);
 
-				RoundStartedEventArgs rs = new RoundStartedEventArgs () { 
+				RoundStartedEventArgs rs = new RoundStartedEventArgs () {
 					TimeLimit = (int)data["timelimit"],
 					FragLimit = (int)data["fraglimit"],
 					Objective = (string)data["objective"]
@@ -149,11 +149,11 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 
 			if (eventDescriptor.Name == "round_mvp") {
 				data = MapData (eventDescriptor, rawEvent);
-			
+
 				RoundMVPEventArgs roundMVPEvent = new RoundMVPEventArgs();
                 roundMVPEvent.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
                 roundMVPEvent.Reason = (RoundMVPReason)data["reason"];
-				
+
 				parser.RaiseRoundMVP (roundMVPEvent);
 			}
 
@@ -419,7 +419,7 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 				    var fireData = MapData(eventDescriptor, rawEvent);
 				    var fireArgs = FillNadeEvent<FireEventArgs>(fireData, parser);
 				    var fireStarted = new Tuple<int, FireEventArgs>((int)fireData["entityid"], fireArgs);
-				    parser.GEH_StartBurns.Enqueue(fireStarted);
+				    parser.StartBurnEvents.Enqueue(fireStarted);
 				    parser.RaiseFireStart(fireArgs);
 				    break;
 			    case "inferno_expire":
@@ -692,7 +692,7 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 
 			if (data.ContainsKey("userid") && parser.Players.ContainsKey((int)data["userid"]))
 				nade.ThrownBy = new Player(parser.Players[(int)data["userid"]]);
-				
+
 			Vector vec = new Vector();
 			vec.X = (float)data["x"];
 			vec.Y = (float)data["y"];

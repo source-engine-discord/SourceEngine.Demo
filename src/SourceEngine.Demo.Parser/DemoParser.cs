@@ -463,18 +463,18 @@ namespace SourceEngine.Demo.Parser
 		/// And GameEvent is just sent with ID |--> Value, but we need Name |--> Value.
 		/// Luckily these contain a map ID |--> Name.
 		/// </summary>
-		internal Dictionary<int, GameEventList.Descriptor> GEH_Descriptors = null;
+		internal Dictionary<int, GameEventList.Descriptor> EventDescriptors = null;
 
 		/// <summary>
 		/// The blind players, so we can tell who was flashed by a flashbang.
 		/// previous blind implementation
 		/// </summary>
-		internal List<Player> GEH_BlindPlayers = new List<Player>();
+		internal List<Player> BlindPlayers = new List<Player>();
 
 		/// <summary>
 		/// Holds inferno_startburn event args so they can be matched with player
 		/// </summary>
-		internal Queue<Tuple<int, FireEventArgs>> GEH_StartBurns = new Queue<Tuple<int, FireEventArgs>>();
+		internal Queue<Tuple<int, FireEventArgs>> StartBurnEvents = new Queue<Tuple<int, FireEventArgs>>();
 
 
 		// These could be Dictionary<int, RecordedPropertyUpdate[]>, but I was too lazy to
@@ -714,8 +714,8 @@ namespace SourceEngine.Demo.Parser
 				}
 			}
 
-			while (GEH_StartBurns.Count > 0) {
-				var fireTup = GEH_StartBurns.Dequeue();
+			while (StartBurnEvents.Count > 0) {
+				var fireTup = StartBurnEvents.Dequeue();
 				fireTup.Item2.ThrownBy = InfernoOwners[fireTup.Item1];
 				RaiseFireWithOwnerStart(fireTup.Item2);
 			}
