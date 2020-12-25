@@ -38,7 +38,7 @@ namespace SourceEngine.Demo.Parser.Packet
 				} else if (cmd == (int)SVC_Messages.svc_UpdateStringTable) {
 					new UpdateStringTable().Parse(bitstream, demo);
 				} else if (cmd == (int)NET_Messages.net_Tick) { //and all this other stuff
-						new NETTick().Parse(bitstream, demo);
+						new TickMessage().Parse(bitstream, demo);
 				} else if (cmd == (int)SVC_Messages.svc_UserMessage) {
 					new UserMessage().Parse(bitstream, demo);
 				} else {

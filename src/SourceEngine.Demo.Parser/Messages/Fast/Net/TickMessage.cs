@@ -3,7 +3,7 @@ using System.IO;
 
 namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
-	public struct NETTick
+	public struct TickMessage
 	{
 		public UInt32 Tick;
 		public UInt32 HostComputationTime;
@@ -23,7 +23,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
 				switch (fieldnum) {
 				case 1:
-					Tick = val;
+                    Tick = val;
 					break;
 				case 4:
 					HostComputationTime = val;
