@@ -6,8 +6,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-using SourceEngine.Demo.Parser.DP;
-using SourceEngine.Demo.Parser.DT;
+using SourceEngine.Demo.Parser.DataTable;
+using SourceEngine.Demo.Parser.Packet;
 
 #if SLOW_PROTOBUF
 using ProtoBuf;
