@@ -12,7 +12,7 @@
 // Note: requires additional types generated from: google/protobuf/descriptor.proto
 // Note: requires additional types generated from: netmessages.proto
 // Note: requires additional types generated from: cstrike15_gcmessages.proto
-namespace SourceEngine.Demo.Parser.Messages
+namespace SourceEngine.Demo.Parser.Messages.Protobuf
 {
 	[global::System.Serializable, global::ProtoBuf.ProtoContract(Name = @"CCSUsrMsg_VGUIMenu")]
 	public partial class CCSUsrMsg_VGUIMenu : global::ProtoBuf.IExtensible

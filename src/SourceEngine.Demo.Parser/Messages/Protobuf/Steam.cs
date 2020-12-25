@@ -10,7 +10,7 @@
 #if SLOW_PROTOBUF
 // Generated from: steammessages.proto
 // Note: requires additional types generated from: google/protobuf/descriptor.proto
-namespace SourceEngine.Demo.Parser.Messages
+namespace SourceEngine.Demo.Parser.Messages.Protobuf
 {
 	[global::System.Serializable, global::ProtoBuf.ProtoContract(Name = @"CMsgProtoBufHeader")]
 	public partial class CMsgProtoBufHeader : global::ProtoBuf.IExtensible

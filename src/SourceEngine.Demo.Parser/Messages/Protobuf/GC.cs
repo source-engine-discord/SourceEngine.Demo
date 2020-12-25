@@ -10,7 +10,7 @@
 #if SLOW_PROTOBUF
 // Generated from: cstrike15_gcmessages.proto
 // Note: requires additional types generated from: steammessages.proto
-namespace SourceEngine.Demo.Parser.Messages
+namespace SourceEngine.Demo.Parser.Messages.Protobuf
 {
 	[global::System.Serializable, global::ProtoBuf.ProtoContract(Name = @"GameServerPing")]
 	public partial class GameServerPing : global::ProtoBuf.IExtensible

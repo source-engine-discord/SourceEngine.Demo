@@ -10,7 +10,7 @@
 #if SLOW_PROTOBUF
 // Generated from: netmessages.proto
 // Note: requires additional types generated from: google/protobuf/descriptor.proto
-namespace SourceEngine.Demo.Parser.Messages
+namespace SourceEngine.Demo.Parser.Messages.Protobuf
 {
 	[global::System.Serializable, global::ProtoBuf.ProtoContract(Name = @"CMsgVector")]
 	public partial class CMsgVector : global::ProtoBuf.IExtensible
