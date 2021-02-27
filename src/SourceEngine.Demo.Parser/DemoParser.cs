@@ -1090,13 +1090,14 @@ namespace SourceEngine.Demo.Parser
 					}
 				}
 
-				// Check the name iff the above switch matches nothing.
+				// Check the name if the above switch matches nothing. (usually only things that the player can hold that are neither a weapon nor a grenade (?))
 				switch (sc.Name) {
 					case "CC4":
 						// Bomb is neither "ratatata" nor "boom", its "booooooom".
 						equipmentMapping.Add(sc, EquipmentElement.Bomb);
 						break;
 					case "CKnife":
+					case "CKnifeGG":
 						// tsching weapon
 						equipmentMapping.Add(sc, EquipmentElement.Knife);
 						break;
@@ -1111,6 +1112,18 @@ namespace SourceEngine.Demo.Parser
 						break;
 					case "CItem_Healthshot":
 						equipmentMapping.Add(sc, EquipmentElement.HealthShot);
+						break;
+					case "CFists":
+						equipmentMapping.Add(sc, EquipmentElement.Fists);
+						break;
+					case "CMelee":
+						equipmentMapping.Add(sc, EquipmentElement.Melee);
+						break;
+					case "CTablet":
+						equipmentMapping.Add(sc, EquipmentElement.Tablet);
+						break;
+					case "CBumpMine":
+						equipmentMapping.Add(sc, EquipmentElement.BumpMine);
 						break;
 				}
 			}
