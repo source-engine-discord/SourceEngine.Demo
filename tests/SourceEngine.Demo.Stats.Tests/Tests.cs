@@ -442,22 +442,6 @@ namespace SourceEngine.Demo.Stats.Tests
 			}
 
 			[Fact]
-			public void Should_return_tanooki_stats_correctly()
-			{
-				// Arrange
-
-				// Act
-				AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
-
-				// Assess
-				allOutputData.AllStats.tanookiStats.Joined.ShouldBe(true);
-				allOutputData.AllStats.tanookiStats.Left.ShouldBe(true);
-				allOutputData.AllStats.tanookiStats.RoundJoined.ShouldBe(1);
-				allOutputData.AllStats.tanookiStats.RoundLeft.ShouldBe(2);
-				allOutputData.AllStats.tanookiStats.RoundsLasted.ShouldBe(1);
-			}
-
-			[Fact]
 			public void Should_return_team_stats_correctly()
 			{
 				// Arrange
@@ -524,15 +508,6 @@ namespace SourceEngine.Demo.Stats.Tests
 				MapName = "de_testmap",
 				TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
 				TestType = "Defuse",
-			};
-
-			var tanookiStats = new tanookiStats()
-			{
-				Joined = true,
-				Left = true,
-				RoundJoined = 1,
-				RoundLeft = 2,
-				RoundsLasted = 1,
 			};
 
 			var MatchStartValues = new List<MatchStartedEventArgs>()
@@ -1146,7 +1121,6 @@ namespace SourceEngine.Demo.Stats.Tests
 				ParsePlayerPositions = true,
 				FoldersToProcess = new List<string>() { "someFolder" },
 				OutputRootFolder = "outputFolder",
-				tanookiStats = tanookiStats,
 				MatchStartValues = MatchStartValues,
 				SwitchSidesValues = SwitchSidesValues,
 				MessagesValues = MessagesValues,

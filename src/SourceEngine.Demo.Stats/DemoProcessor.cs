@@ -821,7 +821,6 @@ namespace SourceEngine.Demo.Stats
 				versionNumber = GetVersionNumber(),
 				supportedGamemodes = GetSupportedGamemodes(),
 				mapInfo = GetMapInfo(processedData, mapNameSplit),
-				tanookiStats = processedData.tanookiStats,
 				playerStats = GetPlayerStats(processedData, dataAndPlayerNames.Data, dataAndPlayerNames.PlayerNames)
 			};
 
