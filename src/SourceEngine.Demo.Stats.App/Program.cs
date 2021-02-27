@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -227,46 +227,13 @@ namespace SourceEngine.Demo.Stats.App
                     foreach (string demo in subDemos)
                     {
                         string[] pathSplit = demo.Split('\\');
-                        string testDate, testType, mapname;
 
-                        Guid guid;
                         string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
-                        bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out guid);
+						bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
-                        if (isFaceitDemo)
-                        {
-                            testDate = "unknown";
-                            testType = "unknown";
-                            mapname = "unknown";
+                        AddDemoInformation(demosInformation, demo, testType, gamemode, isFaceitDemo, filenameSplit, pathSplit);
                         }
-                        else
-                        {
-                            filenameSplit = pathSplit[pathSplit.Count() - 1].Split('_', '.');
-
-                            bool isSEDiscordDemo = filenameSplit.Count() > 5 ? true : false;
-
-                            if (isSEDiscordDemo)
-                            {
-                                testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                                testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
-                                mapname = $"{ filenameSplit[3] }";
-
-                                for (int i = 4; i < filenameSplit.Count() - 2; i++)
-                                {
-                                    mapname += $"_{ filenameSplit[i] }";
                                 }
-                            }
-                            else //cannot determine demo name format
-                            {
-                                testDate = "unknown";
-                                testType = "unknown";
-                                mapname = "unknown";
-                            }
-                        }
-
-                        demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType });
-                    }
-                }
                 catch (Exception e)
                 {
                     throw e;
@@ -277,44 +244,11 @@ namespace SourceEngine.Demo.Stats.App
             {
                 try
                 {
-                    string testDate, testType, mapname;
-
-                    Guid guid;
                     string[] filenameSplit = demo.Split('.');
-                    bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out guid);
+					bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
-                    if (isFaceitDemo)
-                    {
-                        testDate = "unknown";
-                        testType = "unknown";
-                        mapname = "unknown";
-                    }
-                    else
-                    {
-                        filenameSplit = demo.Split('_', '.');
+                    AddDemoInformation(demosInformation, demo, testType, gamemode, isFaceitDemo, filenameSplit, Array.Empty<string>());
 
-                        bool isSEDiscordDemo = filenameSplit.Count() > 5 ? true : false;
-
-                        if (isSEDiscordDemo)
-                        {
-                            testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                            testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
-                            mapname = $"{ filenameSplit[3] }";
-
-                            for (int i = 4; i < filenameSplit.Count() - 2; i++)
-                            {
-                                mapname += $"_{ filenameSplit[i] }";
-                            }
-                        }
-                        else //cannot determine demo name format
-                        {
-                            testDate = "unknown";
-                            testType = "unknown";
-                            mapname = "unknown";
-                        }
-                    }
-
-                    demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType });
 				}
                 catch (Exception e)
                 {
@@ -525,6 +459,52 @@ namespace SourceEngine.Demo.Stats.App
             Debug.White("Processing took {0} minutes\n", (end - startTime).TotalMinutes);
             Debug.White("Passed: {0}\n", passCount);
             Debug.White("Failed: {0}\n", demosInformation.Count() - passCount);
+        }
+
+
+        private static void AddDemoInformation(List<DemoInformation> demosInformation, string demo, string testType, string gamemode, bool isFaceitDemo, string[] filenameSplit, string[] pathSplit)
+        {
+            string testDate, mapname;
+
+            if (isFaceitDemo)
+            {
+                testDate = "unknown";
+                testType = "unknown";
+                mapname = "unknown";
+            }
+            else
+            {
+                if (pathSplit.Count() > 0) // searching by folder
+                {
+                    filenameSplit = pathSplit[pathSplit.Count() - 1].Split('_', '.');
+                }
+                else // searching by demo
+                {
+                    filenameSplit = demo.Split('_', '.');
+                }
+
+                bool isSEDiscordDemo = filenameSplit.Count() > 5 ? true : false;
+
+                if (isSEDiscordDemo)
+                {
+                    testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
+                    testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
+                    mapname = $"{ filenameSplit[3] }";
+
+                    for (int i = 4; i < filenameSplit.Count() - 2; i++)
+                    {
+                        mapname += $"_{ filenameSplit[i] }";
+                    }
+                }
+                else //cannot determine demo name format
+                {
+                    testDate = "unknown";
+                    testType = "unknown";
+                    mapname = "unknown";
+                }
+            }
+
+            demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType, GameMode = gamemode });
         }
     }
 }
