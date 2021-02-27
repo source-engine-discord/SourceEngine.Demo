@@ -462,7 +462,7 @@ namespace SourceEngine.Demo.Stats.App
         }
 
 
-        private static void AddDemoInformation(List<DemoInformation> demosInformation, string demo, string testType, string gamemode, bool isFaceitDemo, string[] filenameSplit, string[] pathSplit)
+        private static void AddDemoInformation(List<DemoInformation> demosInformation, string demo, bool isFaceitDemo, string[] filenameSplit, string[] pathSplit)
         {
             string testDate, mapname;
 
