@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -240,7 +240,7 @@ namespace SourceEngine.Demo.Parser
 	{
 		public Player Player { get; set; }
 
-		public char Site { get; set; }
+		public char? Site { get; set; }
 
         public double TimeInRound { get; set; }
     }

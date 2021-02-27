@@ -1189,7 +1189,7 @@ namespace SourceEngine.Demo.Stats
 						//check to see if either of the bombsites have bugged out
 						if (bombsite == "?")
 						{
-							bombPlantedError = ValidateBombsite(processedData.BombsitePlantValues, bombPlanted.Bombsite);
+							bombPlantedError = ValidateBombsite(processedData.BombsitePlantValues, (char)bombPlanted.Bombsite);
 
 							//update data to ensure that future references to it are also updated
 							processedData.BombsitePlantValues.Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
@@ -1352,9 +1352,9 @@ namespace SourceEngine.Demo.Stats
 			var bombsiteATrigger = dp?.triggers.Count() > 0 ? dp.triggers.Where(x => x.Index == dp.bombsiteAIndex).FirstOrDefault() : null;
 			var bombsiteBTrigger = dp?.triggers.Count() > 0 ? dp.triggers.Where(x => x.Index == dp.bombsiteBIndex).FirstOrDefault() : null;
 
-			List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => x.Bombsite));
-			List<char> bombsiteExplosions = new List<char>(processedData.BombsiteExplodeValues.Select(x => x.Bombsite));
-			List<char> bombsiteDefuses = new List<char>(processedData.BombsiteDefuseValues.Select(x => x.Bombsite));
+			List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => (char)x.Bombsite));
+			List<char> bombsiteExplosions = new List<char>(processedData.BombsiteExplodeValues.Select(x => (char)x.Bombsite));
+			List<char> bombsiteDefuses = new List<char>(processedData.BombsiteDefuseValues.Select(x => (char)x.Bombsite));
 
 			int plantsA = bombsitePlants.Where(b => b.ToString().Equals("A")).Count();
 			int explosionsA = bombsiteExplosions.Where(b => b.ToString().Equals("A")).Count();
