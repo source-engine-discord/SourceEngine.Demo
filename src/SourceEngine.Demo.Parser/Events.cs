@@ -679,6 +679,9 @@ namespace SourceEngine.Demo.Parser
 				case "diversion":
 				case "diversiongrenade":
 					return EquipmentElement.Diversion;
+				case "sensor":
+				case "sensorgrenade":
+					return EquipmentElement.Sensor;
 				case "trigger_hurt":
 					return EquipmentElement.TriggerHurt;
 				case "prop_exploding_barrel":
@@ -773,6 +776,7 @@ namespace SourceEngine.Demo.Parser
         BreachCharge = 507,
 		Snowball = 508,
 		Diversion = 509,
+		Sensor = 510,
 
 		// Brush Entities
 		TriggerHurt = 601,
