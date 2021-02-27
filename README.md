@@ -15,6 +15,7 @@ Outputs game statistics from CS:GO demos as JSON. The solution has three project
 - Defuse
 - Hostage
 - Wingman
+- Danger Zone
 
 ## Running IDemO
 
@@ -29,23 +30,26 @@ Latest release:
 ### Usage
 
 ```
-  -config               [path]                      Path to config file.
-  -folders              [paths (space seperated)]   Processes all demo files in each folder specified.
-  -demos                [paths (space seperated)]   Processess a list of single demo files at paths.
-  -recursive                                        Switch for recursive demo search.
-  -steaminfo                                        Takes steam names from steam.
-  -clear                                            Clears the data folder.
-  -nochickens                                       Disables checks for number of chickens killed when parsing.
-  -noplayerpositions                       			Disables checks for player positions when parsing.
-  -samefilename                                     Uses the demo's filename as the output filename.
-  -samefolderstructure                              Uses the demo's folder structure inside the root folder for the output json file.
-  -lowoutputmode							  		Does not print out the progress bar and round completed messages to console.
+  -config										[path]                      Path to config file.
+  -folders										[paths (space seperated)]   Processes all demo files in each folder specified.
+  -demos										[paths (space seperated)]   Processess a list of single demo files at paths.
+  -gamemodeoverride								[string]					Defines the gamemode for the match instead of having the parser attempt to figure it out. -> (defuse / hostage / wingman / dangerzone)
+  -testtype										[string]					Defines the test type for the match. Otherwise it attempts to grab it from the filename in SE Discord's filename formatting. Only matters for defuse and hostage. -> (competitive / casual)
+  -hostagerescuezonecountoverride				[int]						Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-4)
+  -recursive																Switch for recursive demo search.
+  -steaminfo																Takes steam names from steam.
+  -clear																	Clears the data folder.
+  -nochickens																Disables checks for number of chickens killed when parsing.
+  -noplayerpositions                       									Disables checks for player positions when parsing.
+  -samefilename																Uses the demo's filename as the output filename.
+  -samefolderstructure														Uses the demo's folder structure inside the root folder for the output json file.
+  -lowoutputmode							  								Does not print out the progress bar and round completed messages to console.
 ```
 
 Example:
 
 ```
-IDemO -folders "demos" -output "parsed" -recursive -nochickens -noplayerpositions -samefilename -samefolderstructure
+IDemO -folders "demos" -output "parsed" -recursive -nochickens -noplayerpositions -samefilename -samefolderstructure -gamemodeoverride "defuse" -testtype "competitive"
 ```
 
 ## Development

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -46,17 +46,20 @@ namespace SourceEngine.Demo.Stats.App
         {
             Debug.White("                             ========= HELP ==========\n\n" +
                         "Command line parameters:\n\n" +
-                        "-config       [path]                     Path to config file\n" +
-                        "-folders      [paths (space seperated)]  Processes all demo files in each folder specified\n" +
-                        "-demos        [paths (space seperated)]  Processess a list of single demo files at paths\n" +
-                        "-recursive                               Switch for recursive demo search\n" +
-                        "-steaminfo                               Takes steam names from steam\n" +
-                        "-clear                                   Clears the data folder\n" +
-                        "-nochickens                              Disables checks for number of chickens killed when parsing\n" +
-                        "-noplayerpositions                       Disables checks for player positions when parsing\n" +
-                        "-samefilename                            Uses the demo's filename as the output filename\n" +
-                        "-samefolderstructure                     Uses the demo's folder structure inside the root folder for the output json file\n" +
-						"-lowoutputmode							  Does not print out the progress bar and round completed messages to console\n" +
+                        "-config                            [path]                      Path to config file\n" +
+                        "-folders                           [paths (space seperated)]   Processes all demo files in each folder specified\n" +
+                        "-demos                             [paths (space seperated)]   Processess a list of single demo files at paths\n" +
+                        "-gamemodeoverride                  [string]                    Defines the gamemode for the match instead of having the parser attempt to figure it out -> (defuse / hostage / wingman / dangerzone)\n" +
+                        "-testtype                          [string]                    Defines the test type for the match. Otherwise it attempts to grab it from the filename in SE Discord's filename formatting. Only matters for defuse and hostage. -> (competitive / casual)\n" +
+                        "-hostagerescuezonecountoverride    [int]                       Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-4)\n" +
+                        "-recursive                                                     Switch for recursive demo search\n" +
+                        "-steaminfo                                                     Takes steam names from steam\n" +
+                        "-clear                                                         Clears the data folder\n" +
+                        "-nochickens                                                    Disables checks for number of chickens killed when parsing\n" +
+                        "-noplayerpositions                                             Disables checks for player positions when parsing\n" +
+                        "-samefilename                                                  Uses the demo's filename as the output filename\n" +
+                        "-samefolderstructure                                           Uses the demo's folder structure inside the root folder for the output json file\n" +
+                        "-lowoutputmode                                                 Does not print out the progress bar and round completed messages to console\n" +
 						"\n"
                 );
         }
@@ -65,6 +68,9 @@ namespace SourceEngine.Demo.Stats.App
         static void Main(string[] args)
         {
             string cfgPath = "config.cfg";
+            string gamemodeoverride = "notprovided";
+            string testType = "unknown";
+            int hostagerescuezonecountoverride = 0;
 
             bool recursive = false;
             bool steaminfo = false;
@@ -123,6 +129,28 @@ namespace SourceEngine.Demo.Stats.App
                             demosToProcess.Add(args[i]);
                     }
                     i--;
+                }
+                else if (arg == "-gamemodeoverride")
+                {
+                    if (i < args.Count())
+                        gamemodeoverride = args[i + 1];
+
+                    i++;
+                }
+                else if (arg == "-testtype")
+                {
+                    if (i < args.Count())
+                        testType = args[i + 1];
+
+                    i++;
+                }
+                else if (arg == "-hostagerescuezonecountoverride")
+                {
+                    if (i < args.Count())
+                        if (!int.TryParse(args[i + 1], out hostagerescuezonecountoverride))
+                            Debug.Error("Could not parse -hostagerescuezonecountoverride value as an int. Make sure that a number is provided.");
+
+                    i++;
                 }
                 else if (arg == "-output")
                 {
@@ -197,6 +225,31 @@ namespace SourceEngine.Demo.Stats.App
                 }
             }
 
+            //If the optional parameter -gamemodeoverride has been provided
+            if (!string.IsNullOrWhiteSpace(gamemodeoverride))
+            {
+                //Make sure a valid gamemode has been given
+                if (gamemodeoverride != "notprovided" && gamemodeoverride != "defuse" && gamemodeoverride != "hostage" && gamemodeoverride != "wingman" && gamemodeoverride != "dangerzone")
+                {
+                    Debug.Error("Invalid gamemode. Can be removed to have the parser attempt to figure it out itself. Accepted values are 'defuse', 'hostage', 'wingman' & 'dangerzone'");
+                    return;
+                }
+
+                //Make sure a valid test type has been given
+                if ((gamemodeoverride == "defuse" || gamemodeoverride == "hostage") && (testType != "casual" && testType != "competitive"))
+                {
+                    Debug.Error("Invalid test type. It must be 'casual' or 'competitive' when gamemode is either 'defuse' or 'hostage'.");
+                    return;
+                }
+            }
+
+            // Ensure only values 0-4 are provided when overriding the hostage rescue zone count
+            if (hostagerescuezonecountoverride < 0 || hostagerescuezonecountoverride > 4)
+            {
+                Debug.Error("Invalid hostagerescuezonecountoverride amount. Specify between 0 and 4.");
+                return;
+            }
+
             //Ensure all folders to get demos from are created to avoid exceptions
             foreach (var folder in foldersToProcess)
             {
@@ -228,12 +281,12 @@ namespace SourceEngine.Demo.Stats.App
                     {
                         string[] pathSplit = demo.Split('\\');
 
-                        string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
+						string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
 						bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
-                        AddDemoInformation(demosInformation, demo, testType, gamemode, isFaceitDemo, filenameSplit, pathSplit);
-                        }
-                                }
+                        AddDemoInformation(demosInformation, demo, testType, gamemodeoverride, isFaceitDemo, filenameSplit, pathSplit);
+                    }
+                }
                 catch (Exception e)
                 {
                     throw e;
@@ -244,12 +297,12 @@ namespace SourceEngine.Demo.Stats.App
             {
                 try
                 {
-                    string[] filenameSplit = demo.Split('.');
+					string[] filenameSplit = demo.Split('.');
 					bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
-                    AddDemoInformation(demosInformation, demo, testType, gamemode, isFaceitDemo, filenameSplit, Array.Empty<string>());
+                    AddDemoInformation(demosInformation, demo, testType, gamemodeoverride, isFaceitDemo, filenameSplit, Array.Empty<string>());
 
-				}
+                }
                 catch (Exception e)
                 {
                     throw e;
@@ -267,7 +320,7 @@ namespace SourceEngine.Demo.Stats.App
             {
 				Console.WriteLine($"Parsing demo {demosInformation[i].DemoName}");
 
-                MatchData mdTest = MatchData.FromDemoFile(demosInformation[i].DemoName, parseChickens, parsePlayerPositions, lowOutputMode, demosInformation[i].TestType);
+                MatchData mdTest = MatchData.FromDemoFile(demosInformation[i], parseChickens, parsePlayerPositions, hostagerescuezonecountoverride, lowOutputMode);
 
 				IEnumerable<MatchStartedEventArgs> mse = new List<MatchStartedEventArgs>();
 				IEnumerable<SwitchSidesEventArgs> sse = new List<SwitchSidesEventArgs>();
@@ -462,14 +515,13 @@ namespace SourceEngine.Demo.Stats.App
         }
 
 
-        private static void AddDemoInformation(List<DemoInformation> demosInformation, string demo, bool isFaceitDemo, string[] filenameSplit, string[] pathSplit)
+        private static void AddDemoInformation(List<DemoInformation> demosInformation, string demo, string testType, string gamemode, bool isFaceitDemo, string[] filenameSplit, string[] pathSplit)
         {
             string testDate, mapname;
 
             if (isFaceitDemo)
             {
                 testDate = "unknown";
-                testType = "unknown";
                 mapname = "unknown";
             }
             else
@@ -488,7 +540,6 @@ namespace SourceEngine.Demo.Stats.App
                 if (isSEDiscordDemo)
                 {
                     testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                    testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
                     mapname = $"{ filenameSplit[3] }";
 
                     for (int i = 4; i < filenameSplit.Count() - 2; i++)
@@ -499,7 +550,6 @@ namespace SourceEngine.Demo.Stats.App
                 else //cannot determine demo name format
                 {
                     testDate = "unknown";
-                    testType = "unknown";
                     mapname = "unknown";
                 }
             }

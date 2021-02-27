@@ -182,12 +182,16 @@ namespace SourceEngine.Demo.Stats
             }
         }
 
-        public static MatchData FromDemoFile(string file, bool parseChickens, bool parsePlayerPositions, bool lowOutputMode, string testType)
+        public static MatchData FromDemoFile(DemoInformation demoInformation, bool parseChickens, bool parsePlayerPositions, int hostagerescuezonecountoverride, bool lowOutputMode)
         {
-            MatchData md = new MatchData();
+			string file = demoInformation.DemoName;
+			string gamemode = demoInformation.GameMode;
+			string testType = demoInformation.TestType;
+
+			MatchData md = new MatchData();
 
             //Create demo parser instance
-            dp = new DemoParser(File.OpenRead(file), parseChickens, parsePlayerPositions);
+            dp = new DemoParser(File.OpenRead(file), parseChickens, parsePlayerPositions, gamemode, hostagerescuezonecountoverride);
 
             dp.ParseHeader();
 
@@ -504,7 +508,7 @@ namespace SourceEngine.Demo.Stats
 				/*	The final round in a match does not throw a round_officially_ended event, but a round_freeze_end event is thrown after the game ends,
 					so assume that a game has ended if a second round_freeze_end event is found in the same round as a round_end_event and NO round_officially_ended event.
 					This does mean that if a round_officially_ended event is not triggered due to demo error, the parse will mess up. */
-				var minRoundsForWin = GetMinRoundsForWin(testType);
+				var minRoundsForWin = GetMinRoundsForWin(gamemode, testType);
 
 				if (numOfFreezetimesEnded == numOfRoundsOfficiallyEnded + 1 &&
 					numOfFreezetimesEnded == numOfRoundsEnded &&
@@ -921,7 +925,7 @@ namespace SourceEngine.Demo.Stats
 
 		public List<string> GetSupportedGamemodes()
 		{
-			return new List<string>() { "Defuse", "Hostage", "Wingman" };
+			return new List<string>() { "Defuse", "Hostage", "Wingman", "DangerZone" };
 		}
 
 		public mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
@@ -935,24 +939,38 @@ namespace SourceEngine.Demo.Stats
 			// attempts to get the gamemode
 			var roundsWonReasons = GetRoundsWonReasons(processedData.RoundEndReasonValues);
 
-			if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() > 2)))
+			// use the provided gamemode if given as a parameter
+			if (!string.IsNullOrWhiteSpace(processedData.DemoInformation.GameMode) && processedData.DemoInformation.GameMode.ToLower() != "notprovided")
+			{
+				mapInfo.GameMode = processedData.DemoInformation.GameMode;
+
+				return mapInfo;
+			}
+
+			// work out the gamemode if it wasn't provided as a parameter
+			if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 10 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() == 0)) || // assume danger zone if more than 10 Terrorists and 0 CounterTerrorists
+				(dp.hostageAIndex > -1 && dp.hostageBIndex > -1 && !processedData.MatchStartValues.Any(m => m.HasBombsites)) // assume danger zone if more than one hostage rescue zone
+			) {
+				mapInfo.GameMode = "dangerzone";
+			}
+			else if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() > 2)))
 			{
 				if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1 || processedData.MatchStartValues.Any(m => m.HasBombsites))
 				{
-					mapInfo.GameMode = "Defuse";
+					mapInfo.GameMode = "defuse";
 				}
 				else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1) && !processedData.MatchStartValues.Any(m => m.HasBombsites))
 				{
-					mapInfo.GameMode = "Hostage";
+					mapInfo.GameMode = "hostage";
 				}
 				else // what the hell is this gamemode ??
 				{
-					mapInfo.GameMode = "Unknown";
+					mapInfo.GameMode = "unknown";
 				}
 			}
 			else
 			{
-				mapInfo.GameMode = "Wingman";
+				mapInfo.GameMode = "wingman";
 			}
 
 			return mapInfo;
@@ -2250,25 +2268,24 @@ namespace SourceEngine.Demo.Stats
 			return (half == "First" && overtimeCount % 2 == 0) || (half == "Second" && overtimeCount % 2 == 1); // the team playing T Side first switches each OT for example, this checks the OT count for swaps
 		}
 
-		public static int? GetMinRoundsForWin(string testType)
+		public static int? GetMinRoundsForWin(string gamemode, string testType)
 		{
-			string gamemode = testType.ToLower();
-
-			if (gamemode == "unknown")
+			switch (gamemode.ToLower(), testType.ToLower())
 			{
-				return null;
-			}
-			else if (gamemode.Contains("wingman"))
-			{
-				return 9;
-			}
-			else if (gamemode.Contains("casual"))
-			{
-				return 11;
-			}
-			else
-			{
-				return 16;
+				case ("wingman", "casual"):
+				case ("wingman", "competitive"):
+					return 9;
+				case ("defuse", "casual"):
+				case ("hostage", "casual"):
+					return 11;
+				case ("defuse", "competitive"):
+				case ("hostage", "competitive"):
+					return 16;
+				case ("dangerzone", "casual"):
+				case ("dangerzone", "competitive"):
+					return 2;   // ????????
+				default:
+					return null;
 			}
 		}
     }
