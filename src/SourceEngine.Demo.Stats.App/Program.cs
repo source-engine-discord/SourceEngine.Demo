@@ -529,21 +529,34 @@ namespace SourceEngine.Demo.Stats.App
             {
                 if (pathSplit.Count() > 0) // searching by folder
                 {
-                    filenameSplit = pathSplit[pathSplit.Count() - 1].Split('_', '.');
+                    filenameSplit = pathSplit[pathSplit.Count() - 1].Split('_', '.', '-');
                 }
                 else // searching by demo
                 {
-                    filenameSplit = demo.Split('_', '.');
+                    filenameSplit = demo.Split('_', '.', '-');
                 }
 
-                bool isSEDiscordDemo = filenameSplit.Count() > 5 ? true : false;
+                var secondToLastString = filenameSplit[filenameSplit.Count() - 2];
+                bool isSEDiscordDemo = (secondToLastString == "casual" || secondToLastString == "comp") ? true : false;
+                bool isMapcoreDiscordDemo = filenameSplit.Any(x => x.Contains("MAPCORE"));
 
                 if (isSEDiscordDemo)
                 {
                     testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                    mapname = $"{ filenameSplit[3] }";
 
+                    mapname = $"{ filenameSplit[3] }";
                     for (int i = 4; i < filenameSplit.Count() - 2; i++)
+                    {
+                        mapname += $"_{ filenameSplit[i] }";
+                    }
+                }
+                else if (isMapcoreDiscordDemo)
+                {
+                    testDate = $"{ filenameSplit[1].Substring(6, 2) }/{ filenameSplit[1].Substring(4, 2) }/{ filenameSplit[1].Substring(0, 4) }";
+
+                    var index = (filenameSplit.Count() - 1) - Array.IndexOf(filenameSplit.Reverse().ToArray(), "MAPCORE"); // gets the last index where the value was "MAPCORE"
+                    mapname = $"{ filenameSplit[6] }";
+                    for (int i = 7; i < index; i++)
                     {
                         mapname += $"_{ filenameSplit[i] }";
                     }
