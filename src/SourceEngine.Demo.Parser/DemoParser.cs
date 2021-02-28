@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
+using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Parser.DP;
 using SourceEngine.Demo.Parser.DT;
 using SourceEngine.Demo.Parser.ST;
@@ -29,6 +29,7 @@ namespace SourceEngine.Demo.Parser
 		public bool stopParsingDemo = false;
 		bool parseChickens = true;
 		bool parsePlayerPositions = true;
+		string gamemode = string.Empty;
 		int numOfHostageRescueZonesLookingFor = 0; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
 
 		public List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
@@ -556,16 +557,18 @@ namespace SourceEngine.Demo.Parser
 
             this.parseChickens = parseChickens;
             this.parsePlayerPositions = parsePlayerPositions;
+			this.gamemode = gamemode;
 
+			// automatically decides rescue zone amounts unless overridden with a provided parameter
 			if (hostagerescuezonecountoverride > 0)
 			{
 				this.numOfHostageRescueZonesLookingFor = hostagerescuezonecountoverride;
 			}
-			else if (gamemode == "hostage")
+			else if (gamemode == Gamemodes.Hostage)
 			{
 				this.numOfHostageRescueZonesLookingFor = 1;
 			}
-			else if (gamemode == "dangerzone")
+			else if (gamemode == Gamemodes.DangerZone)
 			{
 				this.numOfHostageRescueZonesLookingFor = 2;
 			}

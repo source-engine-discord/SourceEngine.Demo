@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
+using SourceEngine.Demo.Parser.Constants;
 
 namespace SourceEngine.Demo.Stats
 {
@@ -936,7 +937,7 @@ namespace SourceEngine.Demo.Stats
 
 		public List<string> GetSupportedGamemodes()
 		{
-			return new List<string>() { "Defuse", "Hostage", "Wingman", "DangerZone" };
+			return Gamemodes.GetAll();
 		}
 
 		public mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
@@ -962,26 +963,37 @@ namespace SourceEngine.Demo.Stats
 			if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 10 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() == 0)) || // assume danger zone if more than 10 Terrorists and 0 CounterTerrorists
 				(dp.hostageAIndex > -1 && dp.hostageBIndex > -1 && !processedData.MatchStartValues.Any(m => m.HasBombsites)) // assume danger zone if more than one hostage rescue zone
 			) {
-				mapInfo.GameMode = "dangerzone";
+				mapInfo.GameMode = Gamemodes.DangerZone;
 			}
 			else if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() > 2)))
 			{
 				if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1 || processedData.MatchStartValues.Any(m => m.HasBombsites))
 				{
-					mapInfo.GameMode = "defuse";
+					mapInfo.GameMode = Gamemodes.Defuse;
 				}
 				else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1) && !processedData.MatchStartValues.Any(m => m.HasBombsites))
 				{
-					mapInfo.GameMode = "hostage";
+					mapInfo.GameMode = Gamemodes.Hostage;
 				}
 				else // what the hell is this gamemode ??
 				{
-					mapInfo.GameMode = "unknown";
+					mapInfo.GameMode = Gamemodes.Unknown;
 				}
 			}
 			else
 			{
-				mapInfo.GameMode = "wingman";
+				if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1 || processedData.MatchStartValues.Any(m => m.HasBombsites))
+				{
+					mapInfo.GameMode = Gamemodes.WingmanDefuse;
+				}
+				else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1) && !processedData.MatchStartValues.Any(m => m.HasBombsites))
+				{
+					mapInfo.GameMode = Gamemodes.WingmanHostage;
+				}
+				else // what the hell is this gamemode ??
+				{
+					mapInfo.GameMode = Gamemodes.Unknown;
+				}
 			}
 
 			return mapInfo;
@@ -2198,7 +2210,7 @@ namespace SourceEngine.Demo.Stats
             }
 
 			// add 1 for roundsCount when in danger zone
-			if (gamemode == "dangerzone")
+			if (gamemode == Gamemodes.DangerZone)
 				round++;
 
             return round;
@@ -2291,18 +2303,22 @@ namespace SourceEngine.Demo.Stats
 		{
 			switch (gamemode.ToLower(), testType.ToLower())
 			{
-				case ("wingman", "casual"):
-				case ("wingman", "competitive"):
+				case (Gamemodes.WingmanDefuse, "casual"):
+				case (Gamemodes.WingmanDefuse, "competitive"):
+				case (Gamemodes.WingmanHostage, "casual"):
+				case (Gamemodes.WingmanHostage, "competitive"):
 					return 9;
-				case ("defuse", "casual"):
-				case ("hostage", "casual"):
+				case (Gamemodes.Defuse, "casual"):
+				case (Gamemodes.Hostage, "casual"):
+				case (Gamemodes.Unknown, "casual"): // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the gamemode
 					return 11;
-				case ("defuse", "competitive"):
-				case ("hostage", "competitive"):
+				case (Gamemodes.Defuse, "competitive"):
+				case (Gamemodes.Hostage, "competitive"):
+				case (Gamemodes.Unknown, "competitive"): // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the gamemode
 					return 16;
-				case ("dangerzone", "casual"):
-				case ("dangerzone", "competitive"):
-					return 2;   // how many rounds should this be ????????
+				case (Gamemodes.DangerZone, "casual"):
+				case (Gamemodes.DangerZone, "competitive"):
+					return 1;
 				default:
 					return null;
 			}
@@ -2311,15 +2327,13 @@ namespace SourceEngine.Demo.Stats
 
 		private static bool CheckIfStatsShouldBeCreated(string typeName, string gamemode)
 		{
-			string dangerzone = "dangerzone";
-
 			switch (typeName.ToLower())
 			{
 				case "winnersstats":
 				case "bombsitestats":
 				case "teamstats":
 				case "firstdamagestats":
-					return gamemode != dangerzone;
+					return gamemode != Gamemodes.DangerZone;
 				case "playerstats":
 				case "roundsstats":
 				case "hostagestats":

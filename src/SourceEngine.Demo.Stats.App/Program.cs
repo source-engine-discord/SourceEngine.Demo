@@ -5,6 +5,7 @@ using System.IO;
 
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
+using SourceEngine.Demo.Parser.Constants;
 
 namespace SourceEngine.Demo.Stats.App
 {
@@ -49,7 +50,7 @@ namespace SourceEngine.Demo.Stats.App
                         "-config                            [path]                      Path to config file\n" +
                         "-folders                           [paths (space seperated)]   Processes all demo files in each folder specified\n" +
                         "-demos                             [paths (space seperated)]   Processess a list of single demo files at paths\n" +
-                        "-gamemodeoverride                  [string]                    Defines the gamemode for the match instead of having the parser attempt to figure it out -> (defuse / hostage / wingman / dangerzone)\n" +
+                        "-gamemodeoverride                  [string]                    Defines the gamemode for the match instead of having the parser attempt to figure it out -> (" + string.Join(" / ", Gamemodes.GetAll()) + ")\n" +
                         "-testtype                          [string]                    Defines the test type for the match. Otherwise it attempts to grab it from the filename in SE Discord's filename formatting. Only matters for defuse and hostage. -> (competitive / casual)\n" +
                         "-hostagerescuezonecountoverride    [int]                       Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-4)\n" +
                         "-recursive                                                     Switch for recursive demo search\n" +
@@ -229,16 +230,16 @@ namespace SourceEngine.Demo.Stats.App
             if (!string.IsNullOrWhiteSpace(gamemodeoverride))
             {
                 //Make sure a valid gamemode has been given
-                if (gamemodeoverride != "notprovided" && gamemodeoverride != "defuse" && gamemodeoverride != "hostage" && gamemodeoverride != "wingman" && gamemodeoverride != "dangerzone")
+                if (gamemodeoverride != "notprovided" && !Gamemodes.GetAll().Any(x => x == gamemodeoverride))
                 {
-                    Debug.Error("Invalid gamemode. Can be removed to have the parser attempt to figure it out itself. Accepted values are 'defuse', 'hostage', 'wingman' & 'dangerzone'");
+                    Debug.Error("Invalid gamemode. Can be removed to have the parser attempt to figure it out itself. Accepted values are " + string.Join(", ", Gamemodes.GetAll()));
                     return;
                 }
 
                 //Make sure a valid test type has been given
-                if ((gamemodeoverride == "defuse" || gamemodeoverride == "hostage") && (testType != "casual" && testType != "competitive"))
+                if ((gamemodeoverride == Gamemodes.Defuse || gamemodeoverride == Gamemodes.Hostage) && (testType != "casual" && testType != "competitive"))
                 {
-                    Debug.Error("Invalid test type. It must be 'casual' or 'competitive' when gamemode is either 'defuse' or 'hostage'.");
+                    Debug.Error($"Invalid test type. It must be 'casual' or 'competitive' when -gamemodeoverride is set to '{Gamemodes.Defuse}' or '{Gamemodes.Hostage}'.");
                     return;
                 }
             }

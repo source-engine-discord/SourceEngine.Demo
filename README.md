@@ -14,7 +14,8 @@ Outputs game statistics from CS:GO demos as JSON. The solution has three project
 
 - Defuse
 - Hostage
-- Wingman
+- Wingman Defuse
+- Wingman Hostage
 - Danger Zone
 
 ## Running IDemO
@@ -33,7 +34,7 @@ Latest release:
   -config										[path]                      Path to config file.
   -folders										[paths (space seperated)]   Processes all demo files in each folder specified.
   -demos										[paths (space seperated)]   Processess a list of single demo files at paths.
-  -gamemodeoverride								[string]					Defines the gamemode for the match instead of having the parser attempt to figure it out. -> (defuse / hostage / wingman / dangerzone)
+  -gamemodeoverride								[string]					Defines the gamemode for the match instead of having the parser attempt to figure it out. -> (defuse / hostage / wingmandefuse / wingmanhostage / dangerzone)
   -testtype										[string]					Defines the test type for the match. Otherwise it attempts to grab it from the filename in SE Discord's filename formatting. Only matters for defuse and hostage. -> (competitive / casual)
   -hostagerescuezonecountoverride				[int]						Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-4)
   -recursive																Switch for recursive demo search.
