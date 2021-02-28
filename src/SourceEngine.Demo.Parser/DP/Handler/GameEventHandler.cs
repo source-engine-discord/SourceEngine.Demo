@@ -513,7 +513,7 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 				    int site = (int)data["site"];
 
 					//works out which bombsite the bomb was at
-					if (site == 0)
+					if (site <= 0)
 					{
 						bombEventArgs.Site = null; // bomb at no bombsite, likely danger zone
 					}

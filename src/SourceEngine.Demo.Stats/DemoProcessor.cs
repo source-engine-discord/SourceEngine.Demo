@@ -1246,12 +1246,12 @@ namespace SourceEngine.Demo.Stats
 					if (processedData.BombsiteExplodeValues.Any(p => p.Round == roundNum))
 					{
 						bombExploded = processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum).FirstOrDefault();
-						bombsite = (bombsite != null) ? bombsite : bombExploded.Bombsite.ToString();
+						bombsite = (bombsite != null) ? bombsite : (bombExploded.Bombsite == null ? null : bombExploded.Bombsite.ToString());
 					}
 					if (processedData.BombsiteDefuseValues.Any(p => p.Round == roundNum))
 					{
 						bombDefused = processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum).FirstOrDefault();
-						bombsite = (bombsite != null) ? bombsite : bombDefused.Bombsite.ToString();
+						bombsite = (bombsite != null) ? bombsite : (bombDefused.Bombsite == null ? null : bombDefused.Bombsite.ToString());
 					}
 
 					var timeInRoundPlanted = bombPlanted?.TimeInRound;
