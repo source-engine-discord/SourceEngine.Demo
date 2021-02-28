@@ -204,7 +204,7 @@ namespace SourceEngine.Demo.Stats
 				{
 					if (md.events.Count() > 0 && md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs"))
 					{
-						int round = GetCurrentRoundNum(md);
+						int round = GetCurrentRoundNum(md, gamemode);
 
 						if (round > 0 && playerPosition.Player.SteamID > 0)
 						{
@@ -304,7 +304,7 @@ namespace SourceEngine.Demo.Stats
 
                 if (IsMessageFeedback(text))
                 {
-                    int round = GetCurrentRoundNum(md);
+                    int round = GetCurrentRoundNum(md, gamemode);
 
                     long steamId = e.Sender == null ? 0 : e.Sender.SteamID;
 
@@ -590,13 +590,13 @@ namespace SourceEngine.Demo.Stats
 
             // PLAYER EVENTS ===================================================
             dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) => {
-                e.Round = GetCurrentRoundNum(md);
+                e.Round = GetCurrentRoundNum(md, gamemode);
 
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
 
             dp.PlayerHurt += (object sender, PlayerHurtEventArgs e) => {
-				var round = GetCurrentRoundNum(md);
+				var round = GetCurrentRoundNum(md, gamemode);
 
 				if (e.PossiblyKilledByBombExplosion) // a player_death event is not triggered due to death by bomb explosion
 				{
@@ -654,9 +654,9 @@ namespace SourceEngine.Demo.Stats
             dp.PlayerDisconnect += (object sender, PlayerDisconnectEventArgs e) => {
                 if (e.Player != null && e.Player.Name != "unconnected" && e.Player.Name != "GOTV")
                 {
-                    int roundsCount = GetCurrentRoundNum(md);
+                    int round = GetCurrentRoundNum(md, gamemode);
 
-                    DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer() { PlayerDisconnectEventArgs = e, Round = roundsCount - 1 };
+                    DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer() { PlayerDisconnectEventArgs = e, Round = round - 1 };
 
                     md.addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
                 }
@@ -709,7 +709,7 @@ namespace SourceEngine.Demo.Stats
             dp.WeaponFired += (object sender, WeaponFiredEventArgs e) => {
                 md.addEvent(typeof(WeaponFiredEventArgs), e);
 
-                var round = GetCurrentRoundNum(md);
+                var round = GetCurrentRoundNum(md, gamemode);
 
                 ShotFired shotFired = new ShotFired() { Round = round, TimeInRound = e.TimeInRound, Shooter = e.Shooter, TeamSide = e.Shooter.Team.ToString(), Weapon = new Equipment(e.Weapon) };
 
@@ -2182,7 +2182,7 @@ namespace SourceEngine.Demo.Stats
             return roundsWonReasons;
         }
 
-        public static int GetCurrentRoundNum(MatchData md)
+        public static int GetCurrentRoundNum(MatchData md, string gamemode)
         {
             int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
             List<TeamPlayers> teamPlayersList = md.GetEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
@@ -2196,6 +2196,10 @@ namespace SourceEngine.Demo.Stats
                     round = roundsCount + 1;
                 }
             }
+
+			// add 1 for roundsCount when in danger zone
+			if (gamemode == "dangerzone")
+				round++;
 
             return round;
         }
