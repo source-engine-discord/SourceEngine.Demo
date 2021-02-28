@@ -52,7 +52,7 @@ namespace SourceEngine.Demo.Stats.App
                         "-demos                             [paths (space seperated)]   Processess a list of single demo files at paths\n" +
                         "-gamemodeoverride                  [string]                    Defines the gamemode for the match instead of having the parser attempt to figure it out -> (" + string.Join(" / ", Gamemodes.GetAll()) + ")\n" +
                         "-testtype                          [string]                    Defines the test type for the match. Otherwise it attempts to grab it from the filename in SE Discord's filename formatting. Only matters for defuse and hostage. -> (competitive / casual)\n" +
-                        "-hostagerescuezonecountoverride    [int]                       Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-4)\n" +
+                        "-hostagerescuezonecountoverride    [int]                       Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-2)\n" +
                         "-recursive                                                     Switch for recursive demo search\n" +
                         "-steaminfo                                                     Takes steam names from steam\n" +
                         "-clear                                                         Clears the data folder\n" +
@@ -149,7 +149,7 @@ namespace SourceEngine.Demo.Stats.App
                 {
                     if (i < args.Count())
                         if (!int.TryParse(args[i + 1], out hostagerescuezonecountoverride))
-                            Debug.Error("Could not parse -hostagerescuezonecountoverride value as an int. Make sure that a number is provided.");
+                            Debug.Error("-hostagerescuezonecountoverride value is not a valid integer. Make sure that a number is provided.");
 
                     i++;
                 }
@@ -244,10 +244,10 @@ namespace SourceEngine.Demo.Stats.App
                 }
             }
 
-            // Ensure only values 0-4 are provided when overriding the hostage rescue zone count
-            if (hostagerescuezonecountoverride < 0 || hostagerescuezonecountoverride > 4)
+            // Ensure only values 0-2 are provided when overriding the hostage rescue zone count
+            if (hostagerescuezonecountoverride < 0 || hostagerescuezonecountoverride > 2)
             {
-                Debug.Error("Invalid hostagerescuezonecountoverride amount. Specify between 0 and 4.");
+                Debug.Error("Invalid hostagerescuezonecountoverride amount. Specify between 0 and 2.");
                 return;
             }
 

@@ -36,7 +36,7 @@ Latest release:
   -demos										[paths (space seperated)]   Processess a list of single demo files at paths.
   -gamemodeoverride								[string]					Defines the gamemode for the match instead of having the parser attempt to figure it out. -> (defuse / hostage / wingmandefuse / wingmanhostage / dangerzone)
   -testtype										[string]					Defines the test type for the match. Otherwise it attempts to grab it from the filename in SE Discord's filename formatting. Only matters for defuse and hostage. -> (competitive / casual)
-  -hostagerescuezonecountoverride				[int]						Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-4)
+  -hostagerescuezonecountoverride				[int]						Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-2)
   -recursive																Switch for recursive demo search.
   -steaminfo																Takes steam names from steam.
   -clear																	Clears the data folder.

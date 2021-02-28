@@ -547,7 +547,7 @@ namespace SourceEngine.Demo.Parser
 		/// Hint: ParseHeader() is propably what you want to look into next.
 		/// </summary>
 		/// <param name="input">An input-stream.</param>
-		public DemoParser(Stream input, bool parseChickens = true, bool parsePlayerPositions = true, string gamemode = "", int hostagerescuezonecountoverride = 0)
+		public DemoParser(Stream input, bool parseChickens = true, bool parsePlayerPositions = true, string gamemode = "", int hostagerescuezonecountoverride = -1)
 		{
 			BitStream = BitStreamUtil.Create(input);
 
@@ -560,17 +560,21 @@ namespace SourceEngine.Demo.Parser
 			this.gamemode = gamemode;
 
 			// automatically decides rescue zone amounts unless overridden with a provided parameter
-			if (hostagerescuezonecountoverride > 0)
+			if (hostagerescuezonecountoverride > -1)
 			{
 				this.numOfHostageRescueZonesLookingFor = hostagerescuezonecountoverride;
+			}
+			else if (gamemode == Gamemodes.DangerZone)
+			{
+				this.numOfHostageRescueZonesLookingFor = 2;
 			}
 			else if (gamemode == Gamemodes.Hostage)
 			{
 				this.numOfHostageRescueZonesLookingFor = 1;
 			}
-			else if (gamemode == Gamemodes.DangerZone)
+			else
 			{
-				this.numOfHostageRescueZonesLookingFor = 2;
+				this.numOfHostageRescueZonesLookingFor = 0;
 			}
 		}
 
