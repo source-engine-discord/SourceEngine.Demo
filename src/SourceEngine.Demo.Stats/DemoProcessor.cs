@@ -479,9 +479,7 @@ namespace SourceEngine.Demo.Stats
 
 					//stops the progress bar getting in the way of the first row
 					if (roundsCount == 1)
-					{
 						Console.WriteLine("\n");
-					}
 
 					Console.WriteLine("Round " + roundsCount + " complete.");
 				}
@@ -2318,7 +2316,7 @@ namespace SourceEngine.Demo.Stats
 					return 16;
 				case (Gamemodes.DangerZone, "casual"):
 				case (Gamemodes.DangerZone, "competitive"):
-					return 1;
+					return 2;
 				default:
 					return null;
 			}
