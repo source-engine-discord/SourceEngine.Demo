@@ -6,6 +6,7 @@ using System.IO;
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Demo.Parser.Constants;
+using System.Globalization;
 
 namespace SourceEngine.Demo.Stats.App
 {
@@ -52,6 +53,7 @@ namespace SourceEngine.Demo.Stats.App
                         "-demos                             [paths (space seperated)]   Processess a list of single demo files at paths\n" +
                         "-gamemodeoverride                  [string]                    Defines the gamemode for the match instead of having the parser attempt to figure it out -> (" + string.Join(" / ", Gamemodes.GetAll()) + ")\n" +
                         "-testtype                          [string]                    Defines the test type for the match. Otherwise it attempts to grab it from the filename in SE Discord's filename formatting. Only matters for defuse and hostage. -> (competitive / casual)\n" +
+                        "-testdateoverride                  [string]                    Defines the test date of the match. Otherwise it attempts to grab it from the filename. -> (dd/mm/yyyy)\n" +
                         "-hostagerescuezonecountoverride    [int]                       Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-2)\n" +
                         "-recursive                                                     Switch for recursive demo search\n" +
                         "-steaminfo                                                     Takes steam names from steam\n" +
@@ -71,6 +73,7 @@ namespace SourceEngine.Demo.Stats.App
             string cfgPath = "config.cfg";
             string gamemodeoverride = "notprovided";
             string testType = "unknown";
+            string testdateoverride = "unknown";
             int hostagerescuezonecountoverride = 0;
 
             bool recursive = false;
@@ -142,6 +145,13 @@ namespace SourceEngine.Demo.Stats.App
                 {
                     if (i < args.Count())
                         testType = args[i + 1];
+
+                    i++;
+                }
+                else if (arg == "-testdateoverride")
+                {
+                    if (i < args.Count())
+                        testdateoverride = args[i + 1];
 
                     i++;
                 }
@@ -244,7 +254,21 @@ namespace SourceEngine.Demo.Stats.App
                 }
             }
 
-            // Ensure only values 0-2 are provided when overriding the hostage rescue zone count
+            //If the optional parameter -testdateoverride has been provided
+            if (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown")
+            {
+                try
+                {
+                    DateTime.ParseExact(testdateoverride, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                }
+                catch (FormatException e)
+                {
+                    Debug.Error("Invalid test date. Can be removed to be set to 'unknown' or have it automatically set if it is a SE Discord or Mapcore Discord playtest. Formatting should be dd/mm/yyyy");
+                    return;
+                }
+            }
+
+            //Ensure only values 0-2 are provided when overriding the hostage rescue zone count
             if (hostagerescuezonecountoverride < 0 || hostagerescuezonecountoverride > 2)
             {
                 Debug.Error("Invalid hostagerescuezonecountoverride amount. Specify between 0 and 2.");
@@ -285,7 +309,7 @@ namespace SourceEngine.Demo.Stats.App
 						string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
 						bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
-                        AddDemoInformation(demosInformation, demo, testType, gamemodeoverride, isFaceitDemo, filenameSplit, pathSplit);
+                        AddDemoInformation(demosInformation, demo, gamemodeoverride, testType, testdateoverride, isFaceitDemo, filenameSplit, pathSplit);
                     }
                 }
                 catch (Exception e)
@@ -301,7 +325,7 @@ namespace SourceEngine.Demo.Stats.App
 					string[] filenameSplit = demo.Split('.');
 					bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
-                    AddDemoInformation(demosInformation, demo, testType, gamemodeoverride, isFaceitDemo, filenameSplit, Array.Empty<string>());
+                    AddDemoInformation(demosInformation, demo, gamemodeoverride, testType, testdateoverride, isFaceitDemo, filenameSplit, Array.Empty<string>());
 
                 }
                 catch (Exception e)
@@ -516,13 +540,13 @@ namespace SourceEngine.Demo.Stats.App
         }
 
 
-        private static void AddDemoInformation(List<DemoInformation> demosInformation, string demo, string testType, string gamemode, bool isFaceitDemo, string[] filenameSplit, string[] pathSplit)
+        private static void AddDemoInformation(List<DemoInformation> demosInformation, string demo, string gamemode, string testType, string testdateoverride, bool isFaceitDemo, string[] filenameSplit, string[] pathSplit)
         {
             string testDate, mapname;
 
             if (isFaceitDemo)
             {
-                testDate = "unknown";
+                testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown") ? testdateoverride : "unknown";
                 mapname = "unknown";
             }
             else
@@ -542,7 +566,7 @@ namespace SourceEngine.Demo.Stats.App
 
                 if (isSEDiscordDemo)
                 {
-                    testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
+                    testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown") ? testdateoverride : $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
 
                     mapname = $"{ filenameSplit[3] }";
                     for (int i = 4; i < filenameSplit.Count() - 2; i++)
@@ -552,7 +576,7 @@ namespace SourceEngine.Demo.Stats.App
                 }
                 else if (isMapcoreDiscordDemo)
                 {
-                    testDate = $"{ filenameSplit[1].Substring(6, 2) }/{ filenameSplit[1].Substring(4, 2) }/{ filenameSplit[1].Substring(0, 4) }";
+                    testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown") ? testdateoverride : $"{ filenameSplit[1].Substring(6, 2) }/{ filenameSplit[1].Substring(4, 2) }/{ filenameSplit[1].Substring(0, 4) }";
 
                     var index = (filenameSplit.Count() - 1) - Array.IndexOf(filenameSplit.Reverse().ToArray(), "MAPCORE"); // gets the last index where the value was "MAPCORE"
                     mapname = $"{ filenameSplit[6] }";
@@ -563,12 +587,12 @@ namespace SourceEngine.Demo.Stats.App
                 }
                 else //cannot determine demo name format
                 {
-                    testDate = "unknown";
+                    testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown") ? testdateoverride : "unknown";
                     mapname = "unknown";
                 }
             }
 
-            demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType, GameMode = gamemode });
+            demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, GameMode = gamemode, TestType = testType, TestDate = testDate});
         }
     }
 }

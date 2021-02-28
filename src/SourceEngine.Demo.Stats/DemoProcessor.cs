@@ -940,7 +940,7 @@ namespace SourceEngine.Demo.Stats
 
 		public mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
 		{
-			mapInfo mapInfo = new mapInfo() { MapName = processedData.DemoInformation.MapName, TestDate = processedData.DemoInformation.TestDate, TestType = processedData.DemoInformation.TestType };
+			mapInfo mapInfo = new mapInfo() { MapName = processedData.DemoInformation.MapName, TestType = processedData.DemoInformation.TestType, TestDate = processedData.DemoInformation.TestDate};
 
 			mapInfo.MapName = (mapNameSplit.Count() > 2) ? mapNameSplit[2] : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
 			mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
