@@ -2330,7 +2330,6 @@ namespace SourceEngine.Demo.Stats
 				case "winnersstats":
 				case "bombsitestats":
 				case "teamstats":
-				case "firstdamagestats":
 					return gamemode != Gamemodes.DangerZone;
 				case "playerstats":
 				case "roundsstats":
@@ -2341,6 +2340,7 @@ namespace SourceEngine.Demo.Stats
 				case "killsstats":
 				case "feedbackmessage":
 				case "chickenstats":
+				case "firstdamagestats":
 				case "playerpositionsstats":
 				default:
 					return true;
