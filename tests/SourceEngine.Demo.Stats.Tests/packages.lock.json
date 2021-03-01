@@ -1635,7 +1635,7 @@
         "type": "Project",
         "dependencies": {
           "Newtonsoft.Json": "12.0.3",
-          "SourceEngine.Demo.Parser": "2.3.0"
+          "SourceEngine.Demo.Parser": "2.5.0"
         }
       }
     }
