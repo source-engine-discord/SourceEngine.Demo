@@ -443,7 +443,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
 
 				// Assess
-				allOutputData.AllStats.supportedGamemodes.Count.ShouldBe(3);
+				allOutputData.AllStats.supportedGamemodes.Count.ShouldBe(5);
 				allOutputData.AllStats.supportedGamemodes[0].ShouldBe(Gamemodes.Defuse);
 				allOutputData.AllStats.supportedGamemodes[1].ShouldBe(Gamemodes.Hostage);
 				allOutputData.AllStats.supportedGamemodes[2].ShouldBe(Gamemodes.WingmanDefuse);
