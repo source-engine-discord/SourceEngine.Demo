@@ -13,6 +13,7 @@ namespace SourceEngine.Demo.Stats.Models
 		public bool ParsePlayerPositions { get; set; }
 		public List<string> FoldersToProcess { get; set; }
 		public string OutputRootFolder { get; set; }
+		public tanookiStats tanookiStats { get; set; }
 		public IEnumerable<MatchStartedEventArgs> MatchStartValues { get; set; }
 		public IEnumerable<SwitchSidesEventArgs> SwitchSidesValues { get; set; }
 		public IEnumerable<FeedbackMessage> MessagesValues { get; set; }

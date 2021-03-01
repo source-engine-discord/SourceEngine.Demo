@@ -479,6 +479,7 @@ namespace SourceEngine.Demo.Stats.App
                 ppe = (from playerPos in mdTest.GetEvents<PlayerPositionsInstance>()
                        select (playerPos as PlayerPositionsInstance));
 
+                tanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
 
                 if (mdTest.passed)
                 {
@@ -492,6 +493,7 @@ namespace SourceEngine.Demo.Stats.App
                         ParsePlayerPositions = parsePlayerPositions,
                         FoldersToProcess = foldersToProcess,
 						OutputRootFolder = outputRootFolder,
+                        tanookiStats = tanookiStats,
 						MatchStartValues = mse,
 						SwitchSidesValues = sse,
 						MessagesValues = fme,
@@ -537,6 +539,40 @@ namespace SourceEngine.Demo.Stats.App
             Debug.White("Processing took {0} minutes\n", (end - startTime).TotalMinutes);
             Debug.White("Passed: {0}\n", passCount);
             Debug.White("Failed: {0}\n", demosInformation.Count() - passCount);
+        }
+
+
+        private static tanookiStats tanookiStatsCreator(IEnumerable<TeamPlayers> tpe, IEnumerable<DisconnectedPlayer> dpe)
+        {
+            tanookiStats tanookiStats = new tanookiStats { Joined = false, Left = false, RoundJoined = -1, RoundLeft = -1, RoundsLasted = -1 };
+            long tanookiId = 76561198123165941;
+
+            if (tpe.Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId)) || tpe.Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
+            {
+                tanookiStats.Joined = true;
+                tanookiStats.RoundJoined = 0; // set incase he joined in warmup but does not play any rounds	
+
+                IEnumerable<int> playedRoundsT = tpe.Where(t => t.Round > 0 && t.Terrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
+                IEnumerable<int> playedRoundsCT = tpe.Where(t => t.Round > 0 && t.CounterTerrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
+
+                tanookiStats.RoundsLasted = playedRoundsT.Count() + playedRoundsCT.Count();
+
+                bool playedTSide = (playedRoundsT.Count() > 0) ? true : false;
+                bool playedCTSide = (playedRoundsCT.Count() > 0) ? true : false;
+
+                tanookiStats.RoundJoined = playedTSide ? (playedCTSide ? ((playedRoundsT.First() < playedRoundsCT.First()) ? playedRoundsT.First() : playedRoundsCT.First()) : playedRoundsT.First()) : (playedCTSide ? playedRoundsCT.First() : tanookiStats.RoundJoined);
+            }
+
+            if (dpe.Any(d => d.PlayerDisconnectEventArgs.Player != null && d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId))
+            {
+                // checks if he played a round later on than his last disconnect (he left and joined back)	
+                int finalDisconnectRound = dpe.Where(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId).Reverse().Select(r => r.Round).First();
+                tanookiStats.RoundLeft = (finalDisconnectRound > tanookiStats.RoundsLasted) ? finalDisconnectRound : tanookiStats.RoundLeft;
+
+                tanookiStats.Left = (tanookiStats.RoundLeft > -1) ? true : false;
+            }
+
+            return tanookiStats;
         }
 
 

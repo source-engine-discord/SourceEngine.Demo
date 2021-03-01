@@ -7,6 +7,7 @@ namespace SourceEngine.Demo.Stats.Models
         public versionNumber versionNumber { get; set; }
         public List<string> supportedGamemodes { get; set; }
         public mapInfo mapInfo { get; set; }
+        public tanookiStats tanookiStats { get; set; }
         public List<playerStats> playerStats { get; set; }
         public winnersStats winnersStats { get; set; }
         public List<roundsStats> roundsStats { get; set; }
