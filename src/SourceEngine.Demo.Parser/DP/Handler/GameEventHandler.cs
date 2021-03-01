@@ -594,7 +594,7 @@ namespace SourceEngine.Demo.Parser.DP.Handler
                     rescued.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
 
 					//currently assumes only one rescue zone,
-					//might be able to use "site" in 'eventDescriptor' or 'rawEvent' to determine which rescue zone was used ?
+					//"site" may indicate the hostage rescue zone number (eg. 0, 1, ...) or it may just always be set to 0. //// Attempted to test this in danger zone but the event does not seem to be thrown when a hostage is taken to a rescue zone
 					int rescueZone = (int)data["site"];
 					parser.rescueZoneIndex = rescueZone;
 					rescued.RescueZone = rescueZone;

@@ -1473,18 +1473,18 @@ namespace SourceEngine.Demo.Stats
 		{
 			List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
 
-			// assume only one rescue zone, (int)data["site"] in GameEventHandler.cs does not line up with newResource.Entity.ID at SendTableParser.FindByName("CBaseTrigger").OnNewEntity
-			var rescueZoneTrigger = dp?.triggers.Count() > 0 ? dp.triggers.Where(x => x.Index != dp.bombsiteAIndex && x.Index != dp.bombsiteBIndex).FirstOrDefault() : null;
-
-			rescueZoneStats.Add(new rescueZoneStats()
+			foreach (var rescueZone in dp?.triggers?.Where(x => x.Index != dp.bombsiteAIndex && x.Index != dp.bombsiteBIndex))
 			{
-				XPositionMin = rescueZoneTrigger?.Min.X,
-				YPositionMin = rescueZoneTrigger?.Min.Y,
-				ZPositionMin = rescueZoneTrigger?.Min.Z,
-				XPositionMax = rescueZoneTrigger?.Max.X,
-				YPositionMax = rescueZoneTrigger?.Max.Y,
-				ZPositionMax = rescueZoneTrigger?.Max.Z,
-			});
+				rescueZoneStats.Add(new rescueZoneStats()
+				{
+					XPositionMin = rescueZone.Min.X,
+					YPositionMin = rescueZone.Min.Y,
+					ZPositionMin = rescueZone.Min.Z,
+					XPositionMax = rescueZone.Max.X,
+					YPositionMax = rescueZone.Max.Y,
+					ZPositionMax = rescueZone.Max.Z,
+				});
+			}
 
 			return rescueZoneStats;
 		}
