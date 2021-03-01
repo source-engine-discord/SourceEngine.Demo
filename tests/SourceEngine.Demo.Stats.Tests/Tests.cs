@@ -208,7 +208,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo1");
 				allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap");
 				allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.Defuse);
-				allOutputData.AllStats.mapInfo.TestType.ShouldBe("Casual");
+				allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
 				allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
 			}
 
@@ -216,16 +216,15 @@ namespace SourceEngine.Demo.Stats.Tests
 			public void Should_return_map_info_correctly_for_hostage_maps()
 			{
 				// Arrange
-				var ProcessedData2 = ProcessedData;
-				ProcessedData2.DemoInformation = new DemoInformation()
+				ProcessedData.DemoInformation = new DemoInformation()
 				{
 					DemoName = "demo2",
 					MapName = "de_testmap2",
 					GameMode = Gamemodes.Hostage,
-					TestType = "Casual",
+					TestType = "casual",
 					TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
 				};
-				ProcessedData2.MatchStartValues = new List<MatchStartedEventArgs>()
+				ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
 				{
 					new MatchStartedEventArgs
 					{
@@ -241,7 +240,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo2");
 				allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap2");
 				allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.Hostage);
-				allOutputData.AllStats.mapInfo.TestType.ShouldBe("Casual");
+				allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
 				allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
 			}
 
@@ -249,16 +248,15 @@ namespace SourceEngine.Demo.Stats.Tests
 			public void Should_return_map_info_correctly_for_wingman_defuse_maps()
 			{
 				// Arrange
-				var ProcessedData3 = ProcessedData;
-				ProcessedData3.DemoInformation = new DemoInformation()
+				ProcessedData.DemoInformation = new DemoInformation()
 				{
 					DemoName = "demo3",
 					MapName = "de_testmap3",
 					GameMode = Gamemodes.WingmanDefuse,
-					TestType = "Casual",
+					TestType = "casual",
 					TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
 				};
-				ProcessedData3.MatchStartValues = new List<MatchStartedEventArgs>()
+				ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
 				{
 					new MatchStartedEventArgs
 					{
@@ -274,7 +272,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo3");
 				allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap3");
 				allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.WingmanDefuse);
-				allOutputData.AllStats.mapInfo.TestType.ShouldBe("Casual");
+				allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
 				allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
 			}
 
@@ -282,16 +280,15 @@ namespace SourceEngine.Demo.Stats.Tests
 			public void Should_return_map_info_correctly_for_wingman_hostage_maps()
 			{
 				// Arrange
-				var ProcessedData3 = ProcessedData;
-				ProcessedData3.DemoInformation = new DemoInformation()
+				ProcessedData.DemoInformation = new DemoInformation()
 				{
 					DemoName = "demo4",
 					MapName = "de_testmap4",
 					GameMode = Gamemodes.WingmanHostage,
-					TestType = "Casual",
+					TestType = "casual",
 					TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
 				};
-				ProcessedData3.MatchStartValues = new List<MatchStartedEventArgs>()
+				ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
 				{
 					new MatchStartedEventArgs
 					{
@@ -307,7 +304,39 @@ namespace SourceEngine.Demo.Stats.Tests
 				allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo4");
 				allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap4");
 				allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.WingmanHostage);
-				allOutputData.AllStats.mapInfo.TestType.ShouldBe("Casual");
+				allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
+				allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+			}
+
+			[Fact]
+			public void Should_return_map_info_correctly_for_danger_zone_maps()
+			{
+				// Arrange
+				ProcessedData.DemoInformation = new DemoInformation()
+				{
+					DemoName = "demo5",
+					MapName = "de_testmap5",
+					GameMode = Gamemodes.DangerZone,
+					TestType = "casual",
+					TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
+				};
+				ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
+				{
+					new MatchStartedEventArgs
+					{
+						Mapname = "de_testmap5",
+						HasBombsites = false,
+					}
+				};
+
+				// Act
+				AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+
+				// Assess
+				allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo5");
+				allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap5");
+				allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.DangerZone);
+				allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
 				allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
 			}
 
@@ -517,7 +546,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				DemoName = "demo1",
 				MapName = "de_testmap",
 				GameMode = Gamemodes.Defuse,
-				TestType = "Casual",
+				TestType = "casual",
 				TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
 			};
 
