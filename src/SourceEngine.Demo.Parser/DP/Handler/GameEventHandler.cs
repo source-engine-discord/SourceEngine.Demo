@@ -512,26 +512,43 @@ namespace SourceEngine.Demo.Parser.DP.Handler
 
 				    int site = (int)data["site"];
 
-                    //works out which bombsite the bomb was planted at
-				    if (site == parser.bombsiteAIndex) {
-					    bombEventArgs.Site = 'A';
-				    } else if (site == parser.bombsiteBIndex) {
-					    bombEventArgs.Site = 'B';
-				    } else {
-					    var relevantTrigger = parser.triggers.Single(a => a.Index == site);
-					    if (relevantTrigger.Contains(parser.bombsiteACenter)) {
-						    //planted at A.
-						    bombEventArgs.Site = 'A';
-						    parser.bombsiteAIndex = site;
-					    } else if (relevantTrigger.Contains(parser.bombsiteBCenter)) {
-						    //planted at B.
-						    bombEventArgs.Site = 'B';
-						    parser.bombsiteBIndex = site;
-					    } else {
-                            //where have they planted???
-                            bombEventArgs.Site = '?';
-                        }
-				    }
+					//works out which bombsite the bomb was at
+					if (site <= 0)
+					{
+						bombEventArgs.Site = null; // bomb at no bombsite, likely danger zone
+					}
+					else
+					{
+						if (site == parser.bombsiteAIndex)
+						{
+							bombEventArgs.Site = 'A';
+						}
+						else if (site == parser.bombsiteBIndex)
+						{
+							bombEventArgs.Site = 'B';
+						}
+						else
+						{
+							var relevantTrigger = parser.triggers.Single(a => a.Index == site);
+							if (relevantTrigger.Contains(parser.bombsiteACenter))
+							{
+								//planted at A.
+								bombEventArgs.Site = 'A';
+								parser.bombsiteAIndex = site;
+							}
+							else if (relevantTrigger.Contains(parser.bombsiteBCenter))
+							{
+								//planted at B.
+								bombEventArgs.Site = 'B';
+								parser.bombsiteBIndex = site;
+							}
+							else
+							{
+								//where have they planted since 'site' was not 0 ???
+								bombEventArgs.Site = '?';
+							}
+						}
+					}
 
                     bombEventArgs.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 

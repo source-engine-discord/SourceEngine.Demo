@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
+using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Parser.DP;
 using SourceEngine.Demo.Parser.DT;
 using SourceEngine.Demo.Parser.ST;
@@ -29,6 +29,11 @@ namespace SourceEngine.Demo.Parser
 		public bool stopParsingDemo = false;
 		bool parseChickens = true;
 		bool parsePlayerPositions = true;
+		string gamemode = string.Empty;
+		int numOfHostageRescueZonesLookingFor = 0; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
+
+		public List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
+		internal Dictionary<int, Player> InfernoOwners = new Dictionary<int, Player>();
 
 
 		#region Events
@@ -387,7 +392,7 @@ namespace SourceEngine.Demo.Parser
 		public int hostageAIndex { get; internal set; } = -1;
 		public int hostageBIndex { get; internal set; } = -1;
 		public int rescueZoneIndex { get; internal set; } = -1;
-		public Vector rescueZoneCenter { get; internal set; } = new Vector();
+		public Dictionary<int, Vector> rescueZoneCenters { get; internal set; } = new Dictionary<int, Vector>();
 
 		/// <summary>
 		/// The ID of the CT-Team
@@ -542,7 +547,7 @@ namespace SourceEngine.Demo.Parser
 		/// Hint: ParseHeader() is propably what you want to look into next.
 		/// </summary>
 		/// <param name="input">An input-stream.</param>
-		public DemoParser(Stream input, bool parseChickens = true, bool parsePlayerPositions = true)
+		public DemoParser(Stream input, bool parseChickens = true, bool parsePlayerPositions = true, string gamemode = "", int hostagerescuezonecountoverride = 0)
 		{
 			BitStream = BitStreamUtil.Create(input);
 
@@ -552,6 +557,25 @@ namespace SourceEngine.Demo.Parser
 
             this.parseChickens = parseChickens;
             this.parsePlayerPositions = parsePlayerPositions;
+			this.gamemode = gamemode;
+
+			// automatically decides rescue zone amounts unless overridden with a provided parameter
+			if (hostagerescuezonecountoverride > 0)
+			{
+				this.numOfHostageRescueZonesLookingFor = hostagerescuezonecountoverride;
+			}
+			else if (gamemode == Gamemodes.DangerZone)
+			{
+				this.numOfHostageRescueZonesLookingFor = 2;
+			}
+			else if (gamemode == Gamemodes.Hostage)
+			{
+				this.numOfHostageRescueZonesLookingFor = 1;
+			}
+			else
+			{
+				this.numOfHostageRescueZonesLookingFor = 0;
+			}
 		}
 
 
@@ -1090,13 +1114,14 @@ namespace SourceEngine.Demo.Parser
 					}
 				}
 
-				// Check the name iff the above switch matches nothing.
+				// Check the name iff the above switch matches nothing. (usually only things that the player can hold that are neither a weapon nor a grenade (?))
 				switch (sc.Name) {
 					case "CC4":
 						// Bomb is neither "ratatata" nor "boom", its "booooooom".
 						equipmentMapping.Add(sc, EquipmentElement.Bomb);
 						break;
 					case "CKnife":
+					case "CKnifeGG":
 						// tsching weapon
 						equipmentMapping.Add(sc, EquipmentElement.Knife);
 						break;
@@ -1111,6 +1136,18 @@ namespace SourceEngine.Demo.Parser
 						break;
 					case "CItem_Healthshot":
 						equipmentMapping.Add(sc, EquipmentElement.HealthShot);
+						break;
+					case "CFists":
+						equipmentMapping.Add(sc, EquipmentElement.Fists);
+						break;
+					case "CMelee":
+						equipmentMapping.Add(sc, EquipmentElement.Melee);
+						break;
+					case "CTablet":
+						equipmentMapping.Add(sc, EquipmentElement.Tablet);
+						break;
+					case "CBumpMine":
+						equipmentMapping.Add(sc, EquipmentElement.BumpMine);
 						break;
 				}
 			}
@@ -1217,9 +1254,12 @@ namespace SourceEngine.Demo.Parser
 			}
 		}
 
-		public List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
+
 		public void HandleBombSitesAndRescueZones()
 		{
+			List<int> rescueZoneIdsDoneAtLeastOnceMin = new List<int>(), rescueZoneIdsDoneAtLeastOnceMax = new List<int>();
+
+
 			SendTableParser.FindByName("CCSPlayerResource").OnNewEntity += (s1, newResource) => {
 				// defuse
 				newResource.Entity.FindProperty("m_bombsiteCenterA").VectorRecived += (s2, center) => {
@@ -1229,28 +1269,48 @@ namespace SourceEngine.Demo.Parser
 					bombsiteBCenter = center.Value;
 				};
 
-				// hostage (for multiple hostage rescue zones, use 001, 002 and 003)
-				newResource.Entity.FindProperty("m_hostageRescueX.000").DataRecivedDontUse += (s4, center) =>
+
+				// hostage (for multiple hostage rescue zones it uses 000, 001, 002 & 003 (how many of them depends on value of numOfHostageRescueZones))
+				int numOfSortedRescueZonesX = 0, numOfSortedZonesRescueY = 0, numOfSortedZonesRescueZ = 0;
+				for (int i = 0; i < numOfHostageRescueZonesLookingFor; i++)
 				{
-					if (!(rescueZoneCenter.X != 0 && Convert.ToSingle(center.Value) == 0))
+					newResource.Entity.FindProperty("m_hostageRescueX.00" + i).DataRecivedDontUse += (s4, center) =>
 					{
-						rescueZoneCenter.X = Convert.ToSingle(center.Value);
-					}
-				};
-				newResource.Entity.FindProperty("m_hostageRescueY.000").DataRecivedDontUse += (s5, center) =>
-				{
-					if (!(rescueZoneCenter.Y != 0 && Convert.ToSingle(center.Value) == 0))
+						if (!rescueZoneCenters.Keys.Contains(numOfSortedRescueZonesX))
+							rescueZoneCenters.Add(numOfSortedRescueZonesX, new Vector());
+
+						// make sure that there are values before saying it is sorted, as it will often run through with 0 values first
+						if (!(rescueZoneCenters[numOfSortedRescueZonesX].X == 0 && Convert.ToSingle(center.Value) == 0))
+						{
+							rescueZoneCenters[numOfSortedRescueZonesX].X = Convert.ToSingle(center.Value);
+							numOfSortedRescueZonesX++;
+						}
+					};
+					newResource.Entity.FindProperty("m_hostageRescueY.00" + i).DataRecivedDontUse += (s5, center) =>
 					{
-						rescueZoneCenter.Y = Convert.ToSingle(center.Value);
-					}
-				};
-				newResource.Entity.FindProperty("m_hostageRescueZ.000").DataRecivedDontUse += (s6, center) =>
-				{
-					if (!(rescueZoneCenter.Z != 0 && Convert.ToSingle(center.Value) == 0))
+						if (!rescueZoneCenters.Keys.Contains(numOfSortedZonesRescueY))
+							rescueZoneCenters.Add(numOfSortedZonesRescueY, new Vector());
+
+						// make sure that there are values before saying it is sorted, as it will often run through with 0 values first
+						if (!(rescueZoneCenters[numOfSortedZonesRescueY].Y == 0 && Convert.ToSingle(center.Value) == 0))
+						{
+							rescueZoneCenters[numOfSortedZonesRescueY].Y = Convert.ToSingle(center.Value);
+							numOfSortedZonesRescueY++;
+						}
+					};
+					newResource.Entity.FindProperty("m_hostageRescueZ.00" + i).DataRecivedDontUse += (s6, center) =>
 					{
-						rescueZoneCenter.Z = Convert.ToSingle(center.Value);
-					}
-				};
+						if (!rescueZoneCenters.Keys.Contains(numOfSortedZonesRescueZ))
+							rescueZoneCenters.Add(numOfSortedZonesRescueZ, new Vector());
+
+						// make sure that there are values before saying it is sorted, as it will often run through with 0 values first
+						if (!(rescueZoneCenters[numOfSortedZonesRescueZ].Z == 0 && Convert.ToSingle(center.Value) == 0))
+						{
+							rescueZoneCenters[numOfSortedZonesRescueZ].Z = Convert.ToSingle(center.Value);
+							numOfSortedZonesRescueZ++;
+						}
+					};
+				}
 			};
 
 			SendTableParser.FindByName("CBaseTrigger").OnNewEntity += (s1, newResource) => {
@@ -1261,13 +1321,16 @@ namespace SourceEngine.Demo.Parser
 				// if bombsites, it gets x,y,z values from the world origin (0,0,0)
 				// if hostage rescue zones, it gets x,y,z values relative to the entity's origin
 				newResource.Entity.FindProperty("m_Collision.m_vecMins").VectorRecived += (s2, vector) => {
-					if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage
+					if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage or danger zone
 					{
+						if (!rescueZoneIdsDoneAtLeastOnceMin.Any(x => x == trigger.Index))
+							rescueZoneIdsDoneAtLeastOnceMin.Add(trigger.Index);
+
 						trigger.Min = new Vector()
 						{
-							X = rescueZoneCenter.X + vector.Value.X,
-							Y = rescueZoneCenter.Y + vector.Value.Y,
-							Z = rescueZoneCenter.Z + vector.Value.Z,
+							X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count() - 1].X + vector.Value.X,
+							Y = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count() - 1].Y + vector.Value.Y,
+							Z = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count() - 1].Z + vector.Value.Z,
 						};
 					}
 					else // is defuse
@@ -1277,13 +1340,16 @@ namespace SourceEngine.Demo.Parser
 				};
 
 				newResource.Entity.FindProperty("m_Collision.m_vecMaxs").VectorRecived += (s3, vector) => {
-					if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage
+					if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage or danger zone
 					{
+						if (!rescueZoneIdsDoneAtLeastOnceMax.Any(x => x == trigger.Index))
+							rescueZoneIdsDoneAtLeastOnceMax.Add(trigger.Index);
+
 						trigger.Max = new Vector()
 						{
-							X = rescueZoneCenter.X + vector.Value.X,
-							Y = rescueZoneCenter.Y + vector.Value.Y,
-							Z = rescueZoneCenter.Z + vector.Value.Z,
+							X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count() - 1].X + vector.Value.X,
+							Y = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count() - 1].Y + vector.Value.Y,
+							Z = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count() - 1].Z + vector.Value.Z,
 						};
 					}
 					else // is defuse
@@ -1295,7 +1361,7 @@ namespace SourceEngine.Demo.Parser
 
 		}
 
-		internal Dictionary<int, Player> InfernoOwners = new Dictionary<int, Player>();
+
 		private void HandleInfernos()
 		{
 			var inferno = SendTableParser.FindByName("CInferno");

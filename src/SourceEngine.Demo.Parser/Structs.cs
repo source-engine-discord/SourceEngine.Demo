@@ -442,6 +442,10 @@ namespace SourceEngine.Demo.Parser
 		/// CTs Surrender
 		/// </summary>
 		CTSurrender,
+		/// <summary>
+		/// SurvivalWin
+		/// </summary>
+		SurvivalWin = 21, // danger zone
         /// <summary>
         /// Unknown
         /// </summary>

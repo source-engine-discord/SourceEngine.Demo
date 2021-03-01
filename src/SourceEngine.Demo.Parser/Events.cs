@@ -240,7 +240,7 @@ namespace SourceEngine.Demo.Parser
 	{
 		public Player Player { get; set; }
 
-		public char Site { get; set; }
+		public char? Site { get; set; }
 
         public double TimeInRound { get; set; }
     }
@@ -486,6 +486,9 @@ namespace SourceEngine.Demo.Parser
 					EquipmentElement.AWP => "Sniper",
 					EquipmentElement.Zeus => "Zeus",
 					EquipmentElement.Knife => "Knife",
+					EquipmentElement.Fists => "Fists",
+					EquipmentElement.Melee => "Melee",
+					EquipmentElement.Shield => "Shield",
 					_ => Class switch
 					{
 						EquipmentClass.Heavy => "Shotgun",
@@ -656,6 +659,33 @@ namespace SourceEngine.Demo.Parser
 					return EquipmentElement.BreachCharge;
 				case "healthshot":
 					return EquipmentElement.HealthShot;
+				case "fists":
+					return EquipmentElement.Fists;
+				case "melee":
+				case "axe":
+				case "hammer":
+				case "spanner":
+					return EquipmentElement.Melee;
+				case "tablet":
+					return EquipmentElement.Tablet;
+				case "bumpmine":
+					return EquipmentElement.BumpMine;
+				case "shield":
+					return EquipmentElement.Shield;
+				case "zonerepulsor":
+					return EquipmentElement.ZoneRepulsor;
+				case "snowball":
+					return EquipmentElement.Snowball;
+				case "diversion":
+				case "diversiongrenade":
+					return EquipmentElement.Diversion;
+				case "sensor":
+				case "sensorgrenade":
+					return EquipmentElement.Sensor;
+				case "trigger_hurt":
+					return EquipmentElement.TriggerHurt;
+				case "prop_exploding_barrel":
+					return EquipmentElement.ExplodingBarrel;
 
 				// These crash the game when given via give weapon_[mp5navy|...], and cannot be purchased ingame.
 				// yet the server-classes are networked, so I need to resolve them.
@@ -729,6 +759,12 @@ namespace SourceEngine.Demo.Parser
 		DefuseKit = 406,
 		World = 407,
 		HealthShot = 408,
+		Fists = 409,
+		Melee = 410, // axe, hammer & spanner (throwable handheld weapons)
+		Tablet = 411,
+		BumpMine = 412,
+		Shield = 413,
+		ZoneRepulsor = 414, // from co-op mission
 
 		// Grenades
 		Decoy = 501,
@@ -738,6 +774,15 @@ namespace SourceEngine.Demo.Parser
 		Smoke = 505,
 		HE = 506,
         BreachCharge = 507,
+		Snowball = 508,
+		Diversion = 509,
+		Sensor = 510,
+
+		// Brush Entities
+		TriggerHurt = 601,
+
+		// Point Entities
+		ExplodingBarrel = 701,
 	}
 
 	public enum EquipmentClass

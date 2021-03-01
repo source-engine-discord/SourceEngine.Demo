@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
+using SourceEngine.Demo.Parser.Constants;
 
 namespace SourceEngine.Demo.Stats
 {
@@ -42,7 +43,7 @@ namespace SourceEngine.Demo.Stats
         public Dictionary<int, long> playerLookups = new Dictionary<int, long>();
         public Dictionary<int, int> playerReplacements = new Dictionary<int, int>();
 
-        private const string winReasonTKills = "TerroristWin", winReasonCtKills = "CTWin", winReasonBombed = "TargetBombed", winReasonDefused = "BombDefused", winReasonRescued = "HostagesRescued", winReasonNotRescued = "HostagesNotRescued", winReasonTSaved = "TargetSaved";
+        private const string winReasonTKills = "TerroristWin", winReasonCtKills = "CTWin", winReasonBombed = "TargetBombed", winReasonDefused = "BombDefused", winReasonRescued = "HostagesRescued", winReasonNotRescued = "HostagesNotRescued", winReasonTSaved = "TargetSaved", winReasonDangerZone = "SurvivalWin";
         private const string winReasonUnknown = "Unknown"; // Caused by an error where the round_end event was not triggered for a round
 
         public bool changingPlantedRoundsToA = false, changingPlantedRoundsToB = false; // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
@@ -182,12 +183,16 @@ namespace SourceEngine.Demo.Stats
             }
         }
 
-        public static MatchData FromDemoFile(string file, bool parseChickens, bool parsePlayerPositions, bool lowOutputMode, string testType)
+        public static MatchData FromDemoFile(DemoInformation demoInformation, bool parseChickens, bool parsePlayerPositions, int hostagerescuezonecountoverride, bool lowOutputMode)
         {
-            MatchData md = new MatchData();
+			string file = demoInformation.DemoName;
+			string gamemode = demoInformation.GameMode;
+			string testType = demoInformation.TestType;
+
+			MatchData md = new MatchData();
 
             //Create demo parser instance
-            dp = new DemoParser(File.OpenRead(file), parseChickens, parsePlayerPositions);
+            dp = new DemoParser(File.OpenRead(file), parseChickens, parsePlayerPositions, gamemode, hostagerescuezonecountoverride);
 
             dp.ParseHeader();
 
@@ -200,7 +205,7 @@ namespace SourceEngine.Demo.Stats
 				{
 					if (md.events.Count() > 0 && md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs"))
 					{
-						int round = GetCurrentRoundNum(md);
+						int round = GetCurrentRoundNum(md, gamemode);
 
 						if (round > 0 && playerPosition.Player.SteamID > 0)
 						{
@@ -300,7 +305,7 @@ namespace SourceEngine.Demo.Stats
 
                 if (IsMessageFeedback(text))
                 {
-                    int round = GetCurrentRoundNum(md);
+                    int round = GetCurrentRoundNum(md, gamemode);
 
                     long steamId = e.Sender == null ? 0 : e.Sender.SteamID;
 
@@ -474,9 +479,7 @@ namespace SourceEngine.Demo.Stats
 
 					//stops the progress bar getting in the way of the first row
 					if (roundsCount == 1)
-					{
 						Console.WriteLine("\n");
-					}
 
 					Console.WriteLine("Round " + roundsCount + " complete.");
 				}
@@ -504,7 +507,7 @@ namespace SourceEngine.Demo.Stats
 				/*	The final round in a match does not throw a round_officially_ended event, but a round_freeze_end event is thrown after the game ends,
 					so assume that a game has ended if a second round_freeze_end event is found in the same round as a round_end_event and NO round_officially_ended event.
 					This does mean that if a round_officially_ended event is not triggered due to demo error, the parse will mess up. */
-				var minRoundsForWin = GetMinRoundsForWin(testType);
+				var minRoundsForWin = GetMinRoundsForWin(gamemode, testType);
 
 				if (numOfFreezetimesEnded == numOfRoundsOfficiallyEnded + 1 &&
 					numOfFreezetimesEnded == numOfRoundsEnded &&
@@ -586,13 +589,13 @@ namespace SourceEngine.Demo.Stats
 
             // PLAYER EVENTS ===================================================
             dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) => {
-                e.Round = GetCurrentRoundNum(md);
+                e.Round = GetCurrentRoundNum(md, gamemode);
 
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
 
             dp.PlayerHurt += (object sender, PlayerHurtEventArgs e) => {
-				var round = GetCurrentRoundNum(md);
+				var round = GetCurrentRoundNum(md, gamemode);
 
 				if (e.PossiblyKilledByBombExplosion) // a player_death event is not triggered due to death by bomb explosion
 				{
@@ -650,9 +653,9 @@ namespace SourceEngine.Demo.Stats
             dp.PlayerDisconnect += (object sender, PlayerDisconnectEventArgs e) => {
                 if (e.Player != null && e.Player.Name != "unconnected" && e.Player.Name != "GOTV")
                 {
-                    int roundsCount = GetCurrentRoundNum(md);
+                    int round = GetCurrentRoundNum(md, gamemode);
 
-                    DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer() { PlayerDisconnectEventArgs = e, Round = roundsCount - 1 };
+                    DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer() { PlayerDisconnectEventArgs = e, Round = round - 1 };
 
                     md.addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
                 }
@@ -705,7 +708,7 @@ namespace SourceEngine.Demo.Stats
             dp.WeaponFired += (object sender, WeaponFiredEventArgs e) => {
                 md.addEvent(typeof(WeaponFiredEventArgs), e);
 
-                var round = GetCurrentRoundNum(md);
+                var round = GetCurrentRoundNum(md, gamemode);
 
                 ShotFired shotFired = new ShotFired() { Round = round, TimeInRound = e.TimeInRound, Shooter = e.Shooter, TeamSide = e.Shooter.Team.ToString(), Weapon = new Equipment(e.Weapon) };
 
@@ -821,34 +824,44 @@ namespace SourceEngine.Demo.Stats
 				versionNumber = GetVersionNumber(),
 				supportedGamemodes = GetSupportedGamemodes(),
 				mapInfo = GetMapInfo(processedData, mapNameSplit),
-				tanookiStats = processedData.tanookiStats,
-				playerStats = GetPlayerStats(processedData, dataAndPlayerNames.Data, dataAndPlayerNames.PlayerNames)
 			};
 
-			var generalroundsStats = GetGeneralRoundsStats(processedData, dataAndPlayerNames.PlayerNames);
-			allStats.winnersStats = generalroundsStats.winnersStats;
-			allStats.roundsStats = generalroundsStats.roundsStats;
+			if (CheckIfStatsShouldBeCreated("playerStats", processedData.DemoInformation.GameMode))
+				allStats.playerStats = GetPlayerStats(processedData, dataAndPlayerNames.Data, dataAndPlayerNames.PlayerNames);
 
-			allStats.bombsiteStats = GetBombsiteStats(processedData);
-			allStats.hostageStats = GetHostageStats(processedData);
-			allStats.rescueZoneStats = GetRescueZoneStats();
+			var generalroundsStats = GetGeneralRoundsStats(processedData, dataAndPlayerNames.PlayerNames);
+			if (CheckIfStatsShouldBeCreated("winnersStats", processedData.DemoInformation.GameMode))
+				allStats.winnersStats = generalroundsStats.winnersStats;
+			if (CheckIfStatsShouldBeCreated("roundsStats", processedData.DemoInformation.GameMode))
+				allStats.roundsStats = generalroundsStats.roundsStats;
+
+			if (CheckIfStatsShouldBeCreated("bombsiteStats", processedData.DemoInformation.GameMode))
+				allStats.bombsiteStats = GetBombsiteStats(processedData);
+			if (CheckIfStatsShouldBeCreated("hostageStats", processedData.DemoInformation.GameMode))
+				allStats.hostageStats = GetHostageStats(processedData);
+			if (CheckIfStatsShouldBeCreated("rescueZoneStats", processedData.DemoInformation.GameMode))
+				allStats.rescueZoneStats = GetRescueZoneStats();
 
 			string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
 			var nadeGroups = GetNadeGroups(processedData, nadeTypes);
-			allStats.grenadesTotalStats = GetGrenadesTotalStats(nadeGroups, nadeTypes);
-			allStats.grenadesSpecificStats = GetGrenadesSpecificStats(nadeGroups, nadeTypes, dataAndPlayerNames.PlayerNames);
+			if (CheckIfStatsShouldBeCreated("grenadesTotalStats", processedData.DemoInformation.GameMode))
+				allStats.grenadesTotalStats = GetGrenadesTotalStats(nadeGroups, nadeTypes);
+			if (CheckIfStatsShouldBeCreated("grenadesSpecificStats", processedData.DemoInformation.GameMode))
+				allStats.grenadesSpecificStats = GetGrenadesSpecificStats(nadeGroups, nadeTypes, dataAndPlayerNames.PlayerNames);
 
-			allStats.killsStats = GetKillsStats(processedData, dataAndPlayerNames.PlayerNames);
-			allStats.feedbackMessages = GetFeedbackMessages(processedData, dataAndPlayerNames.PlayerNames);
+			if (CheckIfStatsShouldBeCreated("killsStats", processedData.DemoInformation.GameMode))
+				allStats.killsStats = GetKillsStats(processedData, dataAndPlayerNames.PlayerNames);
+			if (CheckIfStatsShouldBeCreated("feedbackMessages", processedData.DemoInformation.GameMode))
+				allStats.feedbackMessages = GetFeedbackMessages(processedData, dataAndPlayerNames.PlayerNames);
 
-			if (processedData.ParseChickens)
-			{
+			if (processedData.ParseChickens && CheckIfStatsShouldBeCreated("chickenStats", processedData.DemoInformation.GameMode))
 				allStats.chickenStats = GetChickenStats(processedData);
-			}
 
-            allStats.teamStats = GetTeamStats(processedData, allStats, dataAndPlayerNames.PlayerNames, generalroundsStats.SwitchSides);
+			if (CheckIfStatsShouldBeCreated("teamStats", processedData.DemoInformation.GameMode))
+				allStats.teamStats = GetTeamStats(processedData, allStats, dataAndPlayerNames.PlayerNames, generalroundsStats.SwitchSides);
 
-			allStats.firstDamageStats = GetFirstDamageStats(processedData);
+			if (CheckIfStatsShouldBeCreated("firstDamageStats", processedData.DemoInformation.GameMode))
+				allStats.firstDamageStats = GetFirstDamageStats(processedData);
 
 			// JSON creation
 			if (createJsonFile)
@@ -856,7 +869,7 @@ namespace SourceEngine.Demo.Stats
 				CreateJsonAllStats(processedData, allStats, mapNameString, mapDateString);
 			}
 
-			if (processedData.ParsePlayerPositions)
+			if (processedData.ParsePlayerPositions && CheckIfStatsShouldBeCreated("playerPositionsStats", processedData.DemoInformation.GameMode))
 			{
 				playerPositionsStats = GetPlayerPositionsStats(processedData, allStats);
 				CreateJsonPlayerPositionsStats(processedData, allStats, playerPositionsStats, mapNameString, mapDateString);
@@ -922,12 +935,12 @@ namespace SourceEngine.Demo.Stats
 
 		public List<string> GetSupportedGamemodes()
 		{
-			return new List<string>() { "Defuse", "Hostage", "Wingman" };
+			return Gamemodes.GetAll();
 		}
 
 		public mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
 		{
-			mapInfo mapInfo = new mapInfo() { MapName = processedData.DemoInformation.MapName, TestDate = processedData.DemoInformation.TestDate, TestType = processedData.DemoInformation.TestType };
+			mapInfo mapInfo = new mapInfo() { MapName = processedData.DemoInformation.MapName, TestType = processedData.DemoInformation.TestType, TestDate = processedData.DemoInformation.TestDate};
 
 			mapInfo.MapName = (mapNameSplit.Count() > 2) ? mapNameSplit[2] : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
 			mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
@@ -936,24 +949,49 @@ namespace SourceEngine.Demo.Stats
 			// attempts to get the gamemode
 			var roundsWonReasons = GetRoundsWonReasons(processedData.RoundEndReasonValues);
 
-			if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() > 2)))
+			// use the provided gamemode if given as a parameter
+			if (!string.IsNullOrWhiteSpace(processedData.DemoInformation.GameMode) && processedData.DemoInformation.GameMode.ToLower() != "notprovided")
+			{
+				mapInfo.GameMode = processedData.DemoInformation.GameMode;
+
+				return mapInfo;
+			}
+
+			// work out the gamemode if it wasn't provided as a parameter
+			if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 10 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() == 0)) || // assume danger zone if more than 10 Terrorists and 0 CounterTerrorists
+				(dp.hostageAIndex > -1 && dp.hostageBIndex > -1 && !processedData.MatchStartValues.Any(m => m.HasBombsites)) // assume danger zone if more than one hostage rescue zone
+			) {
+				mapInfo.GameMode = Gamemodes.DangerZone;
+			}
+			else if (processedData.TeamPlayersValues.Any(t => t.Terrorists.Count() > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() > 2)))
 			{
 				if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1 || processedData.MatchStartValues.Any(m => m.HasBombsites))
 				{
-					mapInfo.GameMode = "Defuse";
+					mapInfo.GameMode = Gamemodes.Defuse;
 				}
 				else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1) && !processedData.MatchStartValues.Any(m => m.HasBombsites))
 				{
-					mapInfo.GameMode = "Hostage";
+					mapInfo.GameMode = Gamemodes.Hostage;
 				}
 				else // what the hell is this gamemode ??
 				{
-					mapInfo.GameMode = "Unknown";
+					mapInfo.GameMode = Gamemodes.Unknown;
 				}
 			}
 			else
 			{
-				mapInfo.GameMode = "Wingman";
+				if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1 || processedData.MatchStartValues.Any(m => m.HasBombsites))
+				{
+					mapInfo.GameMode = Gamemodes.WingmanDefuse;
+				}
+				else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1) && !processedData.MatchStartValues.Any(m => m.HasBombsites))
+				{
+					mapInfo.GameMode = Gamemodes.WingmanHostage;
+				}
+				else // what the hell is this gamemode ??
+				{
+					mapInfo.GameMode = Gamemodes.Unknown;
+				}
 			}
 
 			return mapInfo;
@@ -1148,6 +1186,9 @@ namespace SourceEngine.Demo.Stats
 						case winReasonTSaved:
 							reason = "TSaved";
 							break;
+						case winReasonDangerZone:
+							reason = "Danger Zone Won";
+							break;
 						case winReasonUnknown:
 							reason = "Unknown";
 							break;
@@ -1189,7 +1230,7 @@ namespace SourceEngine.Demo.Stats
 						//check to see if either of the bombsites have bugged out
 						if (bombsite == "?")
 						{
-							bombPlantedError = ValidateBombsite(processedData.BombsitePlantValues, bombPlanted.Bombsite);
+							bombPlantedError = ValidateBombsite(processedData.BombsitePlantValues, (char)bombPlanted.Bombsite);
 
 							//update data to ensure that future references to it are also updated
 							processedData.BombsitePlantValues.Where(p => p.Round == roundNum).FirstOrDefault().Bombsite = bombPlantedError.Bombsite;
@@ -1215,12 +1256,12 @@ namespace SourceEngine.Demo.Stats
 					if (processedData.BombsiteExplodeValues.Any(p => p.Round == roundNum))
 					{
 						bombExploded = processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum).FirstOrDefault();
-						bombsite = (bombsite != null) ? bombsite : bombExploded.Bombsite.ToString();
+						bombsite = (bombsite != null) ? bombsite : (bombExploded.Bombsite == null ? null : bombExploded.Bombsite.ToString());
 					}
 					if (processedData.BombsiteDefuseValues.Any(p => p.Round == roundNum))
 					{
 						bombDefused = processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum).FirstOrDefault();
-						bombsite = (bombsite != null) ? bombsite : bombDefused.Bombsite.ToString();
+						bombsite = (bombsite != null) ? bombsite : (bombDefused.Bombsite == null ? null : bombDefused.Bombsite.ToString());
 					}
 
 					var timeInRoundPlanted = bombPlanted?.TimeInRound;
@@ -1322,7 +1363,7 @@ namespace SourceEngine.Demo.Stats
 						RescuedHostageBPositionY = hostageRescuedB?.YPosition,
 						RescuedHostageBPositionZ = hostageRescuedB?.ZPosition,
 						TimeInRoundPlanted = timeInRoundPlanted,
-						TimeInRoundExploded = timeInRoundExploded,
+						TimeInRoundExploded = timeInRoundExploded, // for danger zone, this should be the first bomb that explodes
 						TimeInRoundDefused = timeInRoundDefused,
 						TimeInRoundRescuedHostageA = timeInRoundRescuedHostageA,
 						TimeInRoundRescuedHostageB = timeInRoundRescuedHostageB,
@@ -1352,9 +1393,9 @@ namespace SourceEngine.Demo.Stats
 			var bombsiteATrigger = dp?.triggers.Count() > 0 ? dp.triggers.Where(x => x.Index == dp.bombsiteAIndex).FirstOrDefault() : null;
 			var bombsiteBTrigger = dp?.triggers.Count() > 0 ? dp.triggers.Where(x => x.Index == dp.bombsiteBIndex).FirstOrDefault() : null;
 
-			List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => x.Bombsite));
-			List<char> bombsiteExplosions = new List<char>(processedData.BombsiteExplodeValues.Select(x => x.Bombsite));
-			List<char> bombsiteDefuses = new List<char>(processedData.BombsiteDefuseValues.Select(x => x.Bombsite));
+			List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => (char)x.Bombsite));
+			List<char> bombsiteExplosions = new List<char>(processedData.BombsiteExplodeValues.Select(x => (char)x.Bombsite));
+			List<char> bombsiteDefuses = new List<char>(processedData.BombsiteDefuseValues.Select(x => (char)x.Bombsite));
 
 			int plantsA = bombsitePlants.Where(b => b.ToString().Equals("A")).Count();
 			int explosionsA = bombsiteExplosions.Where(b => b.ToString().Equals("A")).Count();
@@ -2144,13 +2185,14 @@ namespace SourceEngine.Demo.Stats
                                          && !r.ToString().Equals(winReasonRescued)
                                          && !r.ToString().Equals(winReasonNotRescued)
                                          && !r.ToString().Equals(winReasonTSaved)
+										 && !r.ToString().Equals(winReasonDangerZone)
                                          && !r.ToString().Equals("Unknown")
             );
 
             return roundsWonReasons;
         }
 
-        public static int GetCurrentRoundNum(MatchData md)
+        public static int GetCurrentRoundNum(MatchData md, string gamemode)
         {
             int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
             List<TeamPlayers> teamPlayersList = md.GetEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
@@ -2164,6 +2206,10 @@ namespace SourceEngine.Demo.Stats
                     round = roundsCount + 1;
                 }
             }
+
+			// add 1 for roundsCount when in danger zone
+			if (gamemode == Gamemodes.DangerZone)
+				round++;
 
             return round;
         }
@@ -2251,26 +2297,54 @@ namespace SourceEngine.Demo.Stats
 			return (half == "First" && overtimeCount % 2 == 0) || (half == "Second" && overtimeCount % 2 == 1); // the team playing T Side first switches each OT for example, this checks the OT count for swaps
 		}
 
-		public static int? GetMinRoundsForWin(string testType)
+		public static int? GetMinRoundsForWin(string gamemode, string testType)
 		{
-			string gamemode = testType.ToLower();
-
-			if (gamemode == "unknown")
+			switch (gamemode.ToLower(), testType.ToLower())
 			{
-				return null;
-			}
-			else if (gamemode.Contains("wingman"))
-			{
-				return 9;
-			}
-			else if (gamemode.Contains("casual"))
-			{
-				return 11;
-			}
-			else
-			{
-				return 16;
+				case (Gamemodes.WingmanDefuse, "casual"):
+				case (Gamemodes.WingmanDefuse, "competitive"):
+				case (Gamemodes.WingmanHostage, "casual"):
+				case (Gamemodes.WingmanHostage, "competitive"):
+					return 9;
+				case (Gamemodes.Defuse, "casual"):
+				case (Gamemodes.Hostage, "casual"):
+				case (Gamemodes.Unknown, "casual"): // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the gamemode
+					return 11;
+				case (Gamemodes.Defuse, "competitive"):
+				case (Gamemodes.Hostage, "competitive"):
+				case (Gamemodes.Unknown, "competitive"): // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the gamemode
+					return 16;
+				case (Gamemodes.DangerZone, "casual"):
+				case (Gamemodes.DangerZone, "competitive"):
+					return 2;
+				default:
+					return null;
 			}
 		}
-    }
+
+
+		private static bool CheckIfStatsShouldBeCreated(string typeName, string gamemode)
+		{
+			switch (typeName.ToLower())
+			{
+				case "winnersstats":
+				case "bombsitestats":
+				case "teamstats":
+					return gamemode != Gamemodes.DangerZone;
+				case "playerstats":
+				case "roundsstats":
+				case "hostagestats":
+				case "rescuezonestats":
+				case "grenadestotalstats":
+				case "grenadesspecificstats":
+				case "killsstats":
+				case "feedbackmessage":
+				case "chickenstats":
+				case "firstdamagestats":
+				case "playerpositionsstats":
+				default:
+					return true;
+			}
+		}
+	}
 }

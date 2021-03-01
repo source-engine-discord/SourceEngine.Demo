@@ -5,6 +5,8 @@ using System.IO;
 
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
+using SourceEngine.Demo.Parser.Constants;
+using System.Globalization;
 
 namespace SourceEngine.Demo.Stats.App
 {
@@ -46,17 +48,21 @@ namespace SourceEngine.Demo.Stats.App
         {
             Debug.White("                             ========= HELP ==========\n\n" +
                         "Command line parameters:\n\n" +
-                        "-config       [path]                     Path to config file\n" +
-                        "-folders      [paths (space seperated)]  Processes all demo files in each folder specified\n" +
-                        "-demos        [paths (space seperated)]  Processess a list of single demo files at paths\n" +
-                        "-recursive                               Switch for recursive demo search\n" +
-                        "-steaminfo                               Takes steam names from steam\n" +
-                        "-clear                                   Clears the data folder\n" +
-                        "-nochickens                              Disables checks for number of chickens killed when parsing\n" +
-                        "-noplayerpositions                       Disables checks for player positions when parsing\n" +
-                        "-samefilename                            Uses the demo's filename as the output filename\n" +
-                        "-samefolderstructure                     Uses the demo's folder structure inside the root folder for the output json file\n" +
-						"-lowoutputmode							  Does not print out the progress bar and round completed messages to console\n" +
+                        "-config                            [path]                      Path to config file\n" +
+                        "-folders                           [paths (space seperated)]   Processes all demo files in each folder specified\n" +
+                        "-demos                             [paths (space seperated)]   Processess a list of single demo files at paths\n" +
+                        "-gamemodeoverride                  [string]                    Defines the gamemode for the match instead of having the parser attempt to figure it out -> (" + string.Join(" / ", Gamemodes.GetAll()) + ")\n" +
+                        "-testtype                          [string]                    Defines the test type for the match. Otherwise it attempts to grab it from the filename in SE Discord's filename formatting. Only matters for defuse and hostage. -> (competitive / casual)\n" +
+                        "-testdateoverride                  [string]                    Defines the test date of the match. Otherwise it attempts to grab it from the filename. -> (dd/mm/yyyy)\n" +
+                        "-hostagerescuezonecountoverride    [int]                       Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-2)\n" +
+                        "-recursive                                                     Switch for recursive demo search\n" +
+                        "-steaminfo                                                     Takes steam names from steam\n" +
+                        "-clear                                                         Clears the data folder\n" +
+                        "-nochickens                                                    Disables checks for number of chickens killed when parsing\n" +
+                        "-noplayerpositions                                             Disables checks for player positions when parsing\n" +
+                        "-samefilename                                                  Uses the demo's filename as the output filename\n" +
+                        "-samefolderstructure                                           Uses the demo's folder structure inside the root folder for the output json file\n" +
+                        "-lowoutputmode                                                 Does not print out the progress bar and round completed messages to console\n" +
 						"\n"
                 );
         }
@@ -65,6 +71,10 @@ namespace SourceEngine.Demo.Stats.App
         static void Main(string[] args)
         {
             string cfgPath = "config.cfg";
+            string gamemodeoverride = "notprovided";
+            string testType = "unknown";
+            string testdateoverride = "unknown";
+            int hostagerescuezonecountoverride = 0;
 
             bool recursive = false;
             bool steaminfo = false;
@@ -123,6 +133,35 @@ namespace SourceEngine.Demo.Stats.App
                             demosToProcess.Add(args[i]);
                     }
                     i--;
+                }
+                else if (arg == "-gamemodeoverride")
+                {
+                    if (i < args.Count())
+                        gamemodeoverride = args[i + 1];
+
+                    i++;
+                }
+                else if (arg == "-testtype")
+                {
+                    if (i < args.Count())
+                        testType = args[i + 1];
+
+                    i++;
+                }
+                else if (arg == "-testdateoverride")
+                {
+                    if (i < args.Count())
+                        testdateoverride = args[i + 1];
+
+                    i++;
+                }
+                else if (arg == "-hostagerescuezonecountoverride")
+                {
+                    if (i < args.Count())
+                        if (!int.TryParse(args[i + 1], out hostagerescuezonecountoverride))
+                            Debug.Error("-hostagerescuezonecountoverride value is not a valid integer. Make sure that a number is provided.");
+
+                    i++;
                 }
                 else if (arg == "-output")
                 {
@@ -197,6 +236,45 @@ namespace SourceEngine.Demo.Stats.App
                 }
             }
 
+            //If the optional parameter -gamemodeoverride has been provided
+            if (!string.IsNullOrWhiteSpace(gamemodeoverride))
+            {
+                //Make sure a valid gamemode has been given
+                if (gamemodeoverride != "notprovided" && !Gamemodes.GetAll().Any(x => x == gamemodeoverride))
+                {
+                    Debug.Error("Invalid gamemode. Can be removed to have the parser attempt to figure it out itself. Accepted values are " + string.Join(", ", Gamemodes.GetAll()));
+                    return;
+                }
+
+                //Make sure a valid test type has been given
+                if ((gamemodeoverride == Gamemodes.Defuse || gamemodeoverride == Gamemodes.Hostage) && (testType != "casual" && testType != "competitive"))
+                {
+                    Debug.Error($"Invalid test type. It must be 'casual' or 'competitive' when -gamemodeoverride is set to '{Gamemodes.Defuse}' or '{Gamemodes.Hostage}'.");
+                    return;
+                }
+            }
+
+            //If the optional parameter -testdateoverride has been provided
+            if (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown")
+            {
+                try
+                {
+                    DateTime.ParseExact(testdateoverride, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                }
+                catch (FormatException e)
+                {
+                    Debug.Error("Invalid test date. Can be removed to be set to 'unknown' or have it automatically set if it is a SE Discord or Mapcore Discord playtest. Formatting should be dd/mm/yyyy");
+                    return;
+                }
+            }
+
+            //Ensure only values 0-2 are provided when overriding the hostage rescue zone count
+            if (hostagerescuezonecountoverride < 0 || hostagerescuezonecountoverride > 2)
+            {
+                Debug.Error("Invalid hostagerescuezonecountoverride amount. Specify between 0 and 2.");
+                return;
+            }
+
             //Ensure all folders to get demos from are created to avoid exceptions
             foreach (var folder in foldersToProcess)
             {
@@ -227,44 +305,11 @@ namespace SourceEngine.Demo.Stats.App
                     foreach (string demo in subDemos)
                     {
                         string[] pathSplit = demo.Split('\\');
-                        string testDate, testType, mapname;
 
-                        Guid guid;
-                        string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
-                        bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out guid);
+						string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
+						bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
-                        if (isFaceitDemo)
-                        {
-                            testDate = "unknown";
-                            testType = "unknown";
-                            mapname = "unknown";
-                        }
-                        else
-                        {
-                            filenameSplit = pathSplit[pathSplit.Count() - 1].Split('_', '.');
-
-                            bool isSEDiscordDemo = filenameSplit.Count() > 5 ? true : false;
-
-                            if (isSEDiscordDemo)
-                            {
-                                testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                                testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
-                                mapname = $"{ filenameSplit[3] }";
-
-                                for (int i = 4; i < filenameSplit.Count() - 2; i++)
-                                {
-                                    mapname += $"_{ filenameSplit[i] }";
-                                }
-                            }
-                            else //cannot determine demo name format
-                            {
-                                testDate = "unknown";
-                                testType = "unknown";
-                                mapname = "unknown";
-                            }
-                        }
-
-                        demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType });
+                        AddDemoInformation(demosInformation, demo, gamemodeoverride, testType, testdateoverride, isFaceitDemo, filenameSplit, pathSplit);
                     }
                 }
                 catch (Exception e)
@@ -277,45 +322,12 @@ namespace SourceEngine.Demo.Stats.App
             {
                 try
                 {
-                    string testDate, testType, mapname;
+					string[] filenameSplit = demo.Split('.');
+					bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
-                    Guid guid;
-                    string[] filenameSplit = demo.Split('.');
-                    bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out guid);
+                    AddDemoInformation(demosInformation, demo, gamemodeoverride, testType, testdateoverride, isFaceitDemo, filenameSplit, Array.Empty<string>());
 
-                    if (isFaceitDemo)
-                    {
-                        testDate = "unknown";
-                        testType = "unknown";
-                        mapname = "unknown";
-                    }
-                    else
-                    {
-                        filenameSplit = demo.Split('_', '.');
-
-                        bool isSEDiscordDemo = filenameSplit.Count() > 5 ? true : false;
-
-                        if (isSEDiscordDemo)
-                        {
-                            testDate = $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
-                            testType = $"{ filenameSplit[filenameSplit.Count() - 2] }";
-                            mapname = $"{ filenameSplit[3] }";
-
-                            for (int i = 4; i < filenameSplit.Count() - 2; i++)
-                            {
-                                mapname += $"_{ filenameSplit[i] }";
-                            }
-                        }
-                        else //cannot determine demo name format
-                        {
-                            testDate = "unknown";
-                            testType = "unknown";
-                            mapname = "unknown";
-                        }
-                    }
-
-                    demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, TestDate = testDate, TestType = testType });
-				}
+                }
                 catch (Exception e)
                 {
                     throw e;
@@ -333,7 +345,7 @@ namespace SourceEngine.Demo.Stats.App
             {
 				Console.WriteLine($"Parsing demo {demosInformation[i].DemoName}");
 
-                MatchData mdTest = MatchData.FromDemoFile(demosInformation[i].DemoName, parseChickens, parsePlayerPositions, lowOutputMode, demosInformation[i].TestType);
+                MatchData mdTest = MatchData.FromDemoFile(demosInformation[i], parseChickens, parsePlayerPositions, hostagerescuezonecountoverride, lowOutputMode);
 
 				IEnumerable<MatchStartedEventArgs> mse = new List<MatchStartedEventArgs>();
 				IEnumerable<SwitchSidesEventArgs> sse = new List<SwitchSidesEventArgs>();
@@ -467,8 +479,6 @@ namespace SourceEngine.Demo.Stats.App
                 ppe = (from playerPos in mdTest.GetEvents<PlayerPositionsInstance>()
                        select (playerPos as PlayerPositionsInstance));
 
-                tanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
-
 
                 if (mdTest.passed)
                 {
@@ -482,7 +492,6 @@ namespace SourceEngine.Demo.Stats.App
                         ParsePlayerPositions = parsePlayerPositions,
                         FoldersToProcess = foldersToProcess,
 						OutputRootFolder = outputRootFolder,
-						tanookiStats = tanookiStats,
 						MatchStartValues = mse,
 						SwitchSidesValues = sse,
 						MessagesValues = fme,
@@ -530,37 +539,60 @@ namespace SourceEngine.Demo.Stats.App
             Debug.White("Failed: {0}\n", demosInformation.Count() - passCount);
         }
 
-        private static tanookiStats tanookiStatsCreator(IEnumerable<TeamPlayers> tpe, IEnumerable<DisconnectedPlayer> dpe)
+
+        private static void AddDemoInformation(List<DemoInformation> demosInformation, string demo, string gamemode, string testType, string testdateoverride, bool isFaceitDemo, string[] filenameSplit, string[] pathSplit)
         {
-            tanookiStats tanookiStats = new tanookiStats { Joined = false, Left = false, RoundJoined = -1, RoundLeft = -1, RoundsLasted = -1 };
-            long tanookiId = 76561198123165941;
+            string testDate, mapname;
 
-            if (tpe.Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId)) || tpe.Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
+            if (isFaceitDemo)
             {
-                tanookiStats.Joined = true;
-                tanookiStats.RoundJoined = 0; // set incase he joined in warmup but does not play any rounds
+                testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown") ? testdateoverride : "unknown";
+                mapname = "unknown";
+            }
+            else
+            {
+                if (pathSplit.Count() > 0) // searching by folder
+                {
+                    filenameSplit = pathSplit[pathSplit.Count() - 1].Split('_', '.', '-');
+                }
+                else // searching by demo
+                {
+                    filenameSplit = demo.Split('_', '.', '-');
+                }
 
-                IEnumerable<int> playedRoundsT = tpe.Where(t => t.Round > 0 && t.Terrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
-                IEnumerable<int> playedRoundsCT = tpe.Where(t => t.Round > 0 && t.CounterTerrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
+                var secondToLastString = filenameSplit[filenameSplit.Count() - 2];
+                bool isSEDiscordDemo = (secondToLastString == "casual" || secondToLastString == "comp") ? true : false;
+                bool isMapcoreDiscordDemo = filenameSplit.Any(x => x.Contains("MAPCORE"));
 
-                tanookiStats.RoundsLasted = playedRoundsT.Count() + playedRoundsCT.Count();
+                if (isSEDiscordDemo)
+                {
+                    testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown") ? testdateoverride : $"{ filenameSplit[1] }/{ filenameSplit[0] }/{ filenameSplit[2] }";
 
-                bool playedTSide = (playedRoundsT.Count() > 0) ? true : false;
-                bool playedCTSide = (playedRoundsCT.Count() > 0) ? true : false;
+                    mapname = $"{ filenameSplit[3] }";
+                    for (int i = 4; i < filenameSplit.Count() - 2; i++)
+                    {
+                        mapname += $"_{ filenameSplit[i] }";
+                    }
+                }
+                else if (isMapcoreDiscordDemo)
+                {
+                    testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown") ? testdateoverride : $"{ filenameSplit[1].Substring(6, 2) }/{ filenameSplit[1].Substring(4, 2) }/{ filenameSplit[1].Substring(0, 4) }";
 
-                tanookiStats.RoundJoined = playedTSide ? (playedCTSide ? ((playedRoundsT.First() < playedRoundsCT.First()) ? playedRoundsT.First() : playedRoundsCT.First()) : playedRoundsT.First()) : (playedCTSide ? playedRoundsCT.First() : tanookiStats.RoundJoined);
+                    var index = (filenameSplit.Count() - 1) - Array.IndexOf(filenameSplit.Reverse().ToArray(), "MAPCORE"); // gets the last index where the value was "MAPCORE"
+                    mapname = $"{ filenameSplit[6] }";
+                    for (int i = 7; i < index; i++)
+                    {
+                        mapname += $"_{ filenameSplit[i] }";
+                    }
+                }
+                else //cannot determine demo name format
+                {
+                    testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown") ? testdateoverride : "unknown";
+                    mapname = "unknown";
+                }
             }
 
-            if (dpe.Any(d => d.PlayerDisconnectEventArgs.Player != null && d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId))
-            {
-                // checks if he played a round later on than his last disconnect (he left and joined back)
-                int finalDisconnectRound = dpe.Where(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId).Reverse().Select(r => r.Round).First();
-                tanookiStats.RoundLeft = (finalDisconnectRound > tanookiStats.RoundsLasted) ? finalDisconnectRound : tanookiStats.RoundLeft;
-
-                tanookiStats.Left = (tanookiStats.RoundLeft > -1) ? true : false;
-            }
-
-            return tanookiStats;
+            demosInformation.Add(new DemoInformation { DemoName = demo, MapName = mapname, GameMode = gamemode, TestType = testType, TestDate = testDate});
         }
     }
 }
