@@ -2,7 +2,7 @@
   "profiles": {
     "SourceEngine.Demo.Stats.App": {
       "commandName": "Project",
-      "commandLineArgs": "IDemO -folders \"demos\" -output \"parsed\" -recursive -samefilename -samefolderstructure -nochickens -gamemodeoverride \"dangerzone\" -testtype \"competitive\""
+      "commandLineArgs": "IDemO -folders \"demos\" -output \"parsed\" -recursive -samefilename -samefolderstructure -nochickens"
     }
   }
 }

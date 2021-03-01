@@ -1114,7 +1114,7 @@ namespace SourceEngine.Demo.Parser
 					}
 				}
 
-				// Check the name if the above switch matches nothing. (usually only things that the player can hold that are neither a weapon nor a grenade (?))
+				// Check the name iff the above switch matches nothing. (usually only things that the player can hold that are neither a weapon nor a grenade (?))
 				switch (sc.Name) {
 					case "CC4":
 						// Bomb is neither "ratatata" nor "boom", its "booooooom".

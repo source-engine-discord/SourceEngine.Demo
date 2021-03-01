@@ -555,9 +555,6 @@ namespace SourceEngine.Demo.Parser
 			if (name.Contains("knife"))
 				return EquipmentElement.Knife;
 
-			if (name == "axe" || name == "hammer" || name == "spanner")
-				return EquipmentElement.Melee;
-
 			switch (name)
 			{
 				case "ak47":
@@ -665,6 +662,9 @@ namespace SourceEngine.Demo.Parser
 				case "fists":
 					return EquipmentElement.Fists;
 				case "melee":
+				case "axe":
+				case "hammer":
+				case "spanner":
 					return EquipmentElement.Melee;
 				case "tablet":
 					return EquipmentElement.Tablet;
