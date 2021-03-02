@@ -1474,17 +1474,20 @@ namespace SourceEngine.Demo.Stats
 		{
 			List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
 
-			foreach (var rescueZone in dp?.triggers?.Where(x => x.Index != dp.bombsiteAIndex && x.Index != dp.bombsiteBIndex))
+			if (dp?.triggers?.Count() > 0)
 			{
-				rescueZoneStats.Add(new rescueZoneStats()
+				foreach (var rescueZone in dp.triggers.Where(x => x.Index != dp.bombsiteAIndex && x.Index != dp.bombsiteBIndex))
 				{
-					XPositionMin = rescueZone.Min.X,
-					YPositionMin = rescueZone.Min.Y,
-					ZPositionMin = rescueZone.Min.Z,
-					XPositionMax = rescueZone.Max.X,
-					YPositionMax = rescueZone.Max.Y,
-					ZPositionMax = rescueZone.Max.Z,
-				});
+					rescueZoneStats.Add(new rescueZoneStats()
+					{
+						XPositionMin = rescueZone.Min.X,
+						YPositionMin = rescueZone.Min.Y,
+						ZPositionMin = rescueZone.Min.Z,
+						XPositionMax = rescueZone.Max.X,
+						YPositionMax = rescueZone.Max.Y,
+						ZPositionMax = rescueZone.Max.Z,
+					});
+				}
 			}
 
 			return rescueZoneStats;
@@ -2328,13 +2331,14 @@ namespace SourceEngine.Demo.Stats
 		{
 			switch (typeName.ToLower())
 			{
+				case "tanookiStats":
 				case "winnersstats":
 				case "bombsitestats":
+				case "hostagestats":
 				case "teamstats":
 					return gamemode != Gamemodes.DangerZone;
 				case "playerstats":
 				case "roundsstats":
-				case "hostagestats":
 				case "rescuezonestats":
 				case "grenadestotalstats":
 				case "grenadesspecificstats":

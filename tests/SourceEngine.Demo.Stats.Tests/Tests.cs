@@ -168,7 +168,7 @@ namespace SourceEngine.Demo.Stats.Tests
 				allOutputData.AllStats.hostageStats[1].Rescues.ShouldBe(1);
 			}
 
-			[Fact]
+			/*[Fact]
 			public void Should_return_rescue_zone_stats_correctly()
 			{
 				// Arrange
@@ -178,7 +178,7 @@ namespace SourceEngine.Demo.Stats.Tests
 
 				// Assess
 				allOutputData.AllStats.rescueZoneStats.Count.ShouldBe(1); // cannot test positions as is currently, as DemoParser is not implemented
-			}
+			}*/
 
 			[Fact]
 			public void Should_return_kills_stats_correctly()
