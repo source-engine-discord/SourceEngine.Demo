@@ -10,8 +10,10 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
     {
         public static void Apply(CreateStringTable table, IBitStream reader, DemoParser parser)
         {
-            if (table.Name == "modelprecache") {
-                while (parser.modelprecache.Count < table.MaxEntries) {
+            if (table.Name == "modelprecache")
+            {
+                while (parser.modelprecache.Count < table.MaxEntries)
+                {
                     parser.modelprecache.Add(null);
                 }
             }
@@ -28,10 +30,13 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
             int lastEntry = -1;
 
-            for (int i = 0; i < table.NumEntries; i++) {
+            for (int i = 0; i < table.NumEntries; i++)
+            {
                 int entryIndex = lastEntry + 1;
+
                 // d in the entity-index
-                if (!reader.ReadBit()) {
+                if (!reader.ReadBit())
+                {
                     entryIndex = (int)reader.ReadInt(nEntryBits);
                 }
 
@@ -39,21 +44,27 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                 // Read the name of the string into entry.
                 string entry = "";
-                if (entryIndex < 0 || entryIndex >= table.MaxEntries) {
+
+                if (entryIndex < 0 || entryIndex >= table.MaxEntries)
+                {
                     throw new InvalidDataException("bogus string index");
                 }
 
-                if (reader.ReadBit()) {
+                if (reader.ReadBit())
+                {
                     bool substringcheck = reader.ReadBit();
 
-                    if (substringcheck) {
+                    if (substringcheck)
+                    {
                         int index = (int)reader.ReadInt(5);
                         int bytestocopy = (int)reader.ReadInt(5);
 
                         entry = history[index].Substring(0, bytestocopy);
 
                         entry += reader.ReadString(1024);
-                    } else {
+                    }
+                    else
+                    {
                         entry = reader.ReadString(1024);
                     }
                 }
@@ -68,10 +79,15 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                 // Read in the user data.
                 byte[] userdata = new byte[0];
-                if (reader.ReadBit()) {
-                    if (table.UserDataFixedSize) {
+
+                if (reader.ReadBit())
+                {
+                    if (table.UserDataFixedSize)
+                    {
                         userdata = reader.ReadBits(table.UserDataSizeBits);
-                    } else {
+                    }
+                    else
+                    {
                         int bytesToRead = (int)reader.ReadInt(14);
 
                         userdata = reader.ReadBytes(bytesToRead);
@@ -81,18 +97,22 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 if (userdata.Length == 0)
                     continue;
 
-                if (table.Name == "userinfo") {
+                if (table.Name == "userinfo")
+                {
                     // Now we'll parse the players out of it.
                     BinaryReader playerReader = new BinaryReader(new MemoryStream(userdata));
                     PlayerInfo info = PlayerInfo.ParseFrom(playerReader);
 
                     parser.RawPlayers[entryIndex] = info;
-                } else if (table.Name == "instancebaseline") {
+                }
+                else if (table.Name == "instancebaseline")
+                {
                     int classid = int.Parse(entry); //wtf volvo?
 
                     parser.instanceBaseline[classid] = userdata;
                 }
-                else if (table.Name == "modelprecache") {
+                else if (table.Name == "modelprecache")
+                {
                     parser.modelprecache[entryIndex] = entry;
                 }
             }

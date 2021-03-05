@@ -46,16 +46,18 @@ namespace SourceEngine.Demo.Parser
         {
             int b = 0, count = 0, result = 0;
 
-            do {
+            do
+            {
                 if (count > 5)
                     throw new InvalidDataException("VarInt32 out of range");
 
                 b = reader.ReadByte();
 
-                result |= ( b & 0x7F ) << ( 7 * count );
+                result |= (b & 0x7F) << (7 * count);
 
                 count++;
-            } while (( b & 0x80 ) != 0);
+            }
+            while ((b & 0x80) != 0);
 
             return result;
         }
@@ -70,12 +72,15 @@ namespace SourceEngine.Demo.Parser
             return ReadNullTerminatedString(reader, encoding, 512);
         }
 
-
-        public static string ReadNullTerminatedString(this BinaryReader reader, Encoding encoding, int initialBufferSize)
+        public static string ReadNullTerminatedString(
+            this BinaryReader reader,
+            Encoding encoding,
+            int initialBufferSize)
         {
             List<byte> result = new List<byte>(initialBufferSize);
 
-            while (true) {
+            while (true)
+            {
                 byte b = reader.ReadByte();
 
                 if (b == 0)
@@ -124,7 +129,10 @@ namespace SourceEngine.Demo.Parser
         }
         #endif
 
-        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
+        public static TValue GetValueOrDefault<TKey, TValue>(
+            this IDictionary<TKey, TValue> dictionary,
+            TKey key,
+            TValue defaultValue)
         {
             TValue value;
             return dictionary.TryGetValue(key, out value) ? value : defaultValue;

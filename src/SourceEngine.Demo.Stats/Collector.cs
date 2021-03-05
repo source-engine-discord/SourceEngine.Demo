@@ -70,6 +70,7 @@ namespace SourceEngine.Demo.Stats
         private List<PlayerData> allPlayers = new List<PlayerData>();
 
         public delegate void OnEventSubscription(EventSubscriptionEventArgs e);
+
         public event OnEventSubscription EventSubscription;
 
         private RecorderSettings currentRS;
@@ -116,7 +117,6 @@ namespace SourceEngine.Demo.Stats
                     if (e.Weapon.Class == EquipmentClass.Grenade)
                         pushData(e.Killer, "Grenade Kills", 1);
 
-
                     if (ALLTHEDATA)
                         pushData(e.Killer, e.Weapon.Weapon + " Kills", 1);
                 };
@@ -126,16 +126,29 @@ namespace SourceEngine.Demo.Stats
                     pushData(e.Shooter, "Shots", 1);
                 };
 
-                ev.parser.RoundMVP += (object sender, RoundMVPEventArgs e) =>
+                ev.parser.RoundMVP += (object sender, RoundMVPEventArgs e) => { pushData(e.Player, "MVPs", 1); };
+
+                ev.parser.SmokeNadeStarted += (object sender, SmokeEventArgs e) =>
                 {
-                    pushData(e.Player, "MVPs", 1);
+                    pushData(e.ThrownBy, "Smokes", 1);
                 };
 
-                ev.parser.SmokeNadeStarted += (object sender, SmokeEventArgs e) => { pushData(e.ThrownBy, "Smokes", 1); };
-                ev.parser.FlashNadeExploded += (object sender, FlashEventArgs e) => { pushData(e.ThrownBy, "Flashes", 1); pushData(e.ThrownBy,"Flashed Players", e.FlashedPlayers.Length); };
-                ev.parser.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) => { pushData(e.ThrownBy, "Grenades", 1); };
+                ev.parser.FlashNadeExploded += (object sender, FlashEventArgs e) =>
+                {
+                    pushData(e.ThrownBy, "Flashes", 1);
+                    pushData(e.ThrownBy, "Flashed Players", e.FlashedPlayers.Length);
+                };
+
+                ev.parser.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) =>
+                {
+                    pushData(e.ThrownBy, "Grenades", 1);
+                };
+
                 ev.parser.FireNadeStarted += (object sender, FireEventArgs e) => { pushData(e.ThrownBy, "Fires", 1); };
-                ev.parser.DecoyNadeStarted += (object sender, DecoyEventArgs e) => { pushData(e.ThrownBy, "Decoys", 1); };
+                ev.parser.DecoyNadeStarted += (object sender, DecoyEventArgs e) =>
+                {
+                    pushData(e.ThrownBy, "Decoys", 1);
+                };
 
                 ev.parser.BombPlanted += (object sender, BombEventArgs e) => { pushData(e.Player, "Bomb plants", 1); };
                 ev.parser.BombDefused += (object sender, BombEventArgs e) => { pushData(e.Player, "Bomb defuses", 1); };
@@ -144,16 +157,20 @@ namespace SourceEngine.Demo.Stats
 
         public void Process()
         {
-
             #region detect demos
+
             string[] demos;
-            demos = System.IO.Directory.GetFiles(System.Environment.CurrentDirectory + "/" + TARGET_FOLDER + "/", "*.dem", System.IO.SearchOption.AllDirectories);
+            demos = System.IO.Directory.GetFiles(
+                System.Environment.CurrentDirectory + "/" + TARGET_FOLDER + "/",
+                "*.dem",
+                System.IO.SearchOption.AllDirectories
+            );
 
             Debug.Success("Found {0} demo files", demos.Count());
 
-
             for (int i = 0; i < demos.Count();)
-            { //                                                                                        KB     MB
+            {
+                //                                                                                        KB     MB
                 Debug.Blue("{0} - {1}mb\t", Path.GetFileName(demos[i]), new FileInfo(demos[i]).Length / 1024 / 1024);
                 i++;
 
@@ -170,17 +187,21 @@ namespace SourceEngine.Demo.Stats
             #endregion
 
             #region collect match structure
+
             //Doing the processing
             Dictionary<int, string> matches = new Dictionary<int, string>();
             int mId = 0;
+
             foreach (string mPath in demos)
             {
                 matches.Add(mId, demos[mId]);
                 mId++;
             }
+
             #endregion
 
             #region process all demos
+
             //Now for each demo
             foreach (int matchID in matches.Keys)
             {
@@ -204,7 +225,6 @@ namespace SourceEngine.Demo.Stats
                 //Trigger subscription event
                 EventSubscription?.Invoke(new EventSubscriptionEventArgs(dp));
 
-
                 //Hard coded necessary event handlers ---------------------------------------------------
                 dp.PlayerBind += (object sender, PlayerBindEventArgs e) =>
                 {
@@ -225,10 +245,8 @@ namespace SourceEngine.Demo.Stats
                         Debug.updateProgressBar((int)(dp.ParsingProgess * 100));
                     }
                 };
+
                 // -------------------------------------------------------------------------------------
-
-
-
 
                 //End of event handlers
                 try
@@ -245,6 +263,7 @@ namespace SourceEngine.Demo.Stats
 
                 Debug.exitProgressBar();
             }
+
             #endregion
 
             Debug.Success("Complete!!!");

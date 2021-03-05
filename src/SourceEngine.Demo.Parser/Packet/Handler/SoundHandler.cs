@@ -2,9 +2,6 @@
 {
     public class SoundHandler
     {
-        public SoundHandler()
-        {
-        }
+        public SoundHandler() { }
     }
 }
-

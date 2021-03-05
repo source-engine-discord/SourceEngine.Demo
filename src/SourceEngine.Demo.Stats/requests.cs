@@ -24,7 +24,6 @@ namespace SourceEngine.Demo.Stats
             }
         }
 
-
         /// <summary>
         /// Simple POST request using HTTP
         /// </summary>
@@ -35,8 +34,6 @@ namespace SourceEngine.Demo.Stats
         {
             return do_POST(url, data).Result;
         }
-
-
 
         private static async Task<string> do_GET(string url)
         {
@@ -55,7 +52,6 @@ namespace SourceEngine.Demo.Stats
         {
             return do_GET(url).Result;
         }
-
 
         /// <summary>
         /// Downloads a string from a url

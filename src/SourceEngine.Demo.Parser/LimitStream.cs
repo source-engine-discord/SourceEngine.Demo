@@ -5,12 +5,28 @@ namespace SourceEngine.Demo.Parser
 {
     public class LimitStream : Stream
     {
-        public override bool CanRead { get { return true; } }
-        public override bool CanSeek { get { return false; } }
-        public override bool CanWrite { get { return false; } }
-        public override long Length { get{ return _Length; } }
+        public override bool CanRead
+        {
+            get { return true; }
+        }
 
-        public override long Position {
+        public override bool CanSeek
+        {
+            get { return false; }
+        }
+
+        public override bool CanWrite
+        {
+            get { return false; }
+        }
+
+        public override long Length
+        {
+            get { return _Length; }
+        }
+
+        public override long Position
+        {
             get { return _Position; }
             set { throw new NotImplementedException(); }
         }
@@ -39,12 +55,16 @@ namespace SourceEngine.Demo.Parser
         {
             base.Dispose(disposing);
 
-            if (disposing) {
+            if (disposing)
+            {
                 var remaining = Length - _Position;
+
                 if (Underlying.CanSeek)
                     Underlying.Seek(remaining, SeekOrigin.Current);
-                else {
-                    while (remaining > 0) {
+                else
+                {
+                    while (remaining > 0)
+                    {
                         Underlying.Read(Dignitrash, 0, checked((int)Math.Min(TrashSize, remaining)));
                         remaining -= TrashSize; // could go beyond 0, but it's signed so who cares
                     }
@@ -52,18 +72,25 @@ namespace SourceEngine.Demo.Parser
             }
         }
 
-        public override void Flush() { Underlying.Flush(); }
+        public override void Flush()
+        {
+            Underlying.Flush();
+        }
 
         public byte[] ReadBytes(int count)
         {
             var data = new byte[count];
             int offset = 0;
-            while (offset < count) {
+
+            while (offset < count)
+            {
                 int thisTime = Read(data, offset, count - offset);
                 if (thisTime == 0)
                     throw new EndOfStreamException();
+
                 offset += thisTime;
             }
+
             return data;
         }
 
@@ -91,4 +118,3 @@ namespace SourceEngine.Demo.Parser
         }
     }
 }
-

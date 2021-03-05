@@ -7,6 +7,7 @@ namespace SourceEngine.Demo.Parser
     public class PlayerPositionsEventArgs : EventArgs
     {
         public double CurrentTime { get; set; }
+
         public List<PlayerPositionEventArgs> PlayerPositions { get; set; }
     }
 
@@ -25,9 +26,7 @@ namespace SourceEngine.Demo.Parser
         }
     }
 
-    public class TickDoneEventArgs : EventArgs
-    {
-    }
+    public class TickDoneEventArgs : EventArgs { }
 
     public class MatchStartedEventArgs : EventArgs
     {
@@ -36,9 +35,7 @@ namespace SourceEngine.Demo.Parser
         public bool HasBombsites { get; set; }
     }
 
-    public class RoundAnnounceMatchStartedEventArgs : EventArgs
-    {
-    }
+    public class RoundAnnounceMatchStartedEventArgs : EventArgs { }
 
     public class RoundEndedEventArgs : EventArgs
     {
@@ -83,21 +80,17 @@ namespace SourceEngine.Demo.Parser
     public class RoundStartedEventArgs : EventArgs
     {
         public int TimeLimit { get; set; }
+
         public int FragLimit { get; set; }
+
         public string Objective { get; set; }
     }
 
-    public class WinPanelMatchEventArgs : EventArgs
-    {
-    }
+    public class WinPanelMatchEventArgs : EventArgs { }
 
-    public class RoundFinalEventArgs : EventArgs
-    {
-    }
+    public class RoundFinalEventArgs : EventArgs { }
 
-    public class LastRoundHalfEventArgs : EventArgs
-    {
-    }
+    public class LastRoundHalfEventArgs : EventArgs { }
 
     public class FreezetimeEndedEventArgs : EventArgs
     {
@@ -120,13 +113,9 @@ namespace SourceEngine.Demo.Parser
         public bool IsBot { get; internal set; }
     }
 
-    public class OtherKilledEventArgs : EventArgs
-    {
-    }
+    public class OtherKilledEventArgs : EventArgs { }
 
-    public class ChickenKilledEventArgs : EventArgs
-    {
-    }
+    public class ChickenKilledEventArgs : EventArgs { }
 
     public class PlayerKilledEventArgs : EventArgs
     {
@@ -137,7 +126,10 @@ namespace SourceEngine.Demo.Parser
         public Equipment Weapon { get; internal set; }
 
         [Obsolete("Use \"Victim\" instead. This will be removed soon™", false)]
-        public Player DeathPerson { get { return Victim; } }
+        public Player DeathPerson
+        {
+            get { return Victim; }
+        }
 
         public Player Victim { get; set; }
 
@@ -179,13 +171,12 @@ namespace SourceEngine.Demo.Parser
     public class NadeEventArgs : EventArgs
     {
         public Vector Position { get; set; }
+
         public EquipmentElement NadeType { get; set; }
+
         public Player ThrownBy { get; set; }
 
-        public NadeEventArgs()
-        {
-
-        }
+        public NadeEventArgs() { }
 
         internal NadeEventArgs(EquipmentElement type)
         {
@@ -195,42 +186,32 @@ namespace SourceEngine.Demo.Parser
 
     public class FireEventArgs : NadeEventArgs
     {
-        public FireEventArgs() : base(EquipmentElement.Incendiary)
-        {
-
-        }
+        public FireEventArgs() : base(EquipmentElement.Incendiary) { }
     }
+
     public class SmokeEventArgs : NadeEventArgs
     {
-        public SmokeEventArgs() : base(EquipmentElement.Smoke)
-        {
-
-        }
+        public SmokeEventArgs() : base(EquipmentElement.Smoke) { }
     }
+
     public class DecoyEventArgs : NadeEventArgs
     {
-        public DecoyEventArgs() : base(EquipmentElement.Decoy)
-        {
-
-        }
+        public DecoyEventArgs() : base(EquipmentElement.Decoy) { }
     }
+
     public class FlashEventArgs : NadeEventArgs
     {
         //previous blind implementation
         public Player[] FlashedPlayers { get; set; }
+
         //
 
-        public FlashEventArgs() : base(EquipmentElement.Flash)
-        {
-
-        }
+        public FlashEventArgs() : base(EquipmentElement.Flash) { }
     }
+
     public class GrenadeEventArgs : NadeEventArgs
     {
-        public GrenadeEventArgs() : base(EquipmentElement.HE)
-        {
-
-        }
+        public GrenadeEventArgs() : base(EquipmentElement.HE) { }
     }
 
     public class BombEventArgs : EventArgs

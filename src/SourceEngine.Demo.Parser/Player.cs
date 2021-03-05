@@ -13,6 +13,7 @@ namespace SourceEngine.Demo.Parser
         public Vector Position { get; set; }
 
         public int EntityID { get; set; }
+
         public int UserID { get; set; }
 
         public int HP { get; set; }
@@ -50,14 +51,20 @@ namespace SourceEngine.Demo.Parser
             get
             {
                 if (ActiveWeaponID == DemoParser.INDEX_MASK) return null;
+
                 return rawWeapons[ActiveWeaponID];
             }
         }
 
         internal Dictionary<int, Equipment> rawWeapons = new Dictionary<int, Equipment>();
-        public IEnumerable<Equipment> Weapons { get { return rawWeapons.Values; } }
 
-        public bool IsAlive {
+        public IEnumerable<Equipment> Weapons
+        {
+            get { return rawWeapons.Values; }
+        }
+
+        public bool IsAlive
+        {
             get { return HP > 0; }
         }
 
@@ -73,13 +80,10 @@ namespace SourceEngine.Demo.Parser
 
         public AdditionalPlayerInformation AdditionaInformations { get; internal set; }
 
-
-
         public Player()
         {
             Velocity = new Vector();
             LastAlivePosition = new Vector();
-
         }
 
         public Player(Player player)
@@ -138,7 +142,7 @@ namespace SourceEngine.Demo.Parser
             me.Team = Team;
 
             me.ActiveWeaponID = ActiveWeaponID;
-                        me.rawWeapons = new Dictionary<int, Equipment>(rawWeapons);
+            me.rawWeapons = new Dictionary<int, Equipment>(rawWeapons);
 
             me.HasDefuseKit = HasDefuseKit;
             me.HasHelmet = HasHelmet;
@@ -154,7 +158,6 @@ namespace SourceEngine.Demo.Parser
 
             return me;
         }
-
     }
 
     public enum Team

@@ -11,9 +11,13 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
     {
         public int EntIdx;
         private int _chat;
+
         public bool Chat => _chat != 0;
+
         private int _textAllChat;
+
         public bool TextAllChat => _textAllChat != 0;
+
         // Params is a 4 length array but only 2 are used [0] = sender nickname [1] = message text
         public IList<string> Params;
         public string MsgName;
@@ -21,6 +25,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         public void Parse(IBitStream bitstream, DemoParser parser)
         {
             Params = new List<string>();
+
             while (!bitstream.ChunkFinished)
             {
                 var desc = bitstream.ReadProtobufVarInt();
@@ -50,6 +55,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 else
                     throw new InvalidDataException();
             }
+
             Raise(parser);
         }
 

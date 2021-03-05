@@ -27,21 +27,40 @@ namespace SourceEngine.Demo.Parser.Packet
                 int cmd = bitstream.ReadProtobufVarInt(); //What type of packet is this?
                 int length = bitstream.ReadProtobufVarInt(); //And how long is it?
                 bitstream.BeginChunk(length * 8); //read length bytes
-                if (cmd == (int)SVC_Messages.svc_PacketEntities) { //Parse packet entities
+
+                if (cmd == (int)SVC_Messages.svc_PacketEntities)
+                {
+                    //Parse packet entities
                     new PacketEntities().Parse(bitstream, demo);
-                } else if (cmd == (int)SVC_Messages.svc_GameEventList) { //and all this other stuff
+                }
+                else if (cmd == (int)SVC_Messages.svc_GameEventList)
+                {
+                    //and all this other stuff
                     new GameEventList().Parse(bitstream, demo);
-                } else if (cmd == (int)SVC_Messages.svc_GameEvent) {
+                }
+                else if (cmd == (int)SVC_Messages.svc_GameEvent)
+                {
                     new GameEvent().Parse(bitstream, demo, parseChickens);
-                } else if (cmd == (int)SVC_Messages.svc_CreateStringTable) {
+                }
+                else if (cmd == (int)SVC_Messages.svc_CreateStringTable)
+                {
                     new CreateStringTable().Parse(bitstream, demo);
-                } else if (cmd == (int)SVC_Messages.svc_UpdateStringTable) {
+                }
+                else if (cmd == (int)SVC_Messages.svc_UpdateStringTable)
+                {
                     new UpdateStringTable().Parse(bitstream, demo);
-                } else if (cmd == (int)NET_Messages.net_Tick) { //and all this other stuff
-                        new TickMessage().Parse(bitstream, demo);
-                } else if (cmd == (int)SVC_Messages.svc_UserMessage) {
+                }
+                else if (cmd == (int)NET_Messages.net_Tick)
+                {
+                    //and all this other stuff
+                    new TickMessage().Parse(bitstream, demo);
+                }
+                else if (cmd == (int)SVC_Messages.svc_UserMessage)
+                {
                     new UserMessage().Parse(bitstream, demo);
-                } else {
+                }
+                else
+                {
                     //You can use this flag to see what information the other packets contain,
                     //if you want. Then you can look into the objects. Has some advnatages, and some disdavantages (mostly speed),
                     //so we use our own lightning-fast parsing code.
@@ -50,10 +69,12 @@ namespace SourceEngine.Demo.Parser.Packet
 
                     if (Enum.IsDefined(typeof(SVC_Messages), cmd)) {
                         SVC_Messages msg = (SVC_Messages)cmd;
-                        toParse = Assembly.GetExecutingAssembly().GetType("SourceEngine.Demo.Parser.Messages.CSVCMsg_" + msg.ToString().Substring(4));
+                        toParse =
+ Assembly.GetExecutingAssembly().GetType("SourceEngine.Demo.Parser.Messages.CSVCMsg_" + msg.ToString().Substring(4));
                     } else if (Enum.IsDefined(typeof(NET_Messages), cmd)) {
                         NET_Messages msg = (NET_Messages)cmd;
-                        toParse = Assembly.GetExecutingAssembly().GetType("SourceEngine.Demo.Parser.Messages.CNETMsg_" + msg.ToString().Substring(4));
+                        toParse =
+ Assembly.GetExecutingAssembly().GetType("SourceEngine.Demo.Parser.Messages.CNETMsg_" + msg.ToString().Substring(4));
                     }
 
                     var data = bitstream.ReadBytes(length);
@@ -69,6 +90,7 @@ namespace SourceEngine.Demo.Parser.Packet
                             break;
                     #endif
                 }
+
                 bitstream.EndChunk();
             }
         }

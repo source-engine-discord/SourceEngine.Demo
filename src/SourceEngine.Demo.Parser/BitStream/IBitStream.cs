@@ -8,13 +8,21 @@ namespace SourceEngine.Demo.Parser
         void Initialize(Stream stream);
 
         uint ReadInt(int bits);
+
         int ReadSignedInt(int numBits);
+
         bool ReadBit();
+
         byte ReadByte();
+
         byte ReadByte(int bits);
+
         byte[] ReadBytes(int bytes);
+
         float ReadFloat();
+
         byte[] ReadBits(int bits);
+
         int ReadProtobufVarInt();
 
         // Chunking: You can begin chunks with a specified length.
@@ -60,4 +68,3 @@ namespace SourceEngine.Demo.Parser
         bool ChunkFinished { get; }
     }
 }
-

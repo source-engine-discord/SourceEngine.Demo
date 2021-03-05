@@ -10,8 +10,11 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         public int EntityIndex;
         public string Text;
         private int _chat;
+
         public bool Chat => _chat != 0;
+
         private int _textAllChat;
+
         public bool TextAllChat => _textAllChat != 0;
 
         public void Parse(IBitStream bitstream, DemoParser parser)
@@ -41,6 +44,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 else
                     throw new InvalidDataException();
             }
+
             Raise(parser);
         }
 

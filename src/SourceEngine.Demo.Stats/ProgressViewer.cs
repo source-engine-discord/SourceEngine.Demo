@@ -10,7 +10,6 @@ namespace SourceEngine.Demo.Stats
 
         private int console_y = 0;
 
-
         public void Draw(bool end = false, bool error = false)
         {
             int prev_y = Console.CursorTop;
@@ -30,7 +29,7 @@ namespace SourceEngine.Demo.Stats
 
             string newt = "";
 
-            for(int i = 0; i < padWidth; i++)
+            for (int i = 0; i < padWidth; i++)
                 newt += " ";
 
             newt += new_title;
@@ -41,9 +40,8 @@ namespace SourceEngine.Demo.Stats
             int percentBuffer = (int)(percent * (float)cwidth);
             percentBuffer = percentBuffer > cwidth ? cwidth : percentBuffer;
 
-            for(int i = 0; i < newt.Length; i++)
+            for (int i = 0; i < newt.Length; i++)
             {
-
                 Console.BackgroundColor = ConsoleColor.Green;
 
                 if (i > percentBuffer)

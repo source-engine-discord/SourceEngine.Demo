@@ -13,9 +13,10 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
     {
         static List<Player> currentRoundBotTakeovers = new List<Player>();
 
-        private static double timestampFreezetimeEnded = 0; //the total number of seconds passed by the end of the last round
-        private static int numOfChickensAliveExpected = 0;
+        private static double
+            timestampFreezetimeEnded = 0; //the total number of seconds passed by the end of the last round
 
+        private static int numOfChickensAliveExpected = 0;
 
         public static void HandleGameEventList(IEnumerable<GameEventList.Descriptor> gel, DemoParser parser)
         {
@@ -51,12 +52,17 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         public static void Apply(GameEvent rawEvent, DemoParser parser, bool parseChickens)
         {
             int numOfChickensAlive = 0;
+
             if (parseChickens) // Parse chickens unless explicitly told not to
             {
-                numOfChickensAlive = CountChickensAlive(parser); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
+                numOfChickensAlive =
+                    CountChickensAlive(
+                        parser
+                    ); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
             }
 
             var descriptors = parser.EventDescriptors;
+
             //previous blind implementation
             var blindPlayers = parser.BlindPlayers;
 
@@ -69,18 +75,21 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (parser.Players.Count == 0 && eventDescriptor.Name != "player_connect")
                 return;
 
-            if (eventDescriptor.Name == "round_start") {
-                data = MapData (eventDescriptor, rawEvent);
+            if (eventDescriptor.Name == "round_start")
+            {
+                data = MapData(eventDescriptor, rawEvent);
 
-                RoundStartedEventArgs rs = new RoundStartedEventArgs () {
+                RoundStartedEventArgs rs = new RoundStartedEventArgs()
+                {
                     TimeLimit = (int)data["timelimit"],
                     FragLimit = (int)data["fraglimit"],
                     Objective = (string)data["objective"]
                 };
 
-                parser.RaiseRoundStart (rs);
+                parser.RaiseRoundStart(rs);
 
-                numOfChickensAliveExpected = numOfChickensAlive; //sets expected number of chickens at start of a new round
+                numOfChickensAliveExpected =
+                    numOfChickensAlive; //sets expected number of chickens at start of a new round
             }
 
             if (eventDescriptor.Name == "cs_win_panel_match")
@@ -114,7 +123,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     Reason = (RoundEndReason)data["reason"],
                     Winner = t,
                     Message = (string)data["message"],
-                    Length = roundLength + 4, //gets overwritten when round_officially_ended event occurs, but is here as a backup incase that event does not trigger, as a backup estimate
+                    Length = roundLength
+                        + 4, //gets overwritten when round_officially_ended event occurs, but is here as a backup incase that event does not trigger, as a backup estimate
                 };
 
                 parser.RaiseRoundEnd(roundEnd);
@@ -135,7 +145,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                 parser.RaiseRoundOfficiallyEnded(roundOfficiallyEnded);
 
-                numOfChickensAliveExpected = 0; //sets expected number of chickens to 0 until the start of the next round to avoid edge cases
+                numOfChickensAliveExpected =
+                    0; //sets expected number of chickens to 0 until the start of the next round to avoid edge cases
             }
             else if (parseChickens) //checks for killed chickens if required
             {
@@ -149,14 +160,18 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (eventDescriptor.Name == "announce_phase_end")
                 parser.RaiseSwitchSides();
 
-            if (eventDescriptor.Name == "round_mvp") {
-                data = MapData (eventDescriptor, rawEvent);
+            if (eventDescriptor.Name == "round_mvp")
+            {
+                data = MapData(eventDescriptor, rawEvent);
 
                 RoundMVPEventArgs roundMVPEvent = new RoundMVPEventArgs();
-                roundMVPEvent.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                roundMVPEvent.Player = parser.Players.ContainsKey((int)data["userid"])
+                    ? new Player(parser.Players[(int)data["userid"]])
+                    : null;
+
                 roundMVPEvent.Reason = (RoundMVPReason)data["reason"];
 
-                parser.RaiseRoundMVP (roundMVPEvent);
+                parser.RaiseRoundMVP(roundMVPEvent);
             }
 
             if (eventDescriptor.Name == "bot_takeover")
@@ -164,7 +179,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 data = MapData(eventDescriptor, rawEvent);
 
                 BotTakeOverEventArgs botTakeOverArgs = new BotTakeOverEventArgs();
-                botTakeOverArgs.Taker = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                botTakeOverArgs.Taker = parser.Players.ContainsKey((int)data["userid"])
+                    ? new Player(parser.Players[(int)data["userid"]])
+                    : null;
 
                 //adds the player who took over the bot to currentRoundBotTakeovers
                 currentRoundBotTakeovers.Add(botTakeOverArgs.Taker);
@@ -172,7 +189,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 parser.RaiseBotTakeOver(botTakeOverArgs);
             }
 
-            if (eventDescriptor.Name == "begin_new_match") {
+            if (eventDescriptor.Name == "begin_new_match")
+            {
                 MatchStartedEventArgs matchStartedEventArgs = new MatchStartedEventArgs();
 
                 if (!string.IsNullOrEmpty(parser.Map))
@@ -195,8 +213,19 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 var bombsiteCenterA = parser.bombsiteACenter;
                 var bombsiteCenterB = parser.bombsiteBCenter;
 
-                bool hasBombsiteA = (bombsiteCenterA.X == 0 && bombsiteCenterA.Y == 0 && bombsiteCenterA.Z == 0 && bombsiteCenterA.Absolute == 0 && bombsiteCenterA.AbsoluteSquared == 0 && bombsiteCenterA.Angle2D == 0) ? false : true;
-                bool hasBombsiteB = (bombsiteCenterB.X == 0 && bombsiteCenterB.Y == 0 && bombsiteCenterB.Z == 0 && bombsiteCenterB.Absolute == 0 && bombsiteCenterB.AbsoluteSquared == 0 && bombsiteCenterB.Angle2D == 0) ? false : true;
+                bool hasBombsiteA =
+                    (bombsiteCenterA.X == 0 && bombsiteCenterA.Y == 0 && bombsiteCenterA.Z == 0
+                        && bombsiteCenterA.Absolute == 0 && bombsiteCenterA.AbsoluteSquared == 0
+                        && bombsiteCenterA.Angle2D == 0)
+                        ? false
+                        : true;
+
+                bool hasBombsiteB =
+                    (bombsiteCenterB.X == 0 && bombsiteCenterB.Y == 0 && bombsiteCenterB.Z == 0
+                        && bombsiteCenterB.Absolute == 0 && bombsiteCenterB.AbsoluteSquared == 0
+                        && bombsiteCenterB.Angle2D == 0)
+                        ? false
+                        : true;
 
                 matchStartedEventArgs.HasBombsites = (hasBombsiteA || hasBombsiteB) ? true : false;
 
@@ -223,17 +252,26 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             //	Console.WriteLine (eventDescriptor.Name);
             //}
 
-            switch (eventDescriptor.Name) {
+            switch (eventDescriptor.Name)
+            {
                 case "weapon_fire":
 
-                    data = MapData (eventDescriptor, rawEvent);
+                    data = MapData(eventDescriptor, rawEvent);
 
-                    WeaponFiredEventArgs fire = new WeaponFiredEventArgs ();
-                    fire.Shooter = parser.Players.ContainsKey ((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
-                    fire.Weapon = new Equipment ((string)data ["weapon"]);
+                    WeaponFiredEventArgs fire = new WeaponFiredEventArgs();
+                    fire.Shooter = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
 
-                    if (fire.Shooter != null && fire.Shooter.ActiveWeapon != null && fire.Weapon.Class != EquipmentClass.Grenade) {
-                        var originalString = fire.Weapon.OriginalString; // original string is lost when setting hurt.Weapon to hurt.Attacker.ActiveWeapon
+                    fire.Weapon = new Equipment((string)data["weapon"]);
+
+                    if (fire.Shooter != null && fire.Shooter.ActiveWeapon != null
+                        && fire.Weapon.Class != EquipmentClass.Grenade)
+                    {
+                        var originalString =
+                            fire.Weapon
+                                .OriginalString; // original string is lost when setting hurt.Weapon to hurt.Attacker.ActiveWeapon
+
                         fire.Weapon = new Player(fire.Shooter).ActiveWeapon;
                         fire.Weapon.Owner = new Player(fire.Weapon.Owner);
                         fire.Weapon.OriginalString = originalString;
@@ -271,9 +309,18 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     kill.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 
                     kill.Round = 0;
-                    kill.Victim = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
-                    kill.Killer = parser.Players.ContainsKey((int)data["attacker"]) ? new Player(parser.Players[(int)data["attacker"]]) : null;
-                    kill.Assister = parser.Players.ContainsKey((int)data["assister"]) ? new Player(parser.Players[(int)data["assister"]]) : null;
+                    kill.Victim = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
+
+                    kill.Killer = parser.Players.ContainsKey((int)data["attacker"])
+                        ? new Player(parser.Players[(int)data["attacker"]])
+                        : null;
+
+                    kill.Assister = parser.Players.ContainsKey((int)data["assister"])
+                        ? new Player(parser.Players[(int)data["assister"]])
+                        : null;
+
                     kill.Headshot = (bool)data["headshot"];
                     kill.Weapon = new Equipment((string)data["weapon"], (string)data["weapon_itemid"]);
 
@@ -297,15 +344,20 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                         kill.VictimBotTakeover = false;
                         kill.AssisterBotTakeover = false;
 
-                        if (kill.Killer != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
+                        if (kill.Killer != null
+                            && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
                         {
                             kill.KillerBotTakeover = true;
                         }
-                        if (kill.Victim != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
+
+                        if (kill.Victim != null
+                            && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
                         {
                             kill.VictimBotTakeover = true;
                         }
-                        if (kill.Assister != null && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name.ToString()))
+
+                        if (kill.Assister != null
+                            && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name.ToString()))
                         {
                             kill.AssisterBotTakeover = true;
                         }
@@ -327,23 +379,35 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                         parser.RaisePlayerKilled(kill);
                     }
+
                     break;
                 case "player_hurt":
-                    data = MapData (eventDescriptor, rawEvent);
+                    data = MapData(eventDescriptor, rawEvent);
 
-                    PlayerHurtEventArgs hurt = new PlayerHurtEventArgs ();
-                    hurt.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
-                    hurt.Attacker = parser.Players.ContainsKey((int)data["attacker"]) ? new Player(parser.Players[(int)data ["attacker"]]) : null;
-                    hurt.Health = (int)data ["health"];
-                    hurt.Armor = (int)data ["armor"];
-                    hurt.HealthDamage = (int)data ["dmg_health"];
-                    hurt.ArmorDamage = (int)data ["dmg_armor"];
-                    hurt.Hitgroup = (Hitgroup)((int)data ["hitgroup"]);
+                    PlayerHurtEventArgs hurt = new PlayerHurtEventArgs();
+                    hurt.Player = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
 
-                    hurt.Weapon = new Equipment ((string)data ["weapon"], "");
+                    hurt.Attacker = parser.Players.ContainsKey((int)data["attacker"])
+                        ? new Player(parser.Players[(int)data["attacker"]])
+                        : null;
 
-                    if (hurt.Attacker != null && hurt.Weapon.Class != EquipmentClass.Grenade && hurt.Attacker.Weapons.Any ()) {
-                        var originalString = hurt.Weapon.OriginalString; // original string is lost when setting hurt.Weapon to hurt.Attacker.ActiveWeapon
+                    hurt.Health = (int)data["health"];
+                    hurt.Armor = (int)data["armor"];
+                    hurt.HealthDamage = (int)data["dmg_health"];
+                    hurt.ArmorDamage = (int)data["dmg_armor"];
+                    hurt.Hitgroup = (Hitgroup)((int)data["hitgroup"]);
+
+                    hurt.Weapon = new Equipment((string)data["weapon"], "");
+
+                    if (hurt.Attacker != null && hurt.Weapon.Class != EquipmentClass.Grenade
+                        && hurt.Attacker.Weapons.Any())
+                    {
+                        var originalString =
+                            hurt.Weapon
+                                .OriginalString; // original string is lost when setting hurt.Weapon to hurt.Attacker.ActiveWeapon
+
                         hurt.Weapon = new Player(hurt.Attacker).ActiveWeapon;
 
                         if (hurt.Weapon != null)
@@ -356,30 +420,38 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                     hurt.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 
-                    hurt.PossiblyKilledByBombExplosion = (hurt.Health == 0 &&
-                                                          string.IsNullOrWhiteSpace(hurt.Weapon.OriginalString) &&
-                                                          hurt.Weapon.Weapon == EquipmentElement.Unknown &&
-                                                          hurt.Weapon.Class == EquipmentClass.Unknown)
-                                                              ? true
-                                                              : false;
+                    hurt.PossiblyKilledByBombExplosion =
+                        (hurt.Health == 0 && string.IsNullOrWhiteSpace(hurt.Weapon.OriginalString)
+                            && hurt.Weapon.Weapon == EquipmentElement.Unknown
+                            && hurt.Weapon.Class == EquipmentClass.Unknown)
+                            ? true
+                            : false;
 
                     parser.RaisePlayerHurt(hurt);
                     break;
 
-                    #region Nades
+                #region Nades
+
                 case "player_blind":
                     data = MapData(eventDescriptor, rawEvent);
 
-                    if (parser.Players.ContainsKey((int)data["userid"])) {
-                        var blindPlayer = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                    if (parser.Players.ContainsKey((int)data["userid"]))
+                    {
+                        var blindPlayer = parser.Players.ContainsKey((int)data["userid"])
+                            ? new Player(parser.Players[(int)data["userid"]])
+                            : null;
 
                         if (blindPlayer != null && blindPlayer.Team != Team.Spectate)
                         {
                             BlindEventArgs blind = new BlindEventArgs();
                             blind.Player = blindPlayer;
-                            if (data.ContainsKey("attacker") && parser.Players.ContainsKey((int)data["attacker"])) {
+
+                            if (data.ContainsKey("attacker") && parser.Players.ContainsKey((int)data["attacker"]))
+                            {
                                 blind.Attacker = new Player(parser.Players[(int)data["attacker"]]);
-                            } else {
+                            }
+                            else
+                            {
                                 blind.Attacker = null;
                             }
 
@@ -403,7 +475,10 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     blindPlayers.Clear(); //prev blind implementation
                     break;
                 case "hegrenade_detonate":
-                    parser.RaiseGrenadeExploded(FillNadeEvent<GrenadeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
+                    parser.RaiseGrenadeExploded(
+                        FillNadeEvent<GrenadeEventArgs>(MapData(eventDescriptor, rawEvent), parser)
+                    );
+
                     break;
                 case "decoy_started":
                     parser.RaiseDecoyStart(FillNadeEvent<DecoyEventArgs>(MapData(eventDescriptor, rawEvent), parser));
@@ -431,17 +506,17 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     fireEndArgs.ThrownBy = parser.InfernoOwners[entityID];
                     parser.RaiseFireEnd(fireEndArgs);
                     break;
-                    #endregion
+
+                #endregion
 
                 case "player_connect":
-                    data = MapData (eventDescriptor, rawEvent);
+                    data = MapData(eventDescriptor, rawEvent);
 
-                    PlayerInfo player = new PlayerInfo ();
-                    player.UserID = (int)data ["userid"];
-                    player.Name = (string)data ["name"];
-                    player.GUID = (string)data ["networkid"];
-                    player.XUID = player.GUID == "BOT" ? 0 : GetCommunityID (player.GUID);
-
+                    PlayerInfo player = new PlayerInfo();
+                    player.UserID = (int)data["userid"];
+                    player.Name = (string)data["name"];
+                    player.GUID = (string)data["networkid"];
+                    player.XUID = player.GUID == "BOT" ? 0 : GetCommunityID(player.GUID);
 
                     //player.IsFakePlayer = (bool)data["bot"];
 
@@ -449,19 +524,23 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                     parser.RawPlayers[index] = player;
 
-
                     break;
                 case "player_disconnect":
                     data = MapData(eventDescriptor, rawEvent);
 
                     PlayerDisconnectEventArgs disconnect = new PlayerDisconnectEventArgs();
-                    disconnect.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                    disconnect.Player = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
+
                     parser.RaisePlayerDisconnect(disconnect);
 
                     int toDelete = (int)data["userid"];
-                    for (int i = 0; i < parser.RawPlayers.Length; i++) {
 
-                        if (parser.RawPlayers[i] != null && parser.RawPlayers[i].UserID == toDelete) {
+                    for (int i = 0; i < parser.RawPlayers.Length; i++)
+                    {
+                        if (parser.RawPlayers[i] != null && parser.RawPlayers[i].UserID == toDelete)
+                        {
                             parser.RawPlayers[i] = null;
                             break;
                         }
@@ -486,6 +565,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                         t = Team.Terrorist;
                     else if (team == parser.ctID)
                         t = Team.CounterTerrorist;
+
                     playerTeamEvent.NewTeam = t;
 
                     t = Team.Spectate;
@@ -494,9 +574,13 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                         t = Team.Terrorist;
                     else if (team == parser.ctID)
                         t = Team.CounterTerrorist;
+
                     playerTeamEvent.OldTeam = t;
 
-                    playerTeamEvent.Swapped = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                    playerTeamEvent.Swapped = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
+
                     playerTeamEvent.IsBot = (bool)data["isbot"];
                     playerTeamEvent.Silent = (bool)data["silent"];
 
@@ -510,7 +594,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     data = MapData(eventDescriptor, rawEvent);
 
                     var bombEventArgs = new BombEventArgs();
-                    bombEventArgs.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                    bombEventArgs.Player = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
 
                     int site = (int)data["site"];
 
@@ -532,6 +618,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                         else
                         {
                             var relevantTrigger = parser.triggers.Single(a => a.Index == site);
+
                             if (relevantTrigger.Contains(parser.bombsiteACenter))
                             {
                                 //planted at A.
@@ -554,37 +641,43 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                     bombEventArgs.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 
-
-                    switch (eventDescriptor.Name) {
-                    case "bomb_beginplant":
-                        parser.RaiseBombBeginPlant(bombEventArgs);
-                        break;
-                    case "bomb_abortplant":
-                        parser.RaiseBombAbortPlant(bombEventArgs);
-                        break;
-                    case "bomb_planted":
-                        parser.RaiseBombPlanted(bombEventArgs);
-                        break;
-                    case "bomb_defused":
-                        parser.RaiseBombDefused(bombEventArgs);
-                        break;
-                    case "bomb_exploded":
-                        parser.RaiseBombExploded(bombEventArgs);
-                        break;
+                    switch (eventDescriptor.Name)
+                    {
+                        case "bomb_beginplant":
+                            parser.RaiseBombBeginPlant(bombEventArgs);
+                            break;
+                        case "bomb_abortplant":
+                            parser.RaiseBombAbortPlant(bombEventArgs);
+                            break;
+                        case "bomb_planted":
+                            parser.RaiseBombPlanted(bombEventArgs);
+                            break;
+                        case "bomb_defused":
+                            parser.RaiseBombDefused(bombEventArgs);
+                            break;
+                        case "bomb_exploded":
+                            parser.RaiseBombExploded(bombEventArgs);
+                            break;
                     }
 
                     break;
                 case "bomb_begindefuse":
                     data = MapData(eventDescriptor, rawEvent);
                     var e = new BombDefuseEventArgs();
-                    e.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                    e.Player = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
+
                     e.HasKit = (bool)data["haskit"];
                     parser.RaiseBombBeginDefuse(e);
                     break;
                 case "bomb_abortdefuse":
                     data = MapData(eventDescriptor, rawEvent);
                     var e2 = new BombDefuseEventArgs();
-                    e2.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                    e2.Player = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
+
                     e2.HasKit = e2.Player.HasDefuseKit;
                     parser.RaiseBombAbortDefuse(e2);
                     break;
@@ -593,7 +686,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     data = MapData(eventDescriptor, rawEvent);
                     var rescued = new HostageRescuedEventArgs();
                     rescued.Round = 0; // worked out in DemoProcessor
-                    rescued.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                    rescued.Player = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
 
                     //currently assumes only one rescue zone,
                     //"site" may indicate the hostage rescue zone number (eg. 0, 1, ...) or it may just always be set to 0. //// Attempted to test this in danger zone but the event does not seem to be thrown when a hostage is taken to a rescue zone
@@ -644,7 +739,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     data = MapData(eventDescriptor, rawEvent);
                     var pickedUp = new HostagePickedUpEventArgs();
                     pickedUp.Round = 0; // worked out in DemoProcessor
-                    pickedUp.Player = parser.Players.ContainsKey((int)data["userid"]) ? new Player(parser.Players[(int)data["userid"]]) : null;
+                    pickedUp.Player = parser.Players.ContainsKey((int)data["userid"])
+                        ? new Player(parser.Players[(int)data["userid"]])
+                        : null;
 
                     hostage = (int)data["hostage"];
 
@@ -684,11 +781,11 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                     parser.RaiseHostagePickedUp(pickedUp);
                     break;
-
             }
         }
 
-        private static T FillNadeEvent<T>(Dictionary<string, object> data, DemoParser parser) where T : NadeEventArgs, new()
+        private static T FillNadeEvent<T>(Dictionary<string, object> data, DemoParser parser)
+            where T : NadeEventArgs, new()
         {
             var nade = new T();
 

@@ -8,16 +8,12 @@ namespace SourceEngine.Demo.Parser.DataTable
 {
     class DataTableParser
     {
-        public DataTableParser()
-        {
-
-        }
+        public DataTableParser() { }
 
         public int ClassBits
         {
             get { return (int)Math.Ceiling(Math.Log(ServerClasses.Count, 2)); }
         }
-
 
         public List<SendTable> DataTables = new List<SendTable>();
         public List<ServerClass> ServerClasses = new List<ServerClass>();
@@ -70,12 +66,13 @@ namespace SourceEngine.Demo.Parser.DataTable
             SendTable table = DataTables[ServerClasses[serverClassIndex].DataTableID];
 
             CurrentExcludes.Clear();
-            CurrentBaseclasses = new List<ServerClass> (); //NOT .clear because we use *this* reference
+            CurrentBaseclasses = new List<ServerClass>(); //NOT .clear because we use *this* reference
+
             //LITERALLY 3 lines later. @main--, this is warning for you.
 
             GatherExcludesAndBaseclasses(table, true);
 
-            ServerClasses [serverClassIndex].BaseClasses = CurrentBaseclasses;
+            ServerClasses[serverClassIndex].BaseClasses = CurrentBaseclasses;
 
             GatherProps(table, serverClassIndex, "");
 
@@ -87,6 +84,7 @@ namespace SourceEngine.Demo.Parser.DataTable
             priorities.Sort();
 
             int start = 0;
+
             for (int priorityIndex = 0; priorityIndex < priorities.Count; priorityIndex++)
             {
                 int priority = priorities[priorityIndex];
@@ -99,7 +97,8 @@ namespace SourceEngine.Demo.Parser.DataTable
                     {
                         SendTableProperty prop = flattenedProps[currentProp].Prop;
 
-                        if (prop.Priority == priority || (priority == 64 && prop.Flags.HasFlagFast(SendPropertyFlags.ChangesOften)))
+                        if (prop.Priority == priority
+                            || (priority == 64 && prop.Flags.HasFlagFast(SendPropertyFlags.ChangesOften)))
                         {
                             if (start != currentProp)
                             {
@@ -111,6 +110,7 @@ namespace SourceEngine.Demo.Parser.DataTable
                             start++;
                             break;
                         }
+
                         currentProp++;
                     }
 
@@ -118,24 +118,25 @@ namespace SourceEngine.Demo.Parser.DataTable
                         break;
                 }
             }
-
         }
 
         void GatherExcludesAndBaseclasses(SendTable sendTable, bool collectBaseClasses)
         {
             CurrentExcludes.AddRange(
-                sendTable.Properties
-                    .Where(a => a.Flags.HasFlagFast(SendPropertyFlags.Exclude))
+                sendTable.Properties.Where(a => a.Flags.HasFlagFast(SendPropertyFlags.Exclude))
                     .Select(a => new ExcludeEntry(a.Name, a.DataTableName, sendTable.Name))
-                );
+            );
 
             foreach (var prop in sendTable.Properties.Where(a => a.Type == SendPropertyType.DataTable))
             {
-                if (collectBaseClasses && prop.Name == "baseclass") {
-                    GatherExcludesAndBaseclasses (GetTableByName (prop.DataTableName), true);
-                    CurrentBaseclasses.Add (FindByDTName (prop.DataTableName));
-                } else {
-                    GatherExcludesAndBaseclasses (GetTableByName (prop.DataTableName), false);
+                if (collectBaseClasses && prop.Name == "baseclass")
+                {
+                    GatherExcludesAndBaseclasses(GetTableByName(prop.DataTableName), true);
+                    CurrentBaseclasses.Add(FindByDTName(prop.DataTableName));
+                }
+                else
+                {
+                    GatherExcludesAndBaseclasses(GetTableByName(prop.DataTableName), false);
                 }
             }
         }
@@ -150,13 +151,18 @@ namespace SourceEngine.Demo.Parser.DataTable
             flattenedProps.AddRange(tmpFlattenedProps);
         }
 
-        void GatherProps_IterateProps(SendTable table, int ServerClassIndex, List<FlattenedPropEntry> flattenedProps, string prefix)
+        void GatherProps_IterateProps(
+            SendTable table,
+            int ServerClassIndex,
+            List<FlattenedPropEntry> flattenedProps,
+            string prefix)
         {
             for (int i = 0; i < table.Properties.Count; i++)
             {
                 SendTableProperty property = table.Properties[i];
 
-                if (property.Flags.HasFlagFast(SendPropertyFlags.InsideArray) || property.Flags.HasFlagFast(SendPropertyFlags.Exclude) || IsPropExcluded(table, property))
+                if (property.Flags.HasFlagFast(SendPropertyFlags.InsideArray)
+                    || property.Flags.HasFlagFast(SendPropertyFlags.Exclude) || IsPropExcluded(table, property))
                     continue;
 
                 if (property.Type == SendPropertyType.DataTable)
@@ -181,15 +187,15 @@ namespace SourceEngine.Demo.Parser.DataTable
                 {
                     if (property.Type == SendPropertyType.Array)
                     {
-                        flattenedProps.Add(new FlattenedPropEntry(prefix + property.Name, property, table.Properties[i - 1]));
+                        flattenedProps.Add(
+                            new FlattenedPropEntry(prefix + property.Name, property, table.Properties[i - 1])
+                        );
                     }
                     else
                     {
                         flattenedProps.Add(new FlattenedPropEntry(prefix + property.Name, property, null));
                     }
                 }
-
-
             }
         }
 
@@ -202,8 +208,6 @@ namespace SourceEngine.Demo.Parser.DataTable
         {
             return DataTables.FirstOrDefault(a => a.Name == pName);
         }
-
-
 
         public ServerClass FindByName(string className)
         {

@@ -1,9 +1,11 @@
 ﻿using NUnit.Framework;
+
 using System;
 using System.IO;
 using System.Linq;
 
 using SourceEngine.Demo.Parser.BitStreamImpl;
+
 using System.Collections.Generic;
 
 namespace SourceEngine.Demo.Parser.Tests
@@ -47,7 +49,8 @@ namespace SourceEngine.Demo.Parser.Tests
             int bitOffset = 0;
             int totalBits = data.Length * 8;
 
-            while (bitOffset < totalBits) {
+            while (bitOffset < totalBits)
+            {
                 int thisTime = Math.Min(rng.Next(32) + 1, totalBits - bitOffset);
                 dbgAll.ReadInt(thisTime);
                 bitOffset += thisTime;
@@ -60,7 +63,8 @@ namespace SourceEngine.Demo.Parser.Tests
             int bitOffset = 0;
             int totalBits = data.Length * 8;
 
-            while (bitOffset < totalBits) {
+            while (bitOffset < totalBits)
+            {
                 int thisTime = Math.Min(rng.Next(32) + 1, totalBits - bitOffset);
                 dbgAll.ReadSignedInt(thisTime);
                 bitOffset += thisTime;
@@ -73,7 +77,8 @@ namespace SourceEngine.Demo.Parser.Tests
             int bitOffset = 0;
             int totalBits = data.Length * 8;
 
-            while (bitOffset < totalBits) {
+            while (bitOffset < totalBits)
+            {
                 int thisTime = Math.Min(rng.Next(8) + 1, totalBits - bitOffset);
                 dbgAll.ReadByte(thisTime);
                 bitOffset += thisTime;
@@ -84,7 +89,9 @@ namespace SourceEngine.Demo.Parser.Tests
         public void TestReadBytes()
         {
             int offset = 0;
-            while (offset < data.Length) {
+
+            while (offset < data.Length)
+            {
                 int thisTime = rng.Next(data.Length - offset) + 1;
                 dbgAll.ReadBytes(thisTime);
                 offset += thisTime;
@@ -97,7 +104,8 @@ namespace SourceEngine.Demo.Parser.Tests
             int bitOffset = 0;
             int totalBits = data.Length * 8;
 
-            while (bitOffset < totalBits) {
+            while (bitOffset < totalBits)
+            {
                 int thisTime = Math.Min(rng.Next(512) + 1, totalBits - bitOffset);
                 dbgAll.ReadBits(thisTime);
                 bitOffset += thisTime;
@@ -118,9 +126,20 @@ namespace SourceEngine.Demo.Parser.Tests
         [Test]
         public void TestVarintDecodingNegative()
         {
-            Assert.AreEqual(-1, CreateBS(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtobufVarInt());
-            Assert.AreEqual(-200000000, CreateBS(new byte[] { 0x80, 0xfc, 0xd0, 0xa0, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtobufVarInt());
-            Assert.AreEqual(-2000000000, CreateBS(new byte[] { 0x80, 0xd8, 0xa9, 0xc6, 0xf8, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtobufVarInt());
+            Assert.AreEqual(
+                -1,
+                CreateBS(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtobufVarInt()
+            );
+
+            Assert.AreEqual(
+                -200000000,
+                CreateBS(new byte[] { 0x80, 0xfc, 0xd0, 0xa0, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtobufVarInt()
+            );
+
+            Assert.AreEqual(
+                -2000000000,
+                CreateBS(new byte[] { 0x80, 0xd8, 0xa9, 0xc6, 0xf8, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtobufVarInt()
+            );
         }
 
         [Test]
@@ -186,7 +205,8 @@ namespace SourceEngine.Demo.Parser.Tests
             int bitOffset = 0;
             int totalBits = data.Length * 8;
 
-            while (bitOffset < totalBits - 16) {
+            while (bitOffset < totalBits - 16)
+            {
                 int thisTime = Math.Min(rng.Next(4096) + 16, totalBits - bitOffset - 8);
                 dbgAll.BeginChunk(thisTime);
                 dbgAll.ReadByte();
@@ -199,17 +219,25 @@ namespace SourceEngine.Demo.Parser.Tests
         [Test]
         public void TestChunkSkippingRandomExhaustive()
         {
-            try {
+            try
+            {
                 TestChunkSkippingRandom();
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 Assert.Inconclusive("Go fix TestChunkSkippingRandom()! I'll wait here for you!");
             }
 
-            try { dbgAll.ReadBit(); }
-            catch (Exception) {
+            try
+            {
+                dbgAll.ReadBit();
+            }
+            catch (Exception)
+            {
                 // everything fine
                 return;
             }
+
             Assert.Fail("Should have thrown");
         }
 
@@ -296,27 +324,30 @@ namespace SourceEngine.Demo.Parser.Tests
             int depth = 0, remaining = data.Length * 8 - 1;
             dbgAll.BeginChunk(remaining);
 
-            while ((remainingStack.Count > 0) || (remaining > 0)) {
-                switch (rng.Next(2 + ((remainingStack.Count > 0) ? 1 : 0))) {
-                case 0: // begin new chunk
-                    int chunksize = Math.Min(rng.Next(5000 * 8), remaining);
-                    dbgAll.BeginChunk(chunksize);
-                    remainingStack.Push(remaining - chunksize);
-                    remaining = chunksize;
-                    break;
-                case 1: // read stuff
-                    int blocksize = Math.Min(rng.Next(5000 * 8), remaining);
-                    dbgAll.ReadBits(blocksize);
-                    remaining -= blocksize;
-                    break;
-                case 2: // end current chunk
-                    dbgAll.EndChunk();
-                    remaining = remainingStack.Pop();
-                    break;
-                default:
-                    throw new NotImplementedException();
+            while ((remainingStack.Count > 0) || (remaining > 0))
+            {
+                switch (rng.Next(2 + ((remainingStack.Count > 0) ? 1 : 0)))
+                {
+                    case 0: // begin new chunk
+                        int chunksize = Math.Min(rng.Next(5000 * 8), remaining);
+                        dbgAll.BeginChunk(chunksize);
+                        remainingStack.Push(remaining - chunksize);
+                        remaining = chunksize;
+                        break;
+                    case 1: // read stuff
+                        int blocksize = Math.Min(rng.Next(5000 * 8), remaining);
+                        dbgAll.ReadBits(blocksize);
+                        remaining -= blocksize;
+                        break;
+                    case 2: // end current chunk
+                        dbgAll.EndChunk();
+                        remaining = remainingStack.Pop();
+                        break;
+                    default:
+                        throw new NotImplementedException();
                 }
             }
+
             // tear down current depth
             for (int i = 0; i < depth; i++)
                 dbgAll.EndChunk();
@@ -328,17 +359,25 @@ namespace SourceEngine.Demo.Parser.Tests
         [Test]
         public void TestChunkNestingRandomExhaustive()
         {
-            try {
+            try
+            {
                 TestChunkNestingRandom();
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 Assert.Inconclusive("Go fix TestChunkNestingRandom()! I'll wait here for you!");
             }
 
-            try { dbgAll.ReadBit(); }
-            catch (Exception) {
+            try
+            {
+                dbgAll.ReadBit();
+            }
+            catch (Exception)
+            {
                 // everything all right
                 return;
             }
+
             Assert.Fail("Should have thrown");
         }
 
@@ -365,4 +404,3 @@ namespace SourceEngine.Demo.Parser.Tests
         }
     }
 }
-

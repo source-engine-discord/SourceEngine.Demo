@@ -11,6 +11,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         /// Correspond to User_Messages enum values
         /// </summary>
         public int MsgType;
+
         /// <summary>
         /// Don't what is it?
         /// </summary>
@@ -31,11 +32,14 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 else if (wireType == 0 && fieldnum == 3)
                 {
                     PassThrough = bitstream.ReadProtobufVarInt();
-                } else if (fieldnum == 2) {
+                }
+                else if (fieldnum == 2)
+                {
                     // msg data
                     if (wireType == 2)
                     {
                         bitstream.BeginChunk(bitstream.ReadProtobufVarInt() * 8);
+
                         switch (MsgType)
                         {
                             // This is where you can add others UserMessage parsing logic

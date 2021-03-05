@@ -11,11 +11,10 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         private BitArray array;
         private readonly List<int> RemainingInOldChunks = new List<int>();
         private int RemainingInCurrentChunk = -1;
+
         public int Position { get; private set; }
 
-        public BitArrayStream()
-        {
-        }
+        public BitArrayStream() { }
 
         public BitArrayStream(byte[] data)
         {
@@ -25,7 +24,8 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
         public void Initialize(Stream stream)
         {
-            using (var memstream = new MemoryStream(checked((int)stream.Length))) {
+            using (var memstream = new MemoryStream(checked((int)stream.Length)))
+            {
                 stream.CopyTo(memstream);
                 array = new BitArray(memstream.GetBuffer());
             }
@@ -52,10 +52,13 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         {
             uint result = PeekInt(numBits);
             Position += numBits;
-            if (RemainingInCurrentChunk >= 0) {
+
+            if (RemainingInCurrentChunk >= 0)
+            {
                 if (numBits > RemainingInCurrentChunk)
                     throw new OverflowException("Trying to read beyond a chunk boundary!");
-                else {
+                else
+                {
                     RemainingInCurrentChunk -= numBits;
                     for (int i = 1; i < RemainingInOldChunks.Count; i++)
                         RemainingInOldChunks[i] -= numBits;
@@ -70,8 +73,9 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             uint result = 0;
             int intPos = 0;
 
-            for (int i = 0; i < numBits; i++) {
-                result |= ( ( array[i + Position] ? 1u : 0u ) << intPos++ );
+            for (int i = 0; i < numBits; i++)
+            {
+                result |= ((array[i + Position] ? 1u : 0u) << intPos++);
             }
 
             return result;
@@ -96,7 +100,8 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         {
             byte[] result = new byte[length];
 
-            for (int i = 0; i < length; i++) {
+            for (int i = 0; i < length; i++)
+            {
                 result[i] = this.ReadByte();
             }
 
@@ -108,7 +113,9 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             byte[] buffer = new byte[length];
 
             int idx = 0;
-            for (int i = Position; i < Math.Min(Position + length, array.Count); i++) {
+
+            for (int i = Position; i < Math.Min(Position + length, array.Count); i++)
+            {
                 if (array[i])
                     buffer[idx++] = 49;
                 else
@@ -121,7 +128,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         public int ReadSignedInt(int numBits)
         {
             // Read the int normally and then shift it back and forth to extend the sign bit.
-            return ( ( (int)ReadInt(numBits) ) << ( 32 - numBits ) ) >> ( 32 - numBits );
+            return (((int)ReadInt(numBits)) << (32 - numBits)) >> (32 - numBits);
         }
 
         void IDisposable.Dispose()
@@ -156,6 +163,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         {
             if ((RemainingInCurrentChunk >= 0) && (RemainingInCurrentChunk < length))
                 throw new InvalidOperationException("trying to create a too big nested chunk"); // grammar much
+
             RemainingInOldChunks.Add(RemainingInCurrentChunk);
             RemainingInCurrentChunk = length;
         }
@@ -168,6 +176,9 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             RemainingInOldChunks.RemoveAt(idx);
         }
 
-        public bool ChunkFinished { get { return RemainingInCurrentChunk == 0; } }
+        public bool ChunkFinished
+        {
+            get { return RemainingInCurrentChunk == 0; }
+        }
     }
 }

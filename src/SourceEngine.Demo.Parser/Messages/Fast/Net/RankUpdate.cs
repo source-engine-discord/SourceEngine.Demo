@@ -25,7 +25,7 @@
                 {
                     AccountId = bitstream.ReadProtobufVarInt();
                 }
-                else if(wireType == 0 && fieldnum == 2)
+                else if (wireType == 0 && fieldnum == 2)
                 {
                     RankOld = bitstream.ReadProtobufVarInt();
                 }

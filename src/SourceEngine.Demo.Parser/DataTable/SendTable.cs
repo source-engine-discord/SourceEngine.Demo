@@ -5,19 +5,24 @@ namespace SourceEngine.Demo.Parser.DataTable
     class SendTable
     {
         List<SendTableProperty> properties = new List<SendTableProperty>();
+
         public List<SendTableProperty> Properties
         {
             get { return properties; }
         }
 
         public string Name { get; set; }
+
         public bool IsEnd { get; set; }
 
-        public SendTable(IBitStream bitstream) {
+        public SendTable(IBitStream bitstream)
+        {
             Messages.Fast.Net.SendTable dataTable = new Messages.Fast.Net.SendTable();
 
-            foreach (var prop in dataTable.Parse(bitstream)) {
-                SendTableProperty property = new SendTableProperty () {
+            foreach (var prop in dataTable.Parse(bitstream))
+            {
+                SendTableProperty property = new SendTableProperty()
+                {
                     DataTableName = prop.DtName,
                     HighValue = prop.HighValue,
                     LowValue = prop.LowValue,
@@ -29,7 +34,7 @@ namespace SourceEngine.Demo.Parser.DataTable
                     RawType = prop.Type
                 };
 
-                properties.Add (property);
+                properties.Add(property);
             }
 
             this.Name = dataTable.NetTableName;
@@ -37,4 +42,3 @@ namespace SourceEngine.Demo.Parser.DataTable
         }
     }
 }
-

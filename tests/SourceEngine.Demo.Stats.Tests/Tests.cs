@@ -1,12 +1,16 @@
 ﻿using Shouldly;
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
+
 using Xunit;
+
 using System.Linq;
+
 using SourceEngine.Demo.Parser.Constants;
 
 namespace SourceEngine.Demo.Stats.Tests
@@ -22,13 +26,14 @@ namespace SourceEngine.Demo.Stats.Tests
             MatchData = new MatchData();
             MockData();
 
-            foreach(var teamPlayers in ProcessedData.TeamPlayersValues)
+            foreach (var teamPlayers in ProcessedData.TeamPlayersValues)
             {
-                foreach(var player in teamPlayers.Terrorists)
+                foreach (var player in teamPlayers.Terrorists)
                 {
                     MatchData.BindPlayer(player);
                 }
-                foreach(var player in teamPlayers.CounterTerrorists)
+
+                foreach (var player in teamPlayers.CounterTerrorists)
                 {
                     MatchData.BindPlayer(player);
                 }
@@ -92,20 +97,47 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Assess
                 allOutputData.AllStats.firstDamageStats.Count.ShouldBe(2);
                 allOutputData.AllStats.firstDamageStats[0].Round.ShouldBe(1);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TimeInRound.ShouldBe(40);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideShooter.ShouldBe("Terrorist");
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDShooter.ShouldBe(32443298432);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionShooter.ShouldBe(0);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionShooter.ShouldBe(0);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionShooter.ShouldBe(0);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideVictim.ShouldBe("CounterTerrorist");
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDVictim.ShouldBe(12321313213);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionVictim.ShouldBe(0);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionVictim.ShouldBe(0);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionVictim.ShouldBe(0);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().Weapon.ShouldBe("AK47");
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponClass.ShouldBe("Rifle");
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponType.ShouldBe("AssaultRifle");
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TimeInRound
+                    .ShouldBe(40);
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideShooter
+                    .ShouldBe("Terrorist");
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDShooter
+                    .ShouldBe(32443298432);
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionShooter
+                    .ShouldBe(0);
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionShooter
+                    .ShouldBe(0);
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionShooter
+                    .ShouldBe(0);
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideVictim
+                    .ShouldBe("CounterTerrorist");
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDVictim
+                    .ShouldBe(12321313213);
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionVictim
+                    .ShouldBe(0);
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionVictim
+                    .ShouldBe(0);
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionVictim
+                    .ShouldBe(0);
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().Weapon
+                    .ShouldBe("AK47");
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponClass
+                    .ShouldBe("Rifle");
+
+                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponType
+                    .ShouldBe("AssaultRifle");
             }
 
             [Fact]
@@ -122,7 +154,9 @@ namespace SourceEngine.Demo.Stats.Tests
                 allOutputData.AllStats.grenadesSpecificStats[1].NadeType.ShouldBe(EquipmentElement.Smoke.ToString());
                 allOutputData.AllStats.grenadesSpecificStats[2].NadeType.ShouldBe(EquipmentElement.HE.ToString());
                 allOutputData.AllStats.grenadesSpecificStats[3].NadeType.ShouldBe(EquipmentElement.Molotov.ToString());
-                allOutputData.AllStats.grenadesSpecificStats[4].NadeType.ShouldBe(EquipmentElement.Incendiary.ToString());
+                allOutputData.AllStats.grenadesSpecificStats[4].NadeType
+                    .ShouldBe(EquipmentElement.Incendiary.ToString());
+
                 allOutputData.AllStats.grenadesSpecificStats[5].NadeType.ShouldBe(EquipmentElement.Decoy.ToString());
             }
 
@@ -224,6 +258,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestType = "casual",
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
+
                 ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
                 {
                     new MatchStartedEventArgs
@@ -256,6 +291,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestType = "casual",
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
+
                 ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
                 {
                     new MatchStartedEventArgs
@@ -288,6 +324,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestType = "casual",
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
+
                 ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
                 {
                     new MatchStartedEventArgs
@@ -320,6 +357,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestType = "casual",
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
+
                 ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
                 {
                     new MatchStartedEventArgs
@@ -351,12 +389,23 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Assess
                 allOutputData.PlayerPositionsStats.PlayerPositionByRound.Count.ShouldBe(1);
                 allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().Round.ShouldBe(1);
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound.FirstOrDefault().TimeInRound.ShouldBe(1);
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().SteamID.ShouldBe(32443298432);
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().TeamSide.ShouldBe("Terrorist");
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().XPosition.ShouldBe(20);
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().YPosition.ShouldBe(200);
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound.FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().ZPosition.ShouldBe(2000);
+                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                    .FirstOrDefault().TimeInRound.ShouldBe(1);
+
+                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                    .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().SteamID.ShouldBe(32443298432);
+
+                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                    .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().TeamSide.ShouldBe("Terrorist");
+
+                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                    .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().XPosition.ShouldBe(20);
+
+                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                    .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().YPosition.ShouldBe(200);
+
+                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                    .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().ZPosition.ShouldBe(2000);
             }
 
             [Fact]
@@ -537,7 +586,9 @@ namespace SourceEngine.Demo.Stats.Tests
                 AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
 
                 // Assess
-                allOutputData.AllStats.versionNumber.Version.ShouldBe(Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
+                allOutputData.AllStats.versionNumber.Version.ShouldBe(
+                    Assembly.GetExecutingAssembly().GetName().Version.ToString(3)
+                );
             }
 
             [Fact]
@@ -738,7 +789,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     ArmorDamage = 50,
                     Hitgroup = Hitgroup.Head,
                     PossiblyKilledByBombExplosion = false
-    },
+                },
                 new PlayerHurt
                 {
                     Round = 2,
@@ -794,46 +845,40 @@ namespace SourceEngine.Demo.Stats.Tests
             var PlayerValues = new Dictionary<string, IEnumerable<Player>>()
             {
                 {
-                    "Kills",
-                    new List<Player>()
+                    "Kills", new List<Player>()
                     {
                         TeamPlayersValues[0].Terrorists[0],
                         TeamPlayersValues[1].CounterTerrorists[0],
                     }
                 },
                 {
-                    "Deaths",
-                    new List<Player>()
+                    "Deaths", new List<Player>()
                     {
                         TeamPlayersValues[0].CounterTerrorists[0],
                         TeamPlayersValues[1].Terrorists[0],
                     }
                 },
                 {
-                    "Headshots",
-                    new List<Player>()
+                    "Headshots", new List<Player>()
                     {
                         TeamPlayersValues[0].Terrorists[0],
                     }
                 },
                 {
-                    "Assists",
-                    new List<Player>()
+                    "Assists", new List<Player>()
                     {
                         TeamPlayersValues[0].CounterTerrorists[0],
                     }
                 },
                 {
-                    "MVPs",
-                    new List<Player>()
+                    "MVPs", new List<Player>()
                     {
                         TeamPlayersValues[0].Terrorists[0],
                         TeamPlayersValues[1].CounterTerrorists[0],
                     }
                 },
                 {
-                    "Shots",
-                    new List<Player>()
+                    "Shots", new List<Player>()
                     {
                         TeamPlayersValues[0].Terrorists[0],
                         TeamPlayersValues[0].Terrorists[0],
@@ -845,23 +890,20 @@ namespace SourceEngine.Demo.Stats.Tests
                     }
                 },
                 {
-                    "Plants",
-                    new List<Player>()
+                    "Plants", new List<Player>()
                     {
                         TeamPlayersValues[0].Terrorists[0],
                         TeamPlayersValues[1].Terrorists[0],
                     }
                 },
                 {
-                    "Defuses",
-                    new List<Player>()
+                    "Defuses", new List<Player>()
                     {
                         TeamPlayersValues[1].CounterTerrorists[0],
                     }
                 },
                 {
-                    "Rescues",
-                    new List<Player>()
+                    "Rescues", new List<Player>()
                     {
                         TeamPlayersValues[0].CounterTerrorists[0],
                         TeamPlayersValues[0].CounterTerrorists[0],
@@ -1042,10 +1084,7 @@ namespace SourceEngine.Demo.Stats.Tests
                         Y = 500,
                         Z = 500,
                     },
-                    FlashedPlayers = new Player[1]
-                    {
-                        TeamPlayersValues[0].CounterTerrorists[0]
-                    }
+                    FlashedPlayers = new Player[1] { TeamPlayersValues[0].CounterTerrorists[0] }
                 } as NadeEventArgs,
                 new NadeEventArgs
                 {
@@ -1071,7 +1110,9 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
                 new NadeEventArgs
                 {
-                    NadeType = EquipmentElement.Molotov, // all molotovs are down as incendiaries, specified why in DemoParser.cs, search for "FireNadeStarted".
+                    NadeType =
+                        EquipmentElement
+                            .Molotov, // all molotovs are down as incendiaries, specified why in DemoParser.cs, search for "FireNadeStarted".
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
                     Position = new Vector()
                     {
@@ -1104,10 +1145,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 }
             };
 
-            var ChickenValues = new List<ChickenKilledEventArgs>()
-            {
-                new ChickenKilledEventArgs {}
-            };
+            var ChickenValues = new List<ChickenKilledEventArgs>() { new ChickenKilledEventArgs { } };
 
             var ShotsFiredValues = new List<ShotFired>()
             {
@@ -1176,7 +1214,6 @@ namespace SourceEngine.Demo.Stats.Tests
                 }
             };
 
-
             ProcessedData = new ProcessedData()
             {
                 DemoInformation = DemoInformation,
@@ -1209,7 +1246,6 @@ namespace SourceEngine.Demo.Stats.Tests
                 ChickenValues = ChickenValues,
                 ShotsFiredValues = ShotsFiredValues,
                 PlayerPositionsValues = playerPositionsStats,
-
                 WriteTicks = true
             };
         }

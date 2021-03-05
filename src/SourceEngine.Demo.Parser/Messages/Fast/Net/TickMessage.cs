@@ -12,7 +12,8 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
         public void Parse(IBitStream bitstream, DemoParser parser)
         {
-            while (!bitstream.ChunkFinished) {
+            while (!bitstream.ChunkFinished)
+            {
                 var desc = bitstream.ReadProtobufVarInt();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
@@ -21,25 +22,25 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
                 var val = (uint)bitstream.ReadProtobufVarInt();
 
-                switch (fieldnum) {
-                case 1:
-                    Tick = val;
-                    break;
-                case 4:
-                    HostComputationTime = val;
-                    break;
-                case 5:
-                    HostComputationTimeStdDeviation = val;
-                    break;
-                case 6:
-                    HostFramestartTimeStdDeviation = val;
-                    break;
-                default:
-                    // silently drop
-                    break;
+                switch (fieldnum)
+                {
+                    case 1:
+                        Tick = val;
+                        break;
+                    case 4:
+                        HostComputationTime = val;
+                        break;
+                    case 5:
+                        HostComputationTimeStdDeviation = val;
+                        break;
+                    case 6:
+                        HostFramestartTimeStdDeviation = val;
+                        break;
+                    default:
+                        // silently drop
+                        break;
                 }
             }
         }
     }
 }
-

@@ -18,7 +18,12 @@ namespace SourceEngine.Demo.Stats
         }
 
         [Obsolete("Move to new method")]
-        public static void appendValue(this List<PlayerData> players, Player player, RecorderSettings rs, string attrib, int value)
+        public static void appendValue(
+            this List<PlayerData> players,
+            Player player,
+            RecorderSettings rs,
+            string attrib,
+            int value)
         {
             if (player == null)
                 return;
@@ -58,9 +63,9 @@ namespace SourceEngine.Demo.Stats
 
             if (matchID == -1)
                 foreach (PlayerData pd in players)
-                    foreach (int match in pd.collected.Keys)
-                        foreach (string key in pd.collected[match].Keys)
-                            collected.Add(key);
+                foreach (int match in pd.collected.Keys)
+                foreach (string key in pd.collected[match].Keys)
+                    collected.Add(key);
             else
                 foreach (PlayerData pd in players)
                     if (pd.collected.ContainsKey(matchID))

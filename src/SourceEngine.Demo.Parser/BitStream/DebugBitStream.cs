@@ -26,10 +26,12 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
         private void Verify<T>(T a, T b)
         {
-            if (!a.Equals(b)) {
+            if (!a.Equals(b))
+            {
                 System.Diagnostics.Debug.Assert(false);
-                throw new InvalidOperationException(String.Format("{0} vs {1} ({2} vs {3})",
-                    a, b, A.GetType().Name, B.GetType().Name));
+                throw new InvalidOperationException(
+                    String.Format("{0} vs {1} ({2} vs {3})", a, b, A.GetType().Name, B.GetType().Name)
+                );
             }
         }
 
@@ -149,8 +151,10 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             B.EndChunk();
         }
 
-        public bool ChunkFinished {
-            get {
+        public bool ChunkFinished
+        {
+            get
+            {
                 var a = A.ChunkFinished;
                 var b = B.ChunkFinished;
                 Verify(a, b);
@@ -159,4 +163,3 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         }
     }
 }
-

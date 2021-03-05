@@ -14,17 +14,35 @@ namespace SourceEngine.Demo.Parser.Constants
 
         public static List<string> GetAll()
         {
-            return new List<string>() { Defuse, Hostage, WingmanDefuse, WingmanHostage, DangerZone };
+            return new List<string>()
+            {
+                Defuse,
+                Hostage,
+                WingmanDefuse,
+                WingmanHostage,
+                DangerZone
+            };
         }
 
         public static List<string> HaveBombsites()
         {
-            return new List<string>() { Defuse, WingmanDefuse, Unknown };
+            return new List<string>()
+            {
+                Defuse,
+                WingmanDefuse,
+                Unknown
+            };
         }
 
         public static List<string> HaveHostages()
         {
-            return new List<string>() { Hostage, WingmanHostage, DangerZone, Unknown };
+            return new List<string>()
+            {
+                Hostage,
+                WingmanHostage,
+                DangerZone,
+                Unknown
+            };
         }
     }
 }

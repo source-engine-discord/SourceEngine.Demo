@@ -18,28 +18,34 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         {
             int currentEntity = -1;
 
-            for (int i = 0; i < packetEntities.UpdatedEntries; i++) {
-
+            for (int i = 0; i < packetEntities.UpdatedEntries; i++)
+            {
                 //First read which entity is updated
                 currentEntity += 1 + (int)reader.ReadUBitInt();
 
                 //Find out whether we should create, destroy or update it.
                 // Leave flag
-                if (!reader.ReadBit()) {
+                if (!reader.ReadBit())
+                {
                     // enter flag
-                    if (reader.ReadBit()) {
+                    if (reader.ReadBit())
+                    {
                         //create it
                         var e = ReadEnterPVS(reader, currentEntity, parser);
 
                         parser.Entities[currentEntity] = e;
 
                         e.ApplyUpdate(reader);
-                    } else {
+                    }
+                    else
+                    {
                         // preserve / update
                         Entity e = parser.Entities[currentEntity];
                         e.ApplyUpdate(reader);
                     }
-                } else {
+                }
+                else
+                {
                     Entity e = parser.Entities[currentEntity];
 
                     if (e != null) // why is it sometimes null?
@@ -53,8 +59,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     parser.Entities[currentEntity] = null;
 
                     //dunno, but you gotta read this.
-                    if (reader.ReadBit()) {
-                    }
+                    if (reader.ReadBit()) { }
                 }
             }
         }
@@ -72,8 +77,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             ServerClass entityClass = parser.SendTableParser.ServerClasses[serverClassID];
 
             reader.ReadInt(10); //Entity serial.
-            //Never used anywhere I guess. Every parser just skips this
 
+            //Never used anywhere I guess. Every parser just skips this
 
             Entity newEntity = new Entity(id, entityClass);
 
@@ -87,9 +92,11 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             //which is faster.
 
             object[] fastBaseline;
+
             if (parser.PreprocessedBaselines.TryGetValue(serverClassID, out fastBaseline))
                 PropertyEntry.Emit(newEntity, fastBaseline);
-            else {
+            else
+            {
                 var preprocessedBaseline = new List<object>();
                 if (parser.instanceBaseline.ContainsKey(serverClassID))
                     using (var collector = new PropertyCollector(newEntity, preprocessedBaseline))
@@ -112,65 +119,92 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 Underlying = underlying;
                 Capture = capture;
 
-                foreach (var prop in Underlying.Props) {
-                    switch (prop.Entry.Prop.Type) {
-                    case SendPropertyType.Array:
-                        prop.ArrayRecived += HandleArrayRecived;
-                        break;
-                    case SendPropertyType.Float:
-                        prop.FloatRecived += HandleFloatRecived;
-                        break;
-                    case SendPropertyType.Int:
-                        prop.IntRecived += HandleIntRecived;
-                        break;
-                    case SendPropertyType.Int64:
-                        prop.Int64Received += HandleInt64Received;
-                        break;
-                    case SendPropertyType.String:
-                        prop.StringRecived += HandleStringRecived;
-                        break;
-                    case SendPropertyType.Vector:
-                    case SendPropertyType.VectorXY:
-                        prop.VectorRecived += HandleVectorRecived;
-                        break;
-                    default:
-                        throw new NotImplementedException();
+                foreach (var prop in Underlying.Props)
+                {
+                    switch (prop.Entry.Prop.Type)
+                    {
+                        case SendPropertyType.Array:
+                            prop.ArrayRecived += HandleArrayRecived;
+                            break;
+                        case SendPropertyType.Float:
+                            prop.FloatRecived += HandleFloatRecived;
+                            break;
+                        case SendPropertyType.Int:
+                            prop.IntRecived += HandleIntRecived;
+                            break;
+                        case SendPropertyType.Int64:
+                            prop.Int64Received += HandleInt64Received;
+                            break;
+                        case SendPropertyType.String:
+                            prop.StringRecived += HandleStringRecived;
+                            break;
+                        case SendPropertyType.Vector:
+                        case SendPropertyType.VectorXY:
+                            prop.VectorRecived += HandleVectorRecived;
+                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
                 }
             }
 
-            private void HandleVectorRecived (object sender, PropertyUpdateEventArgs<Vector> e) { Capture.Add(e.Record()); }
-            private void HandleStringRecived (object sender, PropertyUpdateEventArgs<string> e) { Capture.Add(e.Record()); }
-            private void HandleIntRecived (object sender, PropertyUpdateEventArgs<int> e) { Capture.Add(e.Record()); }
-            private void HandleInt64Received(object sender, PropertyUpdateEventArgs<long> e) { Capture.Add(e.Record()); }
-            private void HandleFloatRecived (object sender, PropertyUpdateEventArgs<float> e) { Capture.Add(e.Record()); }
-            private void HandleArrayRecived (object sender, PropertyUpdateEventArgs<object[]> e) { Capture.Add(e.Record()); }
+            private void HandleVectorRecived(object sender, PropertyUpdateEventArgs<Vector> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleStringRecived(object sender, PropertyUpdateEventArgs<string> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleIntRecived(object sender, PropertyUpdateEventArgs<int> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleInt64Received(object sender, PropertyUpdateEventArgs<long> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleFloatRecived(object sender, PropertyUpdateEventArgs<float> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleArrayRecived(object sender, PropertyUpdateEventArgs<object[]> e)
+            {
+                Capture.Add(e.Record());
+            }
 
             public void Dispose()
             {
-                foreach (var prop in Underlying.Props) {
-                    switch (prop.Entry.Prop.Type) {
-                    case SendPropertyType.Array:
-                        prop.ArrayRecived -= HandleArrayRecived;
-                        break;
-                    case SendPropertyType.Float:
-                        prop.FloatRecived -= HandleFloatRecived;
-                        break;
-                    case SendPropertyType.Int:
-                        prop.IntRecived -= HandleIntRecived;
-                        break;
-                    case SendPropertyType.Int64:
-                        prop.Int64Received -= HandleInt64Received;
-                        break;
-                    case SendPropertyType.String:
-                        prop.StringRecived -= HandleStringRecived;
-                        break;
-                    case SendPropertyType.Vector:
-                    case SendPropertyType.VectorXY:
-                        prop.VectorRecived -= HandleVectorRecived;
-                        break;
-                    default:
-                        throw new NotImplementedException();
+                foreach (var prop in Underlying.Props)
+                {
+                    switch (prop.Entry.Prop.Type)
+                    {
+                        case SendPropertyType.Array:
+                            prop.ArrayRecived -= HandleArrayRecived;
+                            break;
+                        case SendPropertyType.Float:
+                            prop.FloatRecived -= HandleFloatRecived;
+                            break;
+                        case SendPropertyType.Int:
+                            prop.IntRecived -= HandleIntRecived;
+                            break;
+                        case SendPropertyType.Int64:
+                            prop.Int64Received -= HandleInt64Received;
+                            break;
+                        case SendPropertyType.String:
+                            prop.StringRecived -= HandleStringRecived;
+                            break;
+                        case SendPropertyType.Vector:
+                        case SendPropertyType.VectorXY:
+                            prop.VectorRecived -= HandleVectorRecived;
+                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
                 }
             }
