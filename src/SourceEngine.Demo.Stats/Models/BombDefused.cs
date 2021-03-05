@@ -4,6 +4,8 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class BombDefused
     {
+        public BombDefused() { }
+
         public int Round { get; set; }
 
         public double TimeInRound { get; set; }
@@ -13,7 +15,5 @@ namespace SourceEngine.Demo.Stats.Models
         public char? Bombsite { get; set; }
 
         public bool HasKit { get; set; }
-
-        public BombDefused() { }
     }
 }

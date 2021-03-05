@@ -2,6 +2,8 @@
 {
     public class PlayerPositionBySteamID
     {
+        public PlayerPositionBySteamID() { }
+
         public long SteamID { get; set; }
 
         public string TeamSide { get; set; }
@@ -11,7 +13,5 @@
         public int YPosition { get; set; }
 
         public int ZPosition { get; set; }
-
-        public PlayerPositionBySteamID() { }
     }
 }

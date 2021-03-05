@@ -8,11 +8,9 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 {
     public class BitArrayStream : IBitStream
     {
-        private BitArray array;
         private readonly List<int> RemainingInOldChunks = new();
+        private BitArray array;
         private int RemainingInCurrentChunk = -1;
-
-        public int Position { get; private set; }
 
         public BitArrayStream() { }
 
@@ -21,6 +19,8 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             array = new BitArray(data);
             Position = 0;
         }
+
+        public int Position { get; private set; }
 
         public void Initialize(Stream stream)
         {
@@ -31,21 +31,6 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             }
 
             Position = 0;
-        }
-
-        public void Seek(int pos, SeekOrigin origin)
-        {
-            if (RemainingInCurrentChunk >= 0)
-                throw new NotSupportedException("Can't seek while inside a chunk");
-
-            if (origin == SeekOrigin.Begin)
-                Position = pos;
-
-            if (origin == SeekOrigin.Current)
-                Position += pos;
-
-            if (origin == SeekOrigin.End)
-                Position = array.Count - pos;
         }
 
         public uint ReadInt(int numBits)
@@ -66,17 +51,6 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                         RemainingInOldChunks[i] -= numBits;
                 }
             }
-
-            return result;
-        }
-
-        public uint PeekInt(int numBits)
-        {
-            uint result = 0;
-            int intPos = 0;
-
-            for (int i = 0; i < numBits; i++)
-                result |= (array[i + Position] ? 1u : 0u) << intPos++;
 
             return result;
         }
@@ -104,23 +78,6 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                 result[i] = ReadByte();
 
             return result;
-        }
-
-        public string PeekBools(int length)
-        {
-            byte[] buffer = new byte[length];
-
-            int idx = 0;
-
-            for (int i = Position; i < Math.Min(Position + length, array.Count); i++)
-            {
-                if (array[i])
-                    buffer[idx++] = 49;
-                else
-                    buffer[idx++] = 48;
-            }
-
-            return Encoding.ASCII.GetString(buffer, 0, Math.Min(length, array.Count - Position));
         }
 
         public int ReadSignedInt(int numBits)
@@ -175,5 +132,48 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         }
 
         public bool ChunkFinished => RemainingInCurrentChunk == 0;
+
+        public void Seek(int pos, SeekOrigin origin)
+        {
+            if (RemainingInCurrentChunk >= 0)
+                throw new NotSupportedException("Can't seek while inside a chunk");
+
+            if (origin == SeekOrigin.Begin)
+                Position = pos;
+
+            if (origin == SeekOrigin.Current)
+                Position += pos;
+
+            if (origin == SeekOrigin.End)
+                Position = array.Count - pos;
+        }
+
+        public uint PeekInt(int numBits)
+        {
+            uint result = 0;
+            int intPos = 0;
+
+            for (int i = 0; i < numBits; i++)
+                result |= (array[i + Position] ? 1u : 0u) << intPos++;
+
+            return result;
+        }
+
+        public string PeekBools(int length)
+        {
+            byte[] buffer = new byte[length];
+
+            int idx = 0;
+
+            for (int i = Position; i < Math.Min(Position + length, array.Count); i++)
+            {
+                if (array[i])
+                    buffer[idx++] = 49;
+                else
+                    buffer[idx++] = 48;
+            }
+
+            return Encoding.ASCII.GetString(buffer, 0, Math.Min(length, array.Count - Position));
+        }
     }
 }

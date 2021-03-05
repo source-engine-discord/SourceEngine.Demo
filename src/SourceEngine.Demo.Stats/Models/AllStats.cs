@@ -4,6 +4,8 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class AllStats
     {
+        public AllStats() { }
+
         public versionNumber versionNumber { get; set; }
 
         public List<string> supportedGamemodes { get; set; }
@@ -37,7 +39,5 @@ namespace SourceEngine.Demo.Stats.Models
         public List<teamStats> teamStats { get; set; }
 
         public List<firstDamageStats> firstDamageStats { get; set; }
-
-        public AllStats() { }
     }
 }

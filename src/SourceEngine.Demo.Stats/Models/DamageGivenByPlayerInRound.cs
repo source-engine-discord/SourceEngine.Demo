@@ -2,6 +2,8 @@
 {
     public class DamageGivenByPlayerInRound
     {
+        public DamageGivenByPlayerInRound() { }
+
         public double TimeInRound { get; set; }
 
         public string TeamSideShooter { get; set; }
@@ -29,7 +31,5 @@
         public string WeaponClass { get; set; }
 
         public string WeaponType { get; set; }
-
-        public DamageGivenByPlayerInRound() { }
     }
 }

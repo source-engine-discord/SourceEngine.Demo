@@ -4,6 +4,8 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class teamStats
     {
+        public teamStats() { }
+
         public int Round { get; set; }
 
         public IEnumerable<long> TeamAlpha { get; set; }
@@ -53,7 +55,5 @@ namespace SourceEngine.Demo.Stats.Models
         public int TeamBravoWallbangsMostInOneKill { get; set; }
 
         public int TeamBravoShotsFired { get; set; }
-
-        public teamStats() { }
     }
 }

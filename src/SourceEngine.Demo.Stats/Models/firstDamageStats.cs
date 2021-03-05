@@ -4,10 +4,10 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class firstDamageStats
     {
+        public firstDamageStats() { }
+
         public int Round { get; set; }
 
         public List<DamageGivenByPlayerInRound> FirstDamageToEnemyByPlayers { get; set; }
-
-        public firstDamageStats() { }
     }
 }

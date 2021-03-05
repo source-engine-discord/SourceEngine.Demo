@@ -2,6 +2,8 @@
 {
     public class TeamEquipment
     {
+        public TeamEquipment() { }
+
         public int Round { get; set; }
 
         public int TEquipValue { get; set; }
@@ -11,7 +13,5 @@
         public int TExpenditure { get; set; }
 
         public int CTExpenditure { get; set; }
-
-        public TeamEquipment() { }
     }
 }

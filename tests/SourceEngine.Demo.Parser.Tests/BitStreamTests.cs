@@ -1,30 +1,17 @@
-﻿using NUnit.Framework;
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-using SourceEngine.Demo.Parser.BitStreamImpl;
+using NUnit.Framework;
 
-using System.Collections.Generic;
+using SourceEngine.Demo.Parser.BitStreamImpl;
 
 namespace SourceEngine.Demo.Parser.Tests
 {
     [TestFixture]
     public class BitStreamTests
     {
-        private Random rng;
-        private byte[] data;
-        private IBitStream dbgAll;
-
-        private IBitStream CreateBS(byte[] data)
-        {
-            IBitStream managed = new ManagedBitStream(), @unsafe = new UnsafeBitStream();
-            managed.Initialize(new AwkwardStream(new MemoryStream(data), rng));
-            @unsafe.Initialize(new AwkwardStream(new MemoryStream(data), rng));
-            return new DebugBitStream(new BitArrayStream(data), new DebugBitStream(managed, @unsafe));
-        }
-
         [SetUp]
         public void Init()
         {
@@ -41,6 +28,18 @@ namespace SourceEngine.Demo.Parser.Tests
             rng = null;
             data = null;
             dbgAll.Dispose();
+        }
+
+        private Random rng;
+        private byte[] data;
+        private IBitStream dbgAll;
+
+        private IBitStream CreateBS(byte[] data)
+        {
+            IBitStream managed = new ManagedBitStream(), @unsafe = new UnsafeBitStream();
+            managed.Initialize(new AwkwardStream(new MemoryStream(data), rng));
+            @unsafe.Initialize(new AwkwardStream(new MemoryStream(data), rng));
+            return new DebugBitStream(new BitArrayStream(data), new DebugBitStream(managed, @unsafe));
         }
 
         [Test]

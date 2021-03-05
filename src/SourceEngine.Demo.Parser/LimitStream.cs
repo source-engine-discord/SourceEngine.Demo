@@ -5,22 +5,10 @@ namespace SourceEngine.Demo.Parser
 {
     public class LimitStream : Stream
     {
-        public override bool CanRead => true;
-
-        public override bool CanSeek => false;
-
-        public override bool CanWrite => false;
-
-        public override long Length => _Length;
-
-        public override long Position
-        {
-            get => _Position;
-            set => throw new NotImplementedException();
-        }
+        private const int TrashSize = 4096;
+        private static readonly byte[] Dignitrash = new byte[TrashSize];
 
         private readonly Stream Underlying;
-        private readonly long _Length;
         private long _Position;
 
         public LimitStream(Stream underlying, long length)
@@ -32,12 +20,23 @@ namespace SourceEngine.Demo.Parser
                 throw new ArgumentException("length");
 
             Underlying = underlying;
-            _Length = length;
+            Length = length;
             _Position = 0;
         }
 
-        private const int TrashSize = 4096;
-        private static readonly byte[] Dignitrash = new byte[TrashSize];
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length { get; }
+
+        public override long Position
+        {
+            get => _Position;
+            set => throw new NotImplementedException();
+        }
 
         protected override void Dispose(bool disposing)
         {

@@ -7,17 +7,28 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 {
     public class ManagedBitStream : IBitStream
     {
+        // MSB masks (protobuf varint end signal)
+        private const uint MSB_1 = 0x00000080;
+        private const uint MSB_2 = 0x00008000;
+        private const uint MSB_3 = 0x00800000;
+        private const uint MSB_4 = 0x80000000;
+
+        // byte masks (except MSB)
+        private const uint MSK_1 = 0x0000007F;
+        private const uint MSK_2 = 0x00007F00;
+        private const uint MSK_3 = 0x007F0000;
+        private const uint MSK_4 = 0x7F000000;
         private static readonly int SLED = 4;
         private static readonly int BUFSIZE = 2048 + SLED;
+        private readonly byte[] Buffer = new byte[BUFSIZE];
+
+        private readonly Stack<long> ChunkTargets = new();
+
+        private int BitsInBuffer;
+        private long LazyGlobalPosition = 0;
 
         private int Offset;
         private Stream Underlying;
-        private readonly byte[] Buffer = new byte[BUFSIZE];
-
-        private int BitsInBuffer;
-
-        private readonly Stack<long> ChunkTargets = new();
-        private long LazyGlobalPosition = 0;
 
         private long ActualGlobalPosition => LazyGlobalPosition + Offset;
 
@@ -29,60 +40,11 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             Offset = SLED * 8;
         }
 
-        private void Advance(int howMuch)
-        {
-            Offset += howMuch;
-            while (Offset >= BitsInBuffer)
-                RefillBuffer();
-        }
-
-        private void RefillBuffer()
-        {
-            // not even Array.Copy, to hopefully achieve better optimization (just straight 32bit copy)
-            // seriously, mono: ༼ つ◕_◕༽つ VECTORIZE PL0X ༼ つ◕_◕༽つ
-            for (int i = 0; i < SLED; i++)
-                Buffer[i] = Buffer[BitsInBuffer / 8 + i];
-
-            Offset -= BitsInBuffer;
-            LazyGlobalPosition += BitsInBuffer;
-
-            int offset, thisTime = 1337; // I'll cry if this ends up in the generated code
-            for (offset = 0; offset < 4 && thisTime != 0; offset += thisTime)
-                thisTime = Underlying.Read(Buffer, SLED + offset, BUFSIZE - SLED - offset);
-
-            BitsInBuffer = 8 * offset;
-
-            if (thisTime == 0)
-
-                // end of stream, so we can consume the sled now
-                BitsInBuffer += SLED * 8;
-        }
-
         public uint ReadInt(int numBits)
         {
             uint result = PeekInt(numBits);
             Advance(numBits);
             return result;
-        }
-
-        private uint PeekInt(int numBits, bool mayOverflow = false)
-        {
-            BitStreamUtil.AssertMaxBits(32, numBits);
-            Debug.Assert(
-                mayOverflow || Offset + numBits <= BitsInBuffer + SLED * 8,
-                "gg",
-                "This code just fell apart. We're all dead. Offset={0} numBits={1} BitsInBuffer={2}",
-                Offset,
-                numBits,
-                BitsInBuffer
-            );
-
-            // _      xxxnno      _
-            // _   xxxnno         _
-            // _    xxxnno
-
-            return (uint)((BitConverter.ToUInt64(Buffer, (Offset / 8) & ~3) << (8 * 8 - Offset % (8 * 4) - numBits))
-                >> (8 * 8 - numBits));
         }
 
         public int ReadSignedInt(int numBits)
@@ -144,18 +106,6 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
             return result;
         }
-
-        // MSB masks (protobuf varint end signal)
-        private const uint MSB_1 = 0x00000080;
-        private const uint MSB_2 = 0x00008000;
-        private const uint MSB_3 = 0x00800000;
-        private const uint MSB_4 = 0x80000000;
-
-        // byte masks (except MSB)
-        private const uint MSK_1 = 0x0000007F;
-        private const uint MSK_2 = 0x00007F00;
-        private const uint MSK_3 = 0x007F0000;
-        private const uint MSK_4 = 0x7F000000;
 
         public int ReadProtobufVarInt()
         {
@@ -276,5 +226,54 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         }
 
         public bool ChunkFinished => ChunkTargets.Peek() == ActualGlobalPosition;
+
+        private void Advance(int howMuch)
+        {
+            Offset += howMuch;
+            while (Offset >= BitsInBuffer)
+                RefillBuffer();
+        }
+
+        private void RefillBuffer()
+        {
+            // not even Array.Copy, to hopefully achieve better optimization (just straight 32bit copy)
+            // seriously, mono: ༼ つ◕_◕༽つ VECTORIZE PL0X ༼ つ◕_◕༽つ
+            for (int i = 0; i < SLED; i++)
+                Buffer[i] = Buffer[BitsInBuffer / 8 + i];
+
+            Offset -= BitsInBuffer;
+            LazyGlobalPosition += BitsInBuffer;
+
+            int offset, thisTime = 1337; // I'll cry if this ends up in the generated code
+            for (offset = 0; offset < 4 && thisTime != 0; offset += thisTime)
+                thisTime = Underlying.Read(Buffer, SLED + offset, BUFSIZE - SLED - offset);
+
+            BitsInBuffer = 8 * offset;
+
+            if (thisTime == 0)
+
+                // end of stream, so we can consume the sled now
+                BitsInBuffer += SLED * 8;
+        }
+
+        private uint PeekInt(int numBits, bool mayOverflow = false)
+        {
+            BitStreamUtil.AssertMaxBits(32, numBits);
+            Debug.Assert(
+                mayOverflow || Offset + numBits <= BitsInBuffer + SLED * 8,
+                "gg",
+                "This code just fell apart. We're all dead. Offset={0} numBits={1} BitsInBuffer={2}",
+                Offset,
+                numBits,
+                BitsInBuffer
+            );
+
+            // _      xxxnno      _
+            // _   xxxnno         _
+            // _    xxxnno
+
+            return (uint)((BitConverter.ToUInt64(Buffer, (Offset / 8) & ~3) << (8 * 8 - Offset % (8 * 4) - numBits))
+                >> (8 * 8 - numBits));
+        }
     }
 }

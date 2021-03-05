@@ -18,12 +18,12 @@ namespace SourceEngine.Demo.Parser
 
     public class HeaderParsedEventArgs : EventArgs
     {
-        public DemoHeader Header { get; private set; }
-
         public HeaderParsedEventArgs(DemoHeader header)
         {
             Header = header;
         }
+
+        public DemoHeader Header { get; private set; }
     }
 
     public class TickDoneEventArgs : EventArgs { }
@@ -39,14 +39,14 @@ namespace SourceEngine.Demo.Parser
 
     public class RoundEndedEventArgs : EventArgs
     {
-        public RoundEndReason Reason { get; set; }
-
-        public string Message { get; set; }
-
         /// <summary>
         /// The winning team. Spectate for everything that isn't CT or T.
         /// </summary>
         public Team Winner;
+
+        public RoundEndReason Reason { get; set; }
+
+        public string Message { get; set; }
 
         public double Length { get; set; }
     }
@@ -58,14 +58,14 @@ namespace SourceEngine.Demo.Parser
 
     public class RoundOfficiallyEndedEventArgs : EventArgs
     {
-        public RoundEndReason Reason { get; set; }
-
-        public string Message { get; set; }
-
         /// <summary>
         /// The winning team. Spectate for everything that isn't CT or T.
         /// </summary>
         public Team Winner;
+
+        public RoundEndReason Reason { get; set; }
+
+        public string Message { get; set; }
 
         public double Length { get; set; }
     }
@@ -167,18 +167,18 @@ namespace SourceEngine.Demo.Parser
 
     public class NadeEventArgs : EventArgs
     {
-        public Vector Position { get; set; }
-
-        public EquipmentElement NadeType { get; set; }
-
-        public Player ThrownBy { get; set; }
-
         public NadeEventArgs() { }
 
         internal NadeEventArgs(EquipmentElement type)
         {
             NadeType = type;
         }
+
+        public Vector Position { get; set; }
+
+        public EquipmentElement NadeType { get; set; }
+
+        public Player ThrownBy { get; set; }
     }
 
     public class FireEventArgs : NadeEventArgs
@@ -198,12 +198,12 @@ namespace SourceEngine.Demo.Parser
 
     public class FlashEventArgs : NadeEventArgs
     {
-        //previous blind implementation
-        public Player[] FlashedPlayers { get; set; }
-
         //
 
         public FlashEventArgs() : base(EquipmentElement.Flash) { }
+
+        //previous blind implementation
+        public Player[] FlashedPlayers { get; set; }
     }
 
     public class GrenadeEventArgs : NadeEventArgs
@@ -444,6 +444,40 @@ namespace SourceEngine.Demo.Parser
 
     public class Equipment
     {
+        private const string WEAPON_PREFIX = "weapon_";
+
+        public Equipment()
+        {
+            Weapon = EquipmentElement.Unknown;
+        }
+
+        public Equipment(string originalString)
+        {
+            OriginalString = originalString;
+            Weapon = MapEquipment(originalString);
+        }
+
+        public Equipment(string originalString, string skin)
+        {
+            OriginalString = originalString;
+            Weapon = MapEquipment(originalString);
+            SkinID = skin;
+        }
+
+        public Equipment(Equipment equipment)
+        {
+            if (equipment != null)
+            {
+                EntityID = equipment.EntityID;
+                Weapon = equipment.Weapon;
+                OriginalString = equipment.OriginalString;
+                SkinID = equipment.SkinID;
+                AmmoInMagazine = equipment.AmmoInMagazine;
+                AmmoType = equipment.AmmoType;
+                Owner = new Player(equipment.Owner);
+            }
+        }
+
         internal int EntityID { get; set; }
 
         public EquipmentElement Weapon { get; set; }
@@ -486,40 +520,6 @@ namespace SourceEngine.Demo.Parser
         public Player Owner { get; set; }
 
         public int ReserveAmmo => Owner != null && AmmoType != -1 ? Owner.AmmoLeft[AmmoType] : -1;
-
-        public Equipment()
-        {
-            Weapon = EquipmentElement.Unknown;
-        }
-
-        public Equipment(string originalString)
-        {
-            OriginalString = originalString;
-            Weapon = MapEquipment(originalString);
-        }
-
-        public Equipment(string originalString, string skin)
-        {
-            OriginalString = originalString;
-            Weapon = MapEquipment(originalString);
-            SkinID = skin;
-        }
-
-        public Equipment(Equipment equipment)
-        {
-            if (equipment != null)
-            {
-                EntityID = equipment.EntityID;
-                Weapon = equipment.Weapon;
-                OriginalString = equipment.OriginalString;
-                SkinID = equipment.SkinID;
-                AmmoInMagazine = equipment.AmmoInMagazine;
-                AmmoType = equipment.AmmoType;
-                Owner = new Player(equipment.Owner);
-            }
-        }
-
-        private const string WEAPON_PREFIX = "weapon_";
 
         public static EquipmentElement MapEquipment(string name)
         {

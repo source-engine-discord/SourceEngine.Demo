@@ -4,6 +4,8 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class BombExploded
     {
+        public BombExploded() { }
+
         public int Round { get; set; }
 
         public double TimeInRound { get; set; }
@@ -11,7 +13,5 @@ namespace SourceEngine.Demo.Stats.Models
         public Player Player { get; set; }
 
         public char? Bombsite { get; set; }
-
-        public BombExploded() { }
     }
 }

@@ -5,6 +5,15 @@ namespace SourceEngine.Demo.Parser
 {
     public interface IBitStream : IDisposable
     {
+        /// <summary>
+        /// Gets a value indicating whether the current chunk was fully read.
+        /// </summary>
+        /// <value><c>true</c> if chunk is finished; otherwise, <c>false</c>.</value>
+        /// <remarks>
+        /// The return value is undefined if there's no current chunk.
+        /// </remarks>
+        bool ChunkFinished { get; }
+
         void Initialize(Stream stream);
 
         uint ReadInt(int bits);
@@ -57,14 +66,5 @@ namespace SourceEngine.Demo.Parser
         /// corrupt or otherwise modify the bitstream's state.
         /// </remarks>
         void EndChunk();
-
-        /// <summary>
-        /// Gets a value indicating whether the current chunk was fully read.
-        /// </summary>
-        /// <value><c>true</c> if chunk is finished; otherwise, <c>false</c>.</value>
-        /// <remarks>
-        /// The return value is undefined if there's no current chunk.
-        /// </remarks>
-        bool ChunkFinished { get; }
     }
 }

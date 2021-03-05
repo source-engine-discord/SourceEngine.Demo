@@ -2,6 +2,8 @@
 {
     public class FeedbackMessage
     {
+        public FeedbackMessage() { }
+
         public int Round { get; set; }
 
         public long SteamID { get; set; }
@@ -30,7 +32,5 @@
         public string Message { get; set; }
 
         public double TimeInRound { get; set; }
-
-        public FeedbackMessage() { }
     }
 }

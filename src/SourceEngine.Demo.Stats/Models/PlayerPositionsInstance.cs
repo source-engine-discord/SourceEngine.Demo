@@ -2,6 +2,8 @@
 {
     public class PlayerPositionsInstance
     {
+        public PlayerPositionsInstance() { }
+
         public int Round { get; set; }
 
         public int TimeInRound { get; set; }
@@ -15,7 +17,5 @@
         public double YPosition { get; set; }
 
         public double ZPosition { get; set; }
-
-        public PlayerPositionsInstance() { }
     }
 }

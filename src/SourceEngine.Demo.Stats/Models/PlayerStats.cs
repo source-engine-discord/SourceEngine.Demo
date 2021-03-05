@@ -2,6 +2,8 @@
 {
     public class playerStats
     {
+        public playerStats() { }
+
         public string PlayerName { get; set; }
 
         public long SteamID { get; set; }
@@ -35,7 +37,5 @@
         public long TicksOnServer { get; set; }
 
         public long TicksPlaying { get; set; }
-
-        public playerStats() { }
     }
 }

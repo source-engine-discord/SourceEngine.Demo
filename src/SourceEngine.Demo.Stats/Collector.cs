@@ -9,10 +9,9 @@ namespace SourceEngine.Demo.Stats
 {
     public class PlayerData
     {
+        public Dictionary<int, Dictionary<string, int>> collected = new();
         public long s_steamid;
         public string s_steamname;
-
-        public Dictionary<int, Dictionary<string, int>> collected = new();
 
         public PlayerData(long steamid, string name = "")
         {
@@ -52,33 +51,33 @@ namespace SourceEngine.Demo.Stats
 
     public class EventSubscriptionEventArgs : EventArgs
     {
-        public DemoParser parser { get; }
-
         public EventSubscriptionEventArgs(DemoParser parser)
         {
             this.parser = parser;
         }
+
+        public DemoParser parser { get; }
     }
 
     public class Collector
     {
-        //Settings
-        public string TARGET_FOLDER;
-        public bool ALLTHEDATA = true;
-
-        //Runtime
-        private List<PlayerData> allPlayers = new();
-
         public delegate void OnEventSubscription(EventSubscriptionEventArgs e);
 
-        public event OnEventSubscription EventSubscription;
+        //Runtime
+        private readonly List<PlayerData> allPlayers = new();
+        public bool ALLTHEDATA = true;
 
         private RecorderSettings currentRS;
+
+        //Settings
+        public string TARGET_FOLDER;
 
         public Collector(string targetFolder)
         {
             TARGET_FOLDER = targetFolder;
         }
+
+        public event OnEventSubscription EventSubscription;
 
         public void pushData(Player p, string key, int value)
         {

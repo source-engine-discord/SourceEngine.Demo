@@ -8,14 +8,15 @@ namespace SourceEngine.Demo.Parser.DataTable
 {
     internal class DataTableParser
     {
-        public DataTableParser() { }
-
-        public int ClassBits => (int)Math.Ceiling(Math.Log(ServerClasses.Count, 2));
+        private List<ServerClass> CurrentBaseclasses = new();
+        private readonly List<ExcludeEntry> CurrentExcludes = new();
 
         public List<SendTable> DataTables = new();
         public List<ServerClass> ServerClasses = new();
-        private List<ExcludeEntry> CurrentExcludes = new();
-        private List<ServerClass> CurrentBaseclasses = new();
+
+        public DataTableParser() { }
+
+        public int ClassBits => (int)Math.Ceiling(Math.Log(ServerClasses.Count, 2));
 
         public void ParsePacket(IBitStream bitstream)
         {

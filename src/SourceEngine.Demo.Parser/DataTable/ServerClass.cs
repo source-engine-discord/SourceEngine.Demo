@@ -7,13 +7,19 @@ namespace SourceEngine.Demo.Parser.DataTable
 {
     internal class ServerClass : IDisposable
     {
+        public List<ServerClass> BaseClasses = new();
         public int ClassID;
         public int DataTableID;
-        public string Name;
         public string DTName;
 
         public List<FlattenedPropEntry> FlattenedProps = new();
-        public List<ServerClass> BaseClasses = new();
+        public string Name;
+
+        public void Dispose()
+        {
+            OnNewEntity = null;
+            OnDestroyEntity = null;
+        }
 
         public event EventHandler<EntityCreatedEventArgs> OnNewEntity;
 
@@ -35,28 +41,22 @@ namespace SourceEngine.Demo.Parser.DataTable
         {
             return Name + " | " + DTName;
         }
-
-        public void Dispose()
-        {
-            OnNewEntity = null;
-            OnDestroyEntity = null;
-        }
     }
 
     internal class FlattenedPropEntry
     {
-        public SendTableProperty Prop { get; private set; }
-
-        public SendTableProperty ArrayElementProp { get; private set; }
-
-        public string PropertyName { get; private set; }
-
         public FlattenedPropEntry(string propertyName, SendTableProperty prop, SendTableProperty arrayElementProp)
         {
             Prop = prop;
             ArrayElementProp = arrayElementProp;
             PropertyName = propertyName;
         }
+
+        public SendTableProperty Prop { get; private set; }
+
+        public SendTableProperty ArrayElementProp { get; private set; }
+
+        public string PropertyName { get; private set; }
 
         public override string ToString()
         {
@@ -87,15 +87,15 @@ namespace SourceEngine.Demo.Parser.DataTable
 
     internal class EntityCreatedEventArgs : EventArgs
     {
-        public ServerClass Class { get; private set; }
-
-        public Entity Entity { get; private set; }
-
         public EntityCreatedEventArgs(ServerClass c, Entity e)
         {
             Class = c;
             Entity = e;
         }
+
+        public ServerClass Class { get; private set; }
+
+        public Entity Entity { get; private set; }
     }
 
     internal class EntityDestroyedEventArgs : EntityCreatedEventArgs

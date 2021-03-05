@@ -5,8 +5,8 @@ namespace SourceEngine.Demo.Parser.Tests
 {
     public class AwkwardStream : Stream
     {
-        private readonly Stream Underlying;
         private readonly Random Rng;
+        private readonly Stream Underlying;
 
         public AwkwardStream(Stream underlying, Random rng)
         {

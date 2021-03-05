@@ -21,11 +21,10 @@ namespace SourceEngine.Demo.Stats
 
     public class TickCounter
     {
+        public string detectedName = "NOT FOUND";
+        public long ticksAlive = 0;
         public long ticksOnServer = 0;
         public long ticksPlaying = 0;
-        public long ticksAlive = 0;
-
-        public string detectedName = "NOT FOUND";
     }
 
     public class PlayerWeapon
@@ -35,14 +34,6 @@ namespace SourceEngine.Demo.Stats
 
     public class MatchData
     {
-        private static DemoParser dp;
-
-        public Dictionary<Type, List<object>> events = new();
-
-        private Dictionary<int, TickCounter> playerTicks = new();
-        public Dictionary<int, long> playerLookups = new();
-        public Dictionary<int, int> playerReplacements = new();
-
         private const string winReasonTKills = "TerroristWin",
             winReasonCtKills = "CTWin",
             winReasonBombed = "TargetBombed",
@@ -55,12 +46,20 @@ namespace SourceEngine.Demo.Stats
         private const string
             winReasonUnknown = "Unknown"; // Caused by an error where the round_end event was not triggered for a round
 
+        private static DemoParser dp;
+
         public bool
             changingPlantedRoundsToA = false,
             changingPlantedRoundsToB =
                 false; // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
 
+        public Dictionary<Type, List<object>> events = new();
+
         public bool passed = false;
+        public Dictionary<int, long> playerLookups = new();
+        public Dictionary<int, int> playerReplacements = new();
+
+        private readonly Dictionary<int, TickCounter> playerTicks = new();
 
         private void addEvent(Type type, object ev)
         {

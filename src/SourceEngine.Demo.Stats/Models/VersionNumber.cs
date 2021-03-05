@@ -2,8 +2,8 @@
 {
     public class versionNumber
     {
-        public string Version { get; set; }
-
         public versionNumber() { }
+
+        public string Version { get; set; }
     }
 }

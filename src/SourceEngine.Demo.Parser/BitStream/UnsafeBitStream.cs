@@ -12,17 +12,29 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         private const int SLED = 4;
         private const int BUFSIZE = 2048 + SLED;
 
-        private int Offset;
-        private Stream Underlying;
-        private GCHandle HBuffer;
-        private byte* PBuffer;
-        private byte[] Buffer = new byte[BUFSIZE];
+        // MSB masks (protobuf varint end signal)
+        private const uint MSB_1 = 0x00000080;
+        private const uint MSB_2 = 0x00008000;
+        private const uint MSB_3 = 0x00800000;
+        private const uint MSB_4 = 0x80000000;
 
-        private int BitsInBuffer;
-        private bool EndOfStream = false;
+        // byte masks (except MSB)
+        private const uint MSK_1 = 0x0000007F;
+        private const uint MSK_2 = 0x00007F00;
+        private const uint MSK_3 = 0x007F0000;
+        private const uint MSK_4 = 0x7F000000;
 
         private readonly Stack<long> ChunkTargets = new();
+
+        private int BitsInBuffer;
+        private readonly byte[] Buffer = new byte[BUFSIZE];
+        private bool EndOfStream = false;
+        private GCHandle HBuffer;
         private long LazyGlobalPosition = 0;
+
+        private int Offset;
+        private byte* PBuffer;
+        private Stream Underlying;
 
         private long ActualGlobalPosition => LazyGlobalPosition + Offset;
 
@@ -37,107 +49,10 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             Offset = SLED * 8;
         }
 
-        ~UnsafeBitStream()
-        {
-            Dispose();
-        }
-
         void IDisposable.Dispose()
         {
             Dispose();
             GC.SuppressFinalize(this);
-        }
-
-        private void Dispose()
-        {
-            var nullptr = (byte*)IntPtr.Zero.ToPointer();
-
-            if (PBuffer != nullptr)
-            {
-                // GCHandle docs state that Free() must only be called once.
-                // So we use PBuffer to ensure that.
-                PBuffer = nullptr;
-                HBuffer.Free();
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryAdvance(int howMuch)
-        {
-            /*
-             * So the problem is: Apparently mono can't inline the old Advance() because
-             * that would mess up the call stack: Advance->RefillBuffer->Stream.Read
-             * which could then throw. Advance's stack frame would be missing.
-             *
-             * Because of that, the call to RefillBuffer has to be inlined manually:
-             * if (TryAdvance(howMuch)) RefillBuffer();
-             *
-             * Ugly, but it works.
-             */
-            return (Offset += howMuch) >= BitsInBuffer;
-        }
-
-        private void RefillBuffer()
-        {
-            do
-            {
-                /*
-                 * End of stream detection:
-                 * These if clauses are kinda reversed, so this is how we're gonna do it:
-                 * a) your average read:
-                 *    None of them trigger. End of story.
-                 * b) the first read into the last buffer:
-                 *    the (thisTime == 0) down there fires
-                 * c) the LAST read (end of stream follows):
-                 *    the if (EndOfStream) fires, setting BitsInBuffer to 0 and zeroing out
-                 *    the head of the buffer, so we read zeroes instead of random other stuff
-                 * d) the (overflowing) read after the last read:
-                 *    BitsInBuffer is 0 now, so we throw
-                 *
-                 * Just like chunking, this safety net has as little performance overhead as possible,
-                 * at the cost of throwing later than it could (which can be too late in some
-                 * scenarios; as in: you stop using the bitstream before it throws).
-                 */
-                if (EndOfStream)
-                {
-                    if (BitsInBuffer == 0)
-                        throw new EndOfStreamException();
-
-                    /*
-                     * Another late overrun detection:
-                     * Offset SHOULD be < 0 after this.
-                     * So Offset < BitsInBuffer.
-                     * So we don't loop again.
-                     * If it's not, we'll loop again which is exactly what we want
-                     * as we overran the stream and wanna hit the throw above.
-                     */
-                    Offset -= BitsInBuffer + 1;
-                    LazyGlobalPosition += BitsInBuffer + 1;
-                    *(uint*)PBuffer = 0; // safety
-                    BitsInBuffer = 0;
-                    continue;
-                }
-
-                // copy the sled
-                *(uint*)PBuffer = *(uint*)(PBuffer + (BitsInBuffer >> 3));
-
-                Offset -= BitsInBuffer;
-                LazyGlobalPosition += BitsInBuffer;
-
-                int offset, thisTime = 1337; // I'll cry if this ends up in the generated code
-                for (offset = 0; offset < 4 && thisTime != 0; offset += thisTime)
-                    thisTime = Underlying.Read(Buffer, SLED + offset, BUFSIZE - SLED - offset);
-
-                BitsInBuffer = 8 * offset;
-
-                if (thisTime == 0)
-                {
-                    // end of stream, so we can consume the sled now
-                    BitsInBuffer += SLED * 8;
-                    EndOfStream = true;
-                }
-            }
-            while (Offset >= BitsInBuffer);
         }
 
         public uint ReadInt(int numBits)
@@ -145,23 +60,6 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             uint result = PeekInt(numBits);
             if (TryAdvance(numBits)) RefillBuffer();
             return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private uint PeekInt(int numBits, bool mayOverflow = false)
-        {
-            BitStreamUtil.AssertMaxBits(32, numBits);
-            Debug.Assert(
-                mayOverflow || Offset + numBits <= BitsInBuffer + SLED * 8,
-                "gg",
-                "This code just fell apart. We're all dead. Offset={0} numBits={1} BitsInBuffer={2}",
-                Offset,
-                numBits,
-                BitsInBuffer
-            );
-
-            return (uint)((*(ulong*)(PBuffer + ((Offset >> 3) & ~3)) << (8 * 8 - (Offset & (8 * 4 - 1)) - numBits))
-                >> (8 * 8 - numBits));
         }
 
         public bool ReadBit()
@@ -193,72 +91,6 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             return ret;
         }
 
-        private void ReadBytes(byte[] ret, int bytes)
-        {
-            if (bytes < 3)
-            {
-                for (int i = 0; i < bytes; i++)
-                    ret[i] = ReadByte();
-            }
-            else if ((Offset & 7) == 0)
-            {
-                // zomg we have byte alignment
-                int offset = 0;
-
-                while (offset < bytes)
-                {
-                    int remainingBytes = Math.Min((BitsInBuffer - Offset) >> 3, bytes - offset);
-                    System.Buffer.BlockCopy(Buffer, Offset >> 3, ret, offset, remainingBytes);
-                    offset += remainingBytes;
-                    if (TryAdvance(remainingBytes * 8)) RefillBuffer();
-                }
-            }
-            else
-            {
-                fixed (byte* retptr = ret)
-                {
-                    int offset = 0;
-
-                    while (offset < bytes)
-                    {
-                        int remainingBytes = Math.Min(((BitsInBuffer - Offset) >> 3) + 1, bytes - offset);
-                        HyperspeedCopyRound(remainingBytes, retptr + offset);
-                        offset += remainingBytes;
-                    }
-                }
-            }
-        }
-
-        private void HyperspeedCopyRound(int bytes, byte* retptr) // you spin me right round baby right round...
-        {
-            // Probably the most significant unsafe speedup:
-            // We can copy ~64 bits at a time (vs 8)
-
-            // begin by aligning to the first byte
-            int misalign = 8 - (Offset & 7);
-            int realign = sizeof(ulong) * 8 - misalign;
-            ulong step = ReadByte(misalign);
-            var inptr = (ulong*)(PBuffer + (Offset >> 3));
-            var outptr = (ulong*)retptr;
-
-            // main loop
-            for (int i = 0; i < (bytes - 1) / sizeof(ulong); i++)
-            {
-                ulong current = *inptr++;
-                step |= current << misalign;
-                *outptr++ = step;
-                step = current >> realign;
-            }
-
-            // now process the (nonaligned) rest
-            int rest = (bytes - 1) % sizeof(ulong);
-            Offset += (bytes - rest - 1) * 8;
-            var bout = (byte*)outptr;
-            bout[0] = (byte)((ReadInt(8 - misalign) << misalign) | step);
-            for (int i = 1; i < rest + 1; i++)
-                bout[i] |= ReadByte();
-        }
-
         public int ReadSignedInt(int numBits)
         {
             // Just like PeekInt, but we cast to signed long before the shr because we need to sext
@@ -288,18 +120,6 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
             return result;
         }
-
-        // MSB masks (protobuf varint end signal)
-        private const uint MSB_1 = 0x00000080;
-        private const uint MSB_2 = 0x00008000;
-        private const uint MSB_3 = 0x00800000;
-        private const uint MSB_4 = 0x80000000;
-
-        // byte masks (except MSB)
-        private const uint MSK_1 = 0x0000007F;
-        private const uint MSK_2 = 0x00007F00;
-        private const uint MSK_3 = 0x007F0000;
-        private const uint MSK_4 = 0x7F000000;
 
         public int ReadProtobufVarInt()
         {
@@ -427,5 +247,185 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         }
 
         public bool ChunkFinished => ChunkTargets.Peek() == ActualGlobalPosition;
+
+        ~UnsafeBitStream()
+        {
+            Dispose();
+        }
+
+        private void Dispose()
+        {
+            var nullptr = (byte*)IntPtr.Zero.ToPointer();
+
+            if (PBuffer != nullptr)
+            {
+                // GCHandle docs state that Free() must only be called once.
+                // So we use PBuffer to ensure that.
+                PBuffer = nullptr;
+                HBuffer.Free();
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryAdvance(int howMuch)
+        {
+            /*
+             * So the problem is: Apparently mono can't inline the old Advance() because
+             * that would mess up the call stack: Advance->RefillBuffer->Stream.Read
+             * which could then throw. Advance's stack frame would be missing.
+             *
+             * Because of that, the call to RefillBuffer has to be inlined manually:
+             * if (TryAdvance(howMuch)) RefillBuffer();
+             *
+             * Ugly, but it works.
+             */
+            return (Offset += howMuch) >= BitsInBuffer;
+        }
+
+        private void RefillBuffer()
+        {
+            do
+            {
+                /*
+                 * End of stream detection:
+                 * These if clauses are kinda reversed, so this is how we're gonna do it:
+                 * a) your average read:
+                 *    None of them trigger. End of story.
+                 * b) the first read into the last buffer:
+                 *    the (thisTime == 0) down there fires
+                 * c) the LAST read (end of stream follows):
+                 *    the if (EndOfStream) fires, setting BitsInBuffer to 0 and zeroing out
+                 *    the head of the buffer, so we read zeroes instead of random other stuff
+                 * d) the (overflowing) read after the last read:
+                 *    BitsInBuffer is 0 now, so we throw
+                 *
+                 * Just like chunking, this safety net has as little performance overhead as possible,
+                 * at the cost of throwing later than it could (which can be too late in some
+                 * scenarios; as in: you stop using the bitstream before it throws).
+                 */
+                if (EndOfStream)
+                {
+                    if (BitsInBuffer == 0)
+                        throw new EndOfStreamException();
+
+                    /*
+                     * Another late overrun detection:
+                     * Offset SHOULD be < 0 after this.
+                     * So Offset < BitsInBuffer.
+                     * So we don't loop again.
+                     * If it's not, we'll loop again which is exactly what we want
+                     * as we overran the stream and wanna hit the throw above.
+                     */
+                    Offset -= BitsInBuffer + 1;
+                    LazyGlobalPosition += BitsInBuffer + 1;
+                    *(uint*)PBuffer = 0; // safety
+                    BitsInBuffer = 0;
+                    continue;
+                }
+
+                // copy the sled
+                *(uint*)PBuffer = *(uint*)(PBuffer + (BitsInBuffer >> 3));
+
+                Offset -= BitsInBuffer;
+                LazyGlobalPosition += BitsInBuffer;
+
+                int offset, thisTime = 1337; // I'll cry if this ends up in the generated code
+                for (offset = 0; offset < 4 && thisTime != 0; offset += thisTime)
+                    thisTime = Underlying.Read(Buffer, SLED + offset, BUFSIZE - SLED - offset);
+
+                BitsInBuffer = 8 * offset;
+
+                if (thisTime == 0)
+                {
+                    // end of stream, so we can consume the sled now
+                    BitsInBuffer += SLED * 8;
+                    EndOfStream = true;
+                }
+            }
+            while (Offset >= BitsInBuffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private uint PeekInt(int numBits, bool mayOverflow = false)
+        {
+            BitStreamUtil.AssertMaxBits(32, numBits);
+            Debug.Assert(
+                mayOverflow || Offset + numBits <= BitsInBuffer + SLED * 8,
+                "gg",
+                "This code just fell apart. We're all dead. Offset={0} numBits={1} BitsInBuffer={2}",
+                Offset,
+                numBits,
+                BitsInBuffer
+            );
+
+            return (uint)((*(ulong*)(PBuffer + ((Offset >> 3) & ~3)) << (8 * 8 - (Offset & (8 * 4 - 1)) - numBits))
+                >> (8 * 8 - numBits));
+        }
+
+        private void ReadBytes(byte[] ret, int bytes)
+        {
+            if (bytes < 3)
+            {
+                for (int i = 0; i < bytes; i++)
+                    ret[i] = ReadByte();
+            }
+            else if ((Offset & 7) == 0)
+            {
+                // zomg we have byte alignment
+                int offset = 0;
+
+                while (offset < bytes)
+                {
+                    int remainingBytes = Math.Min((BitsInBuffer - Offset) >> 3, bytes - offset);
+                    System.Buffer.BlockCopy(Buffer, Offset >> 3, ret, offset, remainingBytes);
+                    offset += remainingBytes;
+                    if (TryAdvance(remainingBytes * 8)) RefillBuffer();
+                }
+            }
+            else
+            {
+                fixed (byte* retptr = ret)
+                {
+                    int offset = 0;
+
+                    while (offset < bytes)
+                    {
+                        int remainingBytes = Math.Min(((BitsInBuffer - Offset) >> 3) + 1, bytes - offset);
+                        HyperspeedCopyRound(remainingBytes, retptr + offset);
+                        offset += remainingBytes;
+                    }
+                }
+            }
+        }
+
+        private void HyperspeedCopyRound(int bytes, byte* retptr) // you spin me right round baby right round...
+        {
+            // Probably the most significant unsafe speedup:
+            // We can copy ~64 bits at a time (vs 8)
+
+            // begin by aligning to the first byte
+            int misalign = 8 - (Offset & 7);
+            int realign = sizeof(ulong) * 8 - misalign;
+            ulong step = ReadByte(misalign);
+            var inptr = (ulong*)(PBuffer + (Offset >> 3));
+            var outptr = (ulong*)retptr;
+
+            // main loop
+            for (int i = 0; i < (bytes - 1) / sizeof(ulong); i++)
+            {
+                ulong current = *inptr++;
+                step |= current << misalign;
+                *outptr++ = step;
+                step = current >> realign;
+            }
+
+            // now process the (nonaligned) rest
+            int rest = (bytes - 1) % sizeof(ulong);
+            Offset += (bytes - rest - 1) * 8;
+            var bout = (byte*)outptr;
+            bout[0] = (byte)((ReadInt(8 - misalign) << misalign) | step);
+            for (int i = 1; i < rest + 1; i++)
+                bout[i] |= ReadByte();
+        }
     }
 }

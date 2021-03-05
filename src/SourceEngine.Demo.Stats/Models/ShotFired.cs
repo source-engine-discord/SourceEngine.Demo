@@ -4,6 +4,8 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class ShotFired
     {
+        public ShotFired() { }
+
         public int Round { get; set; }
 
         public double TimeInRound { get; set; }
@@ -13,7 +15,5 @@ namespace SourceEngine.Demo.Stats.Models
         public string TeamSide { get; set; }
 
         public Equipment Weapon { get; set; }
-
-        public ShotFired() { }
     }
 }

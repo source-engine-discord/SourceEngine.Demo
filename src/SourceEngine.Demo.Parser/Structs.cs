@@ -59,6 +59,15 @@ namespace SourceEngine.Demo.Parser
     /// </summary>
     public class Vector
     {
+        public Vector() { }
+
+        public Vector(float x, float y, float z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
         public float X { get; set; }
 
         public float Y { get; set; }
@@ -79,15 +88,6 @@ namespace SourceEngine.Demo.Parser
                 Y = reader.ReadFloat(),
                 Z = reader.ReadFloat(),
             };
-        }
-
-        public Vector() { }
-
-        public Vector(float x, float y, float z)
-        {
-            X = x;
-            Y = y;
-            Z = z;
         }
 
         /// <summary>
@@ -204,6 +204,29 @@ namespace SourceEngine.Demo.Parser
     /// </summary>
     public class PlayerInfo
     {
+        internal PlayerInfo() { }
+
+        internal PlayerInfo(BinaryReader reader)
+        {
+            Version = reader.ReadInt64SwapEndian();
+            XUID = reader.ReadInt64SwapEndian();
+            Name = reader.ReadCString(128);
+            UserID = reader.ReadInt32SwapEndian();
+            GUID = reader.ReadCString(33);
+            FriendsID = reader.ReadInt32SwapEndian();
+            FriendsName = reader.ReadCString(128);
+
+            IsFakePlayer = reader.ReadBoolean();
+            IsHLTV = reader.ReadBoolean();
+
+            customFiles0 = reader.ReadInt32();
+            customFiles1 = reader.ReadInt32();
+            customFiles2 = reader.ReadInt32();
+            customFiles3 = reader.ReadInt32();
+
+            filesDownloaded = reader.ReadByte();
+        }
+
         /// version for future compatibility
         public long Version { get; set; }
 
@@ -245,35 +268,12 @@ namespace SourceEngine.Demo.Parser
         // this counter increases each time the server downloaded a new file
         private byte FilesDownloaded { get; set; }
 
-        internal PlayerInfo() { }
-
-        internal PlayerInfo(BinaryReader reader)
-        {
-            Version = reader.ReadInt64SwapEndian();
-            XUID = reader.ReadInt64SwapEndian();
-            Name = reader.ReadCString(128);
-            UserID = reader.ReadInt32SwapEndian();
-            GUID = reader.ReadCString(33);
-            FriendsID = reader.ReadInt32SwapEndian();
-            FriendsName = reader.ReadCString(128);
-
-            IsFakePlayer = reader.ReadBoolean();
-            IsHLTV = reader.ReadBoolean();
-
-            customFiles0 = reader.ReadInt32();
-            customFiles1 = reader.ReadInt32();
-            customFiles2 = reader.ReadInt32();
-            customFiles3 = reader.ReadInt32();
-
-            filesDownloaded = reader.ReadByte();
-        }
+        public static int SizeOf => 8 + 8 + 128 + 4 + 3 + 4 + 1 + 1 + 4 * 8 + 1;
 
         public static PlayerInfo ParseFrom(BinaryReader reader)
         {
             return new(reader);
         }
-
-        public static int SizeOf => 8 + 8 + 128 + 4 + 3 + 4 + 1 + 1 + 4 * 8 + 1;
     }
 
     /// <summary>
@@ -281,16 +281,16 @@ namespace SourceEngine.Demo.Parser
     /// </summary>
     public class BoundingBoxInformation
     {
+        public BoundingBoxInformation(int index)
+        {
+            Index = index;
+        }
+
         public int Index { get; private set; }
 
         public Vector Min { get; set; }
 
         public Vector Max { get; set; }
-
-        public BoundingBoxInformation(int index)
-        {
-            Index = index;
-        }
 
         /// <summary>
         /// Checks wheter a point lies within the BoundingBox.

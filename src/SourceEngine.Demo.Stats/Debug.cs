@@ -8,13 +8,6 @@ namespace SourceEngine.Demo.Stats
         private static string headerRef = "";
         private static string currmessage = "";
 
-        private enum DebugLevel
-        {
-            low,
-            normal,
-            high,
-        }
-
         public static void Log(string msg, params object[] args)
         {
             printMsg(string.Format(msg, args), ConsoleColor.Gray, DebugLevel.high, "log");
@@ -132,6 +125,13 @@ namespace SourceEngine.Demo.Stats
             {
                 currmessage = message;
             }
+        }
+
+        private enum DebugLevel
+        {
+            low,
+            normal,
+            high,
         }
     }
 }

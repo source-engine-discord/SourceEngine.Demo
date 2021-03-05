@@ -4,6 +4,8 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class PlayerHurt
     {
+        public PlayerHurt() { }
+
         public int Round { get; set; }
 
         public double TimeInRound { get; set; }
@@ -37,7 +39,5 @@ namespace SourceEngine.Demo.Stats.Models
         public Hitgroup Hitgroup { get; set; }
 
         public bool PossiblyKilledByBombExplosion { get; set; }
-
-        public PlayerHurt() { }
     }
 }

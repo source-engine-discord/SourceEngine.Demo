@@ -4,6 +4,8 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class HostageRescued
     {
+        public HostageRescued() { }
+
         public int Round { get; set; }
 
         public double TimeInRound { get; set; }
@@ -21,7 +23,5 @@ namespace SourceEngine.Demo.Stats.Models
         public double YPosition { get; set; }
 
         public double ZPosition { get; set; }
-
-        public HostageRescued() { }
     }
 }

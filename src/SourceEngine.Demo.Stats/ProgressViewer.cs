@@ -5,10 +5,18 @@ namespace SourceEngine.Demo.Stats
 {
     public class ProgressViewer
     {
+        private readonly int console_y = 0;
         public float percent = 0.0f;
         public string title = "";
 
-        private int console_y = 0;
+        public ProgressViewer(string title)
+        {
+            this.title = title;
+
+            console_y = Console.CursorTop;
+
+            Draw();
+        }
 
         public void Draw(bool end = false, bool error = false)
         {
@@ -74,15 +82,6 @@ namespace SourceEngine.Demo.Stats
             title += " FAILED";
             Draw(true, true);
             Console.Write("\n");
-        }
-
-        public ProgressViewer(string title)
-        {
-            this.title = title;
-
-            console_y = Console.CursorTop;
-
-            Draw();
         }
     }
 }

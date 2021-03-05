@@ -10,12 +10,6 @@ namespace SourceEngine.Demo.Parser.Packet
 {
     internal class Entity
     {
-        public int ID { get; set; }
-
-        public ServerClass ServerClass { get; set; }
-
-        public PropertyEntry[] Props { get; private set; }
-
         public Entity(int id, ServerClass serverClass)
         {
             ID = id;
@@ -26,6 +20,12 @@ namespace SourceEngine.Demo.Parser.Packet
             for (int i = 0; i < flattenedProps.Count; i++)
                 Props[i] = new PropertyEntry(flattenedProps[i], i);
         }
+
+        public int ID { get; set; }
+
+        public ServerClass ServerClass { get; set; }
+
+        public PropertyEntry[] Props { get; private set; }
 
         public PropertyEntry FindProperty(string name)
         {
@@ -469,18 +469,18 @@ namespace SourceEngine.Demo.Parser.Packet
 
     internal class PropertyUpdateEventArgs<T> : EventArgs
     {
-        public T Value { get; private set; }
-
-        public Entity Entity { get; private set; }
-
-        public PropertyEntry Property { get; private set; }
-
         public PropertyUpdateEventArgs(T value, Entity e, PropertyEntry p)
         {
             Value = value;
             Entity = e;
             Property = p;
         }
+
+        public T Value { get; private set; }
+
+        public Entity Entity { get; private set; }
+
+        public PropertyEntry Property { get; private set; }
     }
 
     public class RecordedPropertyUpdate<T>

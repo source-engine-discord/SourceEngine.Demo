@@ -4,14 +4,6 @@ namespace SourceEngine.Demo.Parser.DataTable
 {
     internal class SendTable
     {
-        private List<SendTableProperty> properties = new();
-
-        public List<SendTableProperty> Properties => properties;
-
-        public string Name { get; set; }
-
-        public bool IsEnd { get; set; }
-
         public SendTable(IBitStream bitstream)
         {
             Messages.Fast.Net.SendTable dataTable = new Messages.Fast.Net.SendTable();
@@ -31,11 +23,17 @@ namespace SourceEngine.Demo.Parser.DataTable
                     RawType = prop.Type,
                 };
 
-                properties.Add(property);
+                Properties.Add(property);
             }
 
             Name = dataTable.NetTableName;
             IsEnd = dataTable.IsEnd;
         }
+
+        public List<SendTableProperty> Properties { get; } = new();
+
+        public string Name { get; set; }
+
+        public bool IsEnd { get; set; }
     }
 }

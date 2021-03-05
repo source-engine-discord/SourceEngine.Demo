@@ -2,6 +2,8 @@
 {
     public class bombsiteStats
     {
+        public bombsiteStats() { }
+
         public char Bombsite { get; set; }
 
         public int Plants { get; set; }
@@ -21,7 +23,5 @@
         public double? YPositionMax { get; set; }
 
         public double? ZPositionMax { get; set; }
-
-        public bombsiteStats() { }
     }
 }

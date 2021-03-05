@@ -26,17 +26,6 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             B.Dispose();
         }
 
-        private void Verify<T>(T a, T b)
-        {
-            if (!a.Equals(b))
-            {
-                Debug.Assert(false);
-                throw new InvalidOperationException(
-                    string.Format("{0} vs {1} ({2} vs {3})", a, b, A.GetType().Name, B.GetType().Name)
-                );
-            }
-        }
-
         public uint ReadInt(int bits)
         {
             var a = A.ReadInt(bits);
@@ -85,38 +74,6 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             return a;
         }
 
-        public string ReadString()
-        {
-            var a = A.ReadString();
-            var b = B.ReadString();
-            Verify(a, b);
-            return a;
-        }
-
-        public string ReadString(int size)
-        {
-            var a = A.ReadString(size);
-            var b = B.ReadString(size);
-            Verify(a, b);
-            return a;
-        }
-
-        public uint ReadVarInt()
-        {
-            var a = A.ReadVarInt();
-            var b = B.ReadVarInt();
-            Verify(a, b);
-            return a;
-        }
-
-        public uint ReadUBitInt()
-        {
-            var a = A.ReadUBitInt();
-            var b = B.ReadUBitInt();
-            Verify(a, b);
-            return a;
-        }
-
         public float ReadFloat()
         {
             var a = A.ReadFloat();
@@ -162,6 +119,49 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                 Verify(a, b);
                 return a;
             }
+        }
+
+        private void Verify<T>(T a, T b)
+        {
+            if (!a.Equals(b))
+            {
+                Debug.Assert(false);
+                throw new InvalidOperationException(
+                    string.Format("{0} vs {1} ({2} vs {3})", a, b, A.GetType().Name, B.GetType().Name)
+                );
+            }
+        }
+
+        public string ReadString()
+        {
+            var a = A.ReadString();
+            var b = B.ReadString();
+            Verify(a, b);
+            return a;
+        }
+
+        public string ReadString(int size)
+        {
+            var a = A.ReadString(size);
+            var b = B.ReadString(size);
+            Verify(a, b);
+            return a;
+        }
+
+        public uint ReadVarInt()
+        {
+            var a = A.ReadVarInt();
+            var b = B.ReadVarInt();
+            Verify(a, b);
+            return a;
+        }
+
+        public uint ReadUBitInt()
+        {
+            var a = A.ReadUBitInt();
+            var b = B.ReadUBitInt();
+            Verify(a, b);
+            return a;
         }
     }
 }

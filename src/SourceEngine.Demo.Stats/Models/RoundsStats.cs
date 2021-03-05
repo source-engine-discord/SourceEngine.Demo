@@ -2,6 +2,8 @@
 {
     public class roundsStats
     {
+        public roundsStats() { }
+
         public int Round { get; set; }
 
         public string Half { get; set; }
@@ -73,7 +75,5 @@
         public int TeamAlphaExpenditure { get; set; }
 
         public int TeamBetaExpenditure { get; set; }
-
-        public roundsStats() { }
     }
 }

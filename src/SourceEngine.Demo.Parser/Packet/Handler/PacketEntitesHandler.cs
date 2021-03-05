@@ -116,8 +116,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         private class PropertyCollector : IDisposable
         {
-            private readonly Entity Underlying;
             private readonly IList<object> Capture;
+            private readonly Entity Underlying;
 
             public PropertyCollector(Entity underlying, IList<object> capture)
             {
@@ -153,36 +153,6 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 }
             }
 
-            private void HandleVectorRecived(object sender, PropertyUpdateEventArgs<Vector> e)
-            {
-                Capture.Add(e.Record());
-            }
-
-            private void HandleStringRecived(object sender, PropertyUpdateEventArgs<string> e)
-            {
-                Capture.Add(e.Record());
-            }
-
-            private void HandleIntRecived(object sender, PropertyUpdateEventArgs<int> e)
-            {
-                Capture.Add(e.Record());
-            }
-
-            private void HandleInt64Received(object sender, PropertyUpdateEventArgs<long> e)
-            {
-                Capture.Add(e.Record());
-            }
-
-            private void HandleFloatRecived(object sender, PropertyUpdateEventArgs<float> e)
-            {
-                Capture.Add(e.Record());
-            }
-
-            private void HandleArrayRecived(object sender, PropertyUpdateEventArgs<object[]> e)
-            {
-                Capture.Add(e.Record());
-            }
-
             public void Dispose()
             {
                 foreach (var prop in Underlying.Props)
@@ -212,6 +182,36 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                             throw new NotImplementedException();
                     }
                 }
+            }
+
+            private void HandleVectorRecived(object sender, PropertyUpdateEventArgs<Vector> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleStringRecived(object sender, PropertyUpdateEventArgs<string> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleIntRecived(object sender, PropertyUpdateEventArgs<int> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleInt64Received(object sender, PropertyUpdateEventArgs<long> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleFloatRecived(object sender, PropertyUpdateEventArgs<float> e)
+            {
+                Capture.Add(e.Record());
+            }
+
+            private void HandleArrayRecived(object sender, PropertyUpdateEventArgs<object[]> e)
+            {
+                Capture.Add(e.Record());
             }
         }
     }

@@ -2,6 +2,8 @@
 {
     public class grenadesSpecificStats
     {
+        public grenadesSpecificStats() { }
+
         public string NadeType { get; set; }
 
         public long SteamID { get; set; }
@@ -13,7 +15,5 @@
         public double ZPosition { get; set; }
 
         public int? NumPlayersFlashed { get; set; }
-
-        public grenadesSpecificStats() { }
     }
 }

@@ -28,10 +28,12 @@ namespace SourceEngine.Demo.Parser
         private const int MAXWEAPONS = 64;
 
         public bool stopParsingDemo = false;
-        private bool parseChickens = true;
-        private bool parsePlayerPositions = true;
+        private readonly bool parseChickens = true;
+        private readonly bool parsePlayerPositions = true;
         private string gamemode = string.Empty;
-        private int numOfHostageRescueZonesLookingFor = 0; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
+
+        private readonly int
+            numOfHostageRescueZonesLookingFor = 0; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
 
         public List<BoundingBoxInformation> triggers = new();
         internal Dictionary<int, Player> InfernoOwners = new();
@@ -327,7 +329,7 @@ namespace SourceEngine.Demo.Parser
         /// <summary>
         /// A parser for DEM_STRINGTABLES-Packets
         /// </summary>
-        private StringTableParser StringTables = new();
+        private readonly StringTableParser StringTables = new();
 
         /// <summary>
         /// This maps an ServerClass to an Equipment.
@@ -367,7 +369,7 @@ namespace SourceEngine.Demo.Parser
         /// An map entity <-> weapon. Used to remember whether a weapon is a p250,
         /// how much ammonition it has, etc.
         /// </summary>
-        private Equipment[] weapons = new Equipment[MAX_ENTITIES];
+        private readonly Equipment[] weapons = new Equipment[MAX_ENTITIES];
 
         /// <summary>
         /// The indicies of the bombsites - useful to find out
@@ -513,7 +515,8 @@ namespace SourceEngine.Demo.Parser
         /// This contains additional informations about each player, such as Kills, Deaths, etc.
         /// This is networked seperately from the player, so we need to cache it somewhere else.
         /// </summary>
-        private AdditionalPlayerInformation[] additionalInformations = new AdditionalPlayerInformation[MAXPLAYERS];
+        private readonly AdditionalPlayerInformation[] additionalInformations =
+            new AdditionalPlayerInformation[MAXPLAYERS];
 
         /// <summary>
         /// Initializes a new DemoParser. Right point if you want to start analyzing demos.
