@@ -4,8 +4,8 @@ using System.Text;
 
 namespace SourceEngine.Demo.Stats.Models
 {
-	public class DamageGivenByPlayerInRound
-	{
+    public class DamageGivenByPlayerInRound
+    {
         public double TimeInRound { get; set; }
         public string TeamSideShooter { get; set; }
         public long SteamIDShooter { get; set; }

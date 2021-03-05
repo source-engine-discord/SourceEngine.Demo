@@ -2,34 +2,34 @@ using System;
 
 namespace SourceEngine.Demo.Parser.DataTable
 {
-	public class SendTableProperty
-	{
-		public SendPropertyFlags Flags { get { return (SendPropertyFlags)RawFlags; } }
+    public class SendTableProperty
+    {
+        public SendPropertyFlags Flags { get { return (SendPropertyFlags)RawFlags; } }
 
-		public int RawFlags { get; set; }
+        public int RawFlags { get; set; }
 
-		public string Name { get; set; }
+        public string Name { get; set; }
 
-		public string DataTableName { get; set; }
+        public string DataTableName { get; set; }
 
-		public float LowValue { get; set; }
+        public float LowValue { get; set; }
 
-		public float HighValue { get; set; }
+        public float HighValue { get; set; }
 
-		public int NumberOfBits { get; set; }
+        public int NumberOfBits { get; set; }
 
-		public int NumberOfElements { get; set; }
+        public int NumberOfElements { get; set; }
 
-		public int Priority { get; set; }
+        public int Priority { get; set; }
 
-		public int RawType { get; set; }
+        public int RawType { get; set; }
 
-		public SendPropertyType Type {
-			get {
-				return (SendPropertyType)RawType;
-			}
-		}
-	}
+        public SendPropertyType Type {
+            get {
+                return (SendPropertyType)RawType;
+            }
+        }
+    }
 
     public enum SendPropertyType
     {

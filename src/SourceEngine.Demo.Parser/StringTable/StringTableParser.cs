@@ -5,24 +5,24 @@ namespace SourceEngine.Demo.Parser.StringTable
 {
     class StringTableParser
     {
-		public void ParsePacket(IBitStream reader, DemoParser parser)
+        public void ParsePacket(IBitStream reader, DemoParser parser)
         {
-			int numTables = reader.ReadByte();
+            int numTables = reader.ReadByte();
 
-			for (int i = 0; i < numTables; i++) {
-				string tableName = reader.ReadString();
+            for (int i = 0; i < numTables; i++) {
+                string tableName = reader.ReadString();
 
-				ParseStringTable(reader, tableName, parser);
-			}
+                ParseStringTable(reader, tableName, parser);
+            }
         }
 
-		public void ParseStringTable(IBitStream reader, string tableName, DemoParser parser)
-		{
+        public void ParseStringTable(IBitStream reader, string tableName, DemoParser parser)
+        {
             int numStrings = (int)reader.ReadInt(16);
 
-			if (tableName == "modelprecache") {
-				parser.modelprecache.Clear ();
-			}
+            if (tableName == "modelprecache") {
+                parser.modelprecache.Clear ();
+            }
 
             for (int i = 0; i < numStrings; i++)
             {
@@ -37,40 +37,40 @@ namespace SourceEngine.Demo.Parser.StringTable
 
                     byte[] data = reader.ReadBytes(userDataSize);
 
-					if (tableName == "userinfo") {
-						PlayerInfo info = PlayerInfo.ParseFrom(new BinaryReader(new MemoryStream(data)));
+                    if (tableName == "userinfo") {
+                        PlayerInfo info = PlayerInfo.ParseFrom(new BinaryReader(new MemoryStream(data)));
 
-						parser.RawPlayers[int.Parse(stringName)] = info;
-					} else if (tableName == "instancebaseline") {
-						int classid = int.Parse(stringName); //wtf volvo?
+                        parser.RawPlayers[int.Parse(stringName)] = info;
+                    } else if (tableName == "instancebaseline") {
+                        int classid = int.Parse(stringName); //wtf volvo?
 
-						parser.instanceBaseline[classid] = data;
-					} else if (tableName == "modelprecache") {
-						parser.modelprecache.Add (stringName);
-					}
+                        parser.instanceBaseline[classid] = data;
+                    } else if (tableName == "modelprecache") {
+                        parser.modelprecache.Add (stringName);
+                    }
                 }
             }
 
             // Client side stuff
-	        if ( reader.ReadBit() )
-	        {
-		        int numstrings = (int)reader.ReadInt(16);
-		        for ( int i = 0 ; i < numstrings; i++ )
-		        {
-			        reader.ReadString(); // stringname
+            if ( reader.ReadBit() )
+            {
+                int numstrings = (int)reader.ReadInt(16);
+                for ( int i = 0 ; i < numstrings; i++ )
+                {
+                    reader.ReadString(); // stringname
 
-			        if ( reader.ReadBit() )
-			        {
-				        int userDataSize = ( int )reader.ReadInt(16);
+                    if ( reader.ReadBit() )
+                    {
+                        int userDataSize = ( int )reader.ReadInt(16);
 
-				        reader.ReadBytes( userDataSize );
+                        reader.ReadBytes( userDataSize );
 
-			        }
-			        else
-			        {
-			        }
-		        }
-	        }
+                    }
+                    else
+                    {
+                    }
+                }
+            }
         }
     }
 }

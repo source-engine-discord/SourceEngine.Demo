@@ -5,7 +5,7 @@ using SourceEngine.Demo.Parser.Packet;
 
 namespace SourceEngine.Demo.Parser.DataTable
 {
-	class ServerClass : IDisposable
+    class ServerClass : IDisposable
     {
         public int ClassID;
         public int DataTableID;
@@ -13,66 +13,66 @@ namespace SourceEngine.Demo.Parser.DataTable
         public string DTName;
 
         public List<FlattenedPropEntry> FlattenedProps = new List<FlattenedPropEntry>();
-		public List<ServerClass> BaseClasses = new List<ServerClass> ();
+        public List<ServerClass> BaseClasses = new List<ServerClass> ();
 
 
-		public event EventHandler<EntityCreatedEventArgs> OnNewEntity;
+        public event EventHandler<EntityCreatedEventArgs> OnNewEntity;
 
-		internal void AnnounceNewEntity(Entity e)
-		{
-			if(OnNewEntity != null)
-				OnNewEntity(this, new EntityCreatedEventArgs(this, e));
-		}
+        internal void AnnounceNewEntity(Entity e)
+        {
+            if(OnNewEntity != null)
+                OnNewEntity(this, new EntityCreatedEventArgs(this, e));
+        }
 
-		public event EventHandler<EntityDestroyedEventArgs> OnDestroyEntity;
+        public event EventHandler<EntityDestroyedEventArgs> OnDestroyEntity;
 
-		internal void AnnounceDestroyedEntity(Entity e)
-		{
-			if (OnDestroyEntity != null)
-				OnDestroyEntity(this, new EntityDestroyedEventArgs(this, e));
-		}
+        internal void AnnounceDestroyedEntity(Entity e)
+        {
+            if (OnDestroyEntity != null)
+                OnDestroyEntity(this, new EntityDestroyedEventArgs(this, e));
+        }
 
-		public override string ToString()
-		{
-			return Name + " | " + DTName;
-		}
+        public override string ToString()
+        {
+            return Name + " | " + DTName;
+        }
 
 
-		public void Dispose ()
-		{
-			this.OnNewEntity = null;
-			this.OnDestroyEntity = null;
-		}
+        public void Dispose ()
+        {
+            this.OnNewEntity = null;
+            this.OnDestroyEntity = null;
+        }
     }
 
-	internal class FlattenedPropEntry
+    internal class FlattenedPropEntry
     {
-	    public SendTableProperty Prop { get; private set; }
+        public SendTableProperty Prop { get; private set; }
         public SendTableProperty ArrayElementProp { get; private set; }
-		public string PropertyName { get; private set; }
+        public string PropertyName { get; private set; }
 
-		public FlattenedPropEntry(string propertyName, SendTableProperty prop, SendTableProperty arrayElementProp)
-	    {
+        public FlattenedPropEntry(string propertyName, SendTableProperty prop, SendTableProperty arrayElementProp)
+        {
             this.Prop = prop;
             this.ArrayElementProp = arrayElementProp;
-			this.PropertyName = propertyName;
-	    }
+            this.PropertyName = propertyName;
+        }
 
-		public override string ToString()
-		{
-			return string.Format("[FlattenedPropEntry: PropertyName={2}, Prop={0}, ArrayElementProp={1}]", Prop, ArrayElementProp, PropertyName);
-		}
+        public override string ToString()
+        {
+            return string.Format("[FlattenedPropEntry: PropertyName={2}, Prop={0}, ArrayElementProp={1}]", Prop, ArrayElementProp, PropertyName);
+        }
 
     };
 
     class ExcludeEntry
     {
-	    public ExcludeEntry( string varName, string dtName, string excludingDT )
-	    {
+        public ExcludeEntry( string varName, string dtName, string excludingDT )
+        {
             VarName = varName;
             DTName = dtName;
             ExcludingDT = excludingDT;
-	    }
+        }
 
         public string VarName { get; private set; }
         public string DTName { get; private set; }
@@ -80,23 +80,23 @@ namespace SourceEngine.Demo.Parser.DataTable
     }
 
 
-	class EntityCreatedEventArgs : EventArgs
-	{
-		public ServerClass Class { get; private set; }
-		public Entity Entity { get; private set; }
+    class EntityCreatedEventArgs : EventArgs
+    {
+        public ServerClass Class { get; private set; }
+        public Entity Entity { get; private set; }
 
-		public EntityCreatedEventArgs(ServerClass c, Entity e)
-		{
-			this.Class = c;
-			this.Entity = e;
-		}
-	}
+        public EntityCreatedEventArgs(ServerClass c, Entity e)
+        {
+            this.Class = c;
+            this.Entity = e;
+        }
+    }
 
-	class EntityDestroyedEventArgs : EntityCreatedEventArgs
-	{
-		public EntityDestroyedEventArgs(ServerClass c, Entity e) : base(c, e)
-		{
+    class EntityDestroyedEventArgs : EntityCreatedEventArgs
+    {
+        public EntityDestroyedEventArgs(ServerClass c, Entity e) : base(c, e)
+        {
 
-		}
-	}
+        }
+    }
 }

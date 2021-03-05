@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SourceEngine.Demo.Stats.Models
 {
-	public class PlayerPositionsInstance
+    public class PlayerPositionsInstance
     {
         public int Round { get; set; }
         public int TimeInRound { get; set; }

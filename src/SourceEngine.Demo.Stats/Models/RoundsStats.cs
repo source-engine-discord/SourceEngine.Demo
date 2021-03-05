@@ -15,16 +15,16 @@ namespace SourceEngine.Demo.Stats.Models
         public string Winners { get; set; }
         public string WinMethod { get; set; }
         public string BombsitePlantedAt { get; set; }
-		public double? BombPlantPositionX { get; set; }
-		public double? BombPlantPositionY { get; set; }
-		public double? BombPlantPositionZ { get; set; }
-		public string BombsiteErrorMessage { get; set; }
+        public double? BombPlantPositionX { get; set; }
+        public double? BombPlantPositionY { get; set; }
+        public double? BombPlantPositionZ { get; set; }
+        public string BombsiteErrorMessage { get; set; }
         public bool PickedUpHostageA { get; set; }
         public bool PickedUpHostageB { get; set; }
         public bool PickedUpAllHostages { get; set; }
         public string HostageAPickedUpErrorMessage { get; set; }
         public string HostageBPickedUpErrorMessage { get; set; }
-		public bool RescuedHostageA { get; set; }
+        public bool RescuedHostageA { get; set; }
         public bool RescuedHostageB { get; set; }
         public bool RescuedAllHostages { get; set; }
         public double? RescuedHostageAPositionX { get; set; }

@@ -63,7 +63,7 @@ namespace SourceEngine.Demo.Stats.App
                         "-samefilename                                                  Uses the demo's filename as the output filename\n" +
                         "-samefolderstructure                                           Uses the demo's folder structure inside the root folder for the output json file\n" +
                         "-lowoutputmode                                                 Does not print out the progress bar and round completed messages to console\n" +
-						"\n"
+                        "\n"
                 );
         }
 
@@ -199,11 +199,11 @@ namespace SourceEngine.Demo.Stats.App
                 }
                 else if (arg == "-samefolderstructure")
                 {
-					sameFolderStructure = true;
+                    sameFolderStructure = true;
                 }
                 else if (arg == "-lowoutputmode")
                 {
-					lowOutputMode = true;
+                    lowOutputMode = true;
                 }
             }
 
@@ -306,8 +306,8 @@ namespace SourceEngine.Demo.Stats.App
                     {
                         string[] pathSplit = demo.Split('\\');
 
-						string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
-						bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
+                        string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
+                        bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
                         AddDemoInformation(demosInformation, demo, gamemodeoverride, testType, testdateoverride, isFaceitDemo, filenameSplit, pathSplit);
                     }
@@ -322,8 +322,8 @@ namespace SourceEngine.Demo.Stats.App
             {
                 try
                 {
-					string[] filenameSplit = demo.Split('.');
-					bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
+                    string[] filenameSplit = demo.Split('.');
+                    bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
                     AddDemoInformation(demosInformation, demo, gamemodeoverride, testType, testdateoverride, isFaceitDemo, filenameSplit, Array.Empty<string>());
 
@@ -343,37 +343,37 @@ namespace SourceEngine.Demo.Stats.App
             //Process all the found demos
             for (int i = 0; i < demosInformation.Count(); i++)
             {
-				Console.WriteLine($"Parsing demo {demosInformation[i].DemoName}");
+                Console.WriteLine($"Parsing demo {demosInformation[i].DemoName}");
 
                 MatchData mdTest = MatchData.FromDemoFile(demosInformation[i], parseChickens, parsePlayerPositions, hostagerescuezonecountoverride, lowOutputMode);
 
-				IEnumerable<MatchStartedEventArgs> mse = new List<MatchStartedEventArgs>();
-				IEnumerable<SwitchSidesEventArgs> sse = new List<SwitchSidesEventArgs>();
-				IEnumerable<FeedbackMessage> fme = new List<FeedbackMessage>();
-				IEnumerable<TeamPlayers> tpe = new List<TeamPlayers>();
+                IEnumerable<MatchStartedEventArgs> mse = new List<MatchStartedEventArgs>();
+                IEnumerable<SwitchSidesEventArgs> sse = new List<SwitchSidesEventArgs>();
+                IEnumerable<FeedbackMessage> fme = new List<FeedbackMessage>();
+                IEnumerable<TeamPlayers> tpe = new List<TeamPlayers>();
                 IEnumerable<PlayerHurt> ph = new List<PlayerHurt>();
                 IEnumerable<PlayerKilledEventArgs> pke = new List<PlayerKilledEventArgs>();
-				Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
-				IEnumerable<Equipment> pwe = new List<Equipment>();
-				IEnumerable<int> poe = new List<int>();
-				IEnumerable<BombPlanted> bpe = new List<BombPlanted>();
-				IEnumerable<BombExploded> bee = new List<BombExploded>();
-				IEnumerable<BombDefused> bde = new List<BombDefused>();
-				IEnumerable<HostageRescued> hre = new List<HostageRescued>();
-				IEnumerable<HostagePickedUp> hpu = new List<HostagePickedUp>();
-				IEnumerable<DisconnectedPlayer> dpe = new List<DisconnectedPlayer>();
-				IEnumerable<Team> te = new List<Team>();
-				IEnumerable<RoundEndReason> re = new List<RoundEndReason>();
-				IEnumerable<double> le = new List<double>();
-				IEnumerable<TeamEquipment> tes = new List<TeamEquipment>();
-				IEnumerable<NadeEventArgs> ge = new List<NadeEventArgs>();
-				//IEnumerable<SmokeEventArgs> gse = new List<SmokeEventArgs>();
-				//IEnumerable<FlashEventArgs> gfe = new List<FlashEventArgs>();
-				//IEnumerable<GrenadeEventArgs> gge = new List<GrenadeEventArgs>();
-				//IEnumerable<FireEventArgs> gie = new List<FireEventArgs>();
-				//IEnumerable<DecoyEventArgs> gde = new List<DecoyEventArgs>();
-				IEnumerable<ChickenKilledEventArgs> cke = new List<ChickenKilledEventArgs>();
-				IEnumerable<ShotFired> sfe = new List<ShotFired>();
+                Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
+                IEnumerable<Equipment> pwe = new List<Equipment>();
+                IEnumerable<int> poe = new List<int>();
+                IEnumerable<BombPlanted> bpe = new List<BombPlanted>();
+                IEnumerable<BombExploded> bee = new List<BombExploded>();
+                IEnumerable<BombDefused> bde = new List<BombDefused>();
+                IEnumerable<HostageRescued> hre = new List<HostageRescued>();
+                IEnumerable<HostagePickedUp> hpu = new List<HostagePickedUp>();
+                IEnumerable<DisconnectedPlayer> dpe = new List<DisconnectedPlayer>();
+                IEnumerable<Team> te = new List<Team>();
+                IEnumerable<RoundEndReason> re = new List<RoundEndReason>();
+                IEnumerable<double> le = new List<double>();
+                IEnumerable<TeamEquipment> tes = new List<TeamEquipment>();
+                IEnumerable<NadeEventArgs> ge = new List<NadeEventArgs>();
+                //IEnumerable<SmokeEventArgs> gse = new List<SmokeEventArgs>();
+                //IEnumerable<FlashEventArgs> gfe = new List<FlashEventArgs>();
+                //IEnumerable<GrenadeEventArgs> gge = new List<GrenadeEventArgs>();
+                //IEnumerable<FireEventArgs> gie = new List<FireEventArgs>();
+                //IEnumerable<DecoyEventArgs> gde = new List<DecoyEventArgs>();
+                IEnumerable<ChickenKilledEventArgs> cke = new List<ChickenKilledEventArgs>();
+                IEnumerable<ShotFired> sfe = new List<ShotFired>();
                 IEnumerable<PlayerPositionsInstance> ppe = new List<PlayerPositionsInstance>();
 
 
@@ -389,7 +389,7 @@ namespace SourceEngine.Demo.Stats.App
                 ph = (from player in mdTest.GetEvents<PlayerHurt>()
                      select (player as PlayerHurt));
 
-				pke = (from player in mdTest.GetEvents<PlayerKilledEventArgs>()
+                pke = (from player in mdTest.GetEvents<PlayerKilledEventArgs>()
                       select (player as PlayerKilledEventArgs));
 
                 pe.Add("Kills", from player in mdTest.GetEvents<PlayerKilledEventArgs>()
@@ -409,7 +409,7 @@ namespace SourceEngine.Demo.Stats.App
                 pwe = (from weapon in mdTest.GetEvents<PlayerKilledEventArgs>()
                       select (weapon as PlayerKilledEventArgs).Weapon);
 
-				poe = (from penetration in mdTest.GetEvents<PlayerKilledEventArgs>()
+                poe = (from penetration in mdTest.GetEvents<PlayerKilledEventArgs>()
                       select (penetration as PlayerKilledEventArgs).PenetratedObjects);
 
                 pe.Add("MVPs", from player in mdTest.GetEvents<RoundMVPEventArgs>()
@@ -427,7 +427,7 @@ namespace SourceEngine.Demo.Stats.App
                 pe.Add("Rescues", from player in mdTest.GetEvents<HostageRescued>()
                                   select (player as HostageRescued).Player);
 
-				bpe = (from plant in mdTest.GetEvents<BombPlanted>()
+                bpe = (from plant in mdTest.GetEvents<BombPlanted>()
                       select plant as BombPlanted)
                       .GroupBy(p => p.Round)
                       .Select(p => p.FirstOrDefault());
@@ -483,52 +483,52 @@ namespace SourceEngine.Demo.Stats.App
 
                 if (mdTest.passed)
                 {
-					// create the json output files using the data gathered
-					var processedData = new ProcessedData()
-					{
-						DemoInformation = demosInformation[i],
-						SameFilename = sameFilename,
-						SameFolderStructure = sameFolderStructure,
-						ParseChickens = parseChickens,
+                    // create the json output files using the data gathered
+                    var processedData = new ProcessedData()
+                    {
+                        DemoInformation = demosInformation[i],
+                        SameFilename = sameFilename,
+                        SameFolderStructure = sameFolderStructure,
+                        ParseChickens = parseChickens,
                         ParsePlayerPositions = parsePlayerPositions,
                         FoldersToProcess = foldersToProcess,
-						OutputRootFolder = outputRootFolder,
+                        OutputRootFolder = outputRootFolder,
                         tanookiStats = tanookiStats,
-						MatchStartValues = mse,
-						SwitchSidesValues = sse,
-						MessagesValues = fme,
-						TeamPlayersValues = tpe,
+                        MatchStartValues = mse,
+                        SwitchSidesValues = sse,
+                        MessagesValues = fme,
+                        TeamPlayersValues = tpe,
                         PlayerHurtValues = ph,
                         PlayerKilledEventsValues = pke,
-						PlayerValues = pe,
-						WeaponValues = pwe,
-						PenetrationValues = poe,
-						BombsitePlantValues = bpe,
-						BombsiteExplodeValues = bee,
-						BombsiteDefuseValues = bde,
-						HostageRescueValues = hre,
-						HostagePickedUpValues = hpu,
-						TeamValues = te,
-						RoundEndReasonValues = re,
-						RoundLengthValues = le,
-						TeamEquipmentValues = tes,
-						GrenadeValues = ge,
-						ChickenValues = cke,
-						ShotsFiredValues = sfe,
+                        PlayerValues = pe,
+                        WeaponValues = pwe,
+                        PenetrationValues = poe,
+                        BombsitePlantValues = bpe,
+                        BombsiteExplodeValues = bee,
+                        BombsiteDefuseValues = bde,
+                        HostageRescueValues = hre,
+                        HostagePickedUpValues = hpu,
+                        TeamValues = te,
+                        RoundEndReasonValues = re,
+                        RoundLengthValues = le,
+                        TeamEquipmentValues = tes,
+                        GrenadeValues = ge,
+                        ChickenValues = cke,
+                        ShotsFiredValues = sfe,
                         PlayerPositionsValues = ppe,
-						WriteTicks = true
-					};
+                        WriteTicks = true
+                    };
 
                     AllOutputData allOutputData = mdTest.CreateFiles(processedData);
 
                     passCount++;
 
-					Console.WriteLine($"Finished parsing demo {demosInformation[i].DemoName}.\n");
-				}
-				else
-				{
-					Console.WriteLine($"Failed parsing demo {demosInformation[i].DemoName}.\n");
-				}
+                    Console.WriteLine($"Finished parsing demo {demosInformation[i].DemoName}.\n");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed parsing demo {demosInformation[i].DemoName}.\n");
+                }
             }
 
             Console.CursorVisible = true;
@@ -550,7 +550,7 @@ namespace SourceEngine.Demo.Stats.App
             if (tpe.Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId)) || tpe.Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
             {
                 tanookiStats.Joined = true;
-                tanookiStats.RoundJoined = 0; // set incase he joined in warmup but does not play any rounds	
+                tanookiStats.RoundJoined = 0; // set incase he joined in warmup but does not play any rounds
 
                 IEnumerable<int> playedRoundsT = tpe.Where(t => t.Round > 0 && t.Terrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
                 IEnumerable<int> playedRoundsCT = tpe.Where(t => t.Round > 0 && t.CounterTerrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
@@ -565,7 +565,7 @@ namespace SourceEngine.Demo.Stats.App
 
             if (dpe.Any(d => d.PlayerDisconnectEventArgs.Player != null && d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId))
             {
-                // checks if he played a round later on than his last disconnect (he left and joined back)	
+                // checks if he played a round later on than his last disconnect (he left and joined back)
                 int finalDisconnectRound = dpe.Where(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId).Reverse().Select(r => r.Round).First();
                 tanookiStats.RoundLeft = (finalDisconnectRound > tanookiStats.RoundsLasted) ? finalDisconnectRound : tanookiStats.RoundLeft;
 

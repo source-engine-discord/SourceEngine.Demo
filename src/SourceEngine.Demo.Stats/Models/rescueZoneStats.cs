@@ -1,6 +1,6 @@
 ﻿namespace SourceEngine.Demo.Stats.Models
 {
-	public class rescueZoneStats
+    public class rescueZoneStats
     {
         public double? XPositionMin { get; set; }
         public double? YPositionMin { get; set; }

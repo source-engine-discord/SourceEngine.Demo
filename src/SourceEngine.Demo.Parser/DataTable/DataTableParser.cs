@@ -21,40 +21,40 @@ namespace SourceEngine.Demo.Parser.DataTable
 
         public List<SendTable> DataTables = new List<SendTable>();
         public List<ServerClass> ServerClasses = new List<ServerClass>();
-		List<ExcludeEntry> CurrentExcludes = new List<ExcludeEntry>();
-		List<ServerClass> CurrentBaseclasses = new List<ServerClass>();
+        List<ExcludeEntry> CurrentExcludes = new List<ExcludeEntry>();
+        List<ServerClass> CurrentBaseclasses = new List<ServerClass>();
 
-		public void ParsePacket(IBitStream bitstream)
+        public void ParsePacket(IBitStream bitstream)
         {
-			while (true)
+            while (true)
             {
-				var type = (SVC_Messages)bitstream.ReadProtobufVarInt();
-				if (type != SVC_Messages.svc_SendTable)
-					throw new Exception("Expected SendTable, got " + type);
+                var type = (SVC_Messages)bitstream.ReadProtobufVarInt();
+                if (type != SVC_Messages.svc_SendTable)
+                    throw new Exception("Expected SendTable, got " + type);
 
-				var size = bitstream.ReadProtobufVarInt();
-				bitstream.BeginChunk(size * 8);
-				var sendTable = new SendTable(bitstream);
-				bitstream.EndChunk();
+                var size = bitstream.ReadProtobufVarInt();
+                bitstream.BeginChunk(size * 8);
+                var sendTable = new SendTable(bitstream);
+                bitstream.EndChunk();
 
                 if (sendTable.IsEnd)
                     break;
 
-				DataTables.Add(sendTable);
+                DataTables.Add(sendTable);
             }
 
-			int serverClassCount = checked((int)bitstream.ReadInt(16));
+            int serverClassCount = checked((int)bitstream.ReadInt(16));
 
             for (int i = 0; i < serverClassCount; i++)
             {
                 ServerClass entry = new ServerClass();
-				entry.ClassID = checked((int)bitstream.ReadInt(16));
+                entry.ClassID = checked((int)bitstream.ReadInt(16));
 
                 if (entry.ClassID > serverClassCount)
                     throw new Exception("Invalid class index");
 
-				entry.Name = bitstream.ReadDataTableString();
-				entry.DTName = bitstream.ReadDataTableString();
+                entry.Name = bitstream.ReadDataTableString();
+                entry.DTName = bitstream.ReadDataTableString();
 
                 entry.DataTableID = DataTables.FindIndex(a => a.Name == entry.DTName);
 
@@ -70,14 +70,14 @@ namespace SourceEngine.Demo.Parser.DataTable
             SendTable table = DataTables[ServerClasses[serverClassIndex].DataTableID];
 
             CurrentExcludes.Clear();
-			CurrentBaseclasses = new List<ServerClass> (); //NOT .clear because we use *this* reference
-			//LITERALLY 3 lines later. @main--, this is warning for you.
+            CurrentBaseclasses = new List<ServerClass> (); //NOT .clear because we use *this* reference
+            //LITERALLY 3 lines later. @main--, this is warning for you.
 
             GatherExcludesAndBaseclasses(table, true);
 
-			ServerClasses [serverClassIndex].BaseClasses = CurrentBaseclasses;
+            ServerClasses [serverClassIndex].BaseClasses = CurrentBaseclasses;
 
-			GatherProps(table, serverClassIndex, "");
+            GatherProps(table, serverClassIndex, "");
 
             var flattenedProps = ServerClasses[serverClassIndex].FlattenedProps;
 
@@ -121,7 +121,7 @@ namespace SourceEngine.Demo.Parser.DataTable
 
         }
 
-		void GatherExcludesAndBaseclasses(SendTable sendTable, bool collectBaseClasses)
+        void GatherExcludesAndBaseclasses(SendTable sendTable, bool collectBaseClasses)
         {
             CurrentExcludes.AddRange(
                 sendTable.Properties
@@ -131,26 +131,26 @@ namespace SourceEngine.Demo.Parser.DataTable
 
             foreach (var prop in sendTable.Properties.Where(a => a.Type == SendPropertyType.DataTable))
             {
-				if (collectBaseClasses && prop.Name == "baseclass") {
-					GatherExcludesAndBaseclasses (GetTableByName (prop.DataTableName), true);
-					CurrentBaseclasses.Add (FindByDTName (prop.DataTableName));
-				} else {
-					GatherExcludesAndBaseclasses (GetTableByName (prop.DataTableName), false);
-				}
+                if (collectBaseClasses && prop.Name == "baseclass") {
+                    GatherExcludesAndBaseclasses (GetTableByName (prop.DataTableName), true);
+                    CurrentBaseclasses.Add (FindByDTName (prop.DataTableName));
+                } else {
+                    GatherExcludesAndBaseclasses (GetTableByName (prop.DataTableName), false);
+                }
             }
         }
 
-		void GatherProps(SendTable table, int serverClassIndex, string prefix)
+        void GatherProps(SendTable table, int serverClassIndex, string prefix)
         {
             List<FlattenedPropEntry> tmpFlattenedProps = new List<FlattenedPropEntry>();
-			GatherProps_IterateProps(table, serverClassIndex, tmpFlattenedProps, prefix);
+            GatherProps_IterateProps(table, serverClassIndex, tmpFlattenedProps, prefix);
 
             List<FlattenedPropEntry> flattenedProps = ServerClasses[serverClassIndex].FlattenedProps;
 
             flattenedProps.AddRange(tmpFlattenedProps);
         }
 
-		void GatherProps_IterateProps(SendTable table, int ServerClassIndex, List<FlattenedPropEntry> flattenedProps, string prefix)
+        void GatherProps_IterateProps(SendTable table, int ServerClassIndex, List<FlattenedPropEntry> flattenedProps, string prefix)
         {
             for (int i = 0; i < table.Properties.Count; i++)
             {
@@ -165,27 +165,27 @@ namespace SourceEngine.Demo.Parser.DataTable
 
                     if (property.Flags.HasFlagFast(SendPropertyFlags.Collapsible))
                     {
-						//we don't prefix Collapsible stuff, since it is just derived mostly
-						GatherProps_IterateProps(subTable, ServerClassIndex, flattenedProps, prefix);
+                        //we don't prefix Collapsible stuff, since it is just derived mostly
+                        GatherProps_IterateProps(subTable, ServerClassIndex, flattenedProps, prefix);
                     }
                     else
                     {
-						//We do however prefix everything else
+                        //We do however prefix everything else
 
-						string nfix = prefix + ((property.Name.Length > 0) ? property.Name + "." : "");
+                        string nfix = prefix + ((property.Name.Length > 0) ? property.Name + "." : "");
 
-						GatherProps(subTable, ServerClassIndex, nfix);
+                        GatherProps(subTable, ServerClassIndex, nfix);
                     }
                 }
                 else
                 {
                     if (property.Type == SendPropertyType.Array)
                     {
-						flattenedProps.Add(new FlattenedPropEntry(prefix + property.Name, property, table.Properties[i - 1]));
+                        flattenedProps.Add(new FlattenedPropEntry(prefix + property.Name, property, table.Properties[i - 1]));
                     }
                     else
                     {
-						flattenedProps.Add(new FlattenedPropEntry(prefix + property.Name, property, null));
+                        flattenedProps.Add(new FlattenedPropEntry(prefix + property.Name, property, null));
                     }
                 }
 
@@ -205,14 +205,14 @@ namespace SourceEngine.Demo.Parser.DataTable
 
 
 
-		public ServerClass FindByName(string className)
-		{
-			return ServerClasses.Single(a => a.Name == className);
-		}
+        public ServerClass FindByName(string className)
+        {
+            return ServerClasses.Single(a => a.Name == className);
+        }
 
-		private ServerClass FindByDTName(string dtName)
-		{
-			return ServerClasses.Single(a => a.DTName == dtName);
-		}
+        private ServerClass FindByDTName(string dtName)
+        {
+            return ServerClasses.Single(a => a.DTName == dtName);
+        }
     }
 }
