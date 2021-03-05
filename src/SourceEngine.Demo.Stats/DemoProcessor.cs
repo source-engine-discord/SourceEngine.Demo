@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 using Newtonsoft.Json;
 
 using SourceEngine.Demo.Parser;
-using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Demo.Parser.Constants;
+using SourceEngine.Demo.Stats.Models;
 
 namespace SourceEngine.Demo.Stats
 {

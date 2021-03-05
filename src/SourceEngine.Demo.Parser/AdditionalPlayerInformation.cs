@@ -1,12 +1,3 @@
-using SourceEngine.Demo.Parser.Messages;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Diagnostics;
-using System.Text;
-
 namespace SourceEngine.Demo.Parser
 {
     public class AdditionalPlayerInformation

@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Linq;
 
-using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Parser.BitStreamImpl;
 using System.Collections.Generic;
 

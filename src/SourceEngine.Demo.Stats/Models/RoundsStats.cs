@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SourceEngine.Demo.Stats.Models
+﻿namespace SourceEngine.Demo.Stats.Models
 {
     public class roundsStats
     {

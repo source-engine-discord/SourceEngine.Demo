@@ -1,7 +1,4 @@
 ﻿using SourceEngine.Demo.Parser;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SourceEngine.Demo.Stats.Models
 {

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 
 using SourceEngine.Demo.Parser;
-using SourceEngine.Demo.Stats.Models;
 using SourceEngine.Demo.Parser.Constants;
-using System.Globalization;
+using SourceEngine.Demo.Stats.Models;
 
 namespace SourceEngine.Demo.Stats.App
 {

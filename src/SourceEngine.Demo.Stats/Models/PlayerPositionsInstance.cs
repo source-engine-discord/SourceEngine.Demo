@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SourceEngine.Demo.Stats.Models
+﻿namespace SourceEngine.Demo.Stats.Models
 {
     public class PlayerPositionsInstance
     {

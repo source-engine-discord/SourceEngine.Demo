@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SourceEngine.Demo.Parser.Messages
+﻿namespace SourceEngine.Demo.Parser.Messages
 {
     #if !SLOW_PROTOBUF
     public enum NET_Messages
