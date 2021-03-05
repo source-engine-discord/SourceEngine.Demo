@@ -85,23 +85,23 @@ namespace SourceEngine.Demo.Stats
                 if (!playerTicks.ContainsKey(p.UserID))
                 {
                     // check if player has been added twice with different UserIDs
-                    var duplicate = playerTicks.Where(x => x.Value.detectedName == p.Name).FirstOrDefault();
+                    (int userId, TickCounter counter) = playerTicks.FirstOrDefault(x => x.Value.detectedName == p.Name);
 
-                    if (duplicate.Key != 0)
+                    if (userId != 0)
                     {
                         // copy duplicate's information across
                         playerTicks.Add(
                             p.UserID,
                             new TickCounter()
                             {
-                                detectedName = duplicate.Value.detectedName,
-                                ticksAlive = duplicate.Value.ticksAlive,
-                                ticksOnServer = duplicate.Value.ticksOnServer,
-                                ticksPlaying = duplicate.Value.ticksPlaying,
+                                detectedName = counter.detectedName,
+                                ticksAlive = counter.ticksAlive,
+                                ticksOnServer = counter.ticksOnServer,
+                                ticksPlaying = counter.ticksPlaying,
                             }
                         );
 
-                        duplicateIdToRemoveTicks = duplicate.Key;
+                        duplicateIdToRemoveTicks = userId;
                     }
                     else
                     {
@@ -1397,36 +1397,19 @@ namespace SourceEngine.Demo.Stats
                     }
 
                     //win method
-                    switch (roundsWonReasons[i].ToString())
+                    reason = roundsWonReasons[i].ToString() switch
                     {
-                        case winReasonTKills:
-                            reason = "T Kills";
-                            break;
-                        case winReasonCtKills:
-                            reason = "CT Kills";
-                            break;
-                        case winReasonBombed:
-                            reason = "Bombed";
-                            break;
-                        case winReasonDefused:
-                            reason = "Defused";
-                            break;
-                        case winReasonRescued:
-                            reason = "HostagesRescued";
-                            break;
-                        case winReasonNotRescued:
-                            reason = "HostagesNotRescued";
-                            break;
-                        case winReasonTSaved:
-                            reason = "TSaved";
-                            break;
-                        case winReasonDangerZone:
-                            reason = "Danger Zone Won";
-                            break;
-                        case winReasonUnknown:
-                            reason = "Unknown";
-                            break;
-                    }
+                        winReasonTKills => "T Kills",
+                        winReasonCtKills => "CT Kills",
+                        winReasonBombed => "Bombed",
+                        winReasonDefused => "Defused",
+                        winReasonRescued => "HostagesRescued",
+                        winReasonNotRescued => "HostagesNotRescued",
+                        winReasonTSaved => "TSaved",
+                        winReasonDangerZone => "Danger Zone Won",
+                        winReasonUnknown => "Unknown",
+                        _ => reason,
+                    };
 
                     // team count values
                     int roundNum = i + 1;
@@ -2604,10 +2587,7 @@ namespace SourceEngine.Demo.Stats
         {
             Type t = typeof(T);
 
-            if (events.ContainsKey(t))
-                return events[t];
-
-            return new List<object>();
+            return events.ContainsKey(t) ? events[t] : new List<object>();
         }
 
         public List<Team> GetRoundsWonTeams(IEnumerable<Team> teamValues)

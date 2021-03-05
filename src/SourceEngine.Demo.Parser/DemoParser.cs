@@ -698,9 +698,9 @@ namespace SourceEngine.Demo.Parser
 
             while (StartBurnEvents.Count > 0)
             {
-                var fireTup = StartBurnEvents.Dequeue();
-                fireTup.Item2.ThrownBy = InfernoOwners[fireTup.Item1];
-                RaiseFireWithOwnerStart(fireTup.Item2);
+                (int entityId, FireEventArgs eventArgs) = StartBurnEvents.Dequeue();
+                eventArgs.ThrownBy = InfernoOwners[entityId];
+                RaiseFireWithOwnerStart(eventArgs);
             }
 
             if (b)

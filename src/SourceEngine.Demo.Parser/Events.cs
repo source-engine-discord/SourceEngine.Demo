@@ -466,16 +466,16 @@ namespace SourceEngine.Demo.Parser
 
         public Equipment(Equipment equipment)
         {
-            if (equipment != null)
-            {
-                EntityID = equipment.EntityID;
-                Weapon = equipment.Weapon;
-                OriginalString = equipment.OriginalString;
-                SkinID = equipment.SkinID;
-                AmmoInMagazine = equipment.AmmoInMagazine;
-                AmmoType = equipment.AmmoType;
-                Owner = new Player(equipment.Owner);
-            }
+            if (equipment == null)
+                return;
+
+            EntityID = equipment.EntityID;
+            Weapon = equipment.Weapon;
+            OriginalString = equipment.OriginalString;
+            SkinID = equipment.SkinID;
+            AmmoInMagazine = equipment.AmmoInMagazine;
+            AmmoType = equipment.AmmoType;
+            Owner = new Player(equipment.Owner);
         }
 
         internal int EntityID { get; set; }

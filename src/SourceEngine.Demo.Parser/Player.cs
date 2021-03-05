@@ -24,36 +24,36 @@ namespace SourceEngine.Demo.Parser
 
         public Player(Player player)
         {
-            if (player != null)
-            {
-                Name = player.Name;
-                SteamID = player.SteamID;
-                Position = player.Position;
-                EntityID = player.EntityID;
-                UserID = player.UserID;
-                HP = player.HP;
-                Armor = player.Armor;
-                LastAlivePosition = player.LastAlivePosition;
-                Velocity = player.Velocity;
-                ViewDirectionX = player.ViewDirectionX;
-                ViewDirectionY = player.ViewDirectionY;
-                FlashDuration = player.FlashDuration;
-                Money = player.Money;
-                CurrentEquipmentValue = player.CurrentEquipmentValue;
-                FreezetimeEndEquipmentValue = player.FreezetimeEndEquipmentValue;
-                RoundStartEquipmentValue = player.RoundStartEquipmentValue;
-                IsDucking = player.IsDucking;
-                Entity = player.Entity;
-                Disconnected = player.Disconnected;
-                ActiveWeaponID = player.ActiveWeaponID;
-                rawWeapons = player.rawWeapons;
-                Team = player.Team;
-                HasDefuseKit = player.HasDefuseKit;
-                HasHelmet = player.HasHelmet;
-                TeamID = player.TeamID;
-                AmmoLeft = player.AmmoLeft;
-                AdditionaInformations = player.AdditionaInformations;
-            }
+            if (player == null)
+                return;
+
+            Name = player.Name;
+            SteamID = player.SteamID;
+            Position = player.Position;
+            EntityID = player.EntityID;
+            UserID = player.UserID;
+            HP = player.HP;
+            Armor = player.Armor;
+            LastAlivePosition = player.LastAlivePosition;
+            Velocity = player.Velocity;
+            ViewDirectionX = player.ViewDirectionX;
+            ViewDirectionY = player.ViewDirectionY;
+            FlashDuration = player.FlashDuration;
+            Money = player.Money;
+            CurrentEquipmentValue = player.CurrentEquipmentValue;
+            FreezetimeEndEquipmentValue = player.FreezetimeEndEquipmentValue;
+            RoundStartEquipmentValue = player.RoundStartEquipmentValue;
+            IsDucking = player.IsDucking;
+            Entity = player.Entity;
+            Disconnected = player.Disconnected;
+            ActiveWeaponID = player.ActiveWeaponID;
+            rawWeapons = player.rawWeapons;
+            Team = player.Team;
+            HasDefuseKit = player.HasDefuseKit;
+            HasHelmet = player.HasHelmet;
+            TeamID = player.TeamID;
+            AmmoLeft = player.AmmoLeft;
+            AdditionaInformations = player.AdditionaInformations;
         }
 
         public string Name { get; set; }
@@ -92,15 +92,7 @@ namespace SourceEngine.Demo.Parser
 
         public bool Disconnected { get; set; }
 
-        public Equipment ActiveWeapon
-        {
-            get
-            {
-                if (ActiveWeaponID == DemoParser.INDEX_MASK) return null;
-
-                return rawWeapons[ActiveWeaponID];
-            }
-        }
+        public Equipment ActiveWeapon => ActiveWeaponID == DemoParser.INDEX_MASK ? null : rawWeapons[ActiveWeaponID];
 
         public IEnumerable<Equipment> Weapons => rawWeapons.Values;
 
