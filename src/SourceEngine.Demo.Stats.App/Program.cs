@@ -29,7 +29,7 @@ namespace SourceEngine.Demo.Stats.App
             while ((ln = sr.ReadLine()) != null)
             {
                 string[] elements = ln.Split('=');
-                if (elements.Count() == 2)
+                if (elements.Length == 2)
                     keyVals.Add(elements[0], elements[1]);
             }
 
@@ -91,19 +91,19 @@ namespace SourceEngine.Demo.Stats.App
             List<string> foldersToProcess = new List<string>();
             List<string> demosToProcess = new List<string>();
 
-            if (args.Count() == 0)
+            if (args.Length == 0)
             {
                 helpText();
                 return;
             }
 
-            for (int i = 0; i < args.Count(); i++)
+            for (int i = 0; i < args.Length; i++)
             {
                 var arg = args[i].ToLower();
 
                 if (arg == "-config")
                 {
-                    if (i < args.Count())
+                    if (i < args.Length)
                         cfgPath = args[i + 1];
 
                     i++;
@@ -112,7 +112,7 @@ namespace SourceEngine.Demo.Stats.App
                 {
                     bool searching = true;
 
-                    while (i < args.Count() - 1 && searching)
+                    while (i < args.Length - 1 && searching)
                     {
                         i++;
 
@@ -128,7 +128,7 @@ namespace SourceEngine.Demo.Stats.App
                 {
                     bool searching = true;
 
-                    while (i < args.Count() - 1 && searching)
+                    while (i < args.Length - 1 && searching)
                     {
                         i++;
 
@@ -142,28 +142,28 @@ namespace SourceEngine.Demo.Stats.App
                 }
                 else if (arg == "-gamemodeoverride")
                 {
-                    if (i < args.Count())
+                    if (i < args.Length)
                         gamemodeoverride = args[i + 1];
 
                     i++;
                 }
                 else if (arg == "-testtype")
                 {
-                    if (i < args.Count())
+                    if (i < args.Length)
                         testType = args[i + 1];
 
                     i++;
                 }
                 else if (arg == "-testdateoverride")
                 {
-                    if (i < args.Count())
+                    if (i < args.Length)
                         testdateoverride = args[i + 1];
 
                     i++;
                 }
                 else if (arg == "-hostagerescuezonecountoverride")
                 {
-                    if (i < args.Count())
+                    if (i < args.Length)
                         if (!int.TryParse(args[i + 1], out hostagerescuezonecountoverride))
                             Debug.Error(
                                 "-hostagerescuezonecountoverride value is not a valid integer. Make sure that a number is provided."
@@ -323,7 +323,7 @@ namespace SourceEngine.Demo.Stats.App
                     {
                         string[] pathSplit = demo.Split('\\');
 
-                        string[] filenameSplit = pathSplit[pathSplit.Count() - 1].Split('.');
+                        string[] filenameSplit = pathSplit[pathSplit.Length - 1].Split('.');
                         bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
                         AddDemoInformation(
@@ -368,7 +368,7 @@ namespace SourceEngine.Demo.Stats.App
                 }
             }
 
-            Debug.Info("Starting processing of {0} demos.\n", demosInformation.Count());
+            Debug.Info("Starting processing of {0} demos.\n", demosInformation.Count);
             DateTime startTime = DateTime.Now;
 
             int passCount = 0;
@@ -376,7 +376,7 @@ namespace SourceEngine.Demo.Stats.App
             Console.CursorVisible = false;
 
             //Process all the found demos
-            for (int i = 0; i < demosInformation.Count(); i++)
+            for (int i = 0; i < demosInformation.Count; i++)
             {
                 Console.WriteLine($"Parsing demo {demosInformation[i].DemoName}");
 
@@ -582,7 +582,7 @@ namespace SourceEngine.Demo.Stats.App
 
             Debug.White("Processing took {0} minutes\n", (end - startTime).TotalMinutes);
             Debug.White("Passed: {0}\n", passCount);
-            Debug.White("Failed: {0}\n", demosInformation.Count() - passCount);
+            Debug.White("Failed: {0}\n", demosInformation.Count - passCount);
         }
 
         private static tanookiStats tanookiStatsCreator(
@@ -666,12 +666,12 @@ namespace SourceEngine.Demo.Stats.App
             }
             else
             {
-                if (pathSplit.Count() > 0) // searching by folder
-                    filenameSplit = pathSplit[pathSplit.Count() - 1].Split('_', '.', '-');
+                if (pathSplit.Length > 0) // searching by folder
+                    filenameSplit = pathSplit[pathSplit.Length - 1].Split('_', '.', '-');
                 else // searching by demo
                     filenameSplit = demo.Split('_', '.', '-');
 
-                var secondToLastString = filenameSplit[filenameSplit.Count() - 2];
+                var secondToLastString = filenameSplit[filenameSplit.Length - 2];
                 bool isSEDiscordDemo = secondToLastString == "casual" || secondToLastString == "comp" ? true : false;
                 bool isMapcoreDiscordDemo = filenameSplit.Any(x => x.Contains("MAPCORE"));
 
@@ -683,7 +683,7 @@ namespace SourceEngine.Demo.Stats.App
 
                     mapname = $"{filenameSplit[3]}";
 
-                    for (int i = 4; i < filenameSplit.Count() - 2; i++)
+                    for (int i = 4; i < filenameSplit.Length - 2; i++)
                         mapname += $"_{filenameSplit[i]}";
                 }
                 else if (isMapcoreDiscordDemo)
@@ -692,7 +692,7 @@ namespace SourceEngine.Demo.Stats.App
                         ? testdateoverride
                         : $"{filenameSplit[1].Substring(6, 2)}/{filenameSplit[1].Substring(4, 2)}/{filenameSplit[1].Substring(0, 4)}";
 
-                    var index = filenameSplit.Count() - 1 - Array.IndexOf(
+                    var index = filenameSplit.Length - 1 - Array.IndexOf(
                         filenameSplit.Reverse().ToArray(),
                         "MAPCORE"
                     ); // gets the last index where the value was "MAPCORE"

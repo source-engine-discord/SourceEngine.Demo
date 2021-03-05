@@ -1333,9 +1333,9 @@ namespace SourceEngine.Demo.Parser
 
                         trigger.Min = new Vector()
                         {
-                            X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count() - 1].X + vector.Value.X,
-                            Y = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count() - 1].Y + vector.Value.Y,
-                            Z = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count() - 1].Z + vector.Value.Z,
+                            X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count - 1].X + vector.Value.X,
+                            Y = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count - 1].Y + vector.Value.Y,
+                            Z = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count - 1].Z + vector.Value.Z,
                         };
                     }
                     else // is defuse
@@ -1353,9 +1353,9 @@ namespace SourceEngine.Demo.Parser
 
                         trigger.Max = new Vector()
                         {
-                            X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count() - 1].X + vector.Value.X,
-                            Y = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count() - 1].Y + vector.Value.Y,
-                            Z = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count() - 1].Z + vector.Value.Z,
+                            X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count - 1].X + vector.Value.X,
+                            Y = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count - 1].Y + vector.Value.Y,
+                            Z = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count - 1].Z + vector.Value.Z,
                         };
                     }
                     else // is defuse

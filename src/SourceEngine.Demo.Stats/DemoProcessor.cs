@@ -216,7 +216,7 @@ namespace SourceEngine.Demo.Stats
             {
                 foreach (PlayerPositionEventArgs playerPosition in e.PlayerPositions)
                 {
-                    if (md.events.Count() > 0
+                    if (md.events.Count > 0
                         && md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs"))
                     {
                         int round = GetCurrentRoundNum(md, gamemode);
@@ -231,7 +231,7 @@ namespace SourceEngine.Demo.Stats
                             var freezetimeEndedEventLast =
                                 (FreezetimeEndedEventArgs)freezetimeEndedEvents.LastOrDefault();
 
-                            var freezetimeEndedThisRound = freezetimeEndedEvents.Count() >= round;
+                            var freezetimeEndedThisRound = freezetimeEndedEvents.Count >= round;
 
                             if (playerAlive && freezetimeEndedThisRound)
                             {
@@ -263,7 +263,7 @@ namespace SourceEngine.Demo.Stats
                 List<FeedbackMessage> currentfeedbackMessages = new List<FeedbackMessage>();
 
                 //stores all fb messages so that they aren't lost when stats are reset
-                if (md.events.Count() > 0 && md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
+                if (md.events.Count > 0 && md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
                     foreach (FeedbackMessage message in md.events.Where(k => k.Key.Name.ToString() == "FeedbackMessage")
                         .Select(v => v.Value).ElementAt(0))
                     {
@@ -305,7 +305,7 @@ namespace SourceEngine.Demo.Stats
                 //print rounds complete out to console
                 if (!lowOutputMode)
                 {
-                    int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+                    int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                     Console.WriteLine("\n");
                     Console.WriteLine("Match restarted.");
@@ -361,12 +361,12 @@ namespace SourceEngine.Demo.Stats
                             .ElementAt(0)
                         : null;
 
-                    int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents?.Count() > 0
-                        ? roundsOfficiallyEndedEvents.Count()
+                    int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents?.Count > 0
+                        ? roundsOfficiallyEndedEvents.Count
                         : 0;
 
                     int numOfFreezetimesEnded =
-                        freezetimesEndedEvents?.Count() > 0 ? freezetimesEndedEvents.Count() : 0;
+                        freezetimesEndedEvents?.Count > 0 ? freezetimesEndedEvents.Count : 0;
 
                     float timeInRound = 0; // Stays as '0' if sent during freezetime
 
@@ -416,13 +416,13 @@ namespace SourceEngine.Demo.Stats
                 var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                     .Select(v => v.Value);
 
-                int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count() : 0;
+                int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
                 int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Any()
-                    ? roundsOfficiallyEndedEvents.ElementAt(0).Count()
+                    ? roundsOfficiallyEndedEvents.ElementAt(0).Count
                     : 0;
 
                 int numOfFreezetimesEnded =
-                    freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+                    freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count : 0;
 
                 //Console.WriteLine("dp.RoundEnd -- " + numOfRoundsEnded + " - " + numOfRoundsOfficiallyEnded + " - " + numOfFreezetimesEnded);
 
@@ -442,7 +442,7 @@ namespace SourceEngine.Demo.Stats
                         }
                     );
 
-                    numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count();
+                    numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count;
                 }
 
                 // if round_freeze_end event did not get fired in this round due to error
@@ -455,7 +455,7 @@ namespace SourceEngine.Demo.Stats
                         }
                     );
 
-                    numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count();
+                    numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count;
 
                     // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
                     if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
@@ -481,13 +481,13 @@ namespace SourceEngine.Demo.Stats
                 var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                     .Select(v => v.Value);
 
-                int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count() : 0;
+                int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
                 int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Any()
-                    ? roundsOfficiallyEndedEvents.ElementAt(0).Count()
+                    ? roundsOfficiallyEndedEvents.ElementAt(0).Count
                     : 0;
 
                 int numOfFreezetimesEnded =
-                    freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+                    freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count : 0;
 
                 //Console.WriteLine("dp.RoundOfficiallyEnded -- " + numOfRoundsEnded + " - " + numOfRoundsOfficiallyEnded + " - " + numOfFreezetimesEnded);
 
@@ -504,7 +504,7 @@ namespace SourceEngine.Demo.Stats
                         }
                     );
 
-                    numOfRoundsEnded = roundsEndedEvents.ElementAt(0).Count();
+                    numOfRoundsEnded = roundsEndedEvents.ElementAt(0).Count;
                 }
 
                 // if round_freeze_end event did not get fired in this round due to error
@@ -517,7 +517,7 @@ namespace SourceEngine.Demo.Stats
                         }
                     );
 
-                    numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count();
+                    numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count;
 
                     // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
                     if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
@@ -540,7 +540,7 @@ namespace SourceEngine.Demo.Stats
                 //print rounds complete out to console
                 if (!lowOutputMode)
                 {
-                    int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+                    int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                     //stops the progress bar getting in the way of the first row
                     if (roundsCount == 1)
@@ -552,7 +552,7 @@ namespace SourceEngine.Demo.Stats
 
             dp.SwitchSides += (object sender, SwitchSidesEventArgs e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 SwitchSidesEventArgs switchSidesEventArgs =
                     new SwitchSidesEventArgs()
@@ -575,11 +575,11 @@ namespace SourceEngine.Demo.Stats
                     .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
                 int numOfFreezetimesEnded =
-                    freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+                    freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count : 0;
 
-                int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count() : 0;
+                int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
                 int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Any()
-                    ? roundsOfficiallyEndedEvents.ElementAt(0).Count()
+                    ? roundsOfficiallyEndedEvents.ElementAt(0).Count
                     : 0;
 
                 //Console.WriteLine("dp.FreezetimeEnded -- Ended: " + numOfRoundsEnded + " - " + numOfRoundsOfficiallyEnded + " - " + numOfFreezetimesEnded);
@@ -607,7 +607,7 @@ namespace SourceEngine.Demo.Stats
                         }
                     );
 
-                    numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count();
+                    numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count;
 
                     dp.stopParsingDemo =
                         true; // forcefully stops the demo from being parsed any further to avoid events
@@ -630,7 +630,7 @@ namespace SourceEngine.Demo.Stats
                         }
                     );
 
-                    numOfRoundsEnded = roundsEndedEvents.ElementAt(0).Count();
+                    numOfRoundsEnded = roundsEndedEvents.ElementAt(0).Count;
                 }
 
                 // if round_officially_ended event did not get fired in the previous round due to error
@@ -649,13 +649,13 @@ namespace SourceEngine.Demo.Stats
                         }
                     );
 
-                    numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count();
+                    numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count;
                 }
 
                 md.addEvent(typeof(FreezetimeEndedEventArgs), e);
 
                 //work out teams at current round
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
                 var players = dp.PlayingParticipants;
 
                 TeamPlayers teams = new TeamPlayers()
@@ -783,7 +783,7 @@ namespace SourceEngine.Demo.Stats
             // BOMB EVENTS =====================================================
             dp.BombPlanted += (object sender, BombEventArgs e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 BombPlanted bombPlanted = new BombPlanted()
                 {
@@ -798,7 +798,7 @@ namespace SourceEngine.Demo.Stats
 
             dp.BombExploded += (object sender, BombEventArgs e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 BombExploded bombExploded = new BombExploded()
                 {
@@ -813,7 +813,7 @@ namespace SourceEngine.Demo.Stats
 
             dp.BombDefused += (object sender, BombEventArgs e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 BombDefused bombDefused = new BombDefused()
                 {
@@ -830,7 +830,7 @@ namespace SourceEngine.Demo.Stats
             // HOSTAGE EVENTS =====================================================
             dp.HostageRescued += (object sender, HostageRescuedEventArgs e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 HostageRescued hostageRescued = new HostageRescued
                 {
@@ -848,7 +848,7 @@ namespace SourceEngine.Demo.Stats
             // HOSTAGE EVENTS =====================================================
             dp.HostagePickedUp += (object sender, HostagePickedUpEventArgs e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 HostagePickedUp hostagePickedUp = new HostagePickedUp
                 {
@@ -987,7 +987,7 @@ namespace SourceEngine.Demo.Stats
                     ? processedData.DemoInformation.TestDate.Split('/')
                     : null;
 
-            var mapDateString = mapDateSplit != null && mapDateSplit.Count() >= 3
+            var mapDateString = mapDateSplit != null && mapDateSplit.Length >= 3
                 ? mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]
                 : string.Empty;
 
@@ -995,7 +995,7 @@ namespace SourceEngine.Demo.Stats
                 ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/')
                 : new string[] { processedData.DemoInformation.MapName };
 
-            var mapNameString = mapNameSplit.Count() > 2 ? mapNameSplit[2] : mapNameSplit[0];
+            var mapNameString = mapNameSplit.Length > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
             var dataAndPlayerNames = GetDataAndPlayerNames(processedData);
 
@@ -1163,11 +1163,11 @@ namespace SourceEngine.Demo.Stats
             };
 
             mapInfo.MapName =
-                mapNameSplit.Count() > 2
+                mapNameSplit.Length > 2
                     ? mapNameSplit[2]
                     : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
 
-            mapInfo.WorkshopID = mapNameSplit.Count() > 2 ? mapNameSplit[1] : "unknown";
+            mapInfo.WorkshopID = mapNameSplit.Length > 2 ? mapNameSplit[1] : "unknown";
             mapInfo.DemoName =
                 processedData.DemoInformation.DemoName.Split('\\').Last()
                     .Replace(
@@ -1189,8 +1189,8 @@ namespace SourceEngine.Demo.Stats
 
             // work out the gamemode if it wasn't provided as a parameter
             if (processedData.TeamPlayersValues.Any(
-                    t => t.Terrorists.Count() > 10
-                        && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() == 0)
+                    t => t.Terrorists.Count > 10
+                        && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count == 0)
                 ) || // assume danger zone if more than 10 Terrorists and 0 CounterTerrorists
                 dp.hostageAIndex > -1 && dp.hostageBIndex > -1
                 && !processedData.MatchStartValues.Any(
@@ -1201,8 +1201,8 @@ namespace SourceEngine.Demo.Stats
                 mapInfo.GameMode = Gamemodes.DangerZone;
             }
             else if (processedData.TeamPlayersValues.Any(
-                t => t.Terrorists.Count() > 2
-                    && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() > 2)
+                t => t.Terrorists.Count > 2
+                    && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count > 2)
             ))
             {
                 if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1
@@ -1344,9 +1344,9 @@ namespace SourceEngine.Demo.Stats
             var roundsWonReasons = GetRoundsWonReasons(processedData.RoundEndReasonValues);
             int totalRoundsWonTeamAlpha = 0, totalRoundsWonTeamBeta = 0;
 
-            for (int i = 0; i < roundsWonTeams.Count(); i++)
+            for (int i = 0; i < roundsWonTeams.Count; i++)
             {
-                if (roundsWonReasons.Count() > i) // game was abandoned early
+                if (roundsWonReasons.Count > i) // game was abandoned early
                 {
                     string reason = string.Empty;
                     string half = string.Empty;
@@ -1450,15 +1450,15 @@ namespace SourceEngine.Demo.Stats
                     int playerCountTeamA = currentRoundTeams != null
                         ? GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
                             ?
-                            currentRoundTeams.Terrorists.Count()
-                            : currentRoundTeams.CounterTerrorists.Count()
+                            currentRoundTeams.Terrorists.Count
+                            : currentRoundTeams.CounterTerrorists.Count
                         : 0;
 
                     int playerCountTeamB = currentRoundTeams != null
                         ? GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
                             ?
-                            currentRoundTeams.CounterTerrorists.Count()
-                            : currentRoundTeams.Terrorists.Count()
+                            currentRoundTeams.CounterTerrorists.Count
+                            : currentRoundTeams.Terrorists.Count
                         : 0;
 
                     // equip values
@@ -1713,11 +1713,11 @@ namespace SourceEngine.Demo.Stats
         {
             List<bombsiteStats> bombsiteStats = new List<bombsiteStats>();
 
-            var bombsiteATrigger = dp?.triggers.Count() > 0
+            var bombsiteATrigger = dp?.triggers.Count > 0
                 ? dp.triggers.Where(x => x.Index == dp.bombsiteAIndex).FirstOrDefault()
                 : null;
 
-            var bombsiteBTrigger = dp?.triggers.Count() > 0
+            var bombsiteBTrigger = dp?.triggers.Count > 0
                 ? dp.triggers.Where(x => x.Index == dp.bombsiteBIndex).FirstOrDefault()
                 : null;
 
@@ -1817,7 +1817,7 @@ namespace SourceEngine.Demo.Stats
         {
             List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
 
-            if (dp?.triggers?.Count() > 0)
+            if (dp?.triggers?.Count > 0)
                 foreach (var rescueZone in dp.triggers.Where(
                     x => x.Index != dp.bombsiteAIndex && x.Index != dp.bombsiteBIndex
                 ))
@@ -1865,7 +1865,7 @@ namespace SourceEngine.Demo.Stats
         {
             List<grenadesTotalStats> grenadesTotalStats = new List<grenadesTotalStats>();
 
-            for (int i = 0; i < nadeTypes.Count(); i++)
+            for (int i = 0; i < nadeTypes.Length; i++)
             {
                 grenadesTotalStats.Add(
                     new grenadesTotalStats()
@@ -1907,7 +1907,7 @@ namespace SourceEngine.Demo.Stats
                         if (flashGroup)
                         {
                             var flash = nade as FlashEventArgs;
-                            int numOfPlayersFlashed = flash.FlashedPlayers.Count();
+                            int numOfPlayersFlashed = flash.FlashedPlayers.Length;
 
                             grenadesSpecificStats.Add(
                                 new grenadesSpecificStats()
@@ -1953,7 +1953,7 @@ namespace SourceEngine.Demo.Stats
             List<Equipment> weaponKillers = new List<Equipment>(processedData.WeaponValues.ToList());
             List<int> penetrations = new List<int>(processedData.PenetrationValues.ToList());
 
-            for (int i = 0; i < deaths.Count(); i++)
+            for (int i = 0; i < deaths.Count; i++)
             {
                 if (kills.ElementAt(i) != null && kills.ElementAt(i).LastAlivePosition != null
                     && deaths.ElementAt(i) != null && deaths.ElementAt(i).LastAlivePosition != null)
@@ -2156,26 +2156,26 @@ namespace SourceEngine.Demo.Stats
                 List<long> alphaSteamIdsToRemove = new List<long>();
                 List<long> bravoSteamIdsToRemove = new List<long>();
 
-                if (allStats.mapInfo.TestType.ToLower().Contains("comp") && alphaSteamIds.Count() > 5)
+                if (allStats.mapInfo.TestType.ToLower().Contains("comp") && alphaSteamIds.Count > 5)
                     foreach (var steamId in alphaSteamIds)
                     {
                         if (!playerLookups.Any(l => l.Value == steamId))
                             alphaSteamIdsToRemove.Add(steamId);
                     }
-                else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && alphaSteamIds.Count() > 10)
+                else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && alphaSteamIds.Count > 10)
                     foreach (var steamId in alphaSteamIds)
                     {
                         if (!playerLookups.Any(l => l.Value == steamId))
                             alphaSteamIdsToRemove.Add(steamId);
                     }
 
-                if (allStats.mapInfo.TestType.ToLower().Contains("comp") && bravoSteamIds.Count() > 5)
+                if (allStats.mapInfo.TestType.ToLower().Contains("comp") && bravoSteamIds.Count > 5)
                     foreach (var steamId in bravoSteamIds)
                     {
                         if (!playerLookups.Any(l => l.Value == steamId))
                             bravoSteamIdsToRemove.Add(steamId);
                     }
-                else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && bravoSteamIds.Count() > 10)
+                else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && bravoSteamIds.Count > 10)
                     foreach (var steamId in bravoSteamIds)
                     {
                         if (!playerLookups.Any(l => l.Value == steamId))
@@ -2480,7 +2480,7 @@ namespace SourceEngine.Demo.Stats
 
             string path = string.Empty;
 
-            if (processedData.FoldersToProcess.Count() > 0 && processedData.SameFolderStructure)
+            if (processedData.FoldersToProcess.Count > 0 && processedData.SameFolderStructure)
                 foreach (var folder in processedData.FoldersToProcess)
                 {
                     string[] splitPath = Path.GetDirectoryName(processedData.DemoInformation.DemoName).Split(
@@ -2488,7 +2488,7 @@ namespace SourceEngine.Demo.Stats
                         StringSplitOptions.None
                     );
 
-                    path = splitPath.Count() > 1
+                    path = splitPath.Length > 1
                         ? string.Concat(processedData.OutputRootFolder, "\\", splitPath.LastOrDefault(), "\\")
                         : string.Concat(processedData.OutputRootFolder, "\\");
 
@@ -2637,16 +2637,16 @@ namespace SourceEngine.Demo.Stats
 
         public static int GetCurrentRoundNum(MatchData md, string gamemode)
         {
-            int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count();
+            int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
             List<TeamPlayers> teamPlayersList = md.GetEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
 
             int round = 0;
 
-            if (teamPlayersList.Count() > 0 && teamPlayersList.Any(t => t.Round == 1))
+            if (teamPlayersList.Count > 0 && teamPlayersList.Any(t => t.Round == 1))
             {
                 var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
 
-                if (teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
+                if (teamPlayers.Terrorists.Count > 0 && teamPlayers.CounterTerrorists.Count > 0)
                     round = roundsCount + 1;
             }
 

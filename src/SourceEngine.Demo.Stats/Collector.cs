@@ -161,9 +161,9 @@ namespace SourceEngine.Demo.Stats
                 SearchOption.AllDirectories
             );
 
-            Debug.Success("Found {0} demo files", demos.Count());
+            Debug.Success("Found {0} demo files", demos.Length);
 
-            for (int i = 0; i < demos.Count();)
+            for (int i = 0; i < demos.Length;)
             {
                 //                                                                                        KB     MB
                 Debug.Blue("{0} - {1}mb\t", Path.GetFileName(demos[i]), new FileInfo(demos[i]).Length / 1024 / 1024);
@@ -201,7 +201,7 @@ namespace SourceEngine.Demo.Stats
             foreach (int matchID in matches.Keys)
             {
                 //Debug.Log("Starting processing match id {0}, demo: {1}", matchID, Path.GetFileName(demos[matchID]));
-                Debug.progressBar(matchID + "/" + demos.Count() + "  |  " + Path.GetFileName(demos[matchID]), 0);
+                Debug.progressBar(matchID + "/" + demos.Length + "  |  " + Path.GetFileName(demos[matchID]), 0);
 
                 Dictionary<int, long> playerLookups = new Dictionary<int, long>();
 

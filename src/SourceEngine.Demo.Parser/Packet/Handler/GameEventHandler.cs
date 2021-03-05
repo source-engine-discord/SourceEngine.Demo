@@ -33,7 +33,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         {
             int numOfChickensAlive = 0;
 
-            for (int i = 0; i < parser.Entities.Count(); i++)
+            for (int i = 0; i < parser.Entities.Length; i++)
             {
                 if (parser.Entities.ElementAt(i) != null && parser.Entities.ElementAt(i).ServerClass.Name == "CChicken")
                     numOfChickensAlive++;

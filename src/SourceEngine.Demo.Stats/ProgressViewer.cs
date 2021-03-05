@@ -31,7 +31,7 @@ namespace SourceEngine.Demo.Stats
 
             int cwidth = Console.BufferWidth;
 
-            int textWidth = new_title.Count();
+            int textWidth = new_title.Length;
 
             int padWidth = (cwidth - textWidth) / 2;
 
