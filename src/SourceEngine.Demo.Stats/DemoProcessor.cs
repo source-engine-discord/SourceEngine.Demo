@@ -416,13 +416,13 @@ namespace SourceEngine.Demo.Stats
                 var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                     .Select(v => v.Value);
 
-                int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
-                int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Count() > 0
+                int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count() : 0;
+                int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Any()
                     ? roundsOfficiallyEndedEvents.ElementAt(0).Count()
                     : 0;
 
                 int numOfFreezetimesEnded =
-                    freezetimesEndedEvents.Count() > 0 ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+                    freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
 
                 //Console.WriteLine("dp.RoundEnd -- " + numOfRoundsEnded + " - " + numOfRoundsOfficiallyEnded + " - " + numOfFreezetimesEnded);
 
@@ -481,13 +481,13 @@ namespace SourceEngine.Demo.Stats
                 var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                     .Select(v => v.Value);
 
-                int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
-                int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Count() > 0
+                int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count() : 0;
+                int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Any()
                     ? roundsOfficiallyEndedEvents.ElementAt(0).Count()
                     : 0;
 
                 int numOfFreezetimesEnded =
-                    freezetimesEndedEvents.Count() > 0 ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+                    freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
 
                 //Console.WriteLine("dp.RoundOfficiallyEnded -- " + numOfRoundsEnded + " - " + numOfRoundsOfficiallyEnded + " - " + numOfFreezetimesEnded);
 
@@ -575,10 +575,10 @@ namespace SourceEngine.Demo.Stats
                     .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
                 int numOfFreezetimesEnded =
-                    freezetimesEndedEvents.Count() > 0 ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
+                    freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count() : 0;
 
-                int numOfRoundsEnded = roundsEndedEvents.Count() > 0 ? roundsEndedEvents.ElementAt(0).Count() : 0;
-                int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Count() > 0
+                int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count() : 0;
+                int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Any()
                     ? roundsOfficiallyEndedEvents.ElementAt(0).Count()
                     : 0;
 
@@ -991,7 +991,7 @@ namespace SourceEngine.Demo.Stats
                 ? mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]
                 : string.Empty;
 
-            var mapNameSplit = processedData.MatchStartValues.Count() > 0
+            var mapNameSplit = processedData.MatchStartValues.Any()
                 ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/')
                 : new string[] { processedData.DemoInformation.MapName };
 
@@ -1375,7 +1375,7 @@ namespace SourceEngine.Demo.Stats
                     }
                     else
                     {
-                        half = switchSides.Count() > 0
+                        half = switchSides.Any()
                             ? i < switchSides.ElementAt(0).RoundBeforeSwitch ? "First" : "Second"
                             : "First";
                     }
@@ -1888,7 +1888,7 @@ namespace SourceEngine.Demo.Stats
 
             foreach (var nadeGroup in nadeGroups)
             {
-                if (nadeGroup.Count() > 0)
+                if (nadeGroup.Any())
                 {
                     bool flashGroup =
                         nadeGroup.ElementAt(0).NadeType.ToString() == nadeTypes[0]

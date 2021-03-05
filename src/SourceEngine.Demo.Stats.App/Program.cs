@@ -615,8 +615,8 @@ namespace SourceEngine.Demo.Stats.App
 
                 tanookiStats.RoundsLasted = playedRoundsT.Count() + playedRoundsCT.Count();
 
-                bool playedTSide = playedRoundsT.Count() > 0 ? true : false;
-                bool playedCTSide = playedRoundsCT.Count() > 0 ? true : false;
+                bool playedTSide = playedRoundsT.Any() ? true : false;
+                bool playedCTSide = playedRoundsCT.Any() ? true : false;
 
                 tanookiStats.RoundJoined = playedTSide ? playedCTSide ? playedRoundsT.First() < playedRoundsCT.First()
                         ?
