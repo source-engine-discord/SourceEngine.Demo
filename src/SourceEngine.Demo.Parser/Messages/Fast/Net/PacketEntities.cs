@@ -7,24 +7,18 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
     public struct PacketEntities
     {
-        public Int32 MaxEntries;
-        public Int32 UpdatedEntries;
-        private Int32 _IsDelta;
+        public int MaxEntries;
+        public int UpdatedEntries;
+        private int _IsDelta;
 
-        public bool IsDelta
-        {
-            get { return _IsDelta != 0; }
-        }
+        public bool IsDelta => _IsDelta != 0;
 
-        private Int32 _UpdateBaseline;
+        private int _UpdateBaseline;
 
-        public bool UpdateBaseline
-        {
-            get { return _UpdateBaseline != 0; }
-        }
+        public bool UpdateBaseline => _UpdateBaseline != 0;
 
-        public Int32 Baseline;
-        public Int32 DeltaFrom;
+        public int Baseline;
+        public int DeltaFrom;
 
         public void Parse(IBitStream bitstream, DemoParser parser)
         {
@@ -34,7 +28,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
-                if ((fieldnum == 7) && (wireType == 2))
+                if (fieldnum == 7 && wireType == 2)
                 {
                     // Entity data is special.
                     // We'll simply hope that gaben is nice and sends

@@ -5,10 +5,10 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
     public struct TickMessage
     {
-        public UInt32 Tick;
-        public UInt32 HostComputationTime;
-        public UInt32 HostComputationTimeStdDeviation;
-        public UInt32 HostFramestartTimeStdDeviation;
+        public uint Tick;
+        public uint HostComputationTime;
+        public uint HostComputationTimeStdDeviation;
+        public uint HostFramestartTimeStdDeviation;
 
         public void Parse(IBitStream bitstream, DemoParser parser)
         {

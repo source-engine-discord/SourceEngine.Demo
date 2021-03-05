@@ -16,17 +16,14 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
         private int BitsInBuffer;
 
-        private readonly Stack<long> ChunkTargets = new Stack<long>();
+        private readonly Stack<long> ChunkTargets = new();
         private long LazyGlobalPosition = 0;
 
-        private long ActualGlobalPosition
-        {
-            get { return LazyGlobalPosition + Offset; }
-        }
+        private long ActualGlobalPosition => LazyGlobalPosition + Offset;
 
         public void Initialize(Stream underlying)
         {
-            this.Underlying = underlying;
+            Underlying = underlying;
             RefillBuffer();
 
             Offset = SLED * 8;
@@ -44,13 +41,13 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             // not even Array.Copy, to hopefully achieve better optimization (just straight 32bit copy)
             // seriously, mono: ༼ つ◕_◕༽つ VECTORIZE PL0X ༼ つ◕_◕༽つ
             for (int i = 0; i < SLED; i++)
-                Buffer[i] = Buffer[(BitsInBuffer / 8) + i];
+                Buffer[i] = Buffer[BitsInBuffer / 8 + i];
 
             Offset -= BitsInBuffer;
             LazyGlobalPosition += BitsInBuffer;
 
             int offset, thisTime = 1337; // I'll cry if this ends up in the generated code
-            for (offset = 0; (offset < 4) && (thisTime != 0); offset += thisTime)
+            for (offset = 0; offset < 4 && thisTime != 0; offset += thisTime)
                 thisTime = Underlying.Read(Buffer, SLED + offset, BUFSIZE - SLED - offset);
 
             BitsInBuffer = 8 * offset;
@@ -72,7 +69,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         {
             BitStreamUtil.AssertMaxBits(32, numBits);
             Debug.Assert(
-                mayOverflow || ((Offset + numBits) <= (BitsInBuffer + (SLED * 8))),
+                mayOverflow || Offset + numBits <= BitsInBuffer + SLED * 8,
                 "gg",
                 "This code just fell apart. We're all dead. Offset={0} numBits={1} BitsInBuffer={2}",
                 Offset,
@@ -84,8 +81,8 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             // _   xxxnno         _
             // _    xxxnno
 
-            return (uint)((BitConverter.ToUInt64(Buffer, (Offset / 8) & ~3) << ((8 * 8) - (Offset % (8 * 4)) - numBits))
-                >> ((8 * 8) - numBits));
+            return (uint)((BitConverter.ToUInt64(Buffer, (Offset / 8) & ~3) << (8 * 8 - Offset % (8 * 4) - numBits))
+                >> (8 * 8 - numBits));
         }
 
         public int ReadSignedInt(int numBits)
@@ -94,8 +91,8 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
             // Just like PeekInt, but we cast to signed long before the shr because we need to sext
             var result =
-                (int)(((long)(BitConverter.ToUInt64(Buffer, (Offset / 8) & ~3)
-                    << ((8 * 8) - (Offset % (8 * 4)) - numBits))) >> ((8 * 8) - numBits));
+                (int)((long)(BitConverter.ToUInt64(Buffer, (Offset / 8) & ~3) << (8 * 8 - Offset % (8 * 4) - numBits))
+                    >> (8 * 8 - numBits));
 
             Advance(numBits);
             return result;
@@ -139,10 +136,10 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         {
             byte[] result = new byte[(bits + 7) / 8];
 
-            for (int i = 0; i < (bits / 8); i++)
-                result[i] = this.ReadByte();
+            for (int i = 0; i < bits / 8; i++)
+                result[i] = ReadByte();
 
-            if ((bits % 8) != 0)
+            if (bits % 8 != 0)
                 result[bits / 8] = ReadByte(bits % 8);
 
             return result;
@@ -162,7 +159,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
         public int ReadProtobufVarInt()
         {
-            var availableBits = BitsInBuffer + (SLED * 8) - Offset;
+            var availableBits = BitsInBuffer + SLED * 8 - Offset;
 
             // Start by overflowingly reading 32 bits.
             // Reading beyond the buffer contents is safe in this case,
@@ -194,11 +191,20 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                             return BitStreamUtil.ReadProtobufVarIntStub(this);
                         else Advance(4 * 8);
                     }
-                    else Advance(3 * 8);
+                    else
+                    {
+                        Advance(3 * 8);
+                    }
                 }
-                else Advance(2 * 8);
+                else
+                {
+                    Advance(2 * 8);
+                }
             }
-            else Advance(1 * 8);
+            else
+            {
+                Advance(1 * 8);
+            }
 
             return unchecked((int)result);
         }
@@ -222,7 +228,9 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             var delta = checked((int)(target - ActualGlobalPosition));
 
             if (delta < 0)
+            {
                 throw new InvalidOperationException("Someone read beyond a chunk boundary");
+            }
             else if (delta > 0)
             {
                 // so we need to skip stuff. fun.
@@ -231,14 +239,14 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                 {
                     int bufferBits = BitsInBuffer - Offset;
 
-                    if ((bufferBits + (SLED * 8)) < delta)
+                    if (bufferBits + SLED * 8 < delta)
                     {
                         int unbufferedSkipBits = delta - bufferBits;
                         Underlying.Seek((unbufferedSkipBits >> 3) - SLED, SeekOrigin.Current);
 
                         // Read at least 8 bytes, because we rely on that
                         int offset, thisTime = 1337; // I'll cry if this ends up in the generated code
-                        for (offset = 0; (offset < 8) && (thisTime != 0); offset += thisTime)
+                        for (offset = 0; offset < 8 && thisTime != 0; offset += thisTime)
                             thisTime = Underlying.Read(Buffer, offset, BUFSIZE - offset);
 
                         BitsInBuffer = 8 * (offset - SLED);
@@ -254,18 +262,19 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                     else
 
                         // no need to efficiently skip, so just read and discard
+                    {
                         Advance(delta);
+                    }
                 }
                 else
 
                     // dammit, can't efficiently skip, so just read and discard
+                {
                     Advance(delta);
+                }
             }
         }
 
-        public bool ChunkFinished
-        {
-            get { return ChunkTargets.Peek() == ActualGlobalPosition; }
-        }
+        public bool ChunkFinished => ChunkTargets.Peek() == ActualGlobalPosition;
     }
 }

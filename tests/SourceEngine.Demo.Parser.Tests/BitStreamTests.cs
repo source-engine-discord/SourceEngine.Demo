@@ -324,9 +324,9 @@ namespace SourceEngine.Demo.Parser.Tests
             int depth = 0, remaining = data.Length * 8 - 1;
             dbgAll.BeginChunk(remaining);
 
-            while ((remainingStack.Count > 0) || (remaining > 0))
+            while (remainingStack.Count > 0 || remaining > 0)
             {
-                switch (rng.Next(2 + ((remainingStack.Count > 0) ? 1 : 0)))
+                switch (rng.Next(2 + (remainingStack.Count > 0 ? 1 : 0)))
                 {
                     case 0: // begin new chunk
                         int chunksize = Math.Min(rng.Next(5000 * 8), remaining);

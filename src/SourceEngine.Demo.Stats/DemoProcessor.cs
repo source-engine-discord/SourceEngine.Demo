@@ -16,7 +16,7 @@ namespace SourceEngine.Demo.Stats
     {
         ONSERVER,
         PLAYING,
-        ALIVE
+        ALIVE,
     }
 
     public class TickCounter
@@ -37,11 +37,11 @@ namespace SourceEngine.Demo.Stats
     {
         private static DemoParser dp;
 
-        public Dictionary<Type, List<object>> events = new Dictionary<Type, List<object>>();
+        public Dictionary<Type, List<object>> events = new();
 
-        Dictionary<int, TickCounter> playerTicks = new Dictionary<int, TickCounter>();
-        public Dictionary<int, long> playerLookups = new Dictionary<int, long>();
-        public Dictionary<int, int> playerReplacements = new Dictionary<int, int>();
+        private Dictionary<int, TickCounter> playerTicks = new();
+        public Dictionary<int, long> playerLookups = new();
+        public Dictionary<int, int> playerReplacements = new();
 
         private const string winReasonTKills = "TerroristWin",
             winReasonCtKills = "CTWin",
@@ -65,8 +65,8 @@ namespace SourceEngine.Demo.Stats
         private void addEvent(Type type, object ev)
         {
             //Create if doesnt exist
-            if (!this.events.ContainsKey(type))
-                this.events.Add(type, new List<object>());
+            if (!events.ContainsKey(type))
+                events.Add(type, new List<object>());
 
             events[type].Add(ev);
         }
@@ -106,7 +106,7 @@ namespace SourceEngine.Demo.Stats
                     }
                     else
                     {
-                        var detectedName = (string.IsNullOrWhiteSpace(p.Name)) ? "NOT FOUND" : p.Name;
+                        var detectedName = string.IsNullOrWhiteSpace(p.Name) ? "NOT FOUND" : p.Name;
                         playerTicks.Add(p.UserID, new TickCounter() { detectedName = detectedName });
                     }
                 }
@@ -117,18 +117,12 @@ namespace SourceEngine.Demo.Stats
                     var duplicate = playerLookups.Where(x => x.Value == p.SteamID).FirstOrDefault();
 
                     if (duplicate.Key == 0) // if the steam ID was 0
-                    {
                         duplicate = playerLookups.Where(x => x.Key == duplicateIdToRemoveTicks).FirstOrDefault();
-                    }
 
                     if (p.SteamID != 0)
-                    {
                         playerLookups.Add(p.UserID, p.SteamID);
-                    }
                     else if (p.SteamID == 0 && duplicate.Key != 0)
-                    {
                         playerLookups.Add(p.UserID, duplicate.Value);
-                    }
 
                     duplicateIdToRemoveLookup = duplicate.Key;
                 }
@@ -137,31 +131,23 @@ namespace SourceEngine.Demo.Stats
                 if (duplicateIdToRemoveTicks != 0 || duplicateIdToRemoveLookup != 0)
                 {
                     if (duplicateIdToRemoveTicks != 0)
-                    {
                         playerTicks.Remove(duplicateIdToRemoveTicks);
-                    }
 
                     if (duplicateIdToRemoveLookup != 0)
-                    {
                         playerLookups.Remove(duplicateIdToRemoveLookup);
-                    }
 
                     /* store duplicate userIDs for replacing in events later on */
-                    var idRemoved = (duplicateIdToRemoveLookup != 0)
+                    var idRemoved = duplicateIdToRemoveLookup != 0
                         ? duplicateIdToRemoveLookup
                         : duplicateIdToRemoveTicks;
 
                     // removes any instance of the old userID pointing to a different userID
                     if (playerReplacements.Any(r => r.Key == idRemoved))
-                    {
                         playerReplacements.Remove(idRemoved);
-                    }
 
                     // tries to avoid infinite loops by removing the old entry
                     if (playerReplacements.Any(r => r.Key == p.UserID && r.Value == idRemoved))
-                    {
                         playerReplacements.Remove(p.UserID);
-                    }
 
                     // replace current mappings between an ancient userID & the old userID, to use the new userID as the value instead
                     if (playerReplacements.Any(r => r.Value == idRemoved))
@@ -169,9 +155,7 @@ namespace SourceEngine.Demo.Stats
                         var keysToReplaceValue = playerReplacements.Where(r => r.Value == idRemoved).Select(r => r.Key);
 
                         foreach (var userId in keysToReplaceValue.ToList())
-                        {
                             playerReplacements[userId] = p.UserID;
-                        }
                     }
 
                     playerReplacements.Add(
@@ -281,14 +265,13 @@ namespace SourceEngine.Demo.Stats
 
                 //stores all fb messages so that they aren't lost when stats are reset
                 if (md.events.Count() > 0 && md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
-                {
                     foreach (FeedbackMessage message in md.events.Where(k => k.Key.Name.ToString() == "FeedbackMessage")
                         .Select(v => v.Value).ElementAt(0))
                     {
                         var text = message.Message;
 
                         if (IsMessageFeedback(text))
-                        {
+
                             //Sets round to 0 as anything before a match start event should always be classed as warmup
                             currentfeedbackMessages.Add(
                                 new FeedbackMessage()
@@ -310,9 +293,7 @@ namespace SourceEngine.Demo.Stats
                                         0, // overwrites whatever the TimeInRound value was before, 0 is generally used for messages sent in Warmup
                                 }
                             );
-                        }
                     }
-                }
 
                 md.events = new Dictionary<Type, List<object>>(); //resets all stats stored
 
@@ -320,9 +301,7 @@ namespace SourceEngine.Demo.Stats
 
                 //adds all stored fb messages back
                 foreach (var feedbackMessage in currentfeedbackMessages)
-                {
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
-                }
 
                 //print rounds complete out to console
                 if (!lowOutputMode)
@@ -354,16 +333,12 @@ namespace SourceEngine.Demo.Stats
                     Player player = null;
 
                     if (steamId != 0)
-                    {
                         player = dp.Participants.Where(p => p.SteamID == steamId).FirstOrDefault();
-                    }
                     else
-                    {
                         player = null;
-                    }
 
-                    var teamName = (player != null) ? player.Team.ToString() : null;
-                    teamName = (teamName == "Spectate") ? "Spectator" : teamName;
+                    var teamName = player != null ? player.Team.ToString() : null;
+                    teamName = teamName == "Spectate" ? "Spectator" : teamName;
 
                     bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(md, player, round);
                     string[] currentPositions = SplitPositionString(player?.Position.ToString());
@@ -414,11 +389,11 @@ namespace SourceEngine.Demo.Stats
                         YCurrentPosition = double.Parse(currentPositions[1]),
                         ZCurrentPosition = double.Parse(currentPositions[2]),
                         XLastAlivePosition =
-                            (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[0]) : null,
+                            lastAlivePositions != null ? (double?)double.Parse(lastAlivePositions[0]) : null,
                         YLastAlivePosition =
-                            (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[1]) : null,
+                            lastAlivePositions != null ? (double?)double.Parse(lastAlivePositions[1]) : null,
                         ZLastAlivePosition =
-                            (lastAlivePositions != null) ? (double?)double.Parse(lastAlivePositions[2]) : null,
+                            lastAlivePositions != null ? (double?)double.Parse(lastAlivePositions[2]) : null,
                         XCurrentViewAngle = player?.ViewDirectionX,
                         YCurrentViewAngle = player?.ViewDirectionY,
                         SetPosCommandCurrentPosition = setPosCurrentPosition,
@@ -464,7 +439,7 @@ namespace SourceEngine.Demo.Stats
                             Message = roundEndedEvent.Message,
                             Reason = roundEndedEvent.Reason,
                             Winner = roundEndedEvent.Winner,
-                            Length = roundEndedEvent.Length + 4 // guesses the round length
+                            Length = roundEndedEvent.Length + 4, // guesses the round length
                         }
                     );
 
@@ -485,16 +460,12 @@ namespace SourceEngine.Demo.Stats
 
                     // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
                     if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
-                    {
                         foreach (FeedbackMessage message in md.events
                             .Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value)?.ElementAt(0))
                         {
                             if (message.Round == numOfFreezetimesEnded)
-                            {
                                 message.TimeInRound = -1;
-                            }
                         }
-                    }
                 }
 
                 md.addEvent(typeof(RoundEndedEventArgs), e);
@@ -530,7 +501,7 @@ namespace SourceEngine.Demo.Stats
                             Winner = Team.Unknown,
                             Message = "Unknown",
                             Reason = RoundEndReason.Unknown,
-                            Length = 0
+                            Length = 0,
                         }
                     );
 
@@ -551,16 +522,12 @@ namespace SourceEngine.Demo.Stats
 
                     // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
                     if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
-                    {
                         foreach (FeedbackMessage message in md.events
                             .Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value)?.ElementAt(0))
                         {
                             if (message.Round == numOfFreezetimesEnded)
-                            {
                                 message.TimeInRound = -1;
-                            }
                         }
-                    }
                 }
 
                 // update round length round_end event for this round
@@ -591,7 +558,7 @@ namespace SourceEngine.Demo.Stats
                 SwitchSidesEventArgs switchSidesEventArgs =
                     new SwitchSidesEventArgs()
                     {
-                        RoundBeforeSwitch = roundsCount + 1
+                        RoundBeforeSwitch = roundsCount + 1,
                     }; // announce_phase_end event occurs before round_officially_ended event
 
                 md.addEvent(typeof(SwitchSidesEventArgs), switchSidesEventArgs);
@@ -637,7 +604,7 @@ namespace SourceEngine.Demo.Stats
                             Reason = roundEndedEvent.Reason,
                             Message = roundEndedEvent.Message,
                             Winner = roundEndedEvent.Winner,
-                            Length = roundEndedEvent.Length + 4 // guesses the round length
+                            Length = roundEndedEvent.Length + 4, // guesses the round length
                         }
                     );
 
@@ -660,7 +627,7 @@ namespace SourceEngine.Demo.Stats
                             Winner = Team.Unknown,
                             Message = "Unknown",
                             Reason = RoundEndReason.Unknown,
-                            Length = 0
+                            Length = 0,
                         }
                     );
 
@@ -679,7 +646,7 @@ namespace SourceEngine.Demo.Stats
                             Reason = roundEndedEvent.Reason,
                             Message = roundEndedEvent.Message,
                             Winner = roundEndedEvent.Winner,
-                            Length = roundEndedEvent.Length + 4 // guesses the round length
+                            Length = roundEndedEvent.Length + 4, // guesses the round length
                         }
                     );
 
@@ -708,18 +675,18 @@ namespace SourceEngine.Demo.Stats
                 {
                     tEquipValue += player.CurrentEquipmentValue; // player.FreezetimeEndEquipmentValue = 0 ???
                     tExpenditure +=
-                        (player.CurrentEquipmentValue
-                            - player.RoundStartEquipmentValue
-                        ); // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
+                        player.CurrentEquipmentValue
+                        - player
+                            .RoundStartEquipmentValue; // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
                 }
 
                 foreach (var player in teams.CounterTerrorists)
                 {
                     ctEquipValue += player.CurrentEquipmentValue; // player.FreezetimeEndEquipmentValue = 0 ???
                     ctExpenditure +=
-                        (player.CurrentEquipmentValue
-                            - player.RoundStartEquipmentValue
-                        ); // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
+                        player.CurrentEquipmentValue
+                        - player
+                            .RoundStartEquipmentValue; // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
                 }
 
                 TeamEquipment teamEquipmentStats = new TeamEquipment()
@@ -728,7 +695,7 @@ namespace SourceEngine.Demo.Stats
                     TEquipValue = tEquipValue,
                     CTEquipValue = ctEquipValue,
                     TExpenditure = tExpenditure,
-                    CTExpenditure = ctExpenditure
+                    CTExpenditure = ctExpenditure,
                 };
 
                 md.addEvent(typeof(TeamEquipment), teamEquipmentStats);
@@ -781,9 +748,9 @@ namespace SourceEngine.Demo.Stats
                     YPositionPlayer = player.Position.Y,
                     ZPositionPlayer = player.Position.Z,
                     Attacker = attacker ?? null,
-                    XPositionAttacker = (attacker != null && attacker.Position != null) ? attacker.Position.X : 0,
-                    YPositionAttacker = (attacker != null && attacker.Position != null) ? attacker.Position.Y : 0,
-                    ZPositionAttacker = (attacker != null && attacker.Position != null) ? attacker.Position.Z : 0,
+                    XPositionAttacker = attacker != null && attacker.Position != null ? attacker.Position.X : 0,
+                    YPositionAttacker = attacker != null && attacker.Position != null ? attacker.Position.Y : 0,
+                    ZPositionAttacker = attacker != null && attacker.Position != null ? attacker.Position.Z : 0,
                     Health = e.Health,
                     Armor = e.Armor,
                     Weapon = attacker != null ? e.Weapon : null,
@@ -807,7 +774,7 @@ namespace SourceEngine.Demo.Stats
                     DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer()
                     {
                         PlayerDisconnectEventArgs = e,
-                        Round = round - 1
+                        Round = round - 1,
                     };
 
                     md.addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
@@ -824,7 +791,7 @@ namespace SourceEngine.Demo.Stats
                     Round = roundsCount + 1,
                     TimeInRound = e.TimeInRound,
                     Player = e.Player,
-                    Bombsite = e.Site
+                    Bombsite = e.Site,
                 };
 
                 md.addEvent(typeof(BombPlanted), bombPlanted);
@@ -839,7 +806,7 @@ namespace SourceEngine.Demo.Stats
                     Round = roundsCount + 1,
                     TimeInRound = e.TimeInRound,
                     Player = e.Player,
-                    Bombsite = e.Site
+                    Bombsite = e.Site,
                 };
 
                 md.addEvent(typeof(BombExploded), bombExploded);
@@ -855,7 +822,7 @@ namespace SourceEngine.Demo.Stats
                     TimeInRound = e.TimeInRound,
                     Player = e.Player,
                     Bombsite = e.Site,
-                    HasKit = e.Player.HasDefuseKit
+                    HasKit = e.Player.HasDefuseKit,
                 };
 
                 md.addEvent(typeof(BombDefused), bombDefused);
@@ -873,7 +840,7 @@ namespace SourceEngine.Demo.Stats
                     Player = e.Player,
                     Hostage = e.Hostage,
                     HostageIndex = e.HostageIndex,
-                    RescueZone = e.RescueZone
+                    RescueZone = e.RescueZone,
                 };
 
                 md.addEvent(typeof(HostageRescued), hostageRescued);
@@ -890,7 +857,7 @@ namespace SourceEngine.Demo.Stats
                     TimeInRound = e.TimeInRound,
                     Player = e.Player,
                     Hostage = e.Hostage,
-                    HostageIndex = e.HostageIndex
+                    HostageIndex = e.HostageIndex,
                 };
 
                 md.addEvent(typeof(HostagePickedUp), hostagePickedUp);
@@ -909,7 +876,7 @@ namespace SourceEngine.Demo.Stats
                     TimeInRound = e.TimeInRound,
                     Shooter = e.Shooter,
                     TeamSide = e.Shooter.Team.ToString(),
-                    Weapon = new Equipment(e.Weapon)
+                    Weapon = new Equipment(e.Weapon),
                 };
 
                 md.addEvent(typeof(ShotFired), shotFired);
@@ -1016,16 +983,16 @@ namespace SourceEngine.Demo.Stats
         public AllOutputData CreateFiles(ProcessedData processedData, bool createJsonFile = true)
         {
             var mapDateSplit =
-                (!string.IsNullOrWhiteSpace(processedData.DemoInformation.TestDate)
-                    && processedData.DemoInformation.TestDate != "unknown")
+                !string.IsNullOrWhiteSpace(processedData.DemoInformation.TestDate)
+                && processedData.DemoInformation.TestDate != "unknown"
                     ? processedData.DemoInformation.TestDate.Split('/')
                     : null;
 
-            var mapDateString = (mapDateSplit != null && mapDateSplit.Count() >= 3)
-                ? (mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1])
+            var mapDateString = mapDateSplit != null && mapDateSplit.Count() >= 3
+                ? mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]
                 : string.Empty;
 
-            var mapNameSplit = (processedData.MatchStartValues.Count() > 0)
+            var mapNameSplit = processedData.MatchStartValues.Count() > 0
                 ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/')
                 : new string[] { processedData.DemoInformation.MapName };
 
@@ -1103,9 +1070,7 @@ namespace SourceEngine.Demo.Stats
 
             // JSON creation
             if (createJsonFile)
-            {
                 CreateJsonAllStats(processedData, allStats, mapNameString, mapDateString);
-            }
 
             if (processedData.ParsePlayerPositions && CheckIfStatsShouldBeCreated(
                 "playerPositionsStats",
@@ -1148,9 +1113,7 @@ namespace SourceEngine.Demo.Stats
                     int userId = p.UserID;
 
                     while (CheckForUpdatedUserId(userId) != userId)
-                    {
                         userId = CheckForUpdatedUserId(userId);
-                    }
 
                     if (!playerLookups.ContainsKey(userId))
                         continue;
@@ -1177,13 +1140,13 @@ namespace SourceEngine.Demo.Stats
             return new DataAndPlayerNames()
             {
                 Data = data,
-                PlayerNames = playerNames
+                PlayerNames = playerNames,
             };
         }
 
         public versionNumber GetVersionNumber()
         {
-            return new versionNumber() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3) };
+            return new() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3) };
         }
 
         public List<string> GetSupportedGamemodes()
@@ -1197,15 +1160,15 @@ namespace SourceEngine.Demo.Stats
             {
                 MapName = processedData.DemoInformation.MapName,
                 TestType = processedData.DemoInformation.TestType,
-                TestDate = processedData.DemoInformation.TestDate
+                TestDate = processedData.DemoInformation.TestDate,
             };
 
             mapInfo.MapName =
-                (mapNameSplit.Count() > 2)
+                mapNameSplit.Count() > 2
                     ? mapNameSplit[2]
                     : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
 
-            mapInfo.WorkshopID = (mapNameSplit.Count() > 2) ? mapNameSplit[1] : "unknown";
+            mapInfo.WorkshopID = mapNameSplit.Count() > 2 ? mapNameSplit[1] : "unknown";
             mapInfo.DemoName =
                 processedData.DemoInformation.DemoName.Split('\\').Last()
                     .Replace(
@@ -1230,8 +1193,9 @@ namespace SourceEngine.Demo.Stats
                     t => t.Terrorists.Count() > 10
                         && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count() == 0)
                 ) || // assume danger zone if more than 10 Terrorists and 0 CounterTerrorists
-                (dp.hostageAIndex > -1 && dp.hostageBIndex > -1
-                    && !processedData.MatchStartValues.Any(m => m.HasBombsites)
+                dp.hostageAIndex > -1 && dp.hostageBIndex > -1
+                && !processedData.MatchStartValues.Any(
+                    m => m.HasBombsites
                 ) // assume danger zone if more than one hostage rescue zone
             )
             {
@@ -1244,35 +1208,23 @@ namespace SourceEngine.Demo.Stats
             {
                 if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1
                     || processedData.MatchStartValues.Any(m => m.HasBombsites))
-                {
                     mapInfo.GameMode = Gamemodes.Defuse;
-                }
                 else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
                     && !processedData.MatchStartValues.Any(m => m.HasBombsites))
-                {
                     mapInfo.GameMode = Gamemodes.Hostage;
-                }
                 else // what the hell is this gamemode ??
-                {
                     mapInfo.GameMode = Gamemodes.Unknown;
-                }
             }
             else
             {
                 if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1
                     || processedData.MatchStartValues.Any(m => m.HasBombsites))
-                {
                     mapInfo.GameMode = Gamemodes.WingmanDefuse;
-                }
                 else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
                     && !processedData.MatchStartValues.Any(m => m.HasBombsites))
-                {
                     mapInfo.GameMode = Gamemodes.WingmanHostage;
-                }
                 else // what the hell is this gamemode ??
-                {
                     mapInfo.GameMode = Gamemodes.Unknown;
-                }
             }
 
             return mapInfo;
@@ -1294,18 +1246,12 @@ namespace SourceEngine.Demo.Stats
                     int userId = kill.Killer.UserID;
 
                     while (CheckForUpdatedUserId(userId) != userId)
-                    {
                         userId = CheckForUpdatedUserId(userId);
-                    }
 
                     if (kill.Suicide)
-                    {
                         data[playerLookups[userId]]["Kills"] -= 1;
-                    }
                     else if (kill.TeamKill)
-                    {
                         data[playerLookups[userId]]["Kills"] -= 2;
-                    }
                 }
             }
 
@@ -1322,50 +1268,40 @@ namespace SourceEngine.Demo.Stats
                 foreach (string catagory in processedData.PlayerValues.Keys)
                 {
                     if (data[player].ContainsKey(catagory))
-                    {
                         statsList1.Add((int)data[player][catagory]);
-                    }
                     else
-                    {
                         statsList1.Add(0);
-                    }
                 }
 
                 List<long> statsList2 = new List<long>();
 
                 if (processedData.WriteTicks)
-                {
                     if (playerLookups.Any(p => p.Value == player))
-                    {
                         foreach (int userid in playerLookups.Keys)
                         {
                             if (playerLookups[userid] == player)
                             {
-                                statsList2.Add(this.playerTicks[userid].ticksAlive);
+                                statsList2.Add(playerTicks[userid].ticksAlive);
 
-                                statsList2.Add(this.playerTicks[userid].ticksOnServer);
+                                statsList2.Add(playerTicks[userid].ticksOnServer);
 
-                                statsList2.Add(this.playerTicks[userid].ticksPlaying);
+                                statsList2.Add(playerTicks[userid].ticksPlaying);
 
                                 break;
                             }
                         }
-                    }
-                }
 
                 int numOfKillsAsBot = processedData.PlayerKilledEventsValues.Where(
-                    k => (k.Killer != null) && (k.Killer.Name.ToString() == playerName.ToString())
-                        && (k.KillerBotTakeover)
+                    k => k.Killer != null && k.Killer.Name.ToString() == playerName.ToString() && k.KillerBotTakeover
                 ).Count();
 
                 int numOfDeathsAsBot = processedData.PlayerKilledEventsValues.Where(
-                    k => (k.Victim != null) && (k.Victim.Name.ToString() == playerName.ToString())
-                        && (k.VictimBotTakeover)
+                    k => k.Victim != null && k.Victim.Name.ToString() == playerName.ToString() && k.VictimBotTakeover
                 ).Count();
 
                 int numOfAssistsAsBot = processedData.PlayerKilledEventsValues.Where(
-                    k => (k.Assister != null) && (k.Assister.Name.ToString() == playerName.ToString())
-                        && (k.AssisterBotTakeover)
+                    k => k.Assister != null && k.Assister.Name.ToString() == playerName.ToString()
+                        && k.AssisterBotTakeover
                 ).Count();
 
                 playerStats.Add(
@@ -1415,7 +1351,7 @@ namespace SourceEngine.Demo.Stats
                 {
                     string reason = string.Empty;
                     string half = string.Empty;
-                    bool isOvertime = ((switchSides.Count() >= 2) && (i >= switchSides.ElementAt(1).RoundBeforeSwitch))
+                    bool isOvertime = switchSides.Count() >= 2 && i >= switchSides.ElementAt(1).RoundBeforeSwitch
                         ? true
                         : false;
 
@@ -1426,13 +1362,13 @@ namespace SourceEngine.Demo.Stats
                     if (isOvertime)
                     {
                         int lastNormalTimeRound = switchSides.ElementAt(1).RoundBeforeSwitch;
-                        int roundsPerOTHalf = (switchSides.Count() >= 3)
-                            ? (switchSides.ElementAt(2).RoundBeforeSwitch - lastNormalTimeRound)
+                        int roundsPerOTHalf = switchSides.Count() >= 3
+                            ? switchSides.ElementAt(2).RoundBeforeSwitch - lastNormalTimeRound
                             : 3; // just assume 3 rounds per OT half if it cannot be checked
 
                         int roundsPerOT = roundsPerOTHalf * 2;
 
-                        int roundsIntoOT = (i + 1) - lastNormalTimeRound;
+                        int roundsIntoOT = i + 1 - lastNormalTimeRound;
                         overtimeCount = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOT);
 
                         int currentOTHalf = (int)Math.Ceiling((double)roundsIntoOT / roundsPerOTHalf);
@@ -1440,8 +1376,8 @@ namespace SourceEngine.Demo.Stats
                     }
                     else
                     {
-                        half = (switchSides.Count() > 0)
-                            ? ((i < switchSides.ElementAt(0).RoundBeforeSwitch) ? "First" : "Second")
+                        half = switchSides.Count() > 0
+                            ? i < switchSides.ElementAt(0).RoundBeforeSwitch ? "First" : "Second"
                             : "First";
                     }
 
@@ -1449,24 +1385,16 @@ namespace SourceEngine.Demo.Stats
                     if (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount))
                     {
                         if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
-                        {
                             totalRoundsWonTeamAlpha++;
-                        }
                         else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
-                        {
                             totalRoundsWonTeamBeta++;
-                        }
                     }
                     else
                     {
                         if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
-                        {
                             totalRoundsWonTeamBeta++;
-                        }
                         else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
-                        {
                             totalRoundsWonTeamAlpha++;
-                        }
                     }
 
                     //win method
@@ -1508,28 +1436,30 @@ namespace SourceEngine.Demo.Stats
 
                     foreach (var player in currentRoundTeams.Terrorists) // make sure steamID's aren't 0
                     {
-                        player.SteamID = (player.SteamID == 0)
+                        player.SteamID = player.SteamID == 0
                             ? GetSteamIdByPlayerName(playerNames, player.Name)
                             : player.SteamID;
                     }
 
                     foreach (var player in currentRoundTeams.CounterTerrorists) // make sure steamID's aren't 0
                     {
-                        player.SteamID = (player.SteamID == 0)
+                        player.SteamID = player.SteamID == 0
                             ? GetSteamIdByPlayerName(playerNames, player.Name)
                             : player.SteamID;
                     }
 
-                    int playerCountTeamA = (currentRoundTeams != null)
-                        ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
-                            ? currentRoundTeams.Terrorists.Count()
-                            : currentRoundTeams.CounterTerrorists.Count())
+                    int playerCountTeamA = currentRoundTeams != null
+                        ? GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
+                            ?
+                            currentRoundTeams.Terrorists.Count()
+                            : currentRoundTeams.CounterTerrorists.Count()
                         : 0;
 
-                    int playerCountTeamB = (currentRoundTeams != null)
-                        ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
-                            ? currentRoundTeams.CounterTerrorists.Count()
-                            : currentRoundTeams.Terrorists.Count())
+                    int playerCountTeamB = currentRoundTeams != null
+                        ? GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
+                            ?
+                            currentRoundTeams.CounterTerrorists.Count()
+                            : currentRoundTeams.Terrorists.Count()
                         : 0;
 
                     // equip values
@@ -1537,28 +1467,32 @@ namespace SourceEngine.Demo.Stats
                         ? processedData.TeamEquipmentValues.ElementAt(i)
                         : null;
 
-                    int equipValueTeamA = (teamEquipValues != null)
-                        ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
-                            ? teamEquipValues.TEquipValue
-                            : teamEquipValues.CTEquipValue)
+                    int equipValueTeamA = teamEquipValues != null
+                        ? GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
+                            ?
+                            teamEquipValues.TEquipValue
+                            : teamEquipValues.CTEquipValue
                         : 0;
 
-                    int equipValueTeamB = (teamEquipValues != null)
-                        ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
-                            ? teamEquipValues.CTEquipValue
-                            : teamEquipValues.TEquipValue)
+                    int equipValueTeamB = teamEquipValues != null
+                        ? GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
+                            ?
+                            teamEquipValues.CTEquipValue
+                            : teamEquipValues.TEquipValue
                         : 0;
 
-                    int expenditureTeamA = (teamEquipValues != null)
-                        ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
-                            ? teamEquipValues.TExpenditure
-                            : teamEquipValues.CTExpenditure)
+                    int expenditureTeamA = teamEquipValues != null
+                        ? GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
+                            ?
+                            teamEquipValues.TExpenditure
+                            : teamEquipValues.CTExpenditure
                         : 0;
 
-                    int expenditureTeamB = (teamEquipValues != null)
-                        ? (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
-                            ? teamEquipValues.CTExpenditure
-                            : teamEquipValues.TExpenditure)
+                    int expenditureTeamB = teamEquipValues != null
+                        ? GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount)
+                            ?
+                            teamEquipValues.CTExpenditure
+                            : teamEquipValues.TExpenditure
                         : 0;
 
                     // bombsite planted/exploded/defused at
@@ -1589,17 +1523,13 @@ namespace SourceEngine.Demo.Stats
 
                             if (processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum).FirstOrDefault()
                                 != null)
-                            {
                                 processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum).FirstOrDefault()
                                     .Bombsite = bombPlantedError.Bombsite;
-                            }
 
                             if (processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum).FirstOrDefault()
                                 != null)
-                            {
                                 processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum).FirstOrDefault()
                                     .Bombsite = bombPlantedError.Bombsite;
-                            }
 
                             bombsite = bombPlantedError.Bombsite.ToString();
                         }
@@ -1616,9 +1546,8 @@ namespace SourceEngine.Demo.Stats
                         bombExploded = processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum)
                             .FirstOrDefault();
 
-                        bombsite = (bombsite != null)
-                            ? bombsite
-                            : (bombExploded.Bombsite == null ? null : bombExploded.Bombsite.ToString());
+                        bombsite = bombsite != null ? bombsite :
+                            bombExploded.Bombsite == null ? null : bombExploded.Bombsite.ToString();
                     }
 
                     if (processedData.BombsiteDefuseValues.Any(p => p.Round == roundNum))
@@ -1626,9 +1555,8 @@ namespace SourceEngine.Demo.Stats
                         bombDefused = processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum)
                             .FirstOrDefault();
 
-                        bombsite = (bombsite != null)
-                            ? bombsite
-                            : (bombDefused.Bombsite == null ? null : bombDefused.Bombsite.ToString());
+                        bombsite = bombsite != null ? bombsite :
+                            bombDefused.Bombsite == null ? null : bombDefused.Bombsite.ToString();
                     }
 
                     var timeInRoundPlanted = bombPlanted?.TimeInRound;
@@ -1663,7 +1591,7 @@ namespace SourceEngine.Demo.Stats
                             {
                                 Hostage = hostagePickedUpA.Hostage,
                                 HostageIndex = hostagePickedUpA.HostageIndex,
-                                ErrorMessage = "Assuming Hostage A was picked up; cannot assume TimeInRound."
+                                ErrorMessage = "Assuming Hostage A was picked up; cannot assume TimeInRound.",
                             };
 
                             //update data to ensure that future references to it are also updated
@@ -1680,7 +1608,7 @@ namespace SourceEngine.Demo.Stats
                             {
                                 Hostage = hostagePickedUpB.Hostage,
                                 HostageIndex = hostagePickedUpB.HostageIndex,
-                                ErrorMessage = "Assuming Hostage B was picked up; cannot assume TimeInRound."
+                                ErrorMessage = "Assuming Hostage B was picked up; cannot assume TimeInRound.",
                             };
 
                             //update data to ensure that future references to it are also updated
@@ -1762,8 +1690,8 @@ namespace SourceEngine.Demo.Stats
             }
 
             // work out winning team
-            string winningTeam = (totalRoundsWonTeamAlpha >= totalRoundsWonTeamBeta)
-                ? (totalRoundsWonTeamAlpha > totalRoundsWonTeamBeta) ? "Team Alpha" : "Draw"
+            string winningTeam = totalRoundsWonTeamAlpha >= totalRoundsWonTeamBeta
+                ? totalRoundsWonTeamAlpha > totalRoundsWonTeamBeta ? "Team Alpha" : "Draw"
                 : "Team Bravo";
 
             // winners stats
@@ -1771,14 +1699,14 @@ namespace SourceEngine.Demo.Stats
             {
                 WinningTeam = winningTeam,
                 TeamAlphaRounds = totalRoundsWonTeamAlpha,
-                TeamBetaRounds = totalRoundsWonTeamBeta
+                TeamBetaRounds = totalRoundsWonTeamBeta,
             };
 
             return new GeneralroundsStats()
             {
                 roundsStats = roundsStats,
                 winnersStats = winnersStats,
-                SwitchSides = switchSides
+                SwitchSides = switchSides,
             };
         }
 
@@ -1891,7 +1819,6 @@ namespace SourceEngine.Demo.Stats
             List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
 
             if (dp?.triggers?.Count() > 0)
-            {
                 foreach (var rescueZone in dp.triggers.Where(
                     x => x.Index != dp.bombsiteAIndex && x.Index != dp.bombsiteBIndex
                 ))
@@ -1908,7 +1835,6 @@ namespace SourceEngine.Demo.Stats
                         }
                     );
                 }
-            }
 
             return rescueZoneStats;
         }
@@ -1930,7 +1856,7 @@ namespace SourceEngine.Demo.Stats
                 smokes,
                 hegrenades,
                 incendiaries,
-                decoys
+                decoys,
             };
         }
 
@@ -1946,7 +1872,7 @@ namespace SourceEngine.Demo.Stats
                     new grenadesTotalStats()
                     {
                         NadeType = nadeTypes[i],
-                        AmountUsed = nadeGroups.ElementAt(i).Count()
+                        AmountUsed = nadeGroups.ElementAt(i).Count(),
                     }
                 );
             }
@@ -1975,7 +1901,7 @@ namespace SourceEngine.Demo.Stats
                         string[] positions = SplitPositionString(nade.Position.ToString());
 
                         //retrieve steam ID using player name if the event does not return it correctly
-                        long steamId = (nade.ThrownBy.SteamID == 0)
+                        long steamId = nade.ThrownBy.SteamID == 0
                             ? GetSteamIdByPlayerName(playerNames, nade.ThrownBy.Name)
                             : nade.ThrownBy.SteamID;
 
@@ -1992,7 +1918,7 @@ namespace SourceEngine.Demo.Stats
                                     XPosition = double.Parse(positions[0]),
                                     YPosition = double.Parse(positions[1]),
                                     ZPosition = double.Parse(positions[2]),
-                                    NumPlayersFlashed = numOfPlayersFlashed
+                                    NumPlayersFlashed = numOfPlayersFlashed,
                                 }
                             );
                         }
@@ -2005,7 +1931,7 @@ namespace SourceEngine.Demo.Stats
                                     SteamID = steamId,
                                     XPosition = double.Parse(positions[0]),
                                     YPosition = double.Parse(positions[1]),
-                                    ZPosition = double.Parse(positions[2])
+                                    ZPosition = double.Parse(positions[2]),
                                 }
                             );
                         }
@@ -2052,21 +1978,24 @@ namespace SourceEngine.Demo.Stats
 
                         //retrieve steam ID using player name if the event does not return it correctly
                         long killerSteamId = kills.ElementAt(i) != null
-                            ? ((kills.ElementAt(i).SteamID == 0)
-                                ? GetSteamIdByPlayerName(playerNames, kills.ElementAt(i).Name)
-                                : kills.ElementAt(i).SteamID)
+                            ? kills.ElementAt(i).SteamID == 0
+                                ?
+                                GetSteamIdByPlayerName(playerNames, kills.ElementAt(i).Name)
+                                : kills.ElementAt(i).SteamID
                             : 0;
 
                         long victimSteamId = deaths.ElementAt(i) != null
-                            ? ((deaths.ElementAt(i).SteamID == 0)
-                                ? GetSteamIdByPlayerName(playerNames, deaths.ElementAt(i).Name)
-                                : deaths.ElementAt(i).SteamID)
+                            ? deaths.ElementAt(i).SteamID == 0
+                                ?
+                                GetSteamIdByPlayerName(playerNames, deaths.ElementAt(i).Name)
+                                : deaths.ElementAt(i).SteamID
                             : 0;
 
                         long assisterSteamId = playerKilledEvent.Assister != null
-                            ? ((playerKilledEvent.Assister.SteamID == 0)
-                                ? GetSteamIdByPlayerName(playerNames, playerKilledEvent.Assister.Name)
-                                : playerKilledEvent.Assister.SteamID)
+                            ? playerKilledEvent.Assister.SteamID == 0
+                                ?
+                                GetSteamIdByPlayerName(playerNames, playerKilledEvent.Assister.Name)
+                                : playerKilledEvent.Assister.SteamID
                             : 0;
 
                         var weaponUsed = weaponKillers.ElementAt(i).Weapon.ToString();
@@ -2082,7 +2011,7 @@ namespace SourceEngine.Demo.Stats
                         }
 
                         bool firstKillOfTheRound =
-                            (killsStats.Any(k => k.Round == round && k.FirstKillOfTheRound == true)) ? false : true;
+                            killsStats.Any(k => k.Round == round && k.FirstKillOfTheRound == true) ? false : true;
 
                         killsStats.Add(
                             new killsStats()
@@ -2136,30 +2065,24 @@ namespace SourceEngine.Demo.Stats
                     // retrieve steam ID using player name if the event does not return it correctly
                     foreach (var player in currentRoundTeams.Terrorists)
                     {
-                        player.SteamID = (player.SteamID == 0)
+                        player.SteamID = player.SteamID == 0
                             ? GetSteamIdByPlayerName(playerNames, player.Name)
                             : player.SteamID;
                     }
 
                     foreach (var player in currentRoundTeams.CounterTerrorists)
                     {
-                        player.SteamID = (player.SteamID == 0)
+                        player.SteamID = player.SteamID == 0
                             ? GetSteamIdByPlayerName(playerNames, player.Name)
                             : player.SteamID;
                     }
 
                     if (currentRoundTeams.Terrorists.Any(p => p.SteamID == message.SteamID))
-                    {
                         message.TeamName = "Terrorist";
-                    }
                     else if (currentRoundTeams.CounterTerrorists.Any(p => p.SteamID == message.SteamID))
-                    {
                         message.TeamName = "CounterTerrorist";
-                    }
                     else
-                    {
                         message.TeamName = "Spectator";
-                    }
                 }
 
                 feedbackMessages.Add(message);
@@ -2170,7 +2093,7 @@ namespace SourceEngine.Demo.Stats
 
         public chickenStats GetChickenStats(ProcessedData processedData)
         {
-            return new chickenStats() { Killed = processedData.ChickenValues.Count() };
+            return new() { Killed = processedData.ChickenValues.Count() };
         }
 
         public List<teamStats> GetTeamStats(
@@ -2189,22 +2112,23 @@ namespace SourceEngine.Demo.Stats
             {
                 // players in each team per round
                 swappedSidesCount = switchSides.Count() > swappedSidesCount
-                    ? (switchSides.ElementAt(swappedSidesCount).RoundBeforeSwitch == currentRoundChecking - 1
-                        ? swappedSidesCount + 1
-                        : swappedSidesCount)
+                    ? switchSides.ElementAt(swappedSidesCount).RoundBeforeSwitch == currentRoundChecking - 1
+                        ?
+                        swappedSidesCount + 1
+                        : swappedSidesCount
                     : swappedSidesCount;
 
-                firstHalf = (swappedSidesCount % 2 == 0) ? true : false;
+                firstHalf = swappedSidesCount % 2 == 0 ? true : false;
 
                 var currentRoundTeams = processedData.TeamPlayersValues.Where(t => t.Round == teamPlayers.Round)
                     .FirstOrDefault();
 
-                var alphaPlayers = (currentRoundTeams != null)
-                    ? (firstHalf ? currentRoundTeams.Terrorists : currentRoundTeams.CounterTerrorists)
+                var alphaPlayers = currentRoundTeams != null
+                    ? firstHalf ? currentRoundTeams.Terrorists : currentRoundTeams.CounterTerrorists
                     : null;
 
-                var bravoPlayers = (currentRoundTeams != null)
-                    ? (firstHalf ? currentRoundTeams.CounterTerrorists : currentRoundTeams.Terrorists)
+                var bravoPlayers = currentRoundTeams != null
+                    ? firstHalf ? currentRoundTeams.CounterTerrorists : currentRoundTeams.Terrorists
                     : null;
 
                 List<long> alphaSteamIds = new List<long>();
@@ -2212,7 +2136,7 @@ namespace SourceEngine.Demo.Stats
 
                 foreach (var player in alphaPlayers)
                 {
-                    player.SteamID = (player.SteamID == 0)
+                    player.SteamID = player.SteamID == 0
                         ? GetSteamIdByPlayerName(playerNames, player.Name)
                         : player.SteamID;
 
@@ -2221,7 +2145,7 @@ namespace SourceEngine.Demo.Stats
 
                 foreach (var player in bravoPlayers)
                 {
-                    player.SteamID = (player.SteamID == 0)
+                    player.SteamID = player.SteamID == 0
                         ? GetSteamIdByPlayerName(playerNames, player.Name)
                         : player.SteamID;
 
@@ -2234,57 +2158,37 @@ namespace SourceEngine.Demo.Stats
                 List<long> bravoSteamIdsToRemove = new List<long>();
 
                 if (allStats.mapInfo.TestType.ToLower().Contains("comp") && alphaSteamIds.Count() > 5)
-                {
                     foreach (var steamId in alphaSteamIds)
                     {
                         if (!playerLookups.Any(l => l.Value == steamId))
-                        {
                             alphaSteamIdsToRemove.Add(steamId);
-                        }
                     }
-                }
                 else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && alphaSteamIds.Count() > 10)
-                {
                     foreach (var steamId in alphaSteamIds)
                     {
                         if (!playerLookups.Any(l => l.Value == steamId))
-                        {
                             alphaSteamIdsToRemove.Add(steamId);
-                        }
                     }
-                }
 
                 if (allStats.mapInfo.TestType.ToLower().Contains("comp") && bravoSteamIds.Count() > 5)
-                {
                     foreach (var steamId in bravoSteamIds)
                     {
                         if (!playerLookups.Any(l => l.Value == steamId))
-                        {
                             bravoSteamIdsToRemove.Add(steamId);
-                        }
                     }
-                }
                 else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && bravoSteamIds.Count() > 10)
-                {
                     foreach (var steamId in bravoSteamIds)
                     {
                         if (!playerLookups.Any(l => l.Value == steamId))
-                        {
                             bravoSteamIdsToRemove.Add(steamId);
-                        }
                     }
-                }
 
                 // remove the steamIDs if necessary
                 foreach (var steamId in alphaSteamIdsToRemove)
-                {
                     alphaSteamIds.Remove(steamId);
-                }
 
                 foreach (var steamId in bravoSteamIdsToRemove)
-                {
                     bravoSteamIds.Remove(steamId);
-                }
 
                 // kills/death stats this round
                 var deathsThisRound = processedData.PlayerKilledEventsValues.Where(k => k.Round == teamPlayers.Round);
@@ -2538,11 +2442,10 @@ namespace SourceEngine.Demo.Stats
                         {
                             // skip players who have died this round
                             if (!processedData.PlayerKilledEventsValues.Any(
-                                x => x.Round == playerPositionsStat.Round
-                                    && (x.Victim?.SteamID != 0 && x.Victim.SteamID == playerPositionsInstance.SteamID)
+                                x => x.Round == playerPositionsStat.Round && x.Victim?.SteamID != 0
+                                    && x.Victim.SteamID == playerPositionsInstance.SteamID
                                     && x.TimeInRound <= playerPositionByTimeInRound.TimeInRound
                             ))
-                            {
                                 playerPositionByTimeInRound.PlayerPositionBySteamID.Add(
                                     new PlayerPositionBySteamID()
                                     {
@@ -2553,7 +2456,6 @@ namespace SourceEngine.Demo.Stats
                                         ZPosition = (int)playerPositionsInstance.ZPosition,
                                     }
                                 );
-                            }
                         }
                     }
                 }
@@ -2580,7 +2482,6 @@ namespace SourceEngine.Demo.Stats
             string path = string.Empty;
 
             if (processedData.FoldersToProcess.Count() > 0 && processedData.SameFolderStructure)
-            {
                 foreach (var folder in processedData.FoldersToProcess)
                 {
                     string[] splitPath = Path.GetDirectoryName(processedData.DemoInformation.DemoName).Split(
@@ -2600,23 +2501,16 @@ namespace SourceEngine.Demo.Stats
                         break;
                     }
                 }
-            }
             else
-            {
                 path = string.Concat(processedData.OutputRootFolder, "\\");
-            }
 
             if (mapDateString != string.Empty)
-            {
                 path += mapDateString + "_";
-            }
 
             path += mapNameString + "_" + filename;
 
             if (playerPositionsStats != null)
-            {
                 path += "_playerpositions";
-            }
 
             path += ".json";
 
@@ -2700,9 +2594,9 @@ namespace SourceEngine.Demo.Stats
 
         public IEnumerable<object> SelectWeaponsEventsByName(string name)
         {
-            var shots = (from shot in GetEvents<WeaponFiredEventArgs>()
+            var shots = from shot in GetEvents<WeaponFiredEventArgs>()
                 where (shot as WeaponFiredEventArgs).Weapon.Weapon.ToString() == name
-                select shot);
+                select shot;
 
             return shots;
         }
@@ -2711,8 +2605,8 @@ namespace SourceEngine.Demo.Stats
         {
             Type t = typeof(T);
 
-            if (this.events.ContainsKey(t))
-                return this.events[t];
+            if (events.ContainsKey(t))
+                return events[t];
 
             return new List<object>();
         }
@@ -2754,9 +2648,7 @@ namespace SourceEngine.Demo.Stats
                 var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
 
                 if (teamPlayers.Terrorists.Count() > 0 && teamPlayers.CounterTerrorists.Count() > 0)
-                {
                     round = roundsCount + 1;
-                }
             }
 
             // add 1 for roundsCount when in danger zone
@@ -2773,14 +2665,14 @@ namespace SourceEngine.Demo.Stats
             var kills = md.events.Where(k => k.Key.Name.ToString() == "PlayerKilledEventArgs")
                 .Select(v => (PlayerKilledEventArgs)v.Value.ElementAt(0));
 
-            return !kills.Any(x => x.Round == round && (x.Victim?.SteamID != 0 && x.Victim.SteamID == player?.SteamID));
+            return !kills.Any(x => x.Round == round && x.Victim?.SteamID != 0 && x.Victim.SteamID == player?.SteamID);
         }
 
         public int CheckForUpdatedUserId(int userId)
         {
             int newUserId = playerReplacements.Where(u => u.Key == userId).Select(u => u.Value).FirstOrDefault();
 
-            return (newUserId == 0) ? userId : newUserId;
+            return newUserId == 0 ? userId : newUserId;
         }
 
         public static string[] SplitPositionString(string position)
@@ -2806,9 +2698,9 @@ namespace SourceEngine.Demo.Stats
                 " ",
                 currentPositions[2],
                 "; setang ",
-                (Convert.ToString(viewDirectionX) ?? "0.0"),
+                Convert.ToString(viewDirectionX) ?? "0.0",
                 " ",
-                (Convert.ToString(viewDirectionY) ?? "0.0") // Z axis is optional
+                Convert.ToString(viewDirectionY) ?? "0.0" // Z axis is optional
             );
         }
 
@@ -2852,28 +2744,28 @@ namespace SourceEngine.Demo.Stats
             return new BombPlantedError()
             {
                 Bombsite = validatedBombsite,
-                ErrorMessage = errorMessage
+                ErrorMessage = errorMessage,
             };
         }
 
         public HostagePickedUp GenerateNewHostagePickedUp(HostageRescued hostageRescued)
         {
-            return new HostagePickedUp()
+            return new()
             {
                 Hostage = hostageRescued.Hostage,
                 HostageIndex = hostageRescued.HostageIndex,
                 Player = new Player(hostageRescued.Player),
                 Round = hostageRescued.Round,
-                TimeInRound = -1
+                TimeInRound = -1,
             };
         }
 
         public bool GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(string half, int overtimeCount)
         {
-            return (half == "First" && overtimeCount % 2 == 0)
-                || (half == "Second"
-                    && overtimeCount % 2 == 1
-                ); // the team playing T Side first switches each OT for example, this checks the OT count for swaps
+            return half == "First" && overtimeCount % 2 == 0
+                || half == "Second"
+                && overtimeCount % 2
+                == 1; // the team playing T Side first switches each OT for example, this checks the OT count for swaps
         }
 
         public static int? GetMinRoundsForWin(string gamemode, string testType)

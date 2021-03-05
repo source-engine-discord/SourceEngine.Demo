@@ -16,7 +16,7 @@ namespace SourceEngine.Demo.Stats.App
     //Todo: add a formal config parser
     public class Config
     {
-        public Dictionary<string, string> keyVals = new Dictionary<string, string>();
+        public Dictionary<string, string> keyVals = new();
 
         public Config(string path)
         {
@@ -43,7 +43,7 @@ namespace SourceEngine.Demo.Stats.App
         }
     }
 
-    class Program
+    internal class Program
     {
         private static void helpText()
         {
@@ -70,7 +70,7 @@ namespace SourceEngine.Demo.Stats.App
         }
 
         //Program entry point
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             string cfgPath = "config.cfg";
             string gamemodeoverride = "notprovided";
@@ -226,9 +226,7 @@ namespace SourceEngine.Demo.Stats.App
                         Steam.setAPIKey(cfg.keyVals["apikey"]);
 
                         if (Steam.getSteamUserNamesLookupTable(new List<long> { 76561198072130043 }) == null)
-                        {
                             throw new Exception("CONFIG::STEAM_API_KEY::INVALID");
-                        }
                     }
                     catch (Exception e)
                     {
@@ -259,7 +257,7 @@ namespace SourceEngine.Demo.Stats.App
 
                 //Make sure a valid test type has been given
                 if ((gamemodeoverride == Gamemodes.Defuse || gamemodeoverride == Gamemodes.Hostage)
-                    && (testType != "casual" && testType != "competitive"))
+                    && testType != "casual" && testType != "competitive")
                 {
                     Debug.Error(
                         $"Invalid test type. It must be 'casual' or 'competitive' when -gamemodeoverride is set to '{Gamemodes.Defuse}' or '{Gamemodes.Hostage}'."
@@ -271,7 +269,6 @@ namespace SourceEngine.Demo.Stats.App
 
             //If the optional parameter -testdateoverride has been provided
             if (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown")
-            {
                 try
                 {
                     DateTime.ParseExact(testdateoverride, "dd/MM/yyyy", CultureInfo.InvariantCulture);
@@ -284,7 +281,6 @@ namespace SourceEngine.Demo.Stats.App
 
                     return;
                 }
-            }
 
             //Ensure only values 0-2 are provided when overriding the hostage rescue zone count
             if (hostagerescuezonecountoverride < 0 || hostagerescuezonecountoverride > 2)
@@ -297,9 +293,7 @@ namespace SourceEngine.Demo.Stats.App
             foreach (var folder in foldersToProcess)
             {
                 if (!Directory.Exists(folder))
-                {
                     Directory.CreateDirectory(folder);
-                }
             }
 
             //Clear by recreating folder
@@ -424,17 +418,16 @@ namespace SourceEngine.Demo.Stats.App
                 IEnumerable<ShotFired> sfe = new List<ShotFired>();
                 IEnumerable<PlayerPositionsInstance> ppe = new List<PlayerPositionsInstance>();
 
-                mse = (from start in mdTest.GetEvents<MatchStartedEventArgs>() select (start as MatchStartedEventArgs));
+                mse = from start in mdTest.GetEvents<MatchStartedEventArgs>() select start as MatchStartedEventArgs;
 
-                sse = (from switchSide in mdTest.GetEvents<SwitchSidesEventArgs>()
-                    select (switchSide as SwitchSidesEventArgs));
+                sse = from switchSide in mdTest.GetEvents<SwitchSidesEventArgs>()
+                    select switchSide as SwitchSidesEventArgs;
 
-                fme = (from message in mdTest.GetEvents<FeedbackMessage>() select (message as FeedbackMessage));
+                fme = from message in mdTest.GetEvents<FeedbackMessage>() select message as FeedbackMessage;
 
-                ph = (from player in mdTest.GetEvents<PlayerHurt>() select (player as PlayerHurt));
+                ph = from player in mdTest.GetEvents<PlayerHurt>() select player as PlayerHurt;
 
-                pke = (from player in mdTest.GetEvents<PlayerKilledEventArgs>()
-                    select (player as PlayerKilledEventArgs));
+                pke = from player in mdTest.GetEvents<PlayerKilledEventArgs>() select player as PlayerKilledEventArgs;
 
                 pe.Add(
                     "Kills",
@@ -462,11 +455,11 @@ namespace SourceEngine.Demo.Stats.App
                     select (player as PlayerKilledEventArgs).Assister
                 );
 
-                pwe = (from weapon in mdTest.GetEvents<PlayerKilledEventArgs>()
-                    select (weapon as PlayerKilledEventArgs).Weapon);
+                pwe = from weapon in mdTest.GetEvents<PlayerKilledEventArgs>()
+                    select (weapon as PlayerKilledEventArgs).Weapon;
 
-                poe = (from penetration in mdTest.GetEvents<PlayerKilledEventArgs>()
-                    select (penetration as PlayerKilledEventArgs).PenetratedObjects);
+                poe = from penetration in mdTest.GetEvents<PlayerKilledEventArgs>()
+                    select (penetration as PlayerKilledEventArgs).PenetratedObjects;
 
                 pe.Add(
                     "MVPs",
@@ -497,38 +490,38 @@ namespace SourceEngine.Demo.Stats.App
                 bde = (from defuse in mdTest.GetEvents<BombDefused>() select defuse as BombDefused)
                     .GroupBy(p => p.Round).Select(p => p.FirstOrDefault());
 
-                hre = (from hostage in mdTest.GetEvents<HostageRescued>() select hostage as HostageRescued);
+                hre = from hostage in mdTest.GetEvents<HostageRescued>() select hostage as HostageRescued;
 
-                hpu = (from hostage in mdTest.GetEvents<HostagePickedUp>() select hostage as HostagePickedUp);
+                hpu = from hostage in mdTest.GetEvents<HostagePickedUp>() select hostage as HostagePickedUp;
 
-                dpe = (from disconnection in mdTest.GetEvents<DisconnectedPlayer>()
-                    select (disconnection as DisconnectedPlayer));
+                dpe = from disconnection in mdTest.GetEvents<DisconnectedPlayer>()
+                    select disconnection as DisconnectedPlayer;
 
-                te = (from team in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
-                    select (team as RoundOfficiallyEndedEventArgs).Winner);
+                te = from team in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
+                    select (team as RoundOfficiallyEndedEventArgs).Winner;
 
-                re = (from reason in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
-                    select (reason as RoundOfficiallyEndedEventArgs).Reason);
+                re = from reason in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
+                    select (reason as RoundOfficiallyEndedEventArgs).Reason;
 
-                le = (from length in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
-                    select (length as RoundOfficiallyEndedEventArgs).Length);
+                le = from length in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
+                    select (length as RoundOfficiallyEndedEventArgs).Length;
 
-                tpe = (from teamPlayers in mdTest.GetEvents<TeamPlayers>()
+                tpe = from teamPlayers in mdTest.GetEvents<TeamPlayers>()
                     where (teamPlayers as TeamPlayers).Round
                         <= te.Count() // removes extra TeamPlayers if freezetime_end event triggers once a playtest is finished
-                    select (teamPlayers as TeamPlayers));
+                    select teamPlayers as TeamPlayers;
 
-                tes = (from round in mdTest.GetEvents<TeamEquipment>() select (round as TeamEquipment));
+                tes = from round in mdTest.GetEvents<TeamEquipment>() select round as TeamEquipment;
 
-                ge = (from nade in mdTest.GetEvents<NadeEventArgs>() select (nade as NadeEventArgs));
+                ge = from nade in mdTest.GetEvents<NadeEventArgs>() select nade as NadeEventArgs;
 
-                cke = (from chickenKill in mdTest.GetEvents<ChickenKilledEventArgs>()
-                    select (chickenKill as ChickenKilledEventArgs));
+                cke = from chickenKill in mdTest.GetEvents<ChickenKilledEventArgs>()
+                    select chickenKill as ChickenKilledEventArgs;
 
-                sfe = (from shot in mdTest.GetEvents<ShotFired>() select (shot as ShotFired));
+                sfe = from shot in mdTest.GetEvents<ShotFired>() select shot as ShotFired;
 
-                ppe = (from playerPos in mdTest.GetEvents<PlayerPositionsInstance>()
-                    select (playerPos as PlayerPositionsInstance));
+                ppe = from playerPos in mdTest.GetEvents<PlayerPositionsInstance>()
+                    select playerPos as PlayerPositionsInstance;
 
                 tanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
 
@@ -567,7 +560,7 @@ namespace SourceEngine.Demo.Stats.App
                         ChickenValues = cke,
                         ShotsFiredValues = sfe,
                         PlayerPositionsValues = ppe,
-                        WriteTicks = true
+                        WriteTicks = true,
                     };
 
                     AllOutputData allOutputData = mdTest.CreateFiles(processedData);
@@ -602,7 +595,7 @@ namespace SourceEngine.Demo.Stats.App
                 Left = false,
                 RoundJoined = -1,
                 RoundLeft = -1,
-                RoundsLasted = -1
+                RoundsLasted = -1,
             };
 
             long tanookiId = 76561198123165941;
@@ -622,16 +615,14 @@ namespace SourceEngine.Demo.Stats.App
 
                 tanookiStats.RoundsLasted = playedRoundsT.Count() + playedRoundsCT.Count();
 
-                bool playedTSide = (playedRoundsT.Count() > 0) ? true : false;
-                bool playedCTSide = (playedRoundsCT.Count() > 0) ? true : false;
+                bool playedTSide = playedRoundsT.Count() > 0 ? true : false;
+                bool playedCTSide = playedRoundsCT.Count() > 0 ? true : false;
 
-                tanookiStats.RoundJoined = playedTSide
-                    ? (playedCTSide
-                        ? ((playedRoundsT.First() < playedRoundsCT.First())
-                            ? playedRoundsT.First()
-                            : playedRoundsCT.First())
-                        : playedRoundsT.First())
-                    : (playedCTSide ? playedRoundsCT.First() : tanookiStats.RoundJoined);
+                tanookiStats.RoundJoined = playedTSide ? playedCTSide ? playedRoundsT.First() < playedRoundsCT.First()
+                        ?
+                        playedRoundsT.First()
+                        : playedRoundsCT.First() : playedRoundsT.First() :
+                    playedCTSide ? playedRoundsCT.First() : tanookiStats.RoundJoined;
             }
 
             if (dpe.Any(
@@ -643,11 +634,11 @@ namespace SourceEngine.Demo.Stats.App
                 int finalDisconnectRound = dpe.Where(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId)
                     .Reverse().Select(r => r.Round).First();
 
-                tanookiStats.RoundLeft = (finalDisconnectRound > tanookiStats.RoundsLasted)
+                tanookiStats.RoundLeft = finalDisconnectRound > tanookiStats.RoundsLasted
                     ? finalDisconnectRound
                     : tanookiStats.RoundLeft;
 
-                tanookiStats.Left = (tanookiStats.RoundLeft > -1) ? true : false;
+                tanookiStats.Left = tanookiStats.RoundLeft > -1 ? true : false;
             }
 
             return tanookiStats;
@@ -667,7 +658,7 @@ namespace SourceEngine.Demo.Stats.App
 
             if (isFaceitDemo)
             {
-                testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown")
+                testDate = !string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown"
                     ? testdateoverride
                     : "unknown";
 
@@ -676,38 +667,32 @@ namespace SourceEngine.Demo.Stats.App
             else
             {
                 if (pathSplit.Count() > 0) // searching by folder
-                {
                     filenameSplit = pathSplit[pathSplit.Count() - 1].Split('_', '.', '-');
-                }
                 else // searching by demo
-                {
                     filenameSplit = demo.Split('_', '.', '-');
-                }
 
                 var secondToLastString = filenameSplit[filenameSplit.Count() - 2];
-                bool isSEDiscordDemo = (secondToLastString == "casual" || secondToLastString == "comp") ? true : false;
+                bool isSEDiscordDemo = secondToLastString == "casual" || secondToLastString == "comp" ? true : false;
                 bool isMapcoreDiscordDemo = filenameSplit.Any(x => x.Contains("MAPCORE"));
 
                 if (isSEDiscordDemo)
                 {
-                    testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown")
+                    testDate = !string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown"
                         ? testdateoverride
                         : $"{filenameSplit[1]}/{filenameSplit[0]}/{filenameSplit[2]}";
 
                     mapname = $"{filenameSplit[3]}";
 
                     for (int i = 4; i < filenameSplit.Count() - 2; i++)
-                    {
                         mapname += $"_{filenameSplit[i]}";
-                    }
                 }
                 else if (isMapcoreDiscordDemo)
                 {
-                    testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown")
+                    testDate = !string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown"
                         ? testdateoverride
                         : $"{filenameSplit[1].Substring(6, 2)}/{filenameSplit[1].Substring(4, 2)}/{filenameSplit[1].Substring(0, 4)}";
 
-                    var index = (filenameSplit.Count() - 1) - Array.IndexOf(
+                    var index = filenameSplit.Count() - 1 - Array.IndexOf(
                         filenameSplit.Reverse().ToArray(),
                         "MAPCORE"
                     ); // gets the last index where the value was "MAPCORE"
@@ -715,13 +700,11 @@ namespace SourceEngine.Demo.Stats.App
                     mapname = $"{filenameSplit[6]}";
 
                     for (int i = 7; i < index; i++)
-                    {
                         mapname += $"_{filenameSplit[i]}";
-                    }
                 }
                 else //cannot determine demo name format
                 {
-                    testDate = (!string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown")
+                    testDate = !string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown"
                         ? testdateoverride
                         : "unknown";
 
@@ -736,7 +719,7 @@ namespace SourceEngine.Demo.Stats.App
                     MapName = mapname,
                     GameMode = gamemode,
                     TestType = testType,
-                    TestDate = testDate
+                    TestDate = testDate,
                 }
             );
         }

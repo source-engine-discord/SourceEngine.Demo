@@ -10,8 +10,8 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
     {
         public struct Key
         {
-            public Int32 Type;
-            public String Name;
+            public int Type;
+            public string Name;
 
             public void Parse(IBitStream bitstream)
             {
@@ -21,14 +21,10 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     var wireType = desc & 7;
                     var fieldnum = desc >> 3;
 
-                    if ((wireType == 0) && (fieldnum == 1))
-                    {
+                    if (wireType == 0 && fieldnum == 1)
                         Type = bitstream.ReadProtobufVarInt();
-                    }
-                    else if ((wireType == 2) && (fieldnum == 2))
-                    {
+                    else if (wireType == 2 && fieldnum == 2)
                         Name = bitstream.ReadProtobufString();
-                    }
                     else
                         throw new InvalidDataException();
                 }
@@ -37,8 +33,8 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
         public struct Descriptor
         {
-            public Int32 EventId;
-            public String Name;
+            public int EventId;
+            public string Name;
             public Key[] Keys;
 
             public void Parse(IBitStream bitstream)
@@ -51,15 +47,15 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     var wireType = desc & 7;
                     var fieldnum = desc >> 3;
 
-                    if ((wireType == 0) && (fieldnum == 1))
+                    if (wireType == 0 && fieldnum == 1)
                     {
                         EventId = bitstream.ReadProtobufVarInt();
                     }
-                    else if ((wireType == 2) && (fieldnum == 2))
+                    else if (wireType == 2 && fieldnum == 2)
                     {
                         Name = bitstream.ReadProtobufString();
                     }
-                    else if ((wireType == 2) && (fieldnum == 3))
+                    else if (wireType == 2 && fieldnum == 3)
                     {
                         var length = bitstream.ReadProtobufVarInt();
                         bitstream.BeginChunk(length * 8);
@@ -69,7 +65,9 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                         bitstream.EndChunk();
                     }
                     else
+                    {
                         throw new InvalidDataException();
+                    }
                 }
 
                 Keys = keys.ToArray();
@@ -88,7 +86,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 var desc = bitstream.ReadProtobufVarInt();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
-                if ((wireType != 2) || (fieldnum != 1))
+                if (wireType != 2 || fieldnum != 1)
                     throw new InvalidDataException();
 
                 var length = bitstream.ReadProtobufVarInt();

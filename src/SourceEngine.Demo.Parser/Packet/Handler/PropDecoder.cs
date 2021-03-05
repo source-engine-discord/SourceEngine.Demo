@@ -5,7 +5,7 @@ using SourceEngine.Demo.Parser.DataTable;
 
 namespace SourceEngine.Demo.Parser.Packet.Handler
 {
-    static class PropDecoder
+    internal static class PropDecoder
     {
         public static object DecodeProp(FlattenedPropEntry prop, IBitStream stream)
         {
@@ -38,24 +38,16 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (prop.Flags.HasFlagFast(SendPropertyFlags.VarInt))
             {
                 if (prop.Flags.HasFlagFast(SendPropertyFlags.Unsigned))
-                {
                     return (int)reader.ReadVarInt();
-                }
                 else
-                {
                     return (int)reader.ReadSignedVarInt();
-                }
             }
             else
             {
                 if (prop.Flags.HasFlagFast(SendPropertyFlags.Unsigned))
-                {
                     return (int)reader.ReadInt(prop.NumberOfBits);
-                }
                 else
-                {
                     return reader.ReadSignedInt(prop.NumberOfBits);
-                }
             }
         }
 
@@ -64,13 +56,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (prop.Flags.HasFlagFast(SendPropertyFlags.VarInt))
             {
                 if (prop.Flags.HasFlagFast(SendPropertyFlags.Unsigned))
-                {
                     return reader.ReadVarInt();
-                }
                 else
-                {
                     return reader.ReadSignedVarInt();
-                }
             }
             else
             {
@@ -137,13 +125,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 float absolute = v.X * v.X + v.Y * v.Y;
 
                 if (absolute < 1.0f)
-                {
                     v.Z = (float)Math.Sqrt(1 - absolute);
-                }
                 else
-                {
                     v.Z = 0f;
-                }
 
                 if (isNegative)
                     v.Z *= -1;
@@ -160,9 +144,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             int numBits = 1;
 
             while ((maxElements >>= 1) != 0)
-            {
                 numBits++;
-            }
 
             int nElements = (int)reader.ReadInt(numBits);
 
@@ -171,9 +153,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             FlattenedPropEntry temp = new FlattenedPropEntry("", flattenedProp.ArrayElementProp, null);
 
             for (int i = 0; i < nElements; i++)
-            {
                 result[i] = DecodeProp(temp, reader);
-            }
 
             return result;
         }
@@ -194,7 +174,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         #region Float-Stuff
 
-        static bool DecodeSpecialFloat(SendTableProperty prop, IBitStream reader, out float result)
+        private static bool DecodeSpecialFloat(SendTableProperty prop, IBitStream reader, out float result)
         {
             if (prop.Flags.HasFlagFast(SendPropertyFlags.Coord))
             {
@@ -247,15 +227,15 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             return false;
         }
 
-        static readonly int COORD_FRACTIONAL_BITS = 5;
-        static readonly int COORD_DENOMINATOR = (1 << (COORD_FRACTIONAL_BITS));
-        static readonly float COORD_RESOLUTION = (1.0f / (COORD_DENOMINATOR));
+        private static readonly int COORD_FRACTIONAL_BITS = 5;
+        private static readonly int COORD_DENOMINATOR = 1 << COORD_FRACTIONAL_BITS;
+        private static readonly float COORD_RESOLUTION = 1.0f / COORD_DENOMINATOR;
 
-        static readonly int COORD_FRACTIONAL_BITS_MP_LOWPRECISION = 3;
-        static readonly float COORD_DENOMINATOR_LOWPRECISION = (1 << (COORD_FRACTIONAL_BITS_MP_LOWPRECISION));
-        static readonly float COORD_RESOLUTION_LOWPRECISION = (1.0f / (COORD_DENOMINATOR_LOWPRECISION));
+        private static readonly int COORD_FRACTIONAL_BITS_MP_LOWPRECISION = 3;
+        private static readonly float COORD_DENOMINATOR_LOWPRECISION = 1 << COORD_FRACTIONAL_BITS_MP_LOWPRECISION;
+        private static readonly float COORD_RESOLUTION_LOWPRECISION = 1.0f / COORD_DENOMINATOR_LOWPRECISION;
 
-        static float ReadBitCoord(IBitStream reader)
+        private static float ReadBitCoord(IBitStream reader)
         {
             int intVal, fractVal;
             float value = 0;
@@ -274,18 +254,15 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                 // If there's an integer, read it in
                 if (intVal == 1)
-                {
+
                     // Adjust the integers from [0..MAX_COORD_VALUE-1] to [1..MAX_COORD_VALUE]
                     intVal = (int)reader.ReadInt(14) + 1; //14 --> Coord int bits
-                }
 
                 //If there's a fraction, read it in
                 if (fractVal == 1)
-                {
                     fractVal = (int)reader.ReadInt(COORD_FRACTIONAL_BITS);
-                }
 
-                value = intVal + ((float)fractVal * COORD_RESOLUTION);
+                value = intVal + (float)fractVal * COORD_RESOLUTION;
             }
 
             if (isNegative)
@@ -294,7 +271,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             return value;
         }
 
-        static float ReadBitCoordMP(IBitStream reader, bool isIntegral, bool isLowPrecision)
+        private static float ReadBitCoordMP(IBitStream reader, bool isIntegral, bool isLowPrecision)
         {
             int intval = 0, fractval = 0;
             float value = 0.0f;
@@ -316,13 +293,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     // If there's an integer, read it in
                     // Adjust the integers from [0..MAX_COORD_VALUE-1] to [1..MAX_COORD_VALUE]
                     if (inBounds)
-                    {
                         value = (float)(reader.ReadInt(11) + 1);
-                    }
                     else
-                    {
                         value = (float)(reader.ReadInt(14) + 1);
-                    }
                 }
             }
             else
@@ -339,21 +312,16 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     // If there's an integer, read it in
                     // Adjust the integers from [0..MAX_COORD_VALUE-1] to [1..MAX_COORD_VALUE]
                     if (inBounds)
-                    {
                         value = (float)(reader.ReadInt(11) + 1);
-                    }
                     else
-                    {
                         value = (float)(reader.ReadInt(14) + 1);
-                    }
                 }
 
                 // If there's a fraction, read it in
                 fractval = (int)reader.ReadInt(isLowPrecision ? 3 : 5);
 
                 // Calculate the correct floating point value
-                value = intval
-                    + ((float)fractval * (isLowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION));
+                value = intval + (float)fractval * (isLowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION);
             }
 
             if (isNegative)
@@ -362,7 +330,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             return value;
         }
 
-        static float ReadBitCellCoord(IBitStream reader, int bits, bool lowPrecision, bool integral)
+        private static float ReadBitCellCoord(IBitStream reader, int bits, bool lowPrecision, bool integral)
         {
             int intval = 0, fractval = 0;
             float value = 0.0f;
@@ -378,17 +346,17 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     lowPrecision ? COORD_FRACTIONAL_BITS_MP_LOWPRECISION : COORD_FRACTIONAL_BITS
                 );
 
-                value = intval + ((float)fractval * (lowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION));
+                value = intval + (float)fractval * (lowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION);
             }
 
             return value;
         }
 
-        static readonly int NORMAL_FRACTIONAL_BITS = 11;
-        static readonly int NORMAL_DENOMINATOR = ((1 << (NORMAL_FRACTIONAL_BITS)) - 1);
-        static readonly float NORMAL_RESOLUTION = (1.0f / (NORMAL_DENOMINATOR));
+        private static readonly int NORMAL_FRACTIONAL_BITS = 11;
+        private static readonly int NORMAL_DENOMINATOR = (1 << NORMAL_FRACTIONAL_BITS) - 1;
+        private static readonly float NORMAL_RESOLUTION = 1.0f / NORMAL_DENOMINATOR;
 
-        static float ReadBitNormal(IBitStream reader)
+        private static float ReadBitNormal(IBitStream reader)
         {
             bool isNegative = reader.ReadBit();
 

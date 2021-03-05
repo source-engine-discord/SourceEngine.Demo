@@ -11,7 +11,7 @@ namespace SourceEngine.Demo.Parser
     public static class BitStreamUtil
     {
         /// <summary>
-        /// Creates an instance of the preferred <see cref="IBitStream"/> implementation for streams.
+        /// Creates an instance of the preferred <see cref="IBitStream" /> implementation for streams.
         /// </summary>
         public static IBitStream Create(Stream stream)
         {
@@ -42,7 +42,7 @@ namespace SourceEngine.Demo.Parser
         }
 
         /// <summary>
-        /// Creates an instance of the preferred <see cref="IBitStream"/> implementation for byte arrays.
+        /// Creates an instance of the preferred <see cref="IBitStream" /> implementation for byte arrays.
         /// </summary>
         public static IBitStream Create(byte[] data)
         {
@@ -88,7 +88,7 @@ namespace SourceEngine.Demo.Parser
 
         public static string ReadString(this IBitStream bs)
         {
-            return bs.ReadString(Int32.MaxValue);
+            return bs.ReadString(int.MaxValue);
         }
 
         public static string ReadString(this IBitStream bs, int limit)
@@ -98,7 +98,7 @@ namespace SourceEngine.Demo.Parser
             for (int pos = 0; pos < limit; pos++)
             {
                 var b = bs.ReadByte();
-                if ((b == 0) || (b == 10))
+                if (b == 0 || b == 10)
                     break;
 
                 result.Add(b);
@@ -156,14 +156,16 @@ namespace SourceEngine.Demo.Parser
             {
                 b = reader.ReadByte();
 
-                if ((count < 4) || ((count == 4) && (((b & 0xF8) == 0) || ((b & 0xF8) == 0xF8))))
+                if (count < 4 || count == 4 && ((b & 0xF8) == 0 || (b & 0xF8) == 0xF8))
+                {
                     result |= (b & ~0x80) << (7 * count);
+                }
                 else
                 {
                     if (count >= 10)
                         throw new OverflowException("Nope nope nope nope! 10 bytes max!");
 
-                    if ((count == 9) ? (b != 1) : ((b & 0x7F) != 0x7F))
+                    if (count == 9 ? b != 1 : (b & 0x7F) != 0x7F)
                         throw new NotSupportedException("more than 32 bits are not supported");
                 }
             }

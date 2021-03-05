@@ -8,18 +8,15 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
     public struct CreateStringTable
     {
         public string Name;
-        public Int32 MaxEntries;
-        public Int32 NumEntries;
-        private Int32 _UserDataFixedSize;
+        public int MaxEntries;
+        public int NumEntries;
+        private int _UserDataFixedSize;
 
-        public bool UserDataFixedSize
-        {
-            get { return _UserDataFixedSize != 0; }
-        }
+        public bool UserDataFixedSize => _UserDataFixedSize != 0;
 
-        public Int32 UserDataSize;
-        public Int32 UserDataSizeBits;
-        public Int32 Flags;
+        public int UserDataSize;
+        public int UserDataSizeBits;
+        public int Flags;
 
         public void Parse(IBitStream bitstream, DemoParser parser)
         {
@@ -51,10 +48,12 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                         break;
                     }
                     else
+                    {
                         throw new InvalidDataException(
                             "yes I know we should drop this but we"
                             + "probably want to know that they added a new big field"
                         );
+                    }
                 }
 
                 if (wireType != 0)

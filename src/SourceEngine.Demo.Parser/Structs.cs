@@ -8,17 +8,14 @@ namespace SourceEngine.Demo.Parser
     /// </summary>
     public class DemoHeader
     {
-        const int MAX_OSPATH = 260;
+        private const int MAX_OSPATH = 260;
 
         public string Filestamp { get; private set; } // Should be HL2DEMO
 
         public int Protocol { get; private set; } // Should be DEMO_PROTOCOL (4)
 
         [Obsolete("This was a typo. Use NetworkProtocol instead")]
-        public int NetworkProtocal
-        {
-            get { return NetworkProtocol; }
-        }
+        public int NetworkProtocal => NetworkProtocol;
 
         public int NetworkProtocol { get; private set; } // Should be PROTOCOL_VERSION
 
@@ -40,7 +37,7 @@ namespace SourceEngine.Demo.Parser
 
         public static DemoHeader ParseFrom(IBitStream reader)
         {
-            return new DemoHeader()
+            return new()
             {
                 Filestamp = reader.ReadCString(8),
                 Protocol = reader.ReadSignedInt(32),
@@ -68,24 +65,15 @@ namespace SourceEngine.Demo.Parser
 
         public float Z { get; set; }
 
-        public double Angle2D
-        {
-            get { return Math.Atan2(this.Y, this.X); }
-        }
+        public double Angle2D => Math.Atan2(Y, X);
 
-        public double Absolute
-        {
-            get { return Math.Sqrt(AbsoluteSquared); }
-        }
+        public double Absolute => Math.Sqrt(AbsoluteSquared);
 
-        public double AbsoluteSquared
-        {
-            get { return this.X * this.X + this.Y * this.Y + this.Z * this.Z; }
-        }
+        public double AbsoluteSquared => X * X + Y * Y + Z * Z;
 
         public static Vector Parse(IBitStream reader)
         {
-            return new Vector
+            return new()
             {
                 X = reader.ReadFloat(),
                 Y = reader.ReadFloat(),
@@ -97,9 +85,9 @@ namespace SourceEngine.Demo.Parser
 
         public Vector(float x, float y, float z)
         {
-            this.X = x;
-            this.Y = y;
-            this.Z = z;
+            X = x;
+            Y = y;
+            Z = z;
         }
 
         /// <summary>
@@ -108,26 +96,26 @@ namespace SourceEngine.Demo.Parser
         /// </summary>
         public Vector Copy()
         {
-            return new Vector(X, Y, Z);
+            return new(X, Y, Z);
         }
 
         public static Vector operator +(Vector a, Vector b)
         {
-            return new Vector()
+            return new()
             {
                 X = a.X + b.X,
                 Y = a.Y + b.Y,
-                Z = a.Z + b.Z
+                Z = a.Z + b.Z,
             };
         }
 
         public static Vector operator -(Vector a, Vector b)
         {
-            return new Vector()
+            return new()
             {
                 X = a.X - b.X,
                 Y = a.Y - b.Y,
-                Z = a.Z - b.Z
+                Z = a.Z - b.Z,
             };
         }
 
@@ -140,7 +128,7 @@ namespace SourceEngine.Demo.Parser
     /// <summary>
     /// And Angle in the Source-Engine. Looks pretty much like a vector.
     /// </summary>
-    class QAngle
+    internal class QAngle
     {
         public float X { get; private set; }
 
@@ -150,7 +138,7 @@ namespace SourceEngine.Demo.Parser
 
         public static QAngle Parse(IBitStream reader)
         {
-            return new QAngle
+            return new()
             {
                 X = reader.ReadFloat(),
                 Y = reader.ReadFloat(),
@@ -162,9 +150,9 @@ namespace SourceEngine.Demo.Parser
     /// <summary>
     /// A split.
     /// </summary>
-    class Split
+    internal class Split
     {
-        const int FDEMO_NORMAL = 0, FDEMO_USE_ORIGIN2 = 1, FDEMO_USE_ANGLES2 = 2, FDEMO_NOINTERP = 4;
+        private const int FDEMO_NORMAL = 0, FDEMO_USE_ORIGIN2 = 1, FDEMO_USE_ANGLES2 = 2, FDEMO_NOINTERP = 4;
 
         public int Flags { get; private set; }
 
@@ -180,24 +168,15 @@ namespace SourceEngine.Demo.Parser
 
         public QAngle localViewAngles2 { get; private set; }
 
-        public Vector ViewOrigin
-        {
-            get { return (Flags & FDEMO_USE_ORIGIN2) != 0 ? viewOrigin2 : viewOrigin; }
-        }
+        public Vector ViewOrigin => (Flags & FDEMO_USE_ORIGIN2) != 0 ? viewOrigin2 : viewOrigin;
 
-        public QAngle ViewAngles
-        {
-            get { return (Flags & FDEMO_USE_ANGLES2) != 0 ? viewAngles2 : viewAngles; }
-        }
+        public QAngle ViewAngles => (Flags & FDEMO_USE_ANGLES2) != 0 ? viewAngles2 : viewAngles;
 
-        public QAngle LocalViewAngles
-        {
-            get { return (Flags & FDEMO_USE_ANGLES2) != 0 ? localViewAngles2 : localViewAngles; }
-        }
+        public QAngle LocalViewAngles => (Flags & FDEMO_USE_ANGLES2) != 0 ? localViewAngles2 : localViewAngles;
 
         public static Split Parse(IBitStream reader)
         {
-            return new Split
+            return new()
             {
                 Flags = reader.ReadSignedInt(32),
                 viewOrigin = Vector.Parse(reader),
@@ -210,13 +189,13 @@ namespace SourceEngine.Demo.Parser
         }
     }
 
-    class CommandInfo
+    internal class CommandInfo
     {
         public Split[] u { get; private set; }
 
         public static CommandInfo Parse(IBitStream reader)
         {
-            return new CommandInfo { u = new Split[2] { Split.Parse(reader), Split.Parse(reader) } };
+            return new() { u = new Split[2] { Split.Parse(reader), Split.Parse(reader) } };
         }
     }
 
@@ -261,10 +240,10 @@ namespace SourceEngine.Demo.Parser
 
         public int customFiles3 { get; set; }
 
-        byte filesDownloaded { get; set; }
+        private byte filesDownloaded { get; set; }
 
         // this counter increases each time the server downloaded a new file
-        byte FilesDownloaded { get; set; }
+        private byte FilesDownloaded { get; set; }
 
         internal PlayerInfo() { }
 
@@ -291,13 +270,10 @@ namespace SourceEngine.Demo.Parser
 
         public static PlayerInfo ParseFrom(BinaryReader reader)
         {
-            return new PlayerInfo(reader);
+            return new(reader);
         }
 
-        public static int SizeOf
-        {
-            get { return 8 + 8 + 128 + 4 + 3 + 4 + 1 + 1 + 4 * 8 + 1; }
-        }
+        public static int SizeOf => 8 + 8 + 128 + 4 + 3 + 4 + 1 + 1 + 4 * 8 + 1;
     }
 
     /// <summary>
@@ -313,7 +289,7 @@ namespace SourceEngine.Demo.Parser
 
         public BoundingBoxInformation(int index)
         {
-            this.Index = index;
+            Index = index;
         }
 
         /// <summary>
@@ -330,7 +306,7 @@ namespace SourceEngine.Demo.Parser
     /// <summary>
     /// The demo-commands as given by Valve.
     /// </summary>
-    enum DemoCommand
+    internal enum DemoCommand
     {
         /// <summary>
         /// it's a startup message, process as fast as possible
@@ -358,7 +334,7 @@ namespace SourceEngine.Demo.Parser
         UserCommand,
 
         /// <summary>
-        ///  network data tables
+        /// network data tables
         /// </summary>
         DataTables,
 
@@ -382,7 +358,7 @@ namespace SourceEngine.Demo.Parser
         /// <summary>
         /// First Command
         /// </summary>
-        FirstCommand = Signon
+        FirstCommand = Signon,
     };
 
     public enum RoundEndReason
@@ -485,14 +461,14 @@ namespace SourceEngine.Demo.Parser
         /// <summary>
         /// Unknown
         /// </summary>
-        Unknown // Caused by an error where the round_end event was not triggered for a round
+        Unknown, // Caused by an error where the round_end event was not triggered for a round
     };
 
     public enum RoundMVPReason
     {
         MostEliminations = 1,
         BombPlanted,
-        BombDefused
+        BombDefused,
     };
 
     public enum Hitgroup

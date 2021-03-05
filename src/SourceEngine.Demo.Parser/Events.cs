@@ -126,10 +126,7 @@ namespace SourceEngine.Demo.Parser
         public Equipment Weapon { get; internal set; }
 
         [Obsolete("Use \"Victim\" instead. This will be removed soon™", false)]
-        public Player DeathPerson
-        {
-            get { return Victim; }
-        }
+        public Player DeathPerson => Victim;
 
         public Player Victim { get; set; }
 
@@ -327,7 +324,8 @@ namespace SourceEngine.Demo.Parser
         public Hitgroup Hitgroup { get; set; }
 
         /// <summary>
-        /// Shows if it is possible that the player was killed by a bomb explosion (player_death is not triggered when it is due to the bomb (unsure if this is always or just sometimes)).
+        /// Shows if it is possible that the player was killed by a bomb explosion (player_death is not triggered when it is due to
+        /// the bomb (unsure if this is always or just sometimes)).
         /// </summary>
         /// <value>The hitgroup.</value>
         public bool PossiblyKilledByBombExplosion { get; set; }
@@ -471,8 +469,8 @@ namespace SourceEngine.Demo.Parser
                     {
                         EquipmentClass.Heavy => "Shotgun",
                         EquipmentClass.Rifle => "AssaultRifle",
-                        _ => Class.ToString()
-                    }
+                        _ => Class.ToString(),
+                    },
                 };
             }
         }
@@ -487,7 +485,7 @@ namespace SourceEngine.Demo.Parser
 
         public Player Owner { get; set; }
 
-        public int ReserveAmmo => (Owner != null && AmmoType != -1) ? Owner.AmmoLeft[AmmoType] : -1;
+        public int ReserveAmmo => Owner != null && AmmoType != -1 ? Owner.AmmoLeft[AmmoType] : -1;
 
         public Equipment()
         {
@@ -521,7 +519,7 @@ namespace SourceEngine.Demo.Parser
             }
         }
 
-        const string WEAPON_PREFIX = "weapon_";
+        private const string WEAPON_PREFIX = "weapon_";
 
         public static EquipmentElement MapEquipment(string name)
         {

@@ -21,20 +21,17 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         private int BitsInBuffer;
         private bool EndOfStream = false;
 
-        private readonly Stack<long> ChunkTargets = new Stack<long>();
+        private readonly Stack<long> ChunkTargets = new();
         private long LazyGlobalPosition = 0;
 
-        private long ActualGlobalPosition
-        {
-            get { return LazyGlobalPosition + Offset; }
-        }
+        private long ActualGlobalPosition => LazyGlobalPosition + Offset;
 
         public void Initialize(Stream underlying)
         {
             HBuffer = GCHandle.Alloc(Buffer, GCHandleType.Pinned);
             PBuffer = (byte*)HBuffer.AddrOfPinnedObject().ToPointer();
 
-            this.Underlying = underlying;
+            Underlying = underlying;
             RefillBuffer();
 
             Offset = SLED * 8;
@@ -128,7 +125,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                 LazyGlobalPosition += BitsInBuffer;
 
                 int offset, thisTime = 1337; // I'll cry if this ends up in the generated code
-                for (offset = 0; (offset < 4) && (thisTime != 0); offset += thisTime)
+                for (offset = 0; offset < 4 && thisTime != 0; offset += thisTime)
                     thisTime = Underlying.Read(Buffer, SLED + offset, BUFSIZE - SLED - offset);
 
                 BitsInBuffer = 8 * offset;
@@ -155,7 +152,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         {
             BitStreamUtil.AssertMaxBits(32, numBits);
             Debug.Assert(
-                mayOverflow || ((Offset + numBits) <= (BitsInBuffer + (SLED * 8))),
+                mayOverflow || Offset + numBits <= BitsInBuffer + SLED * 8,
                 "gg",
                 "This code just fell apart. We're all dead. Offset={0} numBits={1} BitsInBuffer={2}",
                 Offset,
@@ -163,8 +160,8 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                 BitsInBuffer
             );
 
-            return (uint)(((*(ulong*)(PBuffer + ((Offset >> 3) & ~3)))
-                << ((8 * 8) - ((Offset & ((8 * 4) - 1))) - numBits)) >> ((8 * 8) - numBits));
+            return (uint)((*(ulong*)(PBuffer + ((Offset >> 3) & ~3)) << (8 * 8 - (Offset & (8 * 4 - 1)) - numBits))
+                >> (8 * 8 - numBits));
         }
 
         public bool ReadBit()
@@ -217,6 +214,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                 }
             }
             else
+            {
                 fixed (byte* retptr = ret)
                 {
                     int offset = 0;
@@ -228,6 +226,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                         offset += remainingBytes;
                     }
                 }
+            }
         }
 
         private void HyperspeedCopyRound(int bytes, byte* retptr) // you spin me right round baby right round...
@@ -243,7 +242,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             var outptr = (ulong*)retptr;
 
             // main loop
-            for (int i = 0; i < ((bytes - 1) / sizeof(ulong)); i++)
+            for (int i = 0; i < (bytes - 1) / sizeof(ulong); i++)
             {
                 ulong current = *inptr++;
                 step |= current << misalign;
@@ -265,8 +264,8 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             // Just like PeekInt, but we cast to signed long before the shr because we need to sext
             BitStreamUtil.AssertMaxBits(32, numBits);
             var result =
-                (int)(((long)((*(ulong*)(PBuffer + ((Offset >> 3) & ~3)))
-                    << ((8 * 8) - (Offset & ((8 * 4) - 1)) - numBits))) >> ((8 * 8) - numBits));
+                (int)((long)(*(ulong*)(PBuffer + ((Offset >> 3) & ~3)) << (8 * 8 - (Offset & (8 * 4 - 1)) - numBits))
+                    >> (8 * 8 - numBits));
 
             if (TryAdvance(numBits)) RefillBuffer();
             return result;
@@ -304,7 +303,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
         public int ReadProtobufVarInt()
         {
-            var availableBits = BitsInBuffer + (SLED * 8) - Offset;
+            var availableBits = BitsInBuffer + SLED * 8 - Offset;
 
             // Start by overflowingly reading 32 bits.
             // Reading beyond the buffer contents is safe in this case,
@@ -336,11 +335,20 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                             return BitStreamUtil.ReadProtobufVarIntStub(this);
                         else if (TryAdvance(4 * 8)) RefillBuffer();
                     }
-                    else if (TryAdvance(3 * 8)) RefillBuffer();
+                    else if (TryAdvance(3 * 8))
+                    {
+                        RefillBuffer();
+                    }
                 }
-                else if (TryAdvance(2 * 8)) RefillBuffer();
+                else if (TryAdvance(2 * 8))
+                {
+                    RefillBuffer();
+                }
             }
-            else if (TryAdvance(1 * 8)) RefillBuffer();
+            else if (TryAdvance(1 * 8))
+            {
+                RefillBuffer();
+            }
 
             return unchecked((int)result);
         }
@@ -364,7 +372,9 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             var delta = checked((int)(target - ActualGlobalPosition));
 
             if (delta < 0)
+            {
                 throw new InvalidOperationException("Someone read beyond a chunk boundary");
+            }
             else if (delta > 0)
             {
                 // so we need to skip stuff. fun.
@@ -373,7 +383,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                 {
                     int bufferBits = BitsInBuffer - Offset;
 
-                    if ((bufferBits + (SLED * 8)) < delta)
+                    if (bufferBits + SLED * 8 < delta)
                     {
                         if (EndOfStream)
                             throw new EndOfStreamException();
@@ -383,7 +393,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
                         // Read at least 8 bytes, because we rely on that
                         int offset, thisTime = 1337; // I'll cry if this ends up in the generated code
-                        for (offset = 0; (offset < 8) && (thisTime != 0); offset += thisTime)
+                        for (offset = 0; offset < 8 && thisTime != 0; offset += thisTime)
                             thisTime = Underlying.Read(Buffer, offset, BUFSIZE - offset);
 
                         BitsInBuffer = 8 * (offset - SLED);
@@ -401,18 +411,21 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
                     else
 
                         // no need to efficiently skip, so just read and discard
-                    if (TryAdvance(delta)) RefillBuffer();
+                    if (TryAdvance(delta))
+                    {
+                        RefillBuffer();
+                    }
                 }
                 else
 
                     // dammit, can't efficiently skip, so just read and discard
-                if (TryAdvance(delta)) RefillBuffer();
+                if (TryAdvance(delta))
+                {
+                    RefillBuffer();
+                }
             }
         }
 
-        public bool ChunkFinished
-        {
-            get { return ChunkTargets.Peek() == ActualGlobalPosition; }
-        }
+        public bool ChunkFinished => ChunkTargets.Peek() == ActualGlobalPosition;
     }
 }

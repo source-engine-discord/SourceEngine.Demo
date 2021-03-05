@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace SourceEngine.Demo.Parser.BitStreamImpl
@@ -9,11 +11,11 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
         public DebugBitStream(IBitStream a, IBitStream b)
         {
-            this.A = a;
-            this.B = b;
+            A = a;
+            B = b;
         }
 
-        public void Initialize(System.IO.Stream stream)
+        public void Initialize(Stream stream)
         {
             throw new NotImplementedException();
         }
@@ -28,9 +30,9 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         {
             if (!a.Equals(b))
             {
-                System.Diagnostics.Debug.Assert(false);
+                Debug.Assert(false);
                 throw new InvalidOperationException(
-                    String.Format("{0} vs {1} ({2} vs {3})", a, b, A.GetType().Name, B.GetType().Name)
+                    string.Format("{0} vs {1} ({2} vs {3})", a, b, A.GetType().Name, B.GetType().Name)
                 );
             }
         }

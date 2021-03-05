@@ -8,15 +8,15 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
     {
         public struct SendProp
         {
-            public Int32 Type;
+            public int Type;
             public string VarName;
-            public Int32 Flags;
-            public Int32 Priority;
+            public int Flags;
+            public int Priority;
             public string DtName;
-            public Int32 NumElements;
+            public int NumElements;
             public float LowValue;
             public float HighValue;
-            public Int32 NumBits;
+            public int NumBits;
 
             public void Parse(IBitStream bitstream)
             {
@@ -29,13 +29,9 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     if (wireType == 2)
                     {
                         if (fieldnum == 2)
-                        {
                             VarName = bitstream.ReadProtobufString();
-                        }
                         else if (fieldnum == 5)
-                        {
                             DtName = bitstream.ReadProtobufString();
-                        }
                         else
                             throw new InvalidDataException(
                                 "yes I know we should drop this but we"
@@ -86,25 +82,21 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                         }
                     }
                     else
+                    {
                         throw new InvalidDataException();
+                    }
                 }
             }
         }
 
-        private Int32 _IsEnd;
+        private int _IsEnd;
 
-        public bool IsEnd
-        {
-            get { return _IsEnd != 0; }
-        }
+        public bool IsEnd => _IsEnd != 0;
 
         public string NetTableName;
-        public Int32 _NeedsDecoder;
+        public int _NeedsDecoder;
 
-        public bool NeedsDecoder
-        {
-            get { return _NeedsDecoder != 0; }
-        }
+        public bool NeedsDecoder => _NeedsDecoder != 0;
 
         public IEnumerable<SendProp> Parse(IBitStream bitstream)
         {
@@ -135,10 +127,12 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                         bitstream.EndChunk();
                     }
                     else
+                    {
                         throw new InvalidDataException(
                             "yes I know we should drop this"
                             + "but we probably want to know that they added a new big field"
                         );
+                    }
                 }
                 else if (wireType == 0)
                 {
@@ -158,7 +152,9 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     }
                 }
                 else
+                {
                     throw new InvalidDataException();
+                }
             }
 
             return sendprops;

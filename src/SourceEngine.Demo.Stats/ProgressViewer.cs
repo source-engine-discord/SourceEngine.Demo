@@ -63,16 +63,16 @@ namespace SourceEngine.Demo.Stats
 
         public void End()
         {
-            this.percent = 1.0f;
-            this.title += " COMPLETED";
-            this.Draw(true);
+            percent = 1.0f;
+            title += " COMPLETED";
+            Draw(true);
             Console.Write("\n");
         }
 
         public void Error()
         {
-            this.title += " FAILED";
-            this.Draw(true, true);
+            title += " FAILED";
+            Draw(true, true);
             Console.Write("\n");
         }
 
@@ -80,9 +80,9 @@ namespace SourceEngine.Demo.Stats
         {
             this.title = title;
 
-            this.console_y = Console.CursorTop;
+            console_y = Console.CursorTop;
 
-            this.Draw();
+            Draw();
         }
     }
 }

@@ -56,17 +56,11 @@ namespace SourceEngine.Demo.Parser
             }
         }
 
-        internal Dictionary<int, Equipment> rawWeapons = new Dictionary<int, Equipment>();
+        internal Dictionary<int, Equipment> rawWeapons = new();
 
-        public IEnumerable<Equipment> Weapons
-        {
-            get { return rawWeapons.Values; }
-        }
+        public IEnumerable<Equipment> Weapons => rawWeapons.Values;
 
-        public bool IsAlive
-        {
-            get { return HP > 0; }
-        }
+        public bool IsAlive => HP > 0;
 
         public Team Team { get; set; }
 
@@ -90,33 +84,33 @@ namespace SourceEngine.Demo.Parser
         {
             if (player != null)
             {
-                this.Name = player.Name;
-                this.SteamID = player.SteamID;
-                this.Position = player.Position;
-                this.EntityID = player.EntityID;
-                this.UserID = player.UserID;
-                this.HP = player.HP;
-                this.Armor = player.Armor;
-                this.LastAlivePosition = player.LastAlivePosition;
-                this.Velocity = player.Velocity;
-                this.ViewDirectionX = player.ViewDirectionX;
-                this.ViewDirectionY = player.ViewDirectionY;
-                this.FlashDuration = player.FlashDuration;
-                this.Money = player.Money;
-                this.CurrentEquipmentValue = player.CurrentEquipmentValue;
-                this.FreezetimeEndEquipmentValue = player.FreezetimeEndEquipmentValue;
-                this.RoundStartEquipmentValue = player.RoundStartEquipmentValue;
-                this.IsDucking = player.IsDucking;
-                this.Entity = player.Entity;
-                this.Disconnected = player.Disconnected;
-                this.ActiveWeaponID = player.ActiveWeaponID;
-                this.rawWeapons = player.rawWeapons;
-                this.Team = player.Team;
-                this.HasDefuseKit = player.HasDefuseKit;
-                this.HasHelmet = player.HasHelmet;
-                this.TeamID = player.TeamID;
-                this.AmmoLeft = player.AmmoLeft;
-                this.AdditionaInformations = player.AdditionaInformations;
+                Name = player.Name;
+                SteamID = player.SteamID;
+                Position = player.Position;
+                EntityID = player.EntityID;
+                UserID = player.UserID;
+                HP = player.HP;
+                Armor = player.Armor;
+                LastAlivePosition = player.LastAlivePosition;
+                Velocity = player.Velocity;
+                ViewDirectionX = player.ViewDirectionX;
+                ViewDirectionY = player.ViewDirectionY;
+                FlashDuration = player.FlashDuration;
+                Money = player.Money;
+                CurrentEquipmentValue = player.CurrentEquipmentValue;
+                FreezetimeEndEquipmentValue = player.FreezetimeEndEquipmentValue;
+                RoundStartEquipmentValue = player.RoundStartEquipmentValue;
+                IsDucking = player.IsDucking;
+                Entity = player.Entity;
+                Disconnected = player.Disconnected;
+                ActiveWeaponID = player.ActiveWeaponID;
+                rawWeapons = player.rawWeapons;
+                Team = player.Team;
+                HasDefuseKit = player.HasDefuseKit;
+                HasHelmet = player.HasHelmet;
+                TeamID = player.TeamID;
+                AmmoLeft = player.AmmoLeft;
+                AdditionaInformations = player.AdditionaInformations;
             }
         }
 

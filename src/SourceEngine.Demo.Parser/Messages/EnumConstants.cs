@@ -10,7 +10,7 @@
         net_Tick = 4,
         net_StringCmd = 5,
         net_SetConVar = 6,
-        net_SignonState = 7
+        net_SignonState = 7,
     }
 
     public enum SVC_Messages
@@ -41,7 +41,7 @@
         svc_GetCvarValue = 31,
         svc_PaintmapData = 33,
         svc_CmdKeyValues = 34,
-        svc_EncryptedData = 35
+        svc_EncryptedData = 35,
     }
     #endif
 
@@ -109,6 +109,6 @@
         um_ReportHit = 64,
         um_XpUpdate = 65,
         um_QuestProgress = 66,
-        um_ScoreLeaderboardData = 67
+        um_ScoreLeaderboardData = 67,
     }
 }

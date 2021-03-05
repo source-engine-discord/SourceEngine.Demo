@@ -21,20 +21,20 @@ namespace SourceEngine.Demo.Parser
     #endif
     public class DemoParser : IDisposable
     {
-        const int MAX_EDICT_BITS = 11;
-        internal const int INDEX_MASK = ((1 << MAX_EDICT_BITS) - 1);
-        internal const int MAX_ENTITIES = ((1 << MAX_EDICT_BITS));
-        const int MAXPLAYERS = 64;
-        const int MAXWEAPONS = 64;
+        private const int MAX_EDICT_BITS = 11;
+        internal const int INDEX_MASK = (1 << MAX_EDICT_BITS) - 1;
+        internal const int MAX_ENTITIES = 1 << MAX_EDICT_BITS;
+        private const int MAXPLAYERS = 64;
+        private const int MAXWEAPONS = 64;
 
         public bool stopParsingDemo = false;
-        bool parseChickens = true;
-        bool parsePlayerPositions = true;
-        string gamemode = string.Empty;
-        int numOfHostageRescueZonesLookingFor = 0; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
+        private bool parseChickens = true;
+        private bool parsePlayerPositions = true;
+        private string gamemode = string.Empty;
+        private int numOfHostageRescueZonesLookingFor = 0; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
 
-        public List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
-        internal Dictionary<int, Player> InfernoOwners = new Dictionary<int, Player>();
+        public List<BoundingBoxInformation> triggers = new();
+        internal Dictionary<int, Player> InfernoOwners = new();
 
         #region Events
 
@@ -62,7 +62,8 @@ namespace SourceEngine.Demo.Parser
         public event EventHandler<RoundAnnounceMatchStartedEventArgs> RoundAnnounceMatchStarted;
 
         /// <summary>
-        /// Occurs when round starts, on the round_start event of the demo. Usually the players haven't spawned yet, but have recieved the money for the next round.
+        /// Occurs when round starts, on the round_start event of the demo. Usually the players haven't spawned yet, but have
+        /// recieved the money for the next round.
         /// </summary>
         public event EventHandler<RoundStartedEventArgs> RoundStart;
 
@@ -290,10 +291,7 @@ namespace SourceEngine.Demo.Parser
         /// Is a string like "de_dust2".
         /// </summary>
         /// <value>The map.</value>
-        public string Map
-        {
-            get { return Header.MapName; }
-        }
+        public string Map => Header.MapName;
 
         /// <summary>
         /// The header of the demo, containing some useful information.
@@ -305,10 +303,7 @@ namespace SourceEngine.Demo.Parser
         /// Gets the participants of this game
         /// </summary>
         /// <value>The participants.</value>
-        public IEnumerable<Player> Participants
-        {
-            get { return Players.Values; }
-        }
+        public IEnumerable<Player> Participants => Players.Values;
 
         /// <summary>
         /// Gets all the participants of this game, that aren't spectating.
@@ -327,21 +322,20 @@ namespace SourceEngine.Demo.Parser
         /// <summary>
         /// A parser for DataTables. This contains the ServerClasses and DataTables.
         /// </summary>
-        internal DataTableParser SendTableParser = new DataTableParser();
+        internal DataTableParser SendTableParser = new();
 
         /// <summary>
         /// A parser for DEM_STRINGTABLES-Packets
         /// </summary>
-        StringTableParser StringTables = new StringTableParser();
+        private StringTableParser StringTables = new();
 
         /// <summary>
         /// This maps an ServerClass to an Equipment.
         /// Note that this is wrong for the CZ,M4A1 and USP-S, there is an additional fix for those
         /// </summary>
-        internal Dictionary<ServerClass, EquipmentElement> equipmentMapping =
-            new Dictionary<ServerClass, EquipmentElement>();
+        internal Dictionary<ServerClass, EquipmentElement> equipmentMapping = new();
 
-        internal Dictionary<int, Player> Players = new Dictionary<int, Player>();
+        internal Dictionary<int, Player> Players = new();
 
         /// <summary>
         /// Containing info about players, accessible by the entity-id
@@ -362,18 +356,18 @@ namespace SourceEngine.Demo.Parser
         /// The modelprecache. With this we can tell which model an entity has.
         /// Useful for finding out whetere a weapon is a P250 or a CZ
         /// </summary>
-        internal List<string> modelprecache = new List<string>();
+        internal List<string> modelprecache = new();
 
         /// <summary>
         /// The string tables sent by the server.
         /// </summary>
-        internal List<CreateStringTable> stringTables = new List<CreateStringTable>();
+        internal List<CreateStringTable> stringTables = new();
 
         /// <summary>
         /// An map entity <-> weapon. Used to remember whether a weapon is a p250,
         /// how much ammonition it has, etc.
         /// </summary>
-        Equipment[] weapons = new Equipment[MAX_ENTITIES];
+        private Equipment[] weapons = new Equipment[MAX_ENTITIES];
 
         /// <summary>
         /// The indicies of the bombsites - useful to find out
@@ -397,7 +391,7 @@ namespace SourceEngine.Demo.Parser
 
         public int rescueZoneIndex { get; internal set; } = -1;
 
-        public Dictionary<int, Vector> rescueZoneCenters { get; internal set; } = new Dictionary<int, Vector>();
+        public Dictionary<int, Vector> rescueZoneCenters { get; internal set; } = new();
 
         /// <summary>
         /// The ID of the CT-Team
@@ -455,12 +449,12 @@ namespace SourceEngine.Demo.Parser
         /// The blind players, so we can tell who was flashed by a flashbang.
         /// previous blind implementation
         /// </summary>
-        internal List<Player> BlindPlayers = new List<Player>();
+        internal List<Player> BlindPlayers = new();
 
         /// <summary>
         /// Holds inferno_startburn event args so they can be matched with player
         /// </summary>
-        internal Queue<Tuple<int, FireEventArgs>> StartBurnEvents = new Queue<Tuple<int, FireEventArgs>>();
+        internal Queue<Tuple<int, FireEventArgs>> StartBurnEvents = new();
 
         // These could be Dictionary<int, RecordedPropertyUpdate[]>, but I was too lazy to
         // define that class. Also: It doesn't matter anyways, we always have to cast.
@@ -468,7 +462,7 @@ namespace SourceEngine.Demo.Parser
         /// <summary>
         /// The preprocessed baselines, useful to create entities fast
         /// </summary>
-        internal Dictionary<int, object[]> PreprocessedBaselines = new Dictionary<int, object[]>();
+        internal Dictionary<int, object[]> PreprocessedBaselines = new();
 
         /// <summary>
         /// The instance baselines.
@@ -476,34 +470,25 @@ namespace SourceEngine.Demo.Parser
         /// Since this is (was) expensive, valve sends an instancebaseline, which contains defaults
         /// for all the properties.
         /// </summary>
-        internal Dictionary<int, byte[]> instanceBaseline = new Dictionary<int, byte[]>();
+        internal Dictionary<int, byte[]> instanceBaseline = new();
 
         /// <summary>
         /// The tickrate *of the demo* (16 for normal GOTV-demos)
         /// </summary>
         /// <value>The tick rate.</value>
-        public float TickRate
-        {
-            get { return this.Header.PlaybackFrames / this.Header.PlaybackTime; }
-        }
+        public float TickRate => Header.PlaybackFrames / Header.PlaybackTime;
 
         /// <summary>
         /// How long a tick of the demo is in s^-1
         /// </summary>
         /// <value>The tick time.</value>
-        public float TickTime
-        {
-            get { return this.Header.PlaybackTime / this.Header.PlaybackFrames; }
-        }
+        public float TickTime => Header.PlaybackTime / Header.PlaybackFrames;
 
         /// <summary>
         /// Gets the parsing progess. 0 = beginning, ~1 = finished (it can actually be > 1, so be careful!)
         /// </summary>
         /// <value>The parsing progess.</value>
-        public float ParsingProgess
-        {
-            get { return (CurrentTick / (float)Header.PlaybackFrames); }
-        }
+        public float ParsingProgess => CurrentTick / (float)Header.PlaybackFrames;
 
         /// <summary>
         /// The current tick the parser has seen. So if it's a 16-tick demo,
@@ -522,10 +507,7 @@ namespace SourceEngine.Demo.Parser
         /// How far we've advanced in the demo in seconds.
         /// </summary>
         /// <value>The current time.</value>
-        public float CurrentTime
-        {
-            get { return CurrentTick * TickTime; }
-        }
+        public float CurrentTime => CurrentTick * TickTime;
 
         /// <summary>
         /// This contains additional informations about each player, such as Kills, Deaths, etc.
@@ -548,9 +530,7 @@ namespace SourceEngine.Demo.Parser
             BitStream = BitStreamUtil.Create(input);
 
             for (int i = 0; i < MAXPLAYERS; i++)
-            {
                 additionalInformations[i] = new AdditionalPlayerInformation();
-            }
 
             this.parseChickens = parseChickens;
             this.parsePlayerPositions = parsePlayerPositions;
@@ -558,21 +538,13 @@ namespace SourceEngine.Demo.Parser
 
             // automatically decides rescue zone amounts unless overridden with a provided parameter
             if (hostagerescuezonecountoverride > 0)
-            {
-                this.numOfHostageRescueZonesLookingFor = hostagerescuezonecountoverride;
-            }
+                numOfHostageRescueZonesLookingFor = hostagerescuezonecountoverride;
             else if (gamemode == Gamemodes.DangerZone)
-            {
-                this.numOfHostageRescueZonesLookingFor = 2;
-            }
+                numOfHostageRescueZonesLookingFor = 2;
             else if (gamemode == Gamemodes.Hostage)
-            {
-                this.numOfHostageRescueZonesLookingFor = 1;
-            }
+                numOfHostageRescueZonesLookingFor = 1;
             else
-            {
-                this.numOfHostageRescueZonesLookingFor = 0;
-            }
+                numOfHostageRescueZonesLookingFor = 0;
         }
 
         /// <summary>
@@ -631,7 +603,8 @@ namespace SourceEngine.Demo.Parser
             {
                 while (ParseNextTick())
                 {
-                    if (token.IsCancellationRequested || stopParsingDemo) return;
+                    if (token.IsCancellationRequested || stopParsingDemo)
+                        return;
                 }
             }
         }
@@ -710,9 +683,7 @@ namespace SourceEngine.Demo.Parser
                     p.AdditionaInformations = additionalInformations[p.EntityID];
 
                     if (p.IsAlive)
-                    {
                         p.LastAlivePosition = p.Position.Copy();
-                    }
 
                     if (newplayer && p.SteamID != 0)
                     {
@@ -730,10 +701,8 @@ namespace SourceEngine.Demo.Parser
             }
 
             if (b)
-            {
                 if (TickDone != null)
                     TickDone(this, new TickDoneEventArgs());
-            }
 
             return b;
         }
@@ -749,7 +718,7 @@ namespace SourceEngine.Demo.Parser
             IngameTick = (int)BitStream.ReadInt(32); // tick number
             BitStream.ReadByte(); // player slot
 
-            this.CurrentTick++; // = TickNum;
+            CurrentTick++; // = TickNum;
 
             switch (command)
             {
@@ -805,7 +774,7 @@ namespace SourceEngine.Demo.Parser
             BitStream.ReadInt(32); // SeqNrOut
 
             BitStream.BeginChunk(BitStream.ReadSignedInt(32) * 8);
-            DemoPacketParser.ParsePacket(BitStream, this, this.parseChickens);
+            DemoPacketParser.ParsePacket(BitStream, this, parseChickens);
             BitStream.EndChunk();
         }
 
@@ -847,7 +816,7 @@ namespace SourceEngine.Demo.Parser
 
                     if (team == "CT")
                     {
-                        this.ctID = teamID;
+                        ctID = teamID;
                         CTScore = score;
                         foreach (var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
                             p.Team = Team.CounterTerrorist;
@@ -855,7 +824,7 @@ namespace SourceEngine.Demo.Parser
 
                     if (team == "TERRORIST")
                     {
-                        this.tID = teamID;
+                        tID = teamID;
                         TScore = score;
                         foreach (var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
                             p.Team = Team.Terrorist;
@@ -875,7 +844,7 @@ namespace SourceEngine.Demo.Parser
 
                         if (teamID != -1)
                         {
-                            this.ctID = teamID;
+                            ctID = teamID;
                             foreach (var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
                                 p.Team = Team.CounterTerrorist;
                         }
@@ -888,7 +857,7 @@ namespace SourceEngine.Demo.Parser
 
                         if (teamID != -1)
                         {
-                            this.tID = teamID;
+                            tID = teamID;
                             foreach (var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
                                 p.Team = Team.Terrorist;
                         }
@@ -900,13 +869,9 @@ namespace SourceEngine.Demo.Parser
                     teamFlag = recivedTeamFlag.Value;
 
                     if (team == "CT")
-                    {
                         CTFlag = teamFlag;
-                    }
                     else if (team == "TERRORIST")
-                    {
                         TFlag = teamFlag;
-                    }
                 };
 
                 e.Entity.FindProperty("m_szClanTeamname").StringRecived += (sender_, recivedClanName) =>
@@ -914,13 +879,9 @@ namespace SourceEngine.Demo.Parser
                     teamName = recivedClanName.Value;
 
                     if (team == "CT")
-                    {
                         CTClanName = recivedClanName.Value;
-                    }
                     else if (team == "TERRORIST")
-                    {
                         TClanName = recivedClanName.Value;
-                    }
                 };
             };
         }
@@ -998,14 +959,14 @@ namespace SourceEngine.Demo.Parser
         {
             Player p = null;
 
-            if (this.PlayerInformations[playerEntity.ID - 1] != null)
+            if (PlayerInformations[playerEntity.ID - 1] != null)
             {
-                p = this.PlayerInformations[playerEntity.ID - 1];
+                p = PlayerInformations[playerEntity.ID - 1];
             }
             else
             {
                 p = new Player();
-                this.PlayerInformations[playerEntity.ID - 1] = p;
+                PlayerInformations[playerEntity.ID - 1] = p;
                 p.SteamID = -1;
                 p.Name = "unconnected";
             }
@@ -1101,9 +1062,7 @@ namespace SourceEngine.Demo.Parser
                     else
                     {
                         if (cache[iForTheMethod] != 0 && p.rawWeapons.ContainsKey(cache[iForTheMethod]))
-                        {
                             p.rawWeapons[cache[iForTheMethod]].Owner = null;
-                        }
 
                         p.rawWeapons.Remove(cache[iForTheMethod]);
 
@@ -1201,22 +1160,18 @@ namespace SourceEngine.Demo.Parser
             return true;
         }
 
-        void HandleWeapons()
+        private void HandleWeapons()
         {
             for (int i = 0; i < MAX_ENTITIES; i++)
-            {
                 weapons[i] = new Equipment();
-            }
 
             foreach (var s in SendTableParser.ServerClasses.Where(
                 a => a.BaseClasses.Any(c => c.Name == "CWeaponCSBase")
             ))
-            {
                 s.OnNewEntity += HandleWeapon;
-            }
         }
 
-        void HandleWeapon(object sender, EntityCreatedEventArgs e)
+        private void HandleWeapon(object sender, EntityCreatedEventArgs e)
         {
             var equipment = weapons[e.Entity.ID];
             equipment.EntityID = e.Entity.ID;
@@ -1234,7 +1189,6 @@ namespace SourceEngine.Demo.Parser
             };
 
             if (equipment.Weapon == EquipmentElement.P2000)
-            {
                 e.Entity.FindProperty("m_nModelIndex").IntRecived += (sender2, e2) =>
                 {
                     equipment.OriginalString = modelprecache[e2.Value];
@@ -1245,10 +1199,8 @@ namespace SourceEngine.Demo.Parser
                     else
                         throw new InvalidDataException("Unknown weapon model");
                 };
-            }
 
             if (equipment.Weapon == EquipmentElement.M4A4)
-            {
                 e.Entity.FindProperty("m_nModelIndex").IntRecived += (sender2, e2) =>
                 {
                     equipment.OriginalString = modelprecache[e2.Value];
@@ -1261,10 +1213,8 @@ namespace SourceEngine.Demo.Parser
                     else
                         throw new InvalidDataException("Unknown weapon model");
                 };
-            }
 
             if (equipment.Weapon == EquipmentElement.P250)
-            {
                 e.Entity.FindProperty("m_nModelIndex").IntRecived += (sender2, e2) =>
                 {
                     equipment.OriginalString = modelprecache[e2.Value];
@@ -1275,10 +1225,8 @@ namespace SourceEngine.Demo.Parser
                     else
                         throw new InvalidDataException("Unknown weapon model");
                 };
-            }
 
             if (equipment.Weapon == EquipmentElement.Deagle)
-            {
                 e.Entity.FindProperty("m_nModelIndex").IntRecived += (sender2, e2) =>
                 {
                     equipment.OriginalString = modelprecache[e2.Value];
@@ -1289,10 +1237,8 @@ namespace SourceEngine.Demo.Parser
                     else
                         throw new InvalidDataException("Unknown weapon model");
                 };
-            }
 
             if (equipment.Weapon == EquipmentElement.MP7)
-            {
                 e.Entity.FindProperty("m_nModelIndex").IntRecived += (sender2, e2) =>
                 {
                     equipment.OriginalString = modelprecache[e2.Value];
@@ -1303,13 +1249,11 @@ namespace SourceEngine.Demo.Parser
                     else
                         throw new InvalidDataException("Unknown weapon model");
                 };
-            }
         }
 
         public void HandleBombSitesAndRescueZones()
         {
-            List<int> rescueZoneIdsDoneAtLeastOnceMin = new List<int>(),
-                rescueZoneIdsDoneAtLeastOnceMax = new List<int>();
+            List<int> rescueZoneIdsDoneAtLeastOnceMin = new(), rescueZoneIdsDoneAtLeastOnceMax = new();
 
             SendTableParser.FindByName("CCSPlayerResource").OnNewEntity += (s1, newResource) =>
             {
@@ -1548,9 +1492,7 @@ namespace SourceEngine.Demo.Parser
         public void RaiseFreezetimeEnded(FreezetimeEndedEventArgs fe)
         {
             if (FreezetimeEnded != null)
-            {
                 FreezetimeEnded(this, fe);
-            }
         }
 
         internal void RaiseOtherKilled()
@@ -1760,14 +1702,17 @@ namespace SourceEngine.Demo.Parser
         #endregion
 
         /// <summary>
-        /// Releases all resource used by the <see cref="DemoParser"/> object. This must be called or evil things (memory leaks) happen.
+        /// Releases all resource used by the <see cref="DemoParser" /> object. This must be called or evil things (memory leaks)
+        /// happen.
         /// Sorry for that - I've debugged and I don't know why this is, but I can't fix it somehow.
         /// This is bad, I know.
         /// </summary>
-        /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="DemoParser"/>. The
-        /// <see cref="Dispose"/> method leaves the <see cref="DemoParser"/> in an unusable state. After calling
-        /// <see cref="Dispose"/>, you must release all references to the <see cref="DemoParser"/> so the garbage
-        /// collector can reclaim the memory that the <see cref="DemoParser"/> was occupying.</remarks>
+        /// <remarks>
+        /// Call <see cref="Dispose" /> when you are finished using the <see cref="DemoParser" />. The
+        /// <see cref="Dispose" /> method leaves the <see cref="DemoParser" /> in an unusable state. After calling
+        /// <see cref="Dispose" />, you must release all references to the <see cref="DemoParser" /> so the garbage
+        /// collector can reclaim the memory that the <see cref="DemoParser" /> was occupying.
+        /// </remarks>
         public void Dispose()
         {
             BitStream.Dispose();
@@ -1778,41 +1723,39 @@ namespace SourceEngine.Demo.Parser
                     entity.Leave();
             }
 
-            foreach (var serverClass in this.SendTableParser.ServerClasses)
-            {
+            foreach (var serverClass in SendTableParser.ServerClasses)
                 serverClass.Dispose();
-            }
 
-            this.TickDone = null;
-            this.BombAbortDefuse = null;
-            this.BombAbortPlant = null;
-            this.BombBeginDefuse = null;
-            this.BombBeginPlant = null;
-            this.BombDefused = null;
-            this.BombExploded = null;
-            this.BombPlanted = null;
-            this.ChickenKilled = null;
-            this.DecoyNadeEnded = null;
-            this.DecoyNadeStarted = null;
-            this.ExplosiveNadeExploded = null;
-            this.FireNadeEnded = null;
-            this.FireNadeStarted = null;
-            this.FireNadeWithOwnerStarted = null;
-            this.FlashNadeExploded = null;
-            this.HeaderParsed = null;
-            this.HostageRescued = null;
-            this.MatchStarted = null;
-            this.NadeReachedTarget = null;
-            this.PlayerKilled = null;
-            this.PlayerPositions = null;
-            this.OtherKilled = null;
-            this.RoundStart = null;
-            this.SayText = null;
-            this.SayText2 = null;
-            this.SmokeNadeEnded = null;
-            this.SmokeNadeStarted = null;
-            this.SwitchSides = null;
-            this.WeaponFired = null;
+            TickDone = null;
+            BombAbortDefuse = null;
+            BombAbortPlant = null;
+            BombBeginDefuse = null;
+            BombBeginPlant = null;
+            BombDefused = null;
+            BombExploded = null;
+            BombPlanted = null;
+            ChickenKilled = null;
+            DecoyNadeEnded = null;
+            DecoyNadeStarted = null;
+            ExplosiveNadeExploded = null;
+            FireNadeEnded = null;
+            FireNadeStarted = null;
+            FireNadeWithOwnerStarted = null;
+            FlashNadeExploded = null;
+            HeaderParsed = null;
+            HostageRescued = null;
+            MatchStarted = null;
+            NadeReachedTarget = null;
+            PlayerKilled = null;
+            PlayerPositions = null;
+            OtherKilled = null;
+            RoundStart = null;
+            SayText = null;
+            SayText2 = null;
+            SmokeNadeEnded = null;
+            SmokeNadeStarted = null;
+            SwitchSides = null;
+            WeaponFired = null;
 
             Players.Clear();
         }

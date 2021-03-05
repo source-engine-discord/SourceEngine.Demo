@@ -13,7 +13,7 @@ using ProtoBuf;
 
 namespace SourceEngine.Demo.Parser
 {
-    static class Helper
+    internal static class Helper
     {
         public static string ReadCString(this BinaryReader reader, int length)
         {
@@ -145,7 +145,7 @@ namespace SourceEngine.Demo.Parser
 
         public static RecordedPropertyUpdate<T> Record<T>(this PropertyUpdateEventArgs<T> args)
         {
-            return new RecordedPropertyUpdate<T>(args.Property.Index, args.Value);
+            return new(args.Property.Index, args.Value);
         }
     }
 }

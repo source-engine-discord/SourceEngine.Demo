@@ -15,13 +15,9 @@ namespace SourceEngine.Demo.Stats
             var response = client.PostAsync(url, content).Result;
 
             if (response.IsSuccessStatusCode)
-            {
                 return await response.Content.ReadAsStringAsync();
-            }
             else
-            {
                 return null;
-            }
         }
 
         /// <summary>
@@ -61,8 +57,11 @@ namespace SourceEngine.Demo.Stats
         public static string downloadString(string url)
         {
             string r = null;
+
             using (var wc = new WebClient()) //Downlaod the string
+            {
                 r = wc.DownloadString(url);
+            }
 
             return r; //Return it
         }

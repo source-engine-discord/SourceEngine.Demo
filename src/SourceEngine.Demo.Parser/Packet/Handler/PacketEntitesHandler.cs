@@ -94,14 +94,19 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             object[] fastBaseline;
 
             if (parser.PreprocessedBaselines.TryGetValue(serverClassID, out fastBaseline))
+            {
                 PropertyEntry.Emit(newEntity, fastBaseline);
+            }
             else
             {
                 var preprocessedBaseline = new List<object>();
+
                 if (parser.instanceBaseline.ContainsKey(serverClassID))
                     using (var collector = new PropertyCollector(newEntity, preprocessedBaseline))
                     using (var bitStream = BitStreamUtil.Create(parser.instanceBaseline[serverClassID]))
+                    {
                         newEntity.ApplyUpdate(bitStream);
+                    }
 
                 parser.PreprocessedBaselines.Add(serverClassID, preprocessedBaseline.ToArray());
             }

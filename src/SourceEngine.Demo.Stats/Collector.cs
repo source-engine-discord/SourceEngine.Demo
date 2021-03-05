@@ -12,12 +12,12 @@ namespace SourceEngine.Demo.Stats
         public long s_steamid;
         public string s_steamname;
 
-        public Dictionary<int, Dictionary<string, int>> collected = new Dictionary<int, Dictionary<string, int>>();
+        public Dictionary<int, Dictionary<string, int>> collected = new();
 
         public PlayerData(long steamid, string name = "")
         {
-            this.s_steamid = steamid;
-            this.s_steamname = name;
+            s_steamid = steamid;
+            s_steamname = name;
         }
 
         public Dictionary<string, int> getTotalData()
@@ -47,7 +47,7 @@ namespace SourceEngine.Demo.Stats
     internal class RecorderSettings
     {
         public int matchID = 0;
-        public Dictionary<int, long> playerLookups = new Dictionary<int, long>();
+        public Dictionary<int, long> playerLookups = new();
     }
 
     public class EventSubscriptionEventArgs : EventArgs
@@ -67,7 +67,7 @@ namespace SourceEngine.Demo.Stats
         public bool ALLTHEDATA = true;
 
         //Runtime
-        private List<PlayerData> allPlayers = new List<PlayerData>();
+        private List<PlayerData> allPlayers = new();
 
         public delegate void OnEventSubscription(EventSubscriptionEventArgs e);
 
@@ -77,7 +77,7 @@ namespace SourceEngine.Demo.Stats
 
         public Collector(string targetFolder)
         {
-            this.TARGET_FOLDER = targetFolder;
+            TARGET_FOLDER = targetFolder;
         }
 
         public void pushData(Player p, string key, int value)
@@ -87,19 +87,15 @@ namespace SourceEngine.Demo.Stats
 
         public void attachAll()
         {
-            this.EventSubscription += (EventSubscriptionEventArgs ev) =>
+            EventSubscription += (EventSubscriptionEventArgs ev) =>
             {
                 ev.parser.TickDone += (object sender, TickDoneEventArgs e) =>
                 {
                     foreach (Player p in ev.parser.PlayingParticipants)
-                    {
                         pushData(p, "Ticks", 1);
-                    }
 
                     foreach (Player p in ev.parser.Participants)
-                    {
                         pushData(p, "Ticks on Server", 1);
-                    }
                 };
 
                 ev.parser.PlayerKilled += (object sender, PlayerKilledEventArgs e) =>
@@ -160,10 +156,10 @@ namespace SourceEngine.Demo.Stats
             #region detect demos
 
             string[] demos;
-            demos = System.IO.Directory.GetFiles(
-                System.Environment.CurrentDirectory + "/" + TARGET_FOLDER + "/",
+            demos = Directory.GetFiles(
+                Environment.CurrentDirectory + "/" + TARGET_FOLDER + "/",
                 "*.dem",
-                System.IO.SearchOption.AllDirectories
+                SearchOption.AllDirectories
             );
 
             Debug.Success("Found {0} demo files", demos.Count());

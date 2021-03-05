@@ -18,8 +18,8 @@ namespace SourceEngine.Demo.Parser.Packet
 
         public Entity(int id, ServerClass serverClass)
         {
-            this.ID = id;
-            this.ServerClass = serverClass;
+            ID = id;
+            ServerClass = serverClass;
 
             var flattenedProps = ServerClass.FlattenedProps;
             Props = new PropertyEntry[flattenedProps.Count];
@@ -49,24 +49,18 @@ namespace SourceEngine.Demo.Parser.Packet
 
             //No read them.
             while ((index = ReadFieldIndex(reader, index, newWay)) != -1)
-                entries.Add(this.Props[index]);
+                entries.Add(Props[index]);
 
             //Now read the updated props
             foreach (var prop in entries)
-            {
                 prop.Decode(reader, this);
-            }
         }
 
-        int ReadFieldIndex(IBitStream reader, int lastIndex, bool bNewWay)
+        private int ReadFieldIndex(IBitStream reader, int lastIndex, bool bNewWay)
         {
             if (bNewWay)
-            {
                 if (reader.ReadBit())
-                {
                     return lastIndex + 1;
-                }
-            }
 
             int ret = 0;
 
@@ -93,10 +87,9 @@ namespace SourceEngine.Demo.Parser.Packet
             }
 
             if (ret == 0xFFF)
-            {
+
                 // end marker is 4095 for cs:go
                 return -1;
-            }
 
             return lastIndex + 1 + ret;
         }
@@ -109,11 +102,11 @@ namespace SourceEngine.Demo.Parser.Packet
 
         public override string ToString()
         {
-            return ID + ": " + this.ServerClass;
+            return ID + ": " + ServerClass;
         }
     }
 
-    class PropertyEntry
+    internal class PropertyEntry
     {
         public readonly int Index;
 
@@ -275,18 +268,18 @@ namespace SourceEngine.Demo.Parser.Packet
 
         public PropertyEntry(FlattenedPropEntry prop, int index)
         {
-            this.Entry = new FlattenedPropEntry(prop.PropertyName, prop.Prop, prop.ArrayElementProp);
-            this.Index = index;
+            Entry = new FlattenedPropEntry(prop.PropertyName, prop.Prop, prop.ArrayElementProp);
+            Index = index;
         }
 
         public void Destroy()
         {
-            this.IntRecived = null;
-            this.Int64Received = null;
-            this.FloatRecived = null;
-            this.ArrayRecived = null;
-            this.StringRecived = null;
-            this.VectorRecived = null;
+            IntRecived = null;
+            Int64Received = null;
+            FloatRecived = null;
+            ArrayRecived = null;
+            StringRecived = null;
+            VectorRecived = null;
 
             DeleteDataRecived();
         }
@@ -307,7 +300,7 @@ namespace SourceEngine.Demo.Parser.Packet
         //[Conditional("DEBUG")]
         public void CheckBindings(Entity e)
         {
-            if (IntRecived != null && this.Entry.Prop.Type != SendPropertyType.Int)
+            if (IntRecived != null && Entry.Prop.Type != SendPropertyType.Int)
                 throw new InvalidOperationException(
                     string.Format(
                         "({0}).({1}) isn't an {2}",
@@ -317,7 +310,7 @@ namespace SourceEngine.Demo.Parser.Packet
                     )
                 );
 
-            if (Int64Received != null && this.Entry.Prop.Type != SendPropertyType.Int64)
+            if (Int64Received != null && Entry.Prop.Type != SendPropertyType.Int64)
                 throw new InvalidOperationException(
                     string.Format(
                         "({0}).({1}) isn't an {2}",
@@ -327,7 +320,7 @@ namespace SourceEngine.Demo.Parser.Packet
                     )
                 );
 
-            if (FloatRecived != null && this.Entry.Prop.Type != SendPropertyType.Float)
+            if (FloatRecived != null && Entry.Prop.Type != SendPropertyType.Float)
                 throw new InvalidOperationException(
                     string.Format(
                         "({0}).({1}) isn't an {2}",
@@ -337,7 +330,7 @@ namespace SourceEngine.Demo.Parser.Packet
                     )
                 );
 
-            if (StringRecived != null && this.Entry.Prop.Type != SendPropertyType.String)
+            if (StringRecived != null && Entry.Prop.Type != SendPropertyType.String)
                 throw new InvalidOperationException(
                     string.Format(
                         "({0}).({1}) isn't an {2}",
@@ -347,7 +340,7 @@ namespace SourceEngine.Demo.Parser.Packet
                     )
                 );
 
-            if (ArrayRecived != null && this.Entry.Prop.Type != SendPropertyType.Array)
+            if (ArrayRecived != null && Entry.Prop.Type != SendPropertyType.Array)
                 throw new InvalidOperationException(
                     string.Format(
                         "({0}).({1}) isn't an {2}",
@@ -357,8 +350,8 @@ namespace SourceEngine.Demo.Parser.Packet
                     )
                 );
 
-            if (VectorRecived != null && (this.Entry.Prop.Type != SendPropertyType.Vector
-                && this.Entry.Prop.Type != SendPropertyType.VectorXY))
+            if (VectorRecived != null && Entry.Prop.Type != SendPropertyType.Vector
+                && Entry.Prop.Type != SendPropertyType.VectorXY)
                 throw new InvalidOperationException(
                     string.Format(
                         "({0}).({1}) isn't an {2}",
@@ -383,6 +376,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 if (intReceived != null)
                 {
                     var e = entity.Props[intReceived.PropIndex].IntRecived;
+
                     if (e != null)
                         e(
                             null,
@@ -396,6 +390,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 else if (int64Received != null)
                 {
                     var e = entity.Props[int64Received.PropIndex].Int64Received;
+
                     if (e != null)
                         e(
                             null,
@@ -409,6 +404,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 else if (floatReceived != null)
                 {
                     var e = entity.Props[floatReceived.PropIndex].FloatRecived;
+
                     if (e != null)
                         e(
                             null,
@@ -422,6 +418,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 else if (vectorReceived != null)
                 {
                     var e = entity.Props[vectorReceived.PropIndex].VectorRecived;
+
                     if (e != null)
                         e(
                             null,
@@ -435,6 +432,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 else if (stringReceived != null)
                 {
                     var e = entity.Props[stringReceived.PropIndex].StringRecived;
+
                     if (e != null)
                         e(
                             null,
@@ -448,6 +446,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 else if (arrayReceived != null)
                 {
                     var e = entity.Props[arrayReceived.PropIndex].ArrayRecived;
+
                     if (e != null)
                         e(
                             null,
@@ -459,14 +458,16 @@ namespace SourceEngine.Demo.Parser.Packet
                         );
                 }
                 else
+                {
                     throw new NotImplementedException();
+                }
             }
         }
     }
 
     #region Update-Types
 
-    class PropertyUpdateEventArgs<T> : EventArgs
+    internal class PropertyUpdateEventArgs<T> : EventArgs
     {
         public T Value { get; private set; }
 
@@ -476,9 +477,9 @@ namespace SourceEngine.Demo.Parser.Packet
 
         public PropertyUpdateEventArgs(T value, Entity e, PropertyEntry p)
         {
-            this.Value = value;
-            this.Entity = e;
-            this.Property = p;
+            Value = value;
+            Entity = e;
+            Property = p;
         }
     }
 

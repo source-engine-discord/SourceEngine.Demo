@@ -5,15 +5,15 @@ using SourceEngine.Demo.Parser.Packet;
 
 namespace SourceEngine.Demo.Parser.DataTable
 {
-    class ServerClass : IDisposable
+    internal class ServerClass : IDisposable
     {
         public int ClassID;
         public int DataTableID;
         public string Name;
         public string DTName;
 
-        public List<FlattenedPropEntry> FlattenedProps = new List<FlattenedPropEntry>();
-        public List<ServerClass> BaseClasses = new List<ServerClass>();
+        public List<FlattenedPropEntry> FlattenedProps = new();
+        public List<ServerClass> BaseClasses = new();
 
         public event EventHandler<EntityCreatedEventArgs> OnNewEntity;
 
@@ -38,8 +38,8 @@ namespace SourceEngine.Demo.Parser.DataTable
 
         public void Dispose()
         {
-            this.OnNewEntity = null;
-            this.OnDestroyEntity = null;
+            OnNewEntity = null;
+            OnDestroyEntity = null;
         }
     }
 
@@ -53,9 +53,9 @@ namespace SourceEngine.Demo.Parser.DataTable
 
         public FlattenedPropEntry(string propertyName, SendTableProperty prop, SendTableProperty arrayElementProp)
         {
-            this.Prop = prop;
-            this.ArrayElementProp = arrayElementProp;
-            this.PropertyName = propertyName;
+            Prop = prop;
+            ArrayElementProp = arrayElementProp;
+            PropertyName = propertyName;
         }
 
         public override string ToString()
@@ -69,7 +69,7 @@ namespace SourceEngine.Demo.Parser.DataTable
         }
     };
 
-    class ExcludeEntry
+    internal class ExcludeEntry
     {
         public ExcludeEntry(string varName, string dtName, string excludingDT)
         {
@@ -85,7 +85,7 @@ namespace SourceEngine.Demo.Parser.DataTable
         public string ExcludingDT { get; private set; }
     }
 
-    class EntityCreatedEventArgs : EventArgs
+    internal class EntityCreatedEventArgs : EventArgs
     {
         public ServerClass Class { get; private set; }
 
@@ -93,12 +93,12 @@ namespace SourceEngine.Demo.Parser.DataTable
 
         public EntityCreatedEventArgs(ServerClass c, Entity e)
         {
-            this.Class = c;
-            this.Entity = e;
+            Class = c;
+            Entity = e;
         }
     }
 
-    class EntityDestroyedEventArgs : EntityCreatedEventArgs
+    internal class EntityDestroyedEventArgs : EntityCreatedEventArgs
     {
         public EntityDestroyedEventArgs(ServerClass c, Entity e) : base(c, e) { }
     }

@@ -9,7 +9,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
     public struct GameEvent
     {
         public string EventName;
-        public Int32 EventId;
+        public int EventId;
         public IList<object> Keys;
 
         public void Parse(IBitStream bitstream, DemoParser parser, bool parseChickens)
@@ -22,15 +22,15 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
-                if ((wireType == 2) && (fieldnum == 1))
+                if (wireType == 2 && fieldnum == 1)
                 {
                     EventName = bitstream.ReadProtobufString();
                 }
-                else if ((wireType == 0) && (fieldnum == 2))
+                else if (wireType == 0 && fieldnum == 2)
                 {
                     EventId = bitstream.ReadProtobufVarInt();
                 }
-                else if ((wireType == 2) && (fieldnum == 3))
+                else if (wireType == 2 && fieldnum == 3)
                 {
                     bitstream.BeginChunk(bitstream.ReadProtobufVarInt() * 8);
                     /*
@@ -40,7 +40,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     desc = bitstream.ReadProtobufVarInt();
                     wireType = desc & 7;
                     fieldnum = desc >> 3;
-                    if ((wireType != 0) || (fieldnum != 1))
+                    if (wireType != 0 || fieldnum != 1)
                         throw new InvalidDataException("Lord Gaben wasn't nice to us :/");
 
                     var typeMember = bitstream.ReadProtobufVarInt();
@@ -48,7 +48,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     wireType = desc & 7;
                     fieldnum = desc >> 3;
 
-                    if (fieldnum != (typeMember + 1))
+                    if (fieldnum != typeMember + 1)
                         throw new InvalidDataException("Lord Gaben wasn't nice to us :/ (srsly wtf!?)");
 
                     switch (typeMember)
@@ -89,7 +89,9 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     bitstream.EndChunk();
                 }
                 else
+                {
                     throw new InvalidDataException();
+                }
             }
 
             GameEventHandler.Apply(this, parser, parseChickens);

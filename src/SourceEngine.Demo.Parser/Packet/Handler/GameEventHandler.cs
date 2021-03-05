@@ -11,7 +11,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
     /// </summary>
     public static class GameEventHandler
     {
-        static List<Player> currentRoundBotTakeovers = new List<Player>();
+        private static List<Player> currentRoundBotTakeovers = new();
 
         private static double
             timestampFreezetimeEnded = 0; //the total number of seconds passed by the end of the last round
@@ -36,9 +36,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             for (int i = 0; i < parser.Entities.Count(); i++)
             {
                 if (parser.Entities.ElementAt(i) != null && parser.Entities.ElementAt(i).ServerClass.Name == "CChicken")
-                {
                     numOfChickensAlive++;
-                }
             }
 
             return numOfChickensAlive;
@@ -54,12 +52,10 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             int numOfChickensAlive = 0;
 
             if (parseChickens) // Parse chickens unless explicitly told not to
-            {
                 numOfChickensAlive =
                     CountChickensAlive(
                         parser
                     ); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
-            }
 
             var descriptors = parser.EventDescriptors;
 
@@ -83,7 +79,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 {
                     TimeLimit = (int)data["timelimit"],
                     FragLimit = (int)data["fraglimit"],
-                    Objective = (string)data["objective"]
+                    Objective = (string)data["objective"],
                 };
 
                 parser.RaiseRoundStart(rs);
@@ -194,17 +190,11 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 MatchStartedEventArgs matchStartedEventArgs = new MatchStartedEventArgs();
 
                 if (!string.IsNullOrEmpty(parser.Map))
-                {
                     matchStartedEventArgs.Mapname = parser.Map.ToString();
-                }
                 else if (parser.Header != null && !string.IsNullOrEmpty(parser.Header.MapName))
-                {
                     matchStartedEventArgs.Mapname = parser.Header.MapName.ToString();
-                }
                 else
-                {
                     matchStartedEventArgs.Mapname = "unknown";
-                }
 
                 //makes sure that bombsite triggers' vector values have been set if they exist
                 parser.HandleBombSitesAndRescueZones();
@@ -214,20 +204,20 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 var bombsiteCenterB = parser.bombsiteBCenter;
 
                 bool hasBombsiteA =
-                    (bombsiteCenterA.X == 0 && bombsiteCenterA.Y == 0 && bombsiteCenterA.Z == 0
-                        && bombsiteCenterA.Absolute == 0 && bombsiteCenterA.AbsoluteSquared == 0
-                        && bombsiteCenterA.Angle2D == 0)
+                    bombsiteCenterA.X == 0 && bombsiteCenterA.Y == 0 && bombsiteCenterA.Z == 0
+                    && bombsiteCenterA.Absolute == 0 && bombsiteCenterA.AbsoluteSquared == 0
+                    && bombsiteCenterA.Angle2D == 0
                         ? false
                         : true;
 
                 bool hasBombsiteB =
-                    (bombsiteCenterB.X == 0 && bombsiteCenterB.Y == 0 && bombsiteCenterB.Z == 0
-                        && bombsiteCenterB.Absolute == 0 && bombsiteCenterB.AbsoluteSquared == 0
-                        && bombsiteCenterB.Angle2D == 0)
+                    bombsiteCenterB.X == 0 && bombsiteCenterB.Y == 0 && bombsiteCenterB.Z == 0
+                    && bombsiteCenterB.Absolute == 0 && bombsiteCenterB.AbsoluteSquared == 0
+                    && bombsiteCenterB.Angle2D == 0
                         ? false
                         : true;
 
-                matchStartedEventArgs.HasBombsites = (hasBombsiteA || hasBombsiteB) ? true : false;
+                matchStartedEventArgs.HasBombsites = hasBombsiteA || hasBombsiteB ? true : false;
 
                 parser.RaiseMatchStarted(matchStartedEventArgs);
             }
@@ -331,13 +321,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     if (kill.Victim != null)
                     {
                         if (kill.Victim.SteamID != 0 && kill.Victim.SteamID == kill.Killer?.SteamID)
-                        {
                             kill.Suicide = true;
-                        }
                         else if (kill.Killer != null && kill.Victim.Team == kill.Killer.Team)
-                        {
                             kill.TeamKill = true;
-                        }
 
                         // works out if either the killer or victim have taken over bots
                         kill.KillerBotTakeover = false;
@@ -346,21 +332,15 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                         if (kill.Killer != null
                             && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
-                        {
                             kill.KillerBotTakeover = true;
-                        }
 
                         if (kill.Victim != null
                             && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
-                        {
                             kill.VictimBotTakeover = true;
-                        }
 
                         if (kill.Assister != null
                             && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name.ToString()))
-                        {
                             kill.AssisterBotTakeover = true;
-                        }
 
                         if (data.ContainsKey("assistedflash"))
                             kill.AssistedFlash = (bool)data["assistedflash"];
@@ -397,7 +377,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     hurt.Armor = (int)data["armor"];
                     hurt.HealthDamage = (int)data["dmg_health"];
                     hurt.ArmorDamage = (int)data["dmg_armor"];
-                    hurt.Hitgroup = (Hitgroup)((int)data["hitgroup"]);
+                    hurt.Hitgroup = (Hitgroup)(int)data["hitgroup"];
 
                     hurt.Weapon = new Equipment((string)data["weapon"], "");
 
@@ -421,9 +401,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     hurt.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 
                     hurt.PossiblyKilledByBombExplosion =
-                        (hurt.Health == 0 && string.IsNullOrWhiteSpace(hurt.Weapon.OriginalString)
-                            && hurt.Weapon.Weapon == EquipmentElement.Unknown
-                            && hurt.Weapon.Class == EquipmentClass.Unknown)
+                        hurt.Health == 0 && string.IsNullOrWhiteSpace(hurt.Weapon.OriginalString)
+                        && hurt.Weapon.Weapon == EquipmentElement.Unknown && hurt.Weapon.Class == EquipmentClass.Unknown
                             ? true
                             : false;
 
@@ -447,13 +426,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                             blind.Player = blindPlayer;
 
                             if (data.ContainsKey("attacker") && parser.Players.ContainsKey((int)data["attacker"]))
-                            {
                                 blind.Attacker = new Player(parser.Players[(int)data["attacker"]]);
-                            }
                             else
-                            {
                                 blind.Attacker = null;
-                            }
 
                             if (data.ContainsKey("blind_duration"))
                                 blind.FlashDuration = (float?)data["blind_duration"];
@@ -547,9 +522,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     }
 
                     if (parser.Players.ContainsKey(toDelete))
-                    {
                         parser.Players.Remove(toDelete);
-                    }
 
                     break;
 
@@ -815,7 +788,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         {
             long authServer = Convert.ToInt64(steamID.Substring(8, 1));
             long authID = Convert.ToInt64(steamID.Substring(10));
-            return (76561197960265728 + (authID * 2) + authServer);
+            return 76561197960265728 + authID * 2 + authServer;
         }
     }
 }

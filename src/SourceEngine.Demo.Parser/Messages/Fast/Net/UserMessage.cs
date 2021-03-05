@@ -26,15 +26,11 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 var fieldnum = desc >> 3;
 
                 if (wireType == 0 && fieldnum == 1)
-                {
                     MsgType = bitstream.ReadProtobufVarInt();
-                }
                 else if (wireType == 0 && fieldnum == 3)
-                {
                     PassThrough = bitstream.ReadProtobufVarInt();
-                }
                 else if (fieldnum == 2)
-                {
+
                     // msg data
                     if (wireType == 2)
                     {
@@ -58,7 +54,6 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                         if (!bitstream.ChunkFinished)
                             throw new NotImplementedException("Lord Gaben wasn't nice to us :/");
                     }
-                }
             }
         }
     }

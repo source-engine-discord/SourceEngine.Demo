@@ -5,30 +5,18 @@ namespace SourceEngine.Demo.Parser
 {
     public class LimitStream : Stream
     {
-        public override bool CanRead
-        {
-            get { return true; }
-        }
+        public override bool CanRead => true;
 
-        public override bool CanSeek
-        {
-            get { return false; }
-        }
+        public override bool CanSeek => false;
 
-        public override bool CanWrite
-        {
-            get { return false; }
-        }
+        public override bool CanWrite => false;
 
-        public override long Length
-        {
-            get { return _Length; }
-        }
+        public override long Length => _Length;
 
         public override long Position
         {
-            get { return _Position; }
-            set { throw new NotImplementedException(); }
+            get => _Position;
+            set => throw new NotImplementedException();
         }
 
         private readonly Stream Underlying;
@@ -43,9 +31,9 @@ namespace SourceEngine.Demo.Parser
             if (length <= 0)
                 throw new ArgumentException("length");
 
-            this.Underlying = underlying;
-            this._Length = length;
-            this._Position = 0;
+            Underlying = underlying;
+            _Length = length;
+            _Position = 0;
         }
 
         private const int TrashSize = 4096;
@@ -62,13 +50,11 @@ namespace SourceEngine.Demo.Parser
                 if (Underlying.CanSeek)
                     Underlying.Seek(remaining, SeekOrigin.Current);
                 else
-                {
                     while (remaining > 0)
                     {
                         Underlying.Read(Dignitrash, 0, checked((int)Math.Min(TrashSize, remaining)));
                         remaining -= TrashSize; // could go beyond 0, but it's signed so who cares
                     }
-                }
             }
         }
 

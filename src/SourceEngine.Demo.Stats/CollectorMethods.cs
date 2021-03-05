@@ -11,8 +11,10 @@ namespace SourceEngine.Demo.Stats
         public static PlayerData fromSteamID(this List<PlayerData> players, long steamid)
         {
             foreach (PlayerData dat in players)
+            {
                 if (dat.s_steamid == steamid)
                     return dat;
+            }
 
             return null;
         }
@@ -33,10 +35,12 @@ namespace SourceEngine.Demo.Stats
             long steamid = player.SteamID;
 
             if (steamid == 0)
+            {
                 if (rs.playerLookups.ContainsKey(player.EntityID))
                     steamid = rs.playerLookups[player.EntityID];
                 else
                     return;
+            }
 
             //Add the player if they don't exist in memory
             if (players.fromSteamID(steamid) == null)
@@ -68,9 +72,11 @@ namespace SourceEngine.Demo.Stats
                     collected.Add(key);
             else
                 foreach (PlayerData pd in players)
+                {
                     if (pd.collected.ContainsKey(matchID))
                         foreach (string key in pd.collected[matchID].Keys)
                             collected.Add(key);
+                }
 
             return collected.Distinct().ToList();
         }

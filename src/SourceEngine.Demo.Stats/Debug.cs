@@ -12,7 +12,7 @@ namespace SourceEngine.Demo.Stats
         {
             low,
             normal,
-            high
+            high,
         }
 
         public static void Log(string msg, params object[] args)

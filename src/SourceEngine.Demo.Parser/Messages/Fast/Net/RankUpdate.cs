@@ -22,25 +22,15 @@
                 var fieldnum = desc >> 3;
 
                 if (wireType == 0 && fieldnum == 1)
-                {
                     AccountId = bitstream.ReadProtobufVarInt();
-                }
                 else if (wireType == 0 && fieldnum == 2)
-                {
                     RankOld = bitstream.ReadProtobufVarInt();
-                }
                 else if (wireType == 0 && fieldnum == 3)
-                {
                     RankNew = bitstream.ReadProtobufVarInt();
-                }
                 else if (wireType == 0 && fieldnum == 4)
-                {
                     NumWins = bitstream.ReadProtobufVarInt();
-                }
                 else if (wireType == 5 && fieldnum == 5)
-                {
                     RankChange = bitstream.ReadFloat();
-                }
             }
 
             Raise(parser);
@@ -54,7 +44,7 @@
                 RankOld = RankOld,
                 RankNew = RankNew,
                 WinCount = NumWins,
-                RankChange = RankChange
+                RankChange = RankChange,
             };
 
             parser.RaiseRankUpdate(e);

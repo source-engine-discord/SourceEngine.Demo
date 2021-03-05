@@ -11,12 +11,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         public static void Apply(CreateStringTable table, IBitStream reader, DemoParser parser)
         {
             if (table.Name == "modelprecache")
-            {
                 while (parser.modelprecache.Count < table.MaxEntries)
-                {
                     parser.modelprecache.Add(null);
-                }
-            }
 
             if (reader.ReadBit())
                 throw new NotImplementedException("Encoded with dictionaries, unable to decode");
@@ -36,9 +32,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                 // d in the entity-index
                 if (!reader.ReadBit())
-                {
                     entryIndex = (int)reader.ReadInt(nEntryBits);
-                }
 
                 lastEntry = entryIndex;
 
@@ -46,9 +40,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 string entry = "";
 
                 if (entryIndex < 0 || entryIndex >= table.MaxEntries)
-                {
                     throw new InvalidDataException("bogus string index");
-                }
 
                 if (reader.ReadBit())
                 {

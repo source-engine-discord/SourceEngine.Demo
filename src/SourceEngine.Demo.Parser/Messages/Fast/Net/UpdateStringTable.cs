@@ -7,8 +7,8 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
     public struct UpdateStringTable
     {
-        public Int32 TableId;
-        public Int32 NumChangedEntries;
+        public int TableId;
+        public int NumChangedEntries;
 
         public void Parse(IBitStream bitstream, DemoParser parser)
         {
@@ -18,7 +18,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
-                if ((wireType == 2) && (fieldnum == 3))
+                if (wireType == 2 && fieldnum == 3)
                 {
                     // String data is special.
                     // We'll simply hope that gaben is nice and sends

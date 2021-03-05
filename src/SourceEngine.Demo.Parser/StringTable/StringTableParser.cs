@@ -3,7 +3,7 @@ using System.IO;
 
 namespace SourceEngine.Demo.Parser.StringTable
 {
-    class StringTableParser
+    internal class StringTableParser
     {
         public void ParsePacket(IBitStream reader, DemoParser parser)
         {
@@ -22,9 +22,7 @@ namespace SourceEngine.Demo.Parser.StringTable
             int numStrings = (int)reader.ReadInt(16);
 
             if (tableName == "modelprecache")
-            {
                 parser.modelprecache.Clear();
-            }
 
             for (int i = 0; i < numStrings; i++)
             {

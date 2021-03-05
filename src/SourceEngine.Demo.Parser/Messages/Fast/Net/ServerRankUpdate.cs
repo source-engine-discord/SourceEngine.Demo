@@ -23,7 +23,9 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     bitstream.EndChunk();
                 }
                 else
+                {
                     throw new InvalidDataException();
+                }
             }
         }
     }

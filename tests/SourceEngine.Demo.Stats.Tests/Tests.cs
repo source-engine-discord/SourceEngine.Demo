@@ -29,14 +29,10 @@ namespace SourceEngine.Demo.Stats.Tests
             foreach (var teamPlayers in ProcessedData.TeamPlayersValues)
             {
                 foreach (var player in teamPlayers.Terrorists)
-                {
                     MatchData.BindPlayer(player);
-                }
 
                 foreach (var player in teamPlayers.CounterTerrorists)
-                {
                     MatchData.BindPlayer(player);
-                }
             }
         }
 
@@ -261,11 +257,11 @@ namespace SourceEngine.Demo.Stats.Tests
 
                 ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
                 {
-                    new MatchStartedEventArgs
+                    new()
                     {
                         Mapname = "de_testmap2",
                         HasBombsites = false,
-                    }
+                    },
                 };
 
                 // Act
@@ -294,11 +290,11 @@ namespace SourceEngine.Demo.Stats.Tests
 
                 ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
                 {
-                    new MatchStartedEventArgs
+                    new()
                     {
                         Mapname = "de_testmap3",
                         HasBombsites = true,
-                    }
+                    },
                 };
 
                 // Act
@@ -327,11 +323,11 @@ namespace SourceEngine.Demo.Stats.Tests
 
                 ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
                 {
-                    new MatchStartedEventArgs
+                    new()
                     {
                         Mapname = "de_testmap4",
                         HasBombsites = false,
-                    }
+                    },
                 };
 
                 // Act
@@ -360,11 +356,11 @@ namespace SourceEngine.Demo.Stats.Tests
 
                 ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
                 {
-                    new MatchStartedEventArgs
+                    new()
                     {
                         Mapname = "de_testmap5",
                         HasBombsites = false,
-                    }
+                    },
                 };
 
                 // Act
@@ -628,24 +624,24 @@ namespace SourceEngine.Demo.Stats.Tests
 
             var MatchStartValues = new List<MatchStartedEventArgs>()
             {
-                new MatchStartedEventArgs
+                new()
                 {
                     Mapname = "de_testmap",
                     HasBombsites = true,
-                }
+                },
             };
 
             var SwitchSidesValues = new List<SwitchSidesEventArgs>()
             {
-                new SwitchSidesEventArgs
+                new()
                 {
                     RoundBeforeSwitch = 1,
-                }
+                },
             };
 
             var MessagesValues = new List<FeedbackMessage>()
             {
-                new FeedbackMessage()
+                new()
                 {
                     Round = 1,
                     SteamID = 12321313213,
@@ -661,17 +657,17 @@ namespace SourceEngine.Demo.Stats.Tests
                     SetPosCommandCurrentPosition = "setpos 50 60 70; setang 45 225",
                     Message = "bad map",
                     TimeInRound = 31.7568,
-                }
+                },
             };
 
             var TeamPlayersValues = new List<TeamPlayers>()
             {
-                new TeamPlayers()
+                new()
                 {
                     Round = 1,
                     Terrorists = new List<Player>()
                     {
-                        new Player
+                        new()
                         {
                             Name = "JimWood",
                             SteamID = 32443298432,
@@ -692,11 +688,11 @@ namespace SourceEngine.Demo.Stats.Tests
                             },
                             Money = 200,
                             RoundStartEquipmentValue = 2700,
-                        }
+                        },
                     },
                     CounterTerrorists = new List<Player>()
                     {
-                        new Player
+                        new()
                         {
                             Name = "TheWhaleMan",
                             SteamID = 12321313213,
@@ -717,15 +713,15 @@ namespace SourceEngine.Demo.Stats.Tests
                             },
                             Money = 200,
                             RoundStartEquipmentValue = 200,
-                        }
-                    }
+                        },
+                    },
                 },
-                new TeamPlayers()
+                new()
                 {
                     Round = 2,
                     Terrorists = new List<Player>()
                     {
-                        new Player
+                        new()
                         {
                             Name = "TheWhaleMan",
                             SteamID = 12321313213,
@@ -745,11 +741,11 @@ namespace SourceEngine.Demo.Stats.Tests
                             },
                             Money = 1000,
                             RoundStartEquipmentValue = 200,
-                        }
+                        },
                     },
                     CounterTerrorists = new List<Player>()
                     {
-                        new Player
+                        new()
                         {
                             Name = "JimWood",
                             SteamID = 32443298432,
@@ -769,14 +765,14 @@ namespace SourceEngine.Demo.Stats.Tests
                             },
                             Money = 5000,
                             RoundStartEquipmentValue = 4750,
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             };
 
             var PlayerHurtValues = new List<PlayerHurt>()
             {
-                new PlayerHurt
+                new()
                 {
                     Round = 1,
                     TimeInRound = 40,
@@ -788,9 +784,9 @@ namespace SourceEngine.Demo.Stats.Tests
                     HealthDamage = 100,
                     ArmorDamage = 50,
                     Hitgroup = Hitgroup.Head,
-                    PossiblyKilledByBombExplosion = false
+                    PossiblyKilledByBombExplosion = false,
                 },
-                new PlayerHurt
+                new()
                 {
                     Round = 2,
                     TimeInRound = 90,
@@ -802,13 +798,13 @@ namespace SourceEngine.Demo.Stats.Tests
                     HealthDamage = 150,
                     ArmorDamage = 75,
                     Hitgroup = Hitgroup.Head,
-                    PossiblyKilledByBombExplosion = false
-                }
+                    PossiblyKilledByBombExplosion = false,
+                },
             };
 
             var PlayerKilledEventsValues = new List<PlayerKilledEventArgs>()
             {
-                new PlayerKilledEventArgs
+                new()
                 {
                     Round = 1,
                     TimeInRound = 40,
@@ -824,7 +820,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     PenetratedObjects = 0,
                     AssistedFlash = false,
                 },
-                new PlayerKilledEventArgs
+                new()
                 {
                     Round = 2,
                     TimeInRound = 90,
@@ -839,7 +835,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TeamKill = false,
                     PenetratedObjects = 1,
                     AssistedFlash = true,
-                }
+                },
             };
 
             var PlayerValues = new Dictionary<string, IEnumerable<Player>>()
@@ -908,21 +904,21 @@ namespace SourceEngine.Demo.Stats.Tests
                         TeamPlayersValues[0].CounterTerrorists[0],
                         TeamPlayersValues[0].CounterTerrorists[0],
                     }
-                }
+                },
             };
 
             var WeaponValues = new List<Equipment>()
             {
-                new Equipment
+                new()
                 {
                     Owner = TeamPlayersValues[0].Terrorists[0],
-                    Weapon = EquipmentElement.AK47
+                    Weapon = EquipmentElement.AK47,
                 },
-                new Equipment
+                new()
                 {
                     Owner = TeamPlayersValues[0].CounterTerrorists[0],
-                    Weapon = EquipmentElement.AWP
-                }
+                    Weapon = EquipmentElement.AWP,
+                },
             };
 
             var PenetrationValues = new List<int>()
@@ -933,7 +929,7 @@ namespace SourceEngine.Demo.Stats.Tests
 
             var BombsitePlantValues = new List<BombPlanted>()
             {
-                new BombPlanted
+                new()
                 {
                     Bombsite = 'A',
                     Player = TeamPlayersValues[0].Terrorists[0],
@@ -943,7 +939,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     YPosition = 100,
                     ZPosition = 100,
                 },
-                new BombPlanted
+                new()
                 {
                     Bombsite = 'B',
                     Player = TeamPlayersValues[1].Terrorists[0],
@@ -952,35 +948,35 @@ namespace SourceEngine.Demo.Stats.Tests
                     XPosition = 400,
                     YPosition = 400,
                     ZPosition = 400,
-                }
+                },
             };
 
             var BombsiteExplodeValues = new List<BombExploded>()
             {
-                new BombExploded
+                new()
                 {
                     Bombsite = 'A',
                     Player = TeamPlayersValues[0].Terrorists[0],
                     Round = 1,
                     TimeInRound = 75,
-                }
+                },
             };
 
             var BombsiteDefuseValues = new List<BombDefused>()
             {
-                new BombDefused
+                new()
                 {
                     Bombsite = 'B',
                     Player = TeamPlayersValues[1].CounterTerrorists[0],
                     Round = 2,
                     TimeInRound = 100,
                     HasKit = true,
-                }
+                },
             };
 
             var HostageRescueValues = new List<HostageRescued>()
             {
-                new HostageRescued
+                new()
                 {
                     Hostage = 'A',
                     HostageIndex = 250,
@@ -992,7 +988,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     YPosition = 800,
                     ZPosition = 800,
                 },
-                new HostageRescued
+                new()
                 {
                     Hostage = 'B',
                     HostageIndex = 251,
@@ -1003,12 +999,12 @@ namespace SourceEngine.Demo.Stats.Tests
                     XPosition = 700,
                     YPosition = 700,
                     ZPosition = 700,
-                }
+                },
             };
 
             var HostagePickedUpValues = new List<HostagePickedUp>()
             {
-                new HostagePickedUp
+                new()
                 {
                     Hostage = 'A',
                     HostageIndex = 250,
@@ -1016,7 +1012,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     Round = 1,
                     TimeInRound = 20,
                 },
-                new HostagePickedUp
+                new()
                 {
                     Hostage = 'B',
                     HostageIndex = 251,
@@ -1024,14 +1020,14 @@ namespace SourceEngine.Demo.Stats.Tests
                     Round = 1,
                     TimeInRound = 35,
                 },
-                new HostagePickedUp
+                new()
                 {
                     Hostage = 'A',
                     HostageIndex = 250,
                     Player = TeamPlayersValues[1].CounterTerrorists[0],
                     Round = 2,
                     TimeInRound = 40,
-                }
+                },
             };
 
             var TeamValues = new List<Team>()
@@ -1054,7 +1050,7 @@ namespace SourceEngine.Demo.Stats.Tests
 
             var TeamEquipmentValues = new List<TeamEquipment>()
             {
-                new TeamEquipment
+                new()
                 {
                     Round = 1,
                     TEquipValue = 2900,
@@ -1062,14 +1058,14 @@ namespace SourceEngine.Demo.Stats.Tests
                     CTEquipValue = 450,
                     CTExpenditure = 50,
                 },
-                new TeamEquipment
+                new()
                 {
                     Round = 2,
                     TEquipValue = 800,
                     TExpenditure = 600,
                     CTEquipValue = 5750,
                     CTExpenditure = 1000,
-                }
+                },
             };
 
             var GrenadeValues = new List<NadeEventArgs>()
@@ -1084,9 +1080,9 @@ namespace SourceEngine.Demo.Stats.Tests
                         Y = 500,
                         Z = 500,
                     },
-                    FlashedPlayers = new Player[1] { TeamPlayersValues[0].CounterTerrorists[0] }
+                    FlashedPlayers = new Player[1] { TeamPlayersValues[0].CounterTerrorists[0] },
                 } as NadeEventArgs,
-                new NadeEventArgs
+                new()
                 {
                     NadeType = EquipmentElement.Smoke,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
@@ -1097,7 +1093,7 @@ namespace SourceEngine.Demo.Stats.Tests
                         Z = 500,
                     },
                 },
-                new NadeEventArgs
+                new()
                 {
                     NadeType = EquipmentElement.HE,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
@@ -1108,7 +1104,7 @@ namespace SourceEngine.Demo.Stats.Tests
                         Z = 500,
                     },
                 },
-                new NadeEventArgs
+                new()
                 {
                     NadeType =
                         EquipmentElement
@@ -1121,7 +1117,7 @@ namespace SourceEngine.Demo.Stats.Tests
                         Z = 500,
                     },
                 },
-                new NadeEventArgs
+                new()
                 {
                     NadeType = EquipmentElement.Incendiary,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
@@ -1132,7 +1128,7 @@ namespace SourceEngine.Demo.Stats.Tests
                         Z = 500,
                     },
                 },
-                new NadeEventArgs
+                new()
                 {
                     NadeType = EquipmentElement.Decoy,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
@@ -1142,67 +1138,67 @@ namespace SourceEngine.Demo.Stats.Tests
                         Y = 500,
                         Z = 500,
                     },
-                }
+                },
             };
 
-            var ChickenValues = new List<ChickenKilledEventArgs>() { new ChickenKilledEventArgs { } };
+            var ChickenValues = new List<ChickenKilledEventArgs>() { new() { } };
 
             var ShotsFiredValues = new List<ShotFired>()
             {
-                new ShotFired
+                new()
                 {
                     Round = 1,
                     TimeInRound = 1,
                     TeamSide = Team.Terrorist.ToString(),
-                    Shooter = TeamPlayersValues[0].Terrorists[0]
+                    Shooter = TeamPlayersValues[0].Terrorists[0],
                 },
-                new ShotFired
+                new()
                 {
                     Round = 1,
                     TimeInRound = 1,
                     TeamSide = Team.Terrorist.ToString(),
-                    Shooter = TeamPlayersValues[0].Terrorists[0]
+                    Shooter = TeamPlayersValues[0].Terrorists[0],
                 },
-                new ShotFired
+                new()
                 {
                     Round = 1,
                     TimeInRound = 1,
                     TeamSide = Team.Terrorist.ToString(),
-                    Shooter = TeamPlayersValues[0].Terrorists[0]
+                    Shooter = TeamPlayersValues[0].Terrorists[0],
                 },
-                new ShotFired
+                new()
                 {
                     Round = 2,
                     TimeInRound = 1,
                     TeamSide = Team.Terrorist.ToString(),
-                    Shooter = TeamPlayersValues[1].Terrorists[0]
+                    Shooter = TeamPlayersValues[1].Terrorists[0],
                 },
-                new ShotFired
+                new()
                 {
                     Round = 2,
                     TimeInRound = 1,
                     TeamSide = Team.CounterTerrorist.ToString(),
-                    Shooter = TeamPlayersValues[1].CounterTerrorists[0]
+                    Shooter = TeamPlayersValues[1].CounterTerrorists[0],
                 },
-                new ShotFired
+                new()
                 {
                     Round = 2,
                     TimeInRound = 1,
                     TeamSide = Team.CounterTerrorist.ToString(),
-                    Shooter = TeamPlayersValues[1].CounterTerrorists[0]
+                    Shooter = TeamPlayersValues[1].CounterTerrorists[0],
                 },
-                new ShotFired
+                new()
                 {
                     Round = 2,
                     TimeInRound = 1,
                     TeamSide = Team.CounterTerrorist.ToString(),
-                    Shooter = TeamPlayersValues[1].CounterTerrorists[0]
-                }
+                    Shooter = TeamPlayersValues[1].CounterTerrorists[0],
+                },
             };
 
             var playerPositionsStats = new List<PlayerPositionsInstance>()
             {
-                new PlayerPositionsInstance
+                new()
                 {
                     Round = 1,
                     TimeInRound = 1,
@@ -1210,8 +1206,8 @@ namespace SourceEngine.Demo.Stats.Tests
                     SteamID = TeamPlayersValues[0].Terrorists[0].SteamID,
                     XPosition = 20,
                     YPosition = 200,
-                    ZPosition = 2000
-                }
+                    ZPosition = 2000,
+                },
             };
 
             ProcessedData = new ProcessedData()
@@ -1246,7 +1242,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 ChickenValues = ChickenValues,
                 ShotsFiredValues = ShotsFiredValues,
                 PlayerPositionsValues = playerPositionsStats,
-                WriteTicks = true
+                WriteTicks = true,
             };
         }
     }

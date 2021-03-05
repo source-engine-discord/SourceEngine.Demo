@@ -2,14 +2,11 @@
 
 namespace SourceEngine.Demo.Parser.DataTable
 {
-    class SendTable
+    internal class SendTable
     {
-        List<SendTableProperty> properties = new List<SendTableProperty>();
+        private List<SendTableProperty> properties = new();
 
-        public List<SendTableProperty> Properties
-        {
-            get { return properties; }
-        }
+        public List<SendTableProperty> Properties => properties;
 
         public string Name { get; set; }
 
@@ -31,14 +28,14 @@ namespace SourceEngine.Demo.Parser.DataTable
                     NumberOfElements = prop.NumElements,
                     Priority = prop.Priority,
                     RawFlags = prop.Flags,
-                    RawType = prop.Type
+                    RawType = prop.Type,
                 };
 
                 properties.Add(property);
             }
 
-            this.Name = dataTable.NetTableName;
-            this.IsEnd = dataTable.IsEnd;
+            Name = dataTable.NetTableName;
+            IsEnd = dataTable.IsEnd;
         }
     }
 }

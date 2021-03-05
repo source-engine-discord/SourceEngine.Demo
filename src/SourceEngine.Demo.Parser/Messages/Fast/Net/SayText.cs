@@ -26,21 +26,13 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 var fieldnum = desc >> 3;
 
                 if (wireType == 0 && fieldnum == 1)
-                {
                     EntityIndex = bitstream.ReadProtobufVarInt();
-                }
                 else if (wireType == 2 && fieldnum == 2)
-                {
                     Text = bitstream.ReadProtobufString();
-                }
                 else if (wireType == 0 && fieldnum == 3)
-                {
                     _chat = bitstream.ReadProtobufVarInt();
-                }
                 else if (wireType == 0 && fieldnum == 4)
-                {
                     _textAllChat = bitstream.ReadProtobufVarInt();
-                }
                 else
                     throw new InvalidDataException();
             }
@@ -55,7 +47,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 EntityIndex = EntityIndex,
                 Text = Text,
                 IsChat = Chat,
-                IsChatAll = TextAllChat
+                IsChatAll = TextAllChat,
             };
 
             parser.RaiseSayText(e);
