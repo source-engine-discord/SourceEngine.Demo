@@ -14,8 +14,6 @@ namespace SourceEngine.Demo.Parser.DataTable
         public readonly List<SendTable> DataTables = new();
         public readonly List<ServerClass> ServerClasses = new();
 
-        public DataTableParser() { }
-
         public int ClassBits => (int)Math.Ceiling(Math.Log(ServerClasses.Count, 2));
 
         public void ParsePacket(IBitStream bitstream)

@@ -22,9 +22,9 @@ namespace SourceEngine.Demo.Stats
     public class TickCounter
     {
         public string detectedName = "NOT FOUND";
-        public long ticksAlive = 0;
-        public long ticksOnServer = 0;
-        public long ticksPlaying = 0;
+        public long ticksAlive;
+        public long ticksOnServer;
+        public long ticksPlaying;
     }
 
     public class PlayerWeapon
@@ -49,13 +49,12 @@ namespace SourceEngine.Demo.Stats
         private static DemoParser dp;
 
         public bool
-            changingPlantedRoundsToA = false,
-            changingPlantedRoundsToB =
-                false; // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
+            changingPlantedRoundsToA,
+            changingPlantedRoundsToB; // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
 
         public Dictionary<Type, List<object>> events = new();
 
-        public bool passed = false;
+        public bool passed;
         public readonly Dictionary<int, long> playerLookups = new();
         public readonly Dictionary<int, int> playerReplacements = new();
 
@@ -210,9 +209,9 @@ namespace SourceEngine.Demo.Stats
 
             dp.ParseHeader();
 
-            dp.PlayerBind += (object sender, PlayerBindEventArgs e) => { md.BindPlayer(e.Player); };
+            dp.PlayerBind += (_, e) => { md.BindPlayer(e.Player); };
 
-            dp.PlayerPositions += (object sender, PlayerPositionsEventArgs e) =>
+            dp.PlayerPositions += (_, e) =>
             {
                 foreach (PlayerPositionEventArgs playerPosition in e.PlayerPositions)
                 {
@@ -258,7 +257,7 @@ namespace SourceEngine.Demo.Stats
             };
 
             // SERVER EVENTS ===================================================
-            dp.MatchStarted += (object sender, MatchStartedEventArgs e) =>
+            dp.MatchStarted += (_, e) =>
             {
                 List<FeedbackMessage> currentfeedbackMessages = new List<FeedbackMessage>();
 
@@ -305,19 +304,17 @@ namespace SourceEngine.Demo.Stats
                 //print rounds complete out to console
                 if (!lowOutputMode)
                 {
-                    int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-
                     Console.WriteLine("\n");
                     Console.WriteLine("Match restarted.");
                 }
             };
 
-            dp.ChickenKilled += (object sender, ChickenKilledEventArgs e) =>
+            dp.ChickenKilled += (_, e) =>
             {
                 md.addEvent(typeof(ChickenKilledEventArgs), e);
             };
 
-            dp.SayText2 += (object sender, SayText2EventArgs e) =>
+            dp.SayText2 += (_, e) =>
             {
                 md.addEvent(typeof(SayText2EventArgs), e);
 
@@ -365,9 +362,7 @@ namespace SourceEngine.Demo.Stats
                         ? roundsOfficiallyEndedEvents.Count
                         : 0;
 
-                    int numOfFreezetimesEnded =
-                        freezetimesEndedEvents?.Count > 0 ? freezetimesEndedEvents.Count : 0;
-
+                    int numOfFreezetimesEnded = freezetimesEndedEvents?.Count > 0 ? freezetimesEndedEvents.Count : 0;
                     float timeInRound = 0; // Stays as '0' if sent during freezetime
 
                     if (numOfFreezetimesEnded > numOfRoundsOfficiallyEnded)
@@ -405,7 +400,7 @@ namespace SourceEngine.Demo.Stats
                 }
             };
 
-            dp.RoundEnd += (object sender, RoundEndedEventArgs e) =>
+            dp.RoundEnd += (_, e) =>
             {
                 var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
                     .Select(v => v.Value);
@@ -470,7 +465,7 @@ namespace SourceEngine.Demo.Stats
                 md.addEvent(typeof(RoundEndedEventArgs), e);
             };
 
-            dp.RoundOfficiallyEnded += (object sender, RoundOfficiallyEndedEventArgs e) =>
+            dp.RoundOfficiallyEnded += (_, e) =>
             {
                 var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
                     .Select(v => v.Value);
@@ -550,7 +545,7 @@ namespace SourceEngine.Demo.Stats
                 }
             };
 
-            dp.SwitchSides += (object sender, SwitchSidesEventArgs e) =>
+            dp.SwitchSides += (_, _) =>
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
@@ -563,7 +558,7 @@ namespace SourceEngine.Demo.Stats
                 md.addEvent(typeof(SwitchSidesEventArgs), switchSidesEventArgs);
             };
 
-            dp.FreezetimeEnded += (object sender, FreezetimeEndedEventArgs e) =>
+            dp.FreezetimeEnded += (_, e) =>
             {
                 var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                     .Select(v => v.Value);
@@ -701,14 +696,14 @@ namespace SourceEngine.Demo.Stats
             };
 
             // PLAYER EVENTS ===================================================
-            dp.PlayerKilled += (object sender, PlayerKilledEventArgs e) =>
+            dp.PlayerKilled += (_, e) =>
             {
                 e.Round = GetCurrentRoundNum(md, gamemode);
 
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
 
-            dp.PlayerHurt += (object sender, PlayerHurtEventArgs e) =>
+            dp.PlayerHurt += (_, e) =>
             {
                 var round = GetCurrentRoundNum(md, gamemode);
 
@@ -762,9 +757,9 @@ namespace SourceEngine.Demo.Stats
                 md.addEvent(typeof(PlayerHurt), playerHurt);
             };
 
-            dp.RoundMVP += (object sender, RoundMVPEventArgs e) => { md.addEvent(typeof(RoundMVPEventArgs), e); };
+            dp.RoundMVP += (_, e) => { md.addEvent(typeof(RoundMVPEventArgs), e); };
 
-            dp.PlayerDisconnect += (object sender, PlayerDisconnectEventArgs e) =>
+            dp.PlayerDisconnect += (_, e) =>
             {
                 if (e.Player != null && e.Player.Name != "unconnected" && e.Player.Name != "GOTV")
                 {
@@ -781,7 +776,7 @@ namespace SourceEngine.Demo.Stats
             };
 
             // BOMB EVENTS =====================================================
-            dp.BombPlanted += (object sender, BombEventArgs e) =>
+            dp.BombPlanted += (_, e) =>
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
@@ -796,7 +791,7 @@ namespace SourceEngine.Demo.Stats
                 md.addEvent(typeof(BombPlanted), bombPlanted);
             };
 
-            dp.BombExploded += (object sender, BombEventArgs e) =>
+            dp.BombExploded += (_, e) =>
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
@@ -811,7 +806,7 @@ namespace SourceEngine.Demo.Stats
                 md.addEvent(typeof(BombExploded), bombExploded);
             };
 
-            dp.BombDefused += (object sender, BombEventArgs e) =>
+            dp.BombDefused += (_, e) =>
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
@@ -828,7 +823,7 @@ namespace SourceEngine.Demo.Stats
             };
 
             // HOSTAGE EVENTS =====================================================
-            dp.HostageRescued += (object sender, HostageRescuedEventArgs e) =>
+            dp.HostageRescued += (_, e) =>
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
@@ -846,7 +841,7 @@ namespace SourceEngine.Demo.Stats
             };
 
             // HOSTAGE EVENTS =====================================================
-            dp.HostagePickedUp += (object sender, HostagePickedUpEventArgs e) =>
+            dp.HostagePickedUp += (_, e) =>
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
@@ -863,7 +858,7 @@ namespace SourceEngine.Demo.Stats
             };
 
             // WEAPON EVENTS ===================================================
-            dp.WeaponFired += (object sender, WeaponFiredEventArgs e) =>
+            dp.WeaponFired += (_, e) =>
             {
                 md.addEvent(typeof(WeaponFiredEventArgs), e);
 
@@ -882,38 +877,38 @@ namespace SourceEngine.Demo.Stats
             };
 
             // GRENADE EVENTS ==================================================
-            dp.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) =>
+            dp.ExplosiveNadeExploded += (_, e) =>
             {
                 md.addEvent(typeof(GrenadeEventArgs), e);
                 md.addEvent(typeof(NadeEventArgs), e);
             };
 
-            dp.FireNadeStarted += (object sender, FireEventArgs e) =>
+            dp.FireNadeStarted += (_, e) =>
             {
                 md.addEvent(typeof(FireEventArgs), e);
                 md.addEvent(typeof(NadeEventArgs), e);
             };
 
-            dp.SmokeNadeStarted += (object sender, SmokeEventArgs e) =>
+            dp.SmokeNadeStarted += (_, e) =>
             {
                 md.addEvent(typeof(SmokeEventArgs), e);
                 md.addEvent(typeof(NadeEventArgs), e);
             };
 
-            dp.FlashNadeExploded += (object sender, FlashEventArgs e) =>
+            dp.FlashNadeExploded += (_, e) =>
             {
                 md.addEvent(typeof(FlashEventArgs), e);
                 md.addEvent(typeof(NadeEventArgs), e);
             };
 
-            dp.DecoyNadeStarted += (object sender, DecoyEventArgs e) =>
+            dp.DecoyNadeStarted += (_, e) =>
             {
                 md.addEvent(typeof(DecoyEventArgs), e);
                 md.addEvent(typeof(NadeEventArgs), e);
             };
 
             // PLAYER TICK HANDLER ============================================
-            dp.TickDone += (object sender, TickDoneEventArgs e) =>
+            dp.TickDone += (_, _) =>
             {
                 foreach (Player p in dp.PlayingParticipants)
                 {
@@ -938,7 +933,7 @@ namespace SourceEngine.Demo.Stats
                 ProgressViewer pv = new ProgressViewer(Path.GetFileName(file));
 
                 // PROGRESS BAR ==================================================
-                dp.TickDone += (object sender, TickDoneEventArgs e) =>
+                dp.TickDone += (_, _) =>
                 {
                     progMod++;
 
@@ -1176,7 +1171,7 @@ namespace SourceEngine.Demo.Stats
                     ); // the filename of the demo, for Faceit games this is also in the "demo_url" value
 
             // attempts to get the game mode
-            var roundsWonReasons = GetRoundsWonReasons(processedData.RoundEndReasonValues);
+            GetRoundsWonReasons(processedData.RoundEndReasonValues);
 
             // use the provided game mode if given as a parameter
             if (!string.IsNullOrWhiteSpace(processedData.DemoInformation.GameMode)
@@ -1254,8 +1249,6 @@ namespace SourceEngine.Demo.Stats
                 }
             }
 
-            int counter = 0;
-
             foreach (long player in data.Keys)
             {
                 var match = playerNames.Where(p => p.Key.ToString() == player.ToString());
@@ -1324,8 +1317,6 @@ namespace SourceEngine.Demo.Stats
                         TicksPlaying = statsList2.ElementAt(2),
                     }
                 );
-
-                counter++;
             }
 
             return playerStats;
@@ -1348,10 +1339,8 @@ namespace SourceEngine.Demo.Stats
                 if (roundsWonReasons.Count > i) // game was abandoned early
                 {
                     string reason = string.Empty;
-                    string half = string.Empty;
-                    bool isOvertime = switchSides.Count() >= 2 && i >= switchSides.ElementAt(1).RoundBeforeSwitch
-                        ? true
-                        : false;
+                    string half;
+                    bool isOvertime = switchSides.Count() >= 2 && i >= switchSides.ElementAt(1).RoundBeforeSwitch;
 
                     int overtimeCount = 0;
                     double roundLength = processedData.RoundLengthValues.ElementAt(i);
@@ -1946,13 +1935,8 @@ namespace SourceEngine.Demo.Stats
                         string[] killPositionSplit =
                             SplitPositionString(kills.ElementAt(i).LastAlivePosition.ToString());
 
-                        string killPositions = $"{killPositionSplit[0]},{killPositionSplit[1]},{killPositionSplit[2]}";
-
                         string[] deathPositionSplit =
                             SplitPositionString(deaths.ElementAt(i).LastAlivePosition.ToString());
-
-                        string deathPositions =
-                            $"{deathPositionSplit[0]},{deathPositionSplit[1]},{deathPositionSplit[2]}";
 
                         //retrieve steam ID using player name if the event does not return it correctly
                         long killerSteamId = kills.ElementAt(i) != null
@@ -2632,8 +2616,6 @@ namespace SourceEngine.Demo.Stats
 
         public static bool CheckIfPlayerAliveAtThisPointInRound(MatchData md, Player player, int round)
         {
-            long steamId = player?.SteamID ?? 0;
-
             var kills = md.events.Where(k => k.Key.Name.ToString() == "PlayerKilledEventArgs")
                 .Select(v => (PlayerKilledEventArgs)v.Value.ElementAt(0));
 

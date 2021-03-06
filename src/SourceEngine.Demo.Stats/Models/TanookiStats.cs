@@ -2,8 +2,6 @@
 {
     public class tanookiStats
     {
-        public tanookiStats() { }
-
         public bool Joined { get; set; }
 
         public bool Left { get; set; }

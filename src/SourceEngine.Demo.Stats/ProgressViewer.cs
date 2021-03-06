@@ -5,8 +5,8 @@ namespace SourceEngine.Demo.Stats
 {
     public class ProgressViewer
     {
-        private readonly int console_y = 0;
-        public float percent = 0.0f;
+        private readonly int console_y;
+        public float percent;
         public string title = "";
 
         public ProgressViewer(string title)

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace SourceEngine.Demo.Parser.StringTable
 {
-    internal class StringTableParser
+    internal static class StringTableParser
     {
         public static void ParsePacket(IBitStream reader, DemoParser parser)
         {

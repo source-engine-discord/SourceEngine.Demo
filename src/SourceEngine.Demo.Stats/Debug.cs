@@ -4,7 +4,7 @@ namespace SourceEngine.Demo.Stats
 {
     public class Debug
     {
-        private static bool isProgressBar = false;
+        private static bool isProgressBar;
         private static string headerRef = "";
         private static string currmessage = "";
 

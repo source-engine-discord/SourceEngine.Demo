@@ -2,8 +2,6 @@
 {
     public class TeamEquipment
     {
-        public TeamEquipment() { }
-
         public int Round { get; set; }
 
         public int TEquipValue { get; set; }

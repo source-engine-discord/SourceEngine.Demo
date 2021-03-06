@@ -2,8 +2,6 @@
 {
     public class roundsStats
     {
-        public roundsStats() { }
-
         public int Round { get; set; }
 
         public string Half { get; set; }

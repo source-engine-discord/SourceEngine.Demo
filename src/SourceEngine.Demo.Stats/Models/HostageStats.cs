@@ -2,8 +2,6 @@
 {
     public class hostageStats
     {
-        public hostageStats() { }
-
         public char Hostage { get; set; }
 
         public int? HostageIndex { get; set; }

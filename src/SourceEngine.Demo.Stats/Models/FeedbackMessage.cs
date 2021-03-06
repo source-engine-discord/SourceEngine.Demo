@@ -2,8 +2,6 @@
 {
     public class FeedbackMessage
     {
-        public FeedbackMessage() { }
-
         public int Round { get; set; }
 
         public long SteamID { get; set; }

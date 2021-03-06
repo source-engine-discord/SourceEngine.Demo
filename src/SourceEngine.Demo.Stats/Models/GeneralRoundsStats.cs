@@ -6,8 +6,6 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class GeneralroundsStats
     {
-        public GeneralroundsStats() { }
-
         public List<roundsStats> roundsStats { get; set; }
 
         public winnersStats winnersStats { get; set; }

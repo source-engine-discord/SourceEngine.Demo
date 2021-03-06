@@ -322,7 +322,7 @@ namespace SourceEngine.Demo.Stats.App
                     string[] pathSplit = demo.Split('\\');
 
                     string[] filenameSplit = pathSplit[^1].Split('.');
-                    bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
+                    bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid _);
 
                     AddDemoInformation(
                         demosInformation,
@@ -340,7 +340,7 @@ namespace SourceEngine.Demo.Stats.App
             foreach (string demo in demosToProcess)
             {
                 string[] filenameSplit = demo.Split('.');
-                bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
+                bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid _);
 
                 AddDemoInformation(
                     demosInformation,
@@ -549,7 +549,7 @@ namespace SourceEngine.Demo.Stats.App
                         WriteTicks = true,
                     };
 
-                    AllOutputData allOutputData = mdTest.CreateFiles(processedData);
+                    mdTest.CreateFiles(processedData);
 
                     passCount++;
 

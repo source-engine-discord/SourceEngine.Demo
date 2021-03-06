@@ -69,7 +69,7 @@ namespace SourceEngine.Demo.Stats
             foreach (long id in IDS)
                 idsList += id + "_";
 
-            STEAM_RootPlayerObject players = new STEAM_RootPlayerObject();
+            STEAM_RootPlayerObject players;
 
             Debug.Info("Calling steam " + method);
 

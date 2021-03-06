@@ -2,8 +2,6 @@
 {
     public class mapInfo
     {
-        public mapInfo() { }
-
         public string MapName { get; set; }
 
         public string WorkshopID { get; set; }

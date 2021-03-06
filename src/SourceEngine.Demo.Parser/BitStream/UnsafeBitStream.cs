@@ -28,9 +28,9 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
 
         private int BitsInBuffer;
         private readonly byte[] Buffer = new byte[BUFSIZE];
-        private bool EndOfStream = false;
+        private bool EndOfStream;
         private GCHandle HBuffer;
-        private long LazyGlobalPosition = 0;
+        private long LazyGlobalPosition;
 
         private int Offset;
         private byte* PBuffer;

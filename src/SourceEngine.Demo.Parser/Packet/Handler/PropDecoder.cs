@@ -63,8 +63,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             else
             {
                 bool isNegative = false;
-                uint low = 0;
-                uint high = 0;
+                uint low;
+                uint high;
 
                 if (prop.Flags.HasFlag(SendPropertyFlags.Unsigned))
                 {
@@ -272,7 +272,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         private static float ReadBitCoordMP(IBitStream reader, bool isIntegral, bool isLowPrecision)
         {
-            int intval = 0;
+            int intval;
             float value = 0.0f;
             bool isNegative = false;
 
@@ -331,7 +331,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         private static float ReadBitCellCoord(IBitStream reader, int bits, bool lowPrecision, bool integral)
         {
-            float value = 0.0f;
+            float value;
 
             if (integral)
             {

@@ -4,8 +4,6 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class HostagePickedUp
     {
-        public HostagePickedUp() { }
-
         public int Round { get; set; }
 
         public double TimeInRound { get; set; }

@@ -100,7 +100,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 var preprocessedBaseline = new List<object>();
 
                 if (parser.instanceBaseline.ContainsKey(serverClassID))
-                    using (var collector = new PropertyCollector(newEntity, preprocessedBaseline))
+                    using (new PropertyCollector(newEntity, preprocessedBaseline))
                     using (var bitStream = BitStreamUtil.Create(parser.instanceBaseline[serverClassID]))
                     {
                         newEntity.ApplyUpdate(bitStream);

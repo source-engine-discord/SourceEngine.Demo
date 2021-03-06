@@ -4,8 +4,6 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class teamStats
     {
-        public teamStats() { }
-
         public int Round { get; set; }
 
         public IEnumerable<long> TeamAlpha { get; set; }

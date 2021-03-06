@@ -45,7 +45,7 @@ namespace SourceEngine.Demo.Stats
 
     internal class RecorderSettings
     {
-        public int matchID = 0;
+        public int matchID;
         public Dictionary<int, long> playerLookups = new();
     }
 
@@ -85,9 +85,9 @@ namespace SourceEngine.Demo.Stats
 
         public void attachAll()
         {
-            EventSubscription += (EventSubscriptionEventArgs ev) =>
+            EventSubscription += ev =>
             {
-                ev.parser.TickDone += (object sender, TickDoneEventArgs e) =>
+                ev.parser.TickDone += (_, _) =>
                 {
                     foreach (Player p in ev.parser.PlayingParticipants)
                         pushData(p, "Ticks", 1);
@@ -96,7 +96,7 @@ namespace SourceEngine.Demo.Stats
                         pushData(p, "Ticks on Server", 1);
                 };
 
-                ev.parser.PlayerKilled += (object sender, PlayerKilledEventArgs e) =>
+                ev.parser.PlayerKilled += (_, e) =>
                 {
                     pushData(e.Killer, "Kills", 1);
 
@@ -114,37 +114,37 @@ namespace SourceEngine.Demo.Stats
                     pushData(e.Killer, e.Weapon.Weapon + " Kills", 1);
                 };
 
-                ev.parser.WeaponFired += (object sender, WeaponFiredEventArgs e) =>
+                ev.parser.WeaponFired += (_, e) =>
                 {
                     pushData(e.Shooter, "Shots", 1);
                 };
 
-                ev.parser.RoundMVP += (object sender, RoundMVPEventArgs e) => { pushData(e.Player, "MVPs", 1); };
+                ev.parser.RoundMVP += (_, e) => { pushData(e.Player, "MVPs", 1); };
 
-                ev.parser.SmokeNadeStarted += (object sender, SmokeEventArgs e) =>
+                ev.parser.SmokeNadeStarted += (_, e) =>
                 {
                     pushData(e.ThrownBy, "Smokes", 1);
                 };
 
-                ev.parser.FlashNadeExploded += (object sender, FlashEventArgs e) =>
+                ev.parser.FlashNadeExploded += (_, e) =>
                 {
                     pushData(e.ThrownBy, "Flashes", 1);
                     pushData(e.ThrownBy, "Flashed Players", e.FlashedPlayers.Length);
                 };
 
-                ev.parser.ExplosiveNadeExploded += (object sender, GrenadeEventArgs e) =>
+                ev.parser.ExplosiveNadeExploded += (_, e) =>
                 {
                     pushData(e.ThrownBy, "Grenades", 1);
                 };
 
-                ev.parser.FireNadeStarted += (object sender, FireEventArgs e) => { pushData(e.ThrownBy, "Fires", 1); };
-                ev.parser.DecoyNadeStarted += (object sender, DecoyEventArgs e) =>
+                ev.parser.FireNadeStarted += (_, e) => { pushData(e.ThrownBy, "Fires", 1); };
+                ev.parser.DecoyNadeStarted += (_, e) =>
                 {
                     pushData(e.ThrownBy, "Decoys", 1);
                 };
 
-                ev.parser.BombPlanted += (object sender, BombEventArgs e) => { pushData(e.Player, "Bomb plants", 1); };
-                ev.parser.BombDefused += (object sender, BombEventArgs e) => { pushData(e.Player, "Bomb defuses", 1); };
+                ev.parser.BombPlanted += (_, e) => { pushData(e.Player, "Bomb plants", 1); };
+                ev.parser.BombDefused += (_, e) => { pushData(e.Player, "Bomb defuses", 1); };
             };
         }
 
@@ -218,7 +218,7 @@ namespace SourceEngine.Demo.Stats
                 EventSubscription?.Invoke(new EventSubscriptionEventArgs(dp));
 
                 //Hard coded necessary event handlers ---------------------------------------------------
-                dp.PlayerBind += (object sender, PlayerBindEventArgs e) =>
+                dp.PlayerBind += (_, e) =>
                 {
                     if (!playerLookups.ContainsKey(e.Player.EntityID))
                         if (e.Player.SteamID != 0)
@@ -226,7 +226,7 @@ namespace SourceEngine.Demo.Stats
                 };
 
                 int tickCounter = 0;
-                dp.TickDone += (object sender, TickDoneEventArgs e) =>
+                dp.TickDone += (_, _) =>
                 {
                     tickCounter++;
 

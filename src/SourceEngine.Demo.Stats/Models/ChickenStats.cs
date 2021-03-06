@@ -2,8 +2,6 @@
 {
     public class chickenStats
     {
-        public chickenStats() { }
-
         public int Killed { get; set; }
     }
 }

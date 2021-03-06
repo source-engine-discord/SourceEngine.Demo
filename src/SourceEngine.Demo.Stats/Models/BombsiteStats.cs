@@ -2,8 +2,6 @@
 {
     public class bombsiteStats
     {
-        public bombsiteStats() { }
-
         public char Bombsite { get; set; }
 
         public int Plants { get; set; }

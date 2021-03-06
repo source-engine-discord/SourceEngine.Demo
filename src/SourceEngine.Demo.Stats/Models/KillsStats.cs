@@ -2,8 +2,6 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class killsStats
     {
-        public killsStats() { }
-
         public int Round { get; set; }
 
         public double TimeInRound { get; set; }

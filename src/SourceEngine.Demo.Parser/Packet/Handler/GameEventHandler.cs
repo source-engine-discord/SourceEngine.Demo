@@ -14,9 +14,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         private static List<Player> currentRoundBotTakeovers = new();
 
         private static double
-            timestampFreezetimeEnded = 0; //the total number of seconds passed by the end of the last round
+            timestampFreezetimeEnded; //the total number of seconds passed by the end of the last round
 
-        private static int numOfChickensAliveExpected = 0;
+        private static int numOfChickensAliveExpected;
 
         public static void HandleGameEventList(IEnumerable<GameEventList.Descriptor> gel, DemoParser parser)
         {

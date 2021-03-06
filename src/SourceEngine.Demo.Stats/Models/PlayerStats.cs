@@ -2,8 +2,6 @@
 {
     public class playerStats
     {
-        public playerStats() { }
-
         public string PlayerName { get; set; }
 
         public long SteamID { get; set; }

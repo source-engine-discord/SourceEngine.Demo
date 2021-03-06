@@ -2,8 +2,6 @@
 {
     public class grenadesSpecificStats
     {
-        public grenadesSpecificStats() { }
-
         public string NadeType { get; set; }
 
         public long SteamID { get; set; }

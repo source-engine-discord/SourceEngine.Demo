@@ -25,7 +25,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         private readonly Stack<long> ChunkTargets = new();
 
         private int BitsInBuffer;
-        private long LazyGlobalPosition = 0;
+        private long LazyGlobalPosition;
 
         private int Offset;
         private Stream Underlying;
