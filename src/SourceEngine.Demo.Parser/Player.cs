@@ -111,27 +111,24 @@ namespace SourceEngine.Demo.Parser
         /// </summary>
         public Player Copy()
         {
-            Player me = new Player();
-            me.EntityID = -1; //this should bot be copied
-            me.Entity = null;
-
-            me.Name = Name;
-            me.SteamID = SteamID;
-            me.HP = HP;
-            me.Armor = Armor;
-
-            me.ViewDirectionX = ViewDirectionX;
-            me.ViewDirectionY = ViewDirectionY;
-            me.Disconnected = Disconnected;
-            me.FlashDuration = FlashDuration;
-
-            me.Team = Team;
-
-            me.ActiveWeaponID = ActiveWeaponID;
-            me.rawWeapons = new Dictionary<int, Equipment>(rawWeapons);
-
-            me.HasDefuseKit = HasDefuseKit;
-            me.HasHelmet = HasHelmet;
+            Player me = new Player
+            {
+                EntityID = -1, // this should bot be copied
+                Entity = null,
+                Name = Name,
+                SteamID = SteamID,
+                HP = HP,
+                Armor = Armor,
+                ViewDirectionX = ViewDirectionX,
+                ViewDirectionY = ViewDirectionY,
+                Disconnected = Disconnected,
+                FlashDuration = FlashDuration,
+                Team = Team,
+                ActiveWeaponID = ActiveWeaponID,
+                rawWeapons = new Dictionary<int, Equipment>(rawWeapons),
+                HasDefuseKit = HasDefuseKit,
+                HasHelmet = HasHelmet,
+            };
 
             if (Position != null)
                 me.Position = Position.Copy(); //Vector is a class, not a struct - thus we need to make it thread-safe.

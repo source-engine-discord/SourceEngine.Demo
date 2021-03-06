@@ -76,8 +76,7 @@ namespace SourceEngine.Demo.Parser.DataTable
 
             var flattenedProps = ServerClasses[serverClassIndex].FlattenedProps;
 
-            List<int> priorities = new List<int>();
-            priorities.Add(64);
+            List<int> priorities = new List<int> { 64 };
             priorities.AddRange(flattenedProps.Select(a => a.Prop.Priority).Distinct());
             priorities.Sort();
 

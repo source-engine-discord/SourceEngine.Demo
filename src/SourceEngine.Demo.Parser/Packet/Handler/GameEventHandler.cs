@@ -758,10 +758,13 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (data.ContainsKey("userid") && parser.Players.ContainsKey((int)data["userid"]))
                 nade.ThrownBy = new Player(parser.Players[(int)data["userid"]]);
 
-            Vector vec = new Vector();
-            vec.X = (float)data["x"];
-            vec.Y = (float)data["y"];
-            vec.Z = (float)data["z"];
+            Vector vec = new Vector
+            {
+                X = (float)data["x"],
+                Y = (float)data["y"],
+                Z = (float)data["z"],
+            };
+
             nade.Position = vec;
 
             return nade;

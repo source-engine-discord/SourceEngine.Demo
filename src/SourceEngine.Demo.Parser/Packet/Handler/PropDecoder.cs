@@ -105,10 +105,11 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         {
             if (prop.Flags.HasFlagFast(SendPropertyFlags.Normal)) { }
 
-            Vector v = new Vector();
-
-            v.X = DecodeFloat(prop, reader);
-            v.Y = DecodeFloat(prop, reader);
+            Vector v = new Vector
+            {
+                X = DecodeFloat(prop, reader),
+                Y = DecodeFloat(prop, reader),
+            };
 
             if (!prop.Flags.HasFlagFast(SendPropertyFlags.Normal))
             {
@@ -162,9 +163,11 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         public static Vector DecodeVectorXY(SendTableProperty prop, IBitStream reader)
         {
-            Vector v = new Vector();
-            v.X = DecodeFloat(prop, reader);
-            v.Y = DecodeFloat(prop, reader);
+            Vector v = new Vector
+            {
+                X = DecodeFloat(prop, reader),
+                Y = DecodeFloat(prop, reader),
+            };
 
             return v;
         }
