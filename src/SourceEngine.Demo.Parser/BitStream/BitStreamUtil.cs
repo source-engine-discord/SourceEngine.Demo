@@ -109,14 +109,13 @@ namespace SourceEngine.Demo.Parser
 
         public static string ReadDataTableString(this IBitStream bs)
         {
-            using (var memstream = new MemoryStream())
-            {
-                // not particularly efficient, but probably fine
-                for (byte b = bs.ReadByte(); b != 0; b = bs.ReadByte())
-                    memstream.WriteByte(b);
+            using var memstream = new MemoryStream();
 
-                return Encoding.Default.GetString(memstream.GetBuffer(), 0, checked((int)memstream.Length));
-            }
+            // not particularly efficient, but probably fine
+            for (byte b = bs.ReadByte(); b != 0; b = bs.ReadByte())
+                memstream.WriteByte(b);
+
+            return Encoding.Default.GetString(memstream.GetBuffer(), 0, checked((int)memstream.Length));
         }
 
         public static string ReadCString(this IBitStream reader, int length)
