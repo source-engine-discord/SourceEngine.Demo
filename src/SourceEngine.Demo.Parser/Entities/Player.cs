@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using SourceEngine.Demo.Parser.Packet;
+using SourceEngine.Demo.Parser.Structs;
 
 namespace SourceEngine.Demo.Parser.Entities
 {

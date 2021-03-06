@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using SourceEngine.Demo.Parser.Entities;
+using SourceEngine.Demo.Parser.Structs;
 
 namespace SourceEngine.Demo.Parser
 {

@@ -15,6 +15,7 @@ using SourceEngine.Demo.Parser.Entities;
 using SourceEngine.Demo.Parser.Messages.Fast.Net;
 using SourceEngine.Demo.Parser.Packet;
 using SourceEngine.Demo.Parser.StringTable;
+using SourceEngine.Demo.Parser.Structs;
 
 namespace SourceEngine.Demo.Parser
 {

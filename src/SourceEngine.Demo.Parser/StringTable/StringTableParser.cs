@@ -2,6 +2,7 @@
 using System.IO;
 
 using SourceEngine.Demo.Parser.BitStream;
+using SourceEngine.Demo.Parser.Structs;
 
 namespace SourceEngine.Demo.Parser.StringTable
 {

@@ -3,6 +3,7 @@ using System.Text;
 
 using SourceEngine.Demo.Parser.BitStream;
 using SourceEngine.Demo.Parser.DataTable;
+using SourceEngine.Demo.Parser.Structs;
 
 namespace SourceEngine.Demo.Parser.Packet.Handler
 {
