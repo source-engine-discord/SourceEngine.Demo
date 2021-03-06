@@ -278,10 +278,10 @@ namespace SourceEngine.Demo.Parser.Packet
         }
 
         [Conditional("SAVE_PROP_VALUES")]
-        private static void SaveValue(object value)
+        private void SaveValue(object value)
         {
             #if SAVE_PROP_VALUES
-            this.Value = value;
+            Value = value;
             #endif
         }
 

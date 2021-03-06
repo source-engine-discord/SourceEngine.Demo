@@ -4,6 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
+#if SAVE_PROP_VALUES
+using System.Text;
+#endif
+
 using SourceEngine.Demo.Parser.BitStream;
 using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Parser.DataTable;
@@ -1373,31 +1377,36 @@ namespace SourceEngine.Demo.Parser
             inferno.OnDestroyEntity += (_, infEntity) => { InfernoOwners.Remove(infEntity.Entity.ID); };
         }
         #if SAVE_PROP_VALUES
-        [Obsolete("This method is only for debugging-purposes and shuld never be used in production, so you need to live with this warning.")]
+        [Obsolete("This method is only for debugging-purposes and should never be used in production, so you need to live with this warning.")]
         public string DumpAllEntities()
         {
-            StringBuilder res = new StringBuilder ();
-            for (int i = 0; i < MAX_ENTITIES; i++) {
-                Entity entity = Entities [i];
+            var res = new StringBuilder();
+
+            for (int i = 0; i < MAX_ENTITIES; i++)
+            {
+                Entity entity = Entities[i];
 
                 if (entity == null)
                     continue;
 
-                res.Append("Entity " + i + ": " + entity.ServerClass.Name + " (inherits: ");
+                res.AppendFormat("Entity {0}: {1} (inherits: )", i.ToString(), entity.ServerClass.Name);
 
                 //The class with the lowest order is the first
                 //But we obv. want the highest order first :D
-                foreach(var c in entity.ServerClass.BaseClasses.Reverse<ServerClass>())
+                foreach (ServerClass c in entity.ServerClass.BaseClasses.Reverse<ServerClass>())
                 {
-                    res.Append (c.Name + "; ");
+                    res.Append(c.Name);
+                    res.Append("; ");
                 }
-                res.AppendLine (")");
 
-                foreach (var prop in entity.Props) {
+                res.AppendLine(")");
+
+                foreach (PropertyEntry prop in entity.Props)
+                {
                     res.Append(prop.Entry.PropertyName.PadLeft(50));
                     res.Append(" = ");
                     res.Append(prop.Value);
-                    res.AppendLine ();
+                    res.AppendLine();
                 }
             }
 
