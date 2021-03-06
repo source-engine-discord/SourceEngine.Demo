@@ -91,9 +91,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             //This code below is just faster, since it only parses stuff once
             //which is faster.
 
-            object[] fastBaseline;
-
-            if (parser.PreprocessedBaselines.TryGetValue(serverClassID, out fastBaseline))
+            if (parser.PreprocessedBaselines.TryGetValue(serverClassID, out object[] fastBaseline))
             {
                 PropertyEntry.Emit(newEntity, fastBaseline);
             }

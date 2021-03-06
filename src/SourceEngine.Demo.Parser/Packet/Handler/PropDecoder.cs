@@ -89,9 +89,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         public static float DecodeFloat(SendTableProperty prop, IBitStream reader)
         {
-            float fVal = 0.0f;
-
-            if (DecodeSpecialFloat(prop, reader, out fVal))
+            if (DecodeSpecialFloat(prop, reader, out float fVal))
                 return fVal;
 
             //Encoding: The range between lowVal and highVal is split into the same steps.
