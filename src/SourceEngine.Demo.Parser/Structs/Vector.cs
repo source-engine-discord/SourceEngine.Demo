@@ -76,16 +76,39 @@ namespace SourceEngine.Demo.Parser.Structs
     }
 
     /// <summary>
-    /// And Angle in the Source-Engine. Looks pretty much like a vector.
+    /// 3-dimensional Euler angle.
     /// </summary>
     internal class QAngle
     {
+        /// <summary>
+        /// Pitch angle in degrees.
+        /// </summary>
+        /// <remarks>
+        /// Positive values go down and negative values go up.
+        /// </remarks>
         public float X { get; private set; }
 
+        /// <summary>
+        /// Yaw angle in degrees.
+        /// </summary>
+        /// <remarks>
+        /// Positive values go left and negative values go right.
+        /// </remarks>
         public float Y { get; private set; }
 
+        /// <summary>
+        /// Roll angle in degrees.
+        /// </summary>
+        /// <remarks>
+        /// Positive values go right and negative values go left.
+        /// </remarks>
         public float Z { get; private set; }
 
+        /// <summary>
+        /// Parse a raw data stream into a new <see cref="QAngle"/>.
+        /// </summary>
+        /// <param name="reader">The data stream to parse.</param>
+        /// <returns>A <see cref="QAngle"/> containing values from the parsed stream.</returns>
         public static QAngle Parse(IBitStream reader)
         {
             return new()
