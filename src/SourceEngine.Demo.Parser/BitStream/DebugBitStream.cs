@@ -126,9 +126,7 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
             if (!a.Equals(b))
             {
                 Debug.Assert(false);
-                throw new InvalidOperationException(
-                    string.Format("{0} vs {1} ({2} vs {3})", a, b, A.GetType().Name, B.GetType().Name)
-                );
+                throw new InvalidOperationException($"{a} vs {b} ({A.GetType().Name} vs {B.GetType().Name})");
             }
         }
 

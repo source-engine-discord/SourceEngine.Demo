@@ -294,7 +294,7 @@ namespace SourceEngine.Demo.Parser.Packet
 
         public override string ToString()
         {
-            return string.Format("[PropertyEntry: Entry={0}]", Entry);
+            return $"[PropertyEntry: Entry={Entry}]";
         }
 
         //[Conditional("DEBUG")]
@@ -302,63 +302,33 @@ namespace SourceEngine.Demo.Parser.Packet
         {
             if (IntRecived != null && Entry.Prop.Type != SendPropertyType.Int)
                 throw new InvalidOperationException(
-                    string.Format(
-                        "({0}).({1}) isn't an {2}",
-                        e.ServerClass.Name,
-                        Entry.PropertyName,
-                        SendPropertyType.Int
-                    )
+                    $"({e.ServerClass.Name}).({Entry.PropertyName}) isn't an {SendPropertyType.Int}"
                 );
 
             if (Int64Received != null && Entry.Prop.Type != SendPropertyType.Int64)
                 throw new InvalidOperationException(
-                    string.Format(
-                        "({0}).({1}) isn't an {2}",
-                        e.ServerClass.Name,
-                        Entry.PropertyName,
-                        SendPropertyType.Int64
-                    )
+                    $"({e.ServerClass.Name}).({Entry.PropertyName}) isn't an {SendPropertyType.Int64}"
                 );
 
             if (FloatRecived != null && Entry.Prop.Type != SendPropertyType.Float)
                 throw new InvalidOperationException(
-                    string.Format(
-                        "({0}).({1}) isn't an {2}",
-                        e.ServerClass.Name,
-                        Entry.PropertyName,
-                        SendPropertyType.Float
-                    )
+                    $"({e.ServerClass.Name}).({Entry.PropertyName}) isn't an {SendPropertyType.Float}"
                 );
 
             if (StringRecived != null && Entry.Prop.Type != SendPropertyType.String)
                 throw new InvalidOperationException(
-                    string.Format(
-                        "({0}).({1}) isn't an {2}",
-                        e.ServerClass.Name,
-                        Entry.PropertyName,
-                        SendPropertyType.String
-                    )
+                    $"({e.ServerClass.Name}).({Entry.PropertyName}) isn't an {SendPropertyType.String}"
                 );
 
             if (ArrayRecived != null && Entry.Prop.Type != SendPropertyType.Array)
                 throw new InvalidOperationException(
-                    string.Format(
-                        "({0}).({1}) isn't an {2}",
-                        e.ServerClass.Name,
-                        Entry.PropertyName,
-                        SendPropertyType.Array
-                    )
+                    $"({e.ServerClass.Name}).({Entry.PropertyName}) isn't an {SendPropertyType.Array}"
                 );
 
             if (VectorRecived != null && Entry.Prop.Type != SendPropertyType.Vector
                 && Entry.Prop.Type != SendPropertyType.VectorXY)
                 throw new InvalidOperationException(
-                    string.Format(
-                        "({0}).({1}) isn't an {2}",
-                        e.ServerClass.Name,
-                        Entry.PropertyName,
-                        SendPropertyType.Vector
-                    )
+                    $"({e.ServerClass.Name}).({Entry.PropertyName}) isn't an {SendPropertyType.Vector}"
                 );
         }
 
