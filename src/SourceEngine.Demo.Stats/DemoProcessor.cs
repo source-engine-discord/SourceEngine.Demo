@@ -955,7 +955,7 @@ namespace SourceEngine.Demo.Stats
             var allStats = new AllStats
             {
                 versionNumber = GetVersionNumber(),
-                supportedGamemodes = GetSupportedGamemodes(),
+                supportedGamemodes = Gamemodes.GetAll(),
                 mapInfo = GetMapInfo(processedData, mapNameSplit),
                 tanookiStats = processedData.tanookiStats,
             };
@@ -1098,11 +1098,6 @@ namespace SourceEngine.Demo.Stats
         public static versionNumber GetVersionNumber()
         {
             return new() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3) };
-        }
-
-        public static List<string> GetSupportedGamemodes()
-        {
-            return Gamemodes.GetAll();
         }
 
         public static mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
@@ -2415,15 +2410,6 @@ namespace SourceEngine.Demo.Stats
                 .FirstOrDefault(); // steamID will be 0 if not found
 
             return steamId;
-        }
-
-        public IEnumerable<object> SelectWeaponsEventsByName(string name)
-        {
-            IEnumerable<object> shots = from shot in GetEvents<WeaponFiredEventArgs>()
-                where (shot as WeaponFiredEventArgs).Weapon.Weapon.ToString() == name
-                select shot;
-
-            return shots;
         }
 
         public List<object> GetEvents<T>()
