@@ -61,8 +61,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     }
                 }
 
-                if (entry == null)
-                    entry = "";
+                entry ??= "";
 
                 if (history.Count > 31)
                     history.RemoveAt(0);

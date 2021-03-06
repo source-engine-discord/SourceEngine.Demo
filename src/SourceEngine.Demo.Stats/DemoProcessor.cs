@@ -327,7 +327,7 @@ namespace SourceEngine.Demo.Stats
                 {
                     int round = GetCurrentRoundNum(md, gamemode);
 
-                    long steamId = e.Sender == null ? 0 : e.Sender.SteamID;
+                    long steamId = e.Sender?.SteamID ?? 0;
 
                     Player player = null;
 
@@ -336,7 +336,7 @@ namespace SourceEngine.Demo.Stats
                     else
                         player = null;
 
-                    var teamName = player != null ? player.Team.ToString() : null;
+                    var teamName = player?.Team.ToString();
                     teamName = teamName == "Spectate" ? "Spectator" : teamName;
 
                     bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(md, player, round);
@@ -746,13 +746,13 @@ namespace SourceEngine.Demo.Stats
                     XPositionPlayer = player.Position.X,
                     YPositionPlayer = player.Position.Y,
                     ZPositionPlayer = player.Position.Z,
-                    Attacker = attacker ?? null,
-                    XPositionAttacker = attacker != null && attacker.Position != null ? attacker.Position.X : 0,
-                    YPositionAttacker = attacker != null && attacker.Position != null ? attacker.Position.Y : 0,
-                    ZPositionAttacker = attacker != null && attacker.Position != null ? attacker.Position.Z : 0,
+                    Attacker = attacker,
+                    XPositionAttacker = attacker.Position?.X ?? 0,
+                    YPositionAttacker = attacker.Position?.Y ?? 0,
+                    ZPositionAttacker = attacker.Position?.Z ?? 0,
                     Health = e.Health,
                     Armor = e.Armor,
-                    Weapon = attacker != null ? e.Weapon : null,
+                    Weapon = e.Weapon,
                     HealthDamage = e.HealthDamage,
                     ArmorDamage = e.ArmorDamage,
                     Hitgroup = e.Hitgroup,
@@ -1523,16 +1523,14 @@ namespace SourceEngine.Demo.Stats
                     {
                         bombExploded = processedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum);
 
-                        bombsite = bombsite != null ? bombsite :
-                            bombExploded.Bombsite == null ? null : bombExploded.Bombsite.ToString();
+                        bombsite ??= bombExploded.Bombsite == null ? null : bombExploded.Bombsite.ToString();
                     }
 
                     if (processedData.BombsiteDefuseValues.Any(p => p.Round == roundNum))
                     {
                         bombDefused = processedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum);
 
-                        bombsite = bombsite != null ? bombsite :
-                            bombDefused.Bombsite == null ? null : bombDefused.Bombsite.ToString();
+                        bombsite ??= bombDefused.Bombsite == null ? null : bombDefused.Bombsite.ToString();
                     }
 
                     var timeInRoundPlanted = bombPlanted?.TimeInRound;
@@ -2634,7 +2632,7 @@ namespace SourceEngine.Demo.Stats
 
         public static bool CheckIfPlayerAliveAtThisPointInRound(MatchData md, Player player, int round)
         {
-            long steamId = player == null ? 0 : player.SteamID;
+            long steamId = player?.SteamID ?? 0;
 
             var kills = md.events.Where(k => k.Key.Name.ToString() == "PlayerKilledEventArgs")
                 .Select(v => (PlayerKilledEventArgs)v.Value.ElementAt(0));

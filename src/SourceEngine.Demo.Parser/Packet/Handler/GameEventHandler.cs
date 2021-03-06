@@ -249,8 +249,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                     fire.Weapon = new Equipment((string)data["weapon"]);
 
-                    if (fire.Shooter != null && fire.Shooter.ActiveWeapon != null
-                        && fire.Weapon.Class != EquipmentClass.Grenade)
+                    if (fire.Shooter?.ActiveWeapon != null && fire.Weapon.Class != EquipmentClass.Grenade)
                     {
                         var originalString =
                             fire.Weapon
