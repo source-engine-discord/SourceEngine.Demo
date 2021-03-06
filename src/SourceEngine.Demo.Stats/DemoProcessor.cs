@@ -56,8 +56,8 @@ namespace SourceEngine.Demo.Stats
         public Dictionary<Type, List<object>> events = new();
 
         public bool passed = false;
-        public Dictionary<int, long> playerLookups = new();
-        public Dictionary<int, int> playerReplacements = new();
+        public readonly Dictionary<int, long> playerLookups = new();
+        public readonly Dictionary<int, int> playerReplacements = new();
 
         private readonly Dictionary<int, TickCounter> playerTicks = new();
 

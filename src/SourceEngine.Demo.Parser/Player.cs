@@ -8,7 +8,7 @@ namespace SourceEngine.Demo.Parser
     {
         internal int ActiveWeaponID;
 
-        internal int[] AmmoLeft = new int[32];
+        internal readonly int[] AmmoLeft = new int[32];
 
         internal Entity Entity;
 

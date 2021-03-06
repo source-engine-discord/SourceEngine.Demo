@@ -9,8 +9,8 @@ namespace SourceEngine.Demo.Stats
 {
     public class PlayerData
     {
-        public Dictionary<int, Dictionary<string, int>> collected = new();
-        public long s_steamid;
+        public readonly Dictionary<int, Dictionary<string, int>> collected = new();
+        public readonly long s_steamid;
         public string s_steamname;
 
         public PlayerData(long steamid, string name = "")
@@ -69,7 +69,7 @@ namespace SourceEngine.Demo.Stats
         private RecorderSettings currentRS;
 
         //Settings
-        public string TARGET_FOLDER;
+        public readonly string TARGET_FOLDER;
 
         public Collector(string targetFolder)
         {

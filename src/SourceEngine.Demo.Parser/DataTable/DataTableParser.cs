@@ -11,8 +11,8 @@ namespace SourceEngine.Demo.Parser.DataTable
         private List<ServerClass> CurrentBaseclasses = new();
         private readonly List<ExcludeEntry> CurrentExcludes = new();
 
-        public List<SendTable> DataTables = new();
-        public List<ServerClass> ServerClasses = new();
+        public readonly List<SendTable> DataTables = new();
+        public readonly List<ServerClass> ServerClasses = new();
 
         public DataTableParser() { }
 

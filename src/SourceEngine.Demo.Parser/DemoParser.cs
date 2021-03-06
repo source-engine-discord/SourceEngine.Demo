@@ -35,8 +35,8 @@ namespace SourceEngine.Demo.Parser
         private readonly int
             numOfHostageRescueZonesLookingFor = 0; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
 
-        public List<BoundingBoxInformation> triggers = new();
-        internal Dictionary<int, Player> InfernoOwners = new();
+        public readonly List<BoundingBoxInformation> triggers = new();
+        internal readonly Dictionary<int, Player> InfernoOwners = new();
 
         #region Events
 
@@ -324,7 +324,7 @@ namespace SourceEngine.Demo.Parser
         /// <summary>
         /// A parser for DataTables. This contains the ServerClasses and DataTables.
         /// </summary>
-        internal DataTableParser SendTableParser = new();
+        internal readonly DataTableParser SendTableParser = new();
 
         /// <summary>
         /// A parser for DEM_STRINGTABLES-Packets
@@ -335,35 +335,35 @@ namespace SourceEngine.Demo.Parser
         /// This maps an ServerClass to an Equipment.
         /// Note that this is wrong for the CZ,M4A1 and USP-S, there is an additional fix for those
         /// </summary>
-        internal Dictionary<ServerClass, EquipmentElement> equipmentMapping = new();
+        internal readonly Dictionary<ServerClass, EquipmentElement> equipmentMapping = new();
 
-        internal Dictionary<int, Player> Players = new();
+        internal readonly Dictionary<int, Player> Players = new();
 
         /// <summary>
         /// Containing info about players, accessible by the entity-id
         /// </summary>
-        internal Player[] PlayerInformations = new Player[MAXPLAYERS];
+        internal readonly Player[] PlayerInformations = new Player[MAXPLAYERS];
 
         /// <summary>
         /// Contains information about the players, accessible by the userid.
         /// </summary>
-        internal PlayerInfo[] RawPlayers = new PlayerInfo[MAXPLAYERS];
+        internal readonly PlayerInfo[] RawPlayers = new PlayerInfo[MAXPLAYERS];
 
         /// <summary>
         /// All entities currently alive in the demo.
         /// </summary>
-        internal Entity[] Entities = new Entity[MAX_ENTITIES]; //Max 2048 entities.
+        internal readonly Entity[] Entities = new Entity[MAX_ENTITIES]; //Max 2048 entities.
 
         /// <summary>
         /// The modelprecache. With this we can tell which model an entity has.
         /// Useful for finding out whetere a weapon is a P250 or a CZ
         /// </summary>
-        internal List<string> modelprecache = new();
+        internal readonly List<string> modelprecache = new();
 
         /// <summary>
         /// The string tables sent by the server.
         /// </summary>
-        internal List<CreateStringTable> stringTables = new();
+        internal readonly List<CreateStringTable> stringTables = new();
 
         /// <summary>
         /// An map entity <-> weapon. Used to remember whether a weapon is a p250,
@@ -451,12 +451,12 @@ namespace SourceEngine.Demo.Parser
         /// The blind players, so we can tell who was flashed by a flashbang.
         /// previous blind implementation
         /// </summary>
-        internal List<Player> BlindPlayers = new();
+        internal readonly List<Player> BlindPlayers = new();
 
         /// <summary>
         /// Holds inferno_startburn event args so they can be matched with player
         /// </summary>
-        internal Queue<Tuple<int, FireEventArgs>> StartBurnEvents = new();
+        internal readonly Queue<Tuple<int, FireEventArgs>> StartBurnEvents = new();
 
         // These could be Dictionary<int, RecordedPropertyUpdate[]>, but I was too lazy to
         // define that class. Also: It doesn't matter anyways, we always have to cast.
@@ -464,7 +464,7 @@ namespace SourceEngine.Demo.Parser
         /// <summary>
         /// The preprocessed baselines, useful to create entities fast
         /// </summary>
-        internal Dictionary<int, object[]> PreprocessedBaselines = new();
+        internal readonly Dictionary<int, object[]> PreprocessedBaselines = new();
 
         /// <summary>
         /// The instance baselines.
@@ -472,7 +472,7 @@ namespace SourceEngine.Demo.Parser
         /// Since this is (was) expensive, valve sends an instancebaseline, which contains defaults
         /// for all the properties.
         /// </summary>
-        internal Dictionary<int, byte[]> instanceBaseline = new();
+        internal readonly Dictionary<int, byte[]> instanceBaseline = new();
 
         /// <summary>
         /// The tickrate *of the demo* (16 for normal GOTV-demos)

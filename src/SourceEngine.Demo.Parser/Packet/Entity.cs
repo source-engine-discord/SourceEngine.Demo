@@ -485,8 +485,8 @@ namespace SourceEngine.Demo.Parser.Packet
 
     public class RecordedPropertyUpdate<T>
     {
-        public int PropIndex;
-        public T Value;
+        public readonly int PropIndex;
+        public readonly T Value;
 
         public RecordedPropertyUpdate(int propIndex, T value)
         {

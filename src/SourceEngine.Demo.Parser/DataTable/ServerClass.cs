@@ -12,7 +12,7 @@ namespace SourceEngine.Demo.Parser.DataTable
         public int DataTableID;
         public string DTName;
 
-        public List<FlattenedPropEntry> FlattenedProps = new();
+        public readonly List<FlattenedPropEntry> FlattenedProps = new();
         public string Name;
 
         public void Dispose()

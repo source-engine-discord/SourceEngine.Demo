@@ -16,7 +16,7 @@ namespace SourceEngine.Demo.Stats.Tests
     public class TopStatsWaffleTests
     {
         protected DemoParser DemoParser;
-        protected MatchData MatchData;
+        protected readonly MatchData MatchData;
         protected ProcessedData ProcessedData;
 
         public TopStatsWaffleTests()

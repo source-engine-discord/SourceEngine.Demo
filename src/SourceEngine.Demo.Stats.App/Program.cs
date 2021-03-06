@@ -16,7 +16,7 @@ namespace SourceEngine.Demo.Stats.App
     //Todo: add a formal config parser
     public class Config
     {
-        public Dictionary<string, string> keyVals = new();
+        public readonly Dictionary<string, string> keyVals = new();
 
         public Config(string path)
         {
