@@ -42,7 +42,7 @@ namespace SourceEngine.Demo.Parser
         private readonly int
             numOfHostageRescueZonesLookingFor; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
 
-        public readonly Dictionary<int, BoundingBoxInformation> Triggers = new();
+        public readonly Dictionary<int, BoundingBox> Triggers = new();
         internal readonly Dictionary<int, Player> InfernoOwners = new();
 
         #region Events
@@ -1318,7 +1318,7 @@ namespace SourceEngine.Demo.Parser
 
             SendTableParser.FindByName("CBaseTrigger").OnNewEntity += (_, newResource) =>
             {
-                var trigger = new BoundingBoxInformation();
+                var trigger = new BoundingBox();
                 Triggers.Add(newResource.Entity.ID, trigger);
 
                 // if bombsites, it gets x,y,z values from the world origin (0,0,0)

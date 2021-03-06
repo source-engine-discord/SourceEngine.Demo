@@ -1628,8 +1628,8 @@ namespace SourceEngine.Demo.Stats
 
         public static List<bombsiteStats> GetBombsiteStats(ProcessedData processedData)
         {
-            BoundingBoxInformation bombsiteATrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteAIndex);
-            BoundingBoxInformation bombsiteBTrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteBIndex);
+            BoundingBox bombsiteATrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteAIndex);
+            BoundingBox bombsiteBTrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteBIndex);
 
             return new()
             {
@@ -1692,7 +1692,7 @@ namespace SourceEngine.Demo.Stats
             if (dp is null)
                 return rescueZoneStats;
 
-            foreach ((int entityId, BoundingBoxInformation rescueZone) in dp.Triggers)
+            foreach ((int entityId, BoundingBox rescueZone) in dp.Triggers)
             {
                 if (entityId == dp.bombsiteAIndex || entityId == dp.bombsiteBIndex)
                     continue;
