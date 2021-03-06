@@ -323,7 +323,7 @@ namespace SourceEngine.Demo.Stats.App
                     {
                         string[] pathSplit = demo.Split('\\');
 
-                        string[] filenameSplit = pathSplit[pathSplit.Length - 1].Split('.');
+                        string[] filenameSplit = pathSplit[^1].Split('.');
                         bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
                         AddDemoInformation(
@@ -667,11 +667,11 @@ namespace SourceEngine.Demo.Stats.App
             else
             {
                 if (pathSplit.Count > 0) // searching by folder
-                    filenameSplit = pathSplit[pathSplit.Count - 1].Split('_', '.', '-');
+                    filenameSplit = pathSplit[^1].Split('_', '.', '-');
                 else // searching by demo
                     filenameSplit = demo.Split('_', '.', '-');
 
-                var secondToLastString = filenameSplit[filenameSplit.Length - 2];
+                var secondToLastString = filenameSplit[^2];
                 bool isSEDiscordDemo = secondToLastString == "casual" || secondToLastString == "comp" ? true : false;
                 bool isMapcoreDiscordDemo = filenameSplit.Any(x => x.Contains("MAPCORE"));
 
