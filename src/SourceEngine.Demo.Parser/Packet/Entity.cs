@@ -366,14 +366,7 @@ namespace SourceEngine.Demo.Parser.Packet
         {
             foreach (var arg in captured)
             {
-                var intReceived = arg as RecordedPropertyUpdate<int>;
-                var int64Received = arg as RecordedPropertyUpdate<long>;
-                var floatReceived = arg as RecordedPropertyUpdate<float>;
-                var vectorReceived = arg as RecordedPropertyUpdate<Vector>;
-                var stringReceived = arg as RecordedPropertyUpdate<string>;
-                var arrayReceived = arg as RecordedPropertyUpdate<object[]>;
-
-                if (intReceived != null)
+                if (arg is RecordedPropertyUpdate<int> intReceived)
                 {
                     var e = entity.Props[intReceived.PropIndex].IntRecived;
 
@@ -387,7 +380,7 @@ namespace SourceEngine.Demo.Parser.Packet
                             )
                         );
                 }
-                else if (int64Received != null)
+                else if (arg is RecordedPropertyUpdate<long> int64Received)
                 {
                     var e = entity.Props[int64Received.PropIndex].Int64Received;
 
@@ -401,7 +394,7 @@ namespace SourceEngine.Demo.Parser.Packet
                             )
                         );
                 }
-                else if (floatReceived != null)
+                else if (arg is RecordedPropertyUpdate<float> floatReceived)
                 {
                     var e = entity.Props[floatReceived.PropIndex].FloatRecived;
 
@@ -415,7 +408,7 @@ namespace SourceEngine.Demo.Parser.Packet
                             )
                         );
                 }
-                else if (vectorReceived != null)
+                else if (arg is RecordedPropertyUpdate<Vector> vectorReceived)
                 {
                     var e = entity.Props[vectorReceived.PropIndex].VectorRecived;
 
@@ -429,7 +422,7 @@ namespace SourceEngine.Demo.Parser.Packet
                             )
                         );
                 }
-                else if (stringReceived != null)
+                else if (arg is RecordedPropertyUpdate<string> stringReceived)
                 {
                     var e = entity.Props[stringReceived.PropIndex].StringRecived;
 
@@ -443,7 +436,7 @@ namespace SourceEngine.Demo.Parser.Packet
                             )
                         );
                 }
-                else if (arrayReceived != null)
+                else if (arg is RecordedPropertyUpdate<object[]> arrayReceived)
                 {
                     var e = entity.Props[arrayReceived.PropIndex].ArrayRecived;
 
