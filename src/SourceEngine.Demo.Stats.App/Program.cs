@@ -43,7 +43,7 @@ namespace SourceEngine.Demo.Stats.App
         }
     }
 
-    internal class Program
+    internal static class Program
     {
         private static void helpText()
         {

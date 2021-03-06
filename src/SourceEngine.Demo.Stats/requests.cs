@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SourceEngine.Demo.Stats
 {
-    public class request
+    public static class request
     {
         private static async Task<string> do_POST(string url, Dictionary<string, string> data)
         {

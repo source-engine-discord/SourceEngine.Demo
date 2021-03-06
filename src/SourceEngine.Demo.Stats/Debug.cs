@@ -2,7 +2,7 @@
 
 namespace SourceEngine.Demo.Stats
 {
-    public class Debug
+    public static class Debug
     {
         private static bool isProgressBar;
         private static string headerRef = "";
