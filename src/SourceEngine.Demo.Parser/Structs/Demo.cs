@@ -99,55 +99,124 @@ namespace SourceEngine.Demo.Parser.Structs
         }
     }
 
+    [Flags]
+    internal enum SplitFlags
+    {
+        Normal,
+        UseResampledOrigin,
+        UseResampledAngles,
+
+        /// <summary>
+        /// Don't interpolate between this and the last value.
+        /// </summary>
+        NoInterpolation,
+    }
+
     /// <summary>
-    /// A split.
+    /// Contains the origin and view angles for a specific split screen player.
     /// </summary>
     internal class Split
     {
-        private const int FDEMO_NORMAL = 0, FDEMO_USE_ORIGIN2 = 1, FDEMO_USE_ANGLES2 = 2, FDEMO_NOINTERP = 4;
+        public SplitFlags Flags { get; private set; }
 
-        public int Flags { get; private set; }
+        /// <summary>
+        /// Player origin relative to its parent.
+        /// </summary>
+        public Vector ViewOrigin { get; private set; }
 
-        public Vector viewOrigin { get; private set; }
+        /// <summary>
+        /// Player view angles as seen by the server.
+        /// </summary>
+        public QAngle ViewAngles { get; private set; }
 
-        public QAngle viewAngles { get; private set; }
+        /// <summary>
+        /// Player view angles as seen by the client.
+        /// </summary>
+        /// <remarks>
+        /// Used in client-side prediction.
+        /// </remarks>
+        public QAngle LocalViewAngles { get; private set; }
 
-        public QAngle localViewAngles { get; private set; }
+        /// <summary>
+        /// Resampled player origin relative to its parent.
+        /// </summary>
+        /// <remarks>
+        /// Set if the demo is smoothed. Otherwise set to 0.
+        /// </remarks>
+        public Vector ResampledViewOrigin { get; private set; }
 
-        public Vector viewOrigin2 { get; private set; }
+        /// <summary>
+        /// Resampled player view angles as seen by the server.
+        /// </summary>
+        /// <remarks>
+        /// Set if the demo is smoothed. Otherwise set to 0.
+        /// </remarks>
+        public QAngle ResampledViewAngles { get; private set; }
 
-        public QAngle viewAngles2 { get; private set; }
+        /// <summary>
+        /// Resampled player view angles as seen by the client.
+        /// </summary>
+        /// <remarks>
+        /// Used in client-side prediction.
+        /// Set if the demo is smoothed. Otherwise set to 0.
+        /// </remarks>
+        public QAngle ResampledLocalViewAngles { get; private set; }
 
-        public QAngle localViewAngles2 { get; private set; }
+        /// <summary>
+        /// Player origin relative to its parent.
+        /// </summary>
+        /// <remarks>
+        /// Use the resampled value if the demo is smoothed.
+        /// </remarks>
+        public Vector ActualViewOrigin =>
+            (Flags & SplitFlags.UseResampledOrigin) != 0 ? ResampledViewOrigin : ViewOrigin;
 
-        public Vector ViewOrigin => (Flags & FDEMO_USE_ORIGIN2) != 0 ? viewOrigin2 : viewOrigin;
+        /// <summary>
+        /// Player view angles as seen by the server.
+        /// </summary>
+        /// <remarks>
+        /// Use the resampled value if the demo is smoothed.
+        /// </remarks>
+        public QAngle ActualViewAngles =>
+            (Flags & SplitFlags.UseResampledAngles) != 0 ? ResampledViewAngles : ViewAngles;
 
-        public QAngle ViewAngles => (Flags & FDEMO_USE_ANGLES2) != 0 ? viewAngles2 : viewAngles;
+        /// <summary>
+        /// Player view angles as seen by the client.
+        /// </summary>
+        /// <remarks>
+        /// Used in client-side prediction.
+        /// Use the resampled value if the demo is smoothed.
+        /// </remarks>
+        public QAngle ActualLocalViewAngles =>
+            (Flags & SplitFlags.UseResampledAngles) != 0 ? ResampledLocalViewAngles : LocalViewAngles;
 
-        public QAngle LocalViewAngles => (Flags & FDEMO_USE_ANGLES2) != 0 ? localViewAngles2 : localViewAngles;
-
+        /// <summary>
+        /// Parse a raw data stream into a new <see cref="Split"/>.
+        /// </summary>
+        /// <param name="reader">The data stream to parse.</param>
+        /// <returns>A <see cref="Split"/> containing values from the parsed stream.</returns>
         public static Split Parse(IBitStream reader)
         {
             return new()
             {
-                Flags = reader.ReadSignedInt(32),
-                viewOrigin = Vector.Parse(reader),
-                viewAngles = QAngle.Parse(reader),
-                localViewAngles = QAngle.Parse(reader),
-                viewOrigin2 = Vector.Parse(reader),
-                viewAngles2 = QAngle.Parse(reader),
-                localViewAngles2 = QAngle.Parse(reader),
+                Flags = (SplitFlags)reader.ReadSignedInt(32),
+                ViewOrigin = Vector.Parse(reader),
+                ViewAngles = QAngle.Parse(reader),
+                LocalViewAngles = QAngle.Parse(reader),
+                ResampledViewOrigin = Vector.Parse(reader),
+                ResampledViewAngles = QAngle.Parse(reader),
+                ResampledLocalViewAngles = QAngle.Parse(reader),
             };
         }
     }
 
     internal class CommandInfo
     {
-        public Split[] u { get; private set; }
+        public Split[] Splits { get; private set; }
 
         public static CommandInfo Parse(IBitStream reader)
         {
-            return new() { u = new[] { Split.Parse(reader), Split.Parse(reader) } };
+            return new() { Splits = new[] { Split.Parse(reader), Split.Parse(reader) } };
         }
     }
 
