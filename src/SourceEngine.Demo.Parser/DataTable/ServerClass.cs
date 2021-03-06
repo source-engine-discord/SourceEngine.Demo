@@ -25,16 +25,14 @@ namespace SourceEngine.Demo.Parser.DataTable
 
         internal void AnnounceNewEntity(Entity e)
         {
-            if (OnNewEntity != null)
-                OnNewEntity(this, new EntityCreatedEventArgs(this, e));
+            OnNewEntity?.Invoke(this, new EntityCreatedEventArgs(this, e));
         }
 
         public event EventHandler<EntityDestroyedEventArgs> OnDestroyEntity;
 
         internal void AnnounceDestroyedEntity(Entity e)
         {
-            if (OnDestroyEntity != null)
-                OnDestroyEntity(this, new EntityDestroyedEventArgs(this, e));
+            OnDestroyEntity?.Invoke(this, new EntityDestroyedEventArgs(this, e));
         }
 
         public override string ToString()

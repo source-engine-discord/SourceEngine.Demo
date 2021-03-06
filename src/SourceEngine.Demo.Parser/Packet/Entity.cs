@@ -157,8 +157,7 @@ namespace SourceEngine.Demo.Parser.Packet
         private void FireDataReceived_DebugEvent(object val, Entity e)
         {
             #pragma warning disable 0618
-            if (DataRecivedDontUse != null)
-                DataRecivedDontUse(this, new PropertyUpdateEventArgs<object>(val, e, this));
+            DataRecivedDontUse?.Invoke(this, new PropertyUpdateEventArgs<object>(val, e, this));
             #pragma warning restore 0618
         }
 
@@ -187,8 +186,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 case SendPropertyType.Int:
                 {
                     var val = PropDecoder.DecodeInt(Entry.Prop, stream);
-                    if (IntRecived != null)
-                        IntRecived(this, new PropertyUpdateEventArgs<int>(val, e, this));
+                    IntRecived?.Invoke(this, new PropertyUpdateEventArgs<int>(val, e, this));
 
                     SaveValue(val);
                     FireDataReceived_DebugEvent(val, e);
@@ -198,8 +196,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 case SendPropertyType.Int64:
                 {
                     var val = PropDecoder.DecodeInt64(Entry.Prop, stream);
-                    if (Int64Received != null)
-                        Int64Received(this, new PropertyUpdateEventArgs<long>(val, e, this));
+                    Int64Received?.Invoke(this, new PropertyUpdateEventArgs<long>(val, e, this));
 
                     SaveValue(val);
                     FireDataReceived_DebugEvent(val, e);
@@ -209,8 +206,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 case SendPropertyType.Float:
                 {
                     var val = PropDecoder.DecodeFloat(Entry.Prop, stream);
-                    if (FloatRecived != null)
-                        FloatRecived(this, new PropertyUpdateEventArgs<float>(val, e, this));
+                    FloatRecived?.Invoke(this, new PropertyUpdateEventArgs<float>(val, e, this));
 
                     SaveValue(val);
                     FireDataReceived_DebugEvent(val, e);
@@ -220,8 +216,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 case SendPropertyType.Vector:
                 {
                     var val = PropDecoder.DecodeVector(Entry.Prop, stream);
-                    if (VectorRecived != null)
-                        VectorRecived(this, new PropertyUpdateEventArgs<Vector>(val, e, this));
+                    VectorRecived?.Invoke(this, new PropertyUpdateEventArgs<Vector>(val, e, this));
 
                     SaveValue(val);
                     FireDataReceived_DebugEvent(val, e);
@@ -231,8 +226,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 case SendPropertyType.Array:
                 {
                     var val = PropDecoder.DecodeArray(Entry, stream);
-                    if (ArrayRecived != null)
-                        ArrayRecived(this, new PropertyUpdateEventArgs<object[]>(val, e, this));
+                    ArrayRecived?.Invoke(this, new PropertyUpdateEventArgs<object[]>(val, e, this));
 
                     SaveValue(val);
                     FireDataReceived_DebugEvent(val, e);
@@ -242,8 +236,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 case SendPropertyType.String:
                 {
                     var val = PropDecoder.DecodeString(Entry.Prop, stream);
-                    if (StringRecived != null)
-                        StringRecived(this, new PropertyUpdateEventArgs<string>(val, e, this));
+                    StringRecived?.Invoke(this, new PropertyUpdateEventArgs<string>(val, e, this));
 
                     SaveValue(val);
                     FireDataReceived_DebugEvent(val, e);
@@ -253,8 +246,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 case SendPropertyType.VectorXY:
                 {
                     var val = PropDecoder.DecodeVectorXY(Entry.Prop, stream);
-                    if (VectorRecived != null)
-                        VectorRecived(this, new PropertyUpdateEventArgs<Vector>(val, e, this));
+                    VectorRecived?.Invoke(this, new PropertyUpdateEventArgs<Vector>(val, e, this));
 
                     SaveValue(val);
                     FireDataReceived_DebugEvent(val, e);
@@ -340,85 +332,79 @@ namespace SourceEngine.Demo.Parser.Packet
                 {
                     var e = entity.Props[intReceived.PropIndex].IntRecived;
 
-                    if (e != null)
-                        e(
-                            null,
-                            new PropertyUpdateEventArgs<int>(
-                                intReceived.Value,
-                                entity,
-                                entity.Props[intReceived.PropIndex]
-                            )
-                        );
+                    e?.Invoke(
+                        null,
+                        new PropertyUpdateEventArgs<int>(
+                            intReceived.Value,
+                            entity,
+                            entity.Props[intReceived.PropIndex]
+                        )
+                    );
                 }
                 else if (arg is RecordedPropertyUpdate<long> int64Received)
                 {
                     var e = entity.Props[int64Received.PropIndex].Int64Received;
 
-                    if (e != null)
-                        e(
-                            null,
-                            new PropertyUpdateEventArgs<long>(
-                                int64Received.Value,
-                                entity,
-                                entity.Props[int64Received.PropIndex]
-                            )
-                        );
+                    e?.Invoke(
+                        null,
+                        new PropertyUpdateEventArgs<long>(
+                            int64Received.Value,
+                            entity,
+                            entity.Props[int64Received.PropIndex]
+                        )
+                    );
                 }
                 else if (arg is RecordedPropertyUpdate<float> floatReceived)
                 {
                     var e = entity.Props[floatReceived.PropIndex].FloatRecived;
 
-                    if (e != null)
-                        e(
-                            null,
-                            new PropertyUpdateEventArgs<float>(
-                                floatReceived.Value,
-                                entity,
-                                entity.Props[floatReceived.PropIndex]
-                            )
-                        );
+                    e?.Invoke(
+                        null,
+                        new PropertyUpdateEventArgs<float>(
+                            floatReceived.Value,
+                            entity,
+                            entity.Props[floatReceived.PropIndex]
+                        )
+                    );
                 }
                 else if (arg is RecordedPropertyUpdate<Vector> vectorReceived)
                 {
                     var e = entity.Props[vectorReceived.PropIndex].VectorRecived;
 
-                    if (e != null)
-                        e(
-                            null,
-                            new PropertyUpdateEventArgs<Vector>(
-                                vectorReceived.Value,
-                                entity,
-                                entity.Props[vectorReceived.PropIndex]
-                            )
-                        );
+                    e?.Invoke(
+                        null,
+                        new PropertyUpdateEventArgs<Vector>(
+                            vectorReceived.Value,
+                            entity,
+                            entity.Props[vectorReceived.PropIndex]
+                        )
+                    );
                 }
                 else if (arg is RecordedPropertyUpdate<string> stringReceived)
                 {
                     var e = entity.Props[stringReceived.PropIndex].StringRecived;
 
-                    if (e != null)
-                        e(
-                            null,
-                            new PropertyUpdateEventArgs<string>(
-                                stringReceived.Value,
-                                entity,
-                                entity.Props[stringReceived.PropIndex]
-                            )
-                        );
+                    e?.Invoke(
+                        null,
+                        new PropertyUpdateEventArgs<string>(
+                            stringReceived.Value,
+                            entity,
+                            entity.Props[stringReceived.PropIndex]
+                        )
+                    );
                 }
                 else if (arg is RecordedPropertyUpdate<object[]> arrayReceived)
                 {
                     var e = entity.Props[arrayReceived.PropIndex].ArrayRecived;
 
-                    if (e != null)
-                        e(
-                            null,
-                            new PropertyUpdateEventArgs<object[]>(
-                                arrayReceived.Value,
-                                entity,
-                                entity.Props[arrayReceived.PropIndex]
-                            )
-                        );
+                    e?.Invoke(
+                        null,
+                        new PropertyUpdateEventArgs<object[]>(
+                            arrayReceived.Value,
+                            entity,
+                            entity.Props[arrayReceived.PropIndex]
+                        )
+                    );
                 }
                 else
                 {

@@ -568,8 +568,7 @@ namespace SourceEngine.Demo.Parser
 
             Header = header;
 
-            if (HeaderParsed != null)
-                HeaderParsed(this, new HeaderParsedEventArgs(Header));
+            HeaderParsed?.Invoke(this, new HeaderParsedEventArgs(Header));
         }
 
         /// <summary>
@@ -704,8 +703,7 @@ namespace SourceEngine.Demo.Parser
             }
 
             if (b)
-                if (TickDone != null)
-                    TickDone(this, new TickDoneEventArgs());
+                TickDone?.Invoke(this, new TickDoneEventArgs());
 
             return b;
         }
@@ -1428,278 +1426,229 @@ namespace SourceEngine.Demo.Parser
 
         internal void RaisePlayerPositions(PlayerPositionsEventArgs playerPositionsEventArgs)
         {
-            if (PlayerPositions != null)
-                PlayerPositions(this, playerPositionsEventArgs);
+            PlayerPositions?.Invoke(this, playerPositionsEventArgs);
         }
 
         internal void RaiseMatchStarted(MatchStartedEventArgs matchStartedEventArgs)
         {
-            if (MatchStarted != null)
-                MatchStarted(this, matchStartedEventArgs);
+            MatchStarted?.Invoke(this, matchStartedEventArgs);
         }
 
         internal void RaiseRoundAnnounceMatchStarted()
         {
-            if (RoundAnnounceMatchStarted != null)
-                RoundAnnounceMatchStarted(this, new RoundAnnounceMatchStartedEventArgs());
+            RoundAnnounceMatchStarted?.Invoke(this, new RoundAnnounceMatchStartedEventArgs());
         }
 
         internal void RaiseWinPanelMatch()
         {
-            if (WinPanelMatch != null)
-                WinPanelMatch(this, new WinPanelMatchEventArgs());
+            WinPanelMatch?.Invoke(this, new WinPanelMatchEventArgs());
         }
 
         internal void RaiseRoundStart(RoundStartedEventArgs rs)
         {
-            if (RoundStart != null)
-                RoundStart(this, rs);
+            RoundStart?.Invoke(this, rs);
         }
 
         internal void RaiseRoundFinal()
         {
-            if (RoundFinal != null)
-                RoundFinal(this, new RoundFinalEventArgs());
+            RoundFinal?.Invoke(this, new RoundFinalEventArgs());
         }
 
         internal void RaiseLastRoundHalf()
         {
-            if (LastRoundHalf != null)
-                LastRoundHalf(this, new LastRoundHalfEventArgs());
+            LastRoundHalf?.Invoke(this, new LastRoundHalfEventArgs());
         }
 
         public void RaiseRoundEnd(RoundEndedEventArgs re)
         {
-            if (RoundEnd != null)
-                RoundEnd(this, re);
+            RoundEnd?.Invoke(this, re);
         }
 
         internal void RaiseSwitchSides()
         {
-            if (SwitchSides != null)
-                SwitchSides(this, new SwitchSidesEventArgs());
+            SwitchSides?.Invoke(this, new SwitchSidesEventArgs());
         }
 
         public void RaiseRoundOfficiallyEnded(RoundOfficiallyEndedEventArgs roe)
         {
-            if (RoundOfficiallyEnded != null)
-                RoundOfficiallyEnded(this, roe);
+            RoundOfficiallyEnded?.Invoke(this, roe);
         }
 
         internal void RaiseRoundMVP(RoundMVPEventArgs re)
         {
-            if (RoundMVP != null)
-                RoundMVP(this, re);
+            RoundMVP?.Invoke(this, re);
         }
 
         public void RaiseFreezetimeEnded(FreezetimeEndedEventArgs fe)
         {
-            if (FreezetimeEnded != null)
-                FreezetimeEnded(this, fe);
+            FreezetimeEnded?.Invoke(this, fe);
         }
 
         internal void RaiseOtherKilled()
         {
-            if (OtherKilled != null)
-                OtherKilled(this, new OtherKilledEventArgs());
+            OtherKilled?.Invoke(this, new OtherKilledEventArgs());
         }
 
         internal void RaiseChickenKilled()
         {
-            if (ChickenKilled != null)
-                ChickenKilled(this, new ChickenKilledEventArgs());
+            ChickenKilled?.Invoke(this, new ChickenKilledEventArgs());
         }
 
         internal void RaisePlayerKilled(PlayerKilledEventArgs kill)
         {
-            if (PlayerKilled != null)
-                PlayerKilled(this, kill);
+            PlayerKilled?.Invoke(this, kill);
         }
 
         internal void RaisePlayerHurt(PlayerHurtEventArgs hurt)
         {
-            if (PlayerHurt != null)
-                PlayerHurt(this, hurt);
+            PlayerHurt?.Invoke(this, hurt);
         }
 
         internal void RaiseBlind(BlindEventArgs blind)
         {
-            if (Blind != null)
-                Blind(this, blind);
+            Blind?.Invoke(this, blind);
         }
 
         internal void RaisePlayerBind(PlayerBindEventArgs bind)
         {
-            if (PlayerBind != null)
-                PlayerBind(this, bind);
+            PlayerBind?.Invoke(this, bind);
         }
 
         internal void RaisePlayerDisconnect(PlayerDisconnectEventArgs bind)
         {
-            if (PlayerDisconnect != null)
-                PlayerDisconnect(this, bind);
+            PlayerDisconnect?.Invoke(this, bind);
         }
 
         internal void RaisePlayerTeam(PlayerTeamEventArgs args)
         {
-            if (PlayerTeam != null)
-                PlayerTeam(this, args);
+            PlayerTeam?.Invoke(this, args);
         }
 
         internal void RaiseBotTakeOver(BotTakeOverEventArgs take)
         {
-            if (BotTakeOver != null)
-                BotTakeOver(this, take);
+            BotTakeOver?.Invoke(this, take);
         }
 
         internal void RaiseWeaponFired(WeaponFiredEventArgs fire)
         {
-            if (WeaponFired != null)
-                WeaponFired(this, fire);
+            WeaponFired?.Invoke(this, fire);
         }
 
         internal void RaiseSmokeStart(SmokeEventArgs args)
         {
-            if (SmokeNadeStarted != null)
-                SmokeNadeStarted(this, args);
+            SmokeNadeStarted?.Invoke(this, args);
 
-            if (NadeReachedTarget != null)
-                NadeReachedTarget(this, args);
+            NadeReachedTarget?.Invoke(this, args);
         }
 
         internal void RaiseSmokeEnd(SmokeEventArgs args)
         {
-            if (SmokeNadeEnded != null)
-                SmokeNadeEnded(this, args);
+            SmokeNadeEnded?.Invoke(this, args);
         }
 
         internal void RaiseDecoyStart(DecoyEventArgs args)
         {
-            if (DecoyNadeStarted != null)
-                DecoyNadeStarted(this, args);
+            DecoyNadeStarted?.Invoke(this, args);
 
-            if (NadeReachedTarget != null)
-                NadeReachedTarget(this, args);
+            NadeReachedTarget?.Invoke(this, args);
         }
 
         internal void RaiseDecoyEnd(DecoyEventArgs args)
         {
-            if (DecoyNadeEnded != null)
-                DecoyNadeEnded(this, args);
+            DecoyNadeEnded?.Invoke(this, args);
         }
 
         internal void RaiseFireStart(FireEventArgs args)
         {
-            if (FireNadeStarted != null)
-                FireNadeStarted(this, args);
+            FireNadeStarted?.Invoke(this, args);
 
-            if (NadeReachedTarget != null)
-                NadeReachedTarget(this, args);
+            NadeReachedTarget?.Invoke(this, args);
         }
 
         internal void RaiseFireWithOwnerStart(FireEventArgs args)
         {
-            if (FireNadeWithOwnerStarted != null)
-                FireNadeWithOwnerStarted(this, args);
+            FireNadeWithOwnerStarted?.Invoke(this, args);
 
-            if (NadeReachedTarget != null)
-                NadeReachedTarget(this, args);
+            NadeReachedTarget?.Invoke(this, args);
         }
 
         internal void RaiseFireEnd(FireEventArgs args)
         {
-            if (FireNadeEnded != null)
-                FireNadeEnded(this, args);
+            FireNadeEnded?.Invoke(this, args);
         }
 
         internal void RaiseFlashExploded(FlashEventArgs args)
         {
-            if (FlashNadeExploded != null)
-                FlashNadeExploded(this, args);
+            FlashNadeExploded?.Invoke(this, args);
 
-            if (NadeReachedTarget != null)
-                NadeReachedTarget(this, args);
+            NadeReachedTarget?.Invoke(this, args);
         }
 
         internal void RaiseGrenadeExploded(GrenadeEventArgs args)
         {
-            if (ExplosiveNadeExploded != null)
-                ExplosiveNadeExploded(this, args);
+            ExplosiveNadeExploded?.Invoke(this, args);
 
-            if (NadeReachedTarget != null)
-                NadeReachedTarget(this, args);
+            NadeReachedTarget?.Invoke(this, args);
         }
 
         internal void RaiseBombBeginPlant(BombEventArgs args)
         {
-            if (BombBeginPlant != null)
-                BombBeginPlant(this, args);
+            BombBeginPlant?.Invoke(this, args);
         }
 
         internal void RaiseBombAbortPlant(BombEventArgs args)
         {
-            if (BombAbortPlant != null)
-                BombAbortPlant(this, args);
+            BombAbortPlant?.Invoke(this, args);
         }
 
         internal void RaiseBombPlanted(BombEventArgs args)
         {
-            if (BombPlanted != null)
-                BombPlanted(this, args);
+            BombPlanted?.Invoke(this, args);
         }
 
         internal void RaiseBombDefused(BombEventArgs args)
         {
-            if (BombDefused != null)
-                BombDefused(this, args);
+            BombDefused?.Invoke(this, args);
         }
 
         internal void RaiseBombExploded(BombEventArgs args)
         {
-            if (BombExploded != null)
-                BombExploded(this, args);
+            BombExploded?.Invoke(this, args);
         }
 
         internal void RaiseBombBeginDefuse(BombDefuseEventArgs args)
         {
-            if (BombBeginDefuse != null)
-                BombBeginDefuse(this, args);
+            BombBeginDefuse?.Invoke(this, args);
         }
 
         internal void RaiseBombAbortDefuse(BombDefuseEventArgs args)
         {
-            if (BombAbortDefuse != null)
-                BombAbortDefuse(this, args);
+            BombAbortDefuse?.Invoke(this, args);
         }
 
         internal void RaiseHostageRescued(HostageRescuedEventArgs args)
         {
-            if (HostageRescued != null)
-                HostageRescued(this, args);
+            HostageRescued?.Invoke(this, args);
         }
 
         internal void RaiseHostagePickedUp(HostagePickedUpEventArgs args)
         {
-            if (HostagePickedUp != null)
-                HostagePickedUp(this, args);
+            HostagePickedUp?.Invoke(this, args);
         }
 
         internal void RaiseSayText(SayTextEventArgs args)
         {
-            if (SayText != null)
-                SayText(this, args);
+            SayText?.Invoke(this, args);
         }
 
         internal void RaiseSayText2(SayText2EventArgs args)
         {
-            if (SayText2 != null)
-                SayText2(this, args);
+            SayText2?.Invoke(this, args);
         }
 
         internal void RaiseRankUpdate(RankUpdateEventArgs args)
         {
-            if (RankUpdate != null)
-                RankUpdate(this, args);
+            RankUpdate?.Invoke(this, args);
         }
 
         #endregion
@@ -1721,10 +1670,7 @@ namespace SourceEngine.Demo.Parser
             BitStream.Dispose();
 
             foreach (var entity in Entities)
-            {
-                if (entity != null)
-                    entity.Leave();
-            }
+                entity?.Leave();
 
             foreach (var serverClass in SendTableParser.ServerClasses)
                 serverClass.Dispose();
