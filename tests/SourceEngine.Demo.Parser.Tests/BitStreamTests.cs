@@ -319,7 +319,7 @@ namespace SourceEngine.Demo.Parser.Tests
         [Test]
         public void TestChunkNestingRandom()
         {
-            Stack<int> remainingStack = new Stack<int>();
+            var remainingStack = new Stack<int>();
             int depth = 0, remaining = data.Length * 8 - 1;
             dbgAll.BeginChunk(remaining);
 

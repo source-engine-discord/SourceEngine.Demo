@@ -191,7 +191,7 @@ namespace SourceEngine.Demo.Stats
             string gamemode = demoInformation.GameMode;
             string testType = demoInformation.TestType;
 
-            MatchData md = new MatchData();
+            var md = new MatchData();
 
             //Create demo parser instance
             dp = new DemoParser(
@@ -254,7 +254,7 @@ namespace SourceEngine.Demo.Stats
             // SERVER EVENTS ===================================================
             dp.MatchStarted += (_, e) =>
             {
-                List<FeedbackMessage> currentfeedbackMessages = new List<FeedbackMessage>();
+                var currentfeedbackMessages = new List<FeedbackMessage>();
 
                 //stores all fb messages so that they aren't lost when stats are reset
                 if (md.events.Count > 0 && md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
@@ -367,7 +367,7 @@ namespace SourceEngine.Demo.Stats
                         timeInRound = dp.CurrentTime - freezetimeEnded.TimeEnd;
                     }
 
-                    FeedbackMessage feedbackMessage = new FeedbackMessage
+                    var feedbackMessage = new FeedbackMessage
                     {
                         Round = round,
                         SteamID = steamId,
@@ -544,7 +544,7 @@ namespace SourceEngine.Demo.Stats
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
-                SwitchSidesEventArgs switchSidesEventArgs =
+                var switchSidesEventArgs =
                     new SwitchSidesEventArgs
                     {
                         RoundBeforeSwitch = roundsCount + 1,
@@ -646,7 +646,7 @@ namespace SourceEngine.Demo.Stats
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
                 IEnumerable<Player> players = dp.PlayingParticipants;
 
-                TeamPlayers teams = new TeamPlayers
+                var teams = new TeamPlayers
                 {
                     Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
                     CounterTerrorists = players.Where(p => p.Team.ToString().Equals("CounterTerrorist")).ToList(),
@@ -676,7 +676,7 @@ namespace SourceEngine.Demo.Stats
                             .RoundStartEquipmentValue; // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
                 }
 
-                TeamEquipment teamEquipmentStats = new TeamEquipment
+                var teamEquipmentStats = new TeamEquipment
                 {
                     Round = roundsCount + 1,
                     TEquipValue = tEquipValue,
@@ -758,7 +758,7 @@ namespace SourceEngine.Demo.Stats
                 {
                     int round = GetCurrentRoundNum(md, gamemode);
 
-                    DisconnectedPlayer disconnectedPlayer = new DisconnectedPlayer
+                    var disconnectedPlayer = new DisconnectedPlayer
                     {
                         PlayerDisconnectEventArgs = e,
                         Round = round - 1,
@@ -773,7 +773,7 @@ namespace SourceEngine.Demo.Stats
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
-                BombPlanted bombPlanted = new BombPlanted
+                var bombPlanted = new BombPlanted
                 {
                     Round = roundsCount + 1,
                     TimeInRound = e.TimeInRound,
@@ -788,7 +788,7 @@ namespace SourceEngine.Demo.Stats
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
-                BombExploded bombExploded = new BombExploded
+                var bombExploded = new BombExploded
                 {
                     Round = roundsCount + 1,
                     TimeInRound = e.TimeInRound,
@@ -803,7 +803,7 @@ namespace SourceEngine.Demo.Stats
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
-                BombDefused bombDefused = new BombDefused
+                var bombDefused = new BombDefused
                 {
                     Round = roundsCount + 1,
                     TimeInRound = e.TimeInRound,
@@ -820,7 +820,7 @@ namespace SourceEngine.Demo.Stats
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
-                HostageRescued hostageRescued = new HostageRescued
+                var hostageRescued = new HostageRescued
                 {
                     Round = roundsCount + 1,
                     TimeInRound = e.TimeInRound,
@@ -838,7 +838,7 @@ namespace SourceEngine.Demo.Stats
             {
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
-                HostagePickedUp hostagePickedUp = new HostagePickedUp
+                var hostagePickedUp = new HostagePickedUp
                 {
                     Round = roundsCount + 1,
                     TimeInRound = e.TimeInRound,
@@ -857,7 +857,7 @@ namespace SourceEngine.Demo.Stats
 
                 var round = GetCurrentRoundNum(md, gamemode);
 
-                ShotFired shotFired = new ShotFired
+                var shotFired = new ShotFired
                 {
                     Round = round,
                     TimeInRound = e.TimeInRound,
@@ -923,7 +923,7 @@ namespace SourceEngine.Demo.Stats
 
             if (!lowOutputMode)
             {
-                ProgressViewer pv = new ProgressViewer(Path.GetFileName(file));
+                var pv = new ProgressViewer(Path.GetFileName(file));
 
                 // PROGRESS BAR ==================================================
                 dp.TickDone += (_, _) =>
@@ -989,7 +989,7 @@ namespace SourceEngine.Demo.Stats
 
             PlayerPositionsStats playerPositionsStats = null;
 
-            AllStats allStats = new AllStats
+            var allStats = new AllStats
             {
                 versionNumber = GetVersionNumber(),
                 supportedGamemodes = GetSupportedGamemodes(),
@@ -1084,8 +1084,8 @@ namespace SourceEngine.Demo.Stats
 
         public DataAndPlayerNames GetDataAndPlayerNames(ProcessedData processedData)
         {
-            Dictionary<long, Dictionary<string, long>> data = new Dictionary<long, Dictionary<string, long>>();
-            Dictionary<long, Dictionary<string, string>> playerNames =
+            var data = new Dictionary<long, Dictionary<string, long>>();
+            var playerNames =
                 new Dictionary<long, Dictionary<string, string>>();
 
             foreach (string catagory in processedData.PlayerValues.Keys)
@@ -1143,7 +1143,7 @@ namespace SourceEngine.Demo.Stats
 
         public static mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
         {
-            mapInfo mapInfo = new mapInfo
+            var mapInfo = new mapInfo
             {
                 MapName = processedData.DemoInformation.MapName,
                 TestType = processedData.DemoInformation.TestType,
@@ -1222,7 +1222,7 @@ namespace SourceEngine.Demo.Stats
             Dictionary<long, Dictionary<string, long>> data,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
-            List<playerStats> playerStats = new List<playerStats>();
+            var playerStats = new List<playerStats>();
 
             // remove team kills and suicides from kills (easy messy implementation)
             foreach (PlayerKilledEventArgs kill in processedData.PlayerKilledEventsValues)
@@ -1248,7 +1248,7 @@ namespace SourceEngine.Demo.Stats
                 var playerName = match.ElementAt(0).Value.ElementAt(0).Value;
                 var steamID = match.ElementAt(0).Key;
 
-                List<int> statsList1 = new List<int>();
+                var statsList1 = new List<int>();
 
                 foreach (string catagory in processedData.PlayerValues.Keys)
                 {
@@ -1258,7 +1258,7 @@ namespace SourceEngine.Demo.Stats
                         statsList1.Add(0);
                 }
 
-                List<long> statsList2 = new List<long>();
+                var statsList2 = new List<long>();
 
                 if (processedData.WriteTicks)
                     if (playerLookups.Any(p => p.Value == player))
@@ -1319,7 +1319,7 @@ namespace SourceEngine.Demo.Stats
             ProcessedData processedData,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
-            List<roundsStats> roundsStats = new List<roundsStats>();
+            var roundsStats = new List<roundsStats>();
 
             // winning team & total rounds stats
             IEnumerable<SwitchSidesEventArgs> switchSides = processedData.SwitchSidesValues;
@@ -1672,17 +1672,17 @@ namespace SourceEngine.Demo.Stats
 
         public static List<bombsiteStats> GetBombsiteStats(ProcessedData processedData)
         {
-            List<bombsiteStats> bombsiteStats = new List<bombsiteStats>();
+            var bombsiteStats = new List<bombsiteStats>();
 
             BoundingBoxInformation bombsiteATrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteAIndex);
 
             BoundingBoxInformation bombsiteBTrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteBIndex);
 
-            List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => (char)x.Bombsite));
-            List<char> bombsiteExplosions =
+            var bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => (char)x.Bombsite));
+            var bombsiteExplosions =
                 new List<char>(processedData.BombsiteExplodeValues.Select(x => (char)x.Bombsite));
 
-            List<char> bombsiteDefuses =
+            var bombsiteDefuses =
                 new List<char>(processedData.BombsiteDefuseValues.Select(x => (char)x.Bombsite));
 
             int plantsA = bombsitePlants.Count(b => b.ToString().Equals("A"));
@@ -1730,7 +1730,7 @@ namespace SourceEngine.Demo.Stats
 
         public static List<hostageStats> GetHostageStats(ProcessedData processedData)
         {
-            List<hostageStats> hostageStats = new List<hostageStats>();
+            var hostageStats = new List<hostageStats>();
 
             var hostageIndexA = processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'A')
                 ?.HostageIndex;
@@ -1738,8 +1738,8 @@ namespace SourceEngine.Demo.Stats
             var hostageIndexB = processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'B')
                 ?.HostageIndex;
 
-            List<char> hostagePickedUps = new List<char>(processedData.HostagePickedUpValues.Select(x => x.Hostage));
-            List<char> hostageRescues = new List<char>(processedData.HostageRescueValues.Select(x => x.Hostage));
+            var hostagePickedUps = new List<char>(processedData.HostagePickedUpValues.Select(x => x.Hostage));
+            var hostageRescues = new List<char>(processedData.HostageRescueValues.Select(x => x.Hostage));
 
             int pickedUpsA = hostagePickedUps.Count(b => b.ToString().Equals("A"));
             int pickedUpsB = hostagePickedUps.Count(b => b.ToString().Equals("B"));
@@ -1772,7 +1772,7 @@ namespace SourceEngine.Demo.Stats
 
         public static List<rescueZoneStats> GetRescueZoneStats()
         {
-            List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
+            var rescueZoneStats = new List<rescueZoneStats>();
 
             if (dp is null)
                 return rescueZoneStats;
@@ -1823,7 +1823,7 @@ namespace SourceEngine.Demo.Stats
             List<IEnumerable<NadeEventArgs>> nadeGroups,
             string[] nadeTypes)
         {
-            List<grenadesTotalStats> grenadesTotalStats = new List<grenadesTotalStats>();
+            var grenadesTotalStats = new List<grenadesTotalStats>();
 
             for (int i = 0; i < nadeTypes.Length; i++)
             {
@@ -1844,7 +1844,7 @@ namespace SourceEngine.Demo.Stats
             string[] nadeTypes,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
-            List<grenadesSpecificStats> grenadesSpecificStats = new List<grenadesSpecificStats>();
+            var grenadesSpecificStats = new List<grenadesSpecificStats>();
 
             foreach (IEnumerable<NadeEventArgs> nadeGroup in nadeGroups)
             {
@@ -1902,13 +1902,13 @@ namespace SourceEngine.Demo.Stats
             ProcessedData processedData,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
-            List<killsStats> killsStats = new List<killsStats>();
+            var killsStats = new List<killsStats>();
 
-            List<Player> kills = new List<Player>(processedData.PlayerValues["Kills"].ToList());
-            List<Player> deaths = new List<Player>(processedData.PlayerValues["Deaths"].ToList());
+            var kills = new List<Player>(processedData.PlayerValues["Kills"].ToList());
+            var deaths = new List<Player>(processedData.PlayerValues["Deaths"].ToList());
 
-            List<Equipment> weaponKillers = new List<Equipment>(processedData.WeaponValues.ToList());
-            List<int> penetrations = new List<int>(processedData.PenetrationValues.ToList());
+            var weaponKillers = new List<Equipment>(processedData.WeaponValues.ToList());
+            var penetrations = new List<int>(processedData.PenetrationValues.ToList());
 
             for (int i = 0; i < deaths.Count; i++)
             {
@@ -2003,7 +2003,7 @@ namespace SourceEngine.Demo.Stats
             ProcessedData processedData,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
-            List<FeedbackMessage> feedbackMessages = new List<FeedbackMessage>();
+            var feedbackMessages = new List<FeedbackMessage>();
 
             foreach (FeedbackMessage message in processedData.MessagesValues)
             {
@@ -2053,7 +2053,7 @@ namespace SourceEngine.Demo.Stats
             Dictionary<long, Dictionary<string, string>> playerNames,
             IEnumerable<SwitchSidesEventArgs> switchSides)
         {
-            List<teamStats> teamStats = new List<teamStats>();
+            var teamStats = new List<teamStats>();
 
             int swappedSidesCount = 0;
             int currentRoundChecking = 1;
@@ -2081,8 +2081,8 @@ namespace SourceEngine.Demo.Stats
                     ? firstHalf ? currentRoundTeams.CounterTerrorists : currentRoundTeams.Terrorists
                     : null;
 
-                List<long> alphaSteamIds = new List<long>();
-                List<long> bravoSteamIds = new List<long>();
+                var alphaSteamIds = new List<long>();
+                var bravoSteamIds = new List<long>();
 
                 foreach (Player player in alphaPlayers)
                 {
@@ -2104,8 +2104,8 @@ namespace SourceEngine.Demo.Stats
 
                 // attempts to remove and stray players that are supposedly on a team, even though they exceed the max players per team and they are not in player lookups
                 // (also most likely have a steam ID of 0)
-                List<long> alphaSteamIdsToRemove = new List<long>();
-                List<long> bravoSteamIdsToRemove = new List<long>();
+                var alphaSteamIdsToRemove = new List<long>();
+                var bravoSteamIdsToRemove = new List<long>();
 
                 if (allStats.mapInfo.TestType.ToLower().Contains("comp") && alphaSteamIds.Count > 5)
                     foreach (var steamId in alphaSteamIds)
@@ -2279,7 +2279,7 @@ namespace SourceEngine.Demo.Stats
 
         public static List<firstDamageStats> GetFirstDamageStats(ProcessedData processedData)
         {
-            List<firstDamageStats> firstDamageStats = new List<firstDamageStats>();
+            var firstDamageStats = new List<firstDamageStats>();
 
             foreach (var round in processedData.PlayerHurtValues.Select(x => x.Round).Distinct())
             {
@@ -2336,7 +2336,7 @@ namespace SourceEngine.Demo.Stats
 
         public static PlayerPositionsStats GetPlayerPositionsStats(ProcessedData processedData, AllStats allStats)
         {
-            List<PlayerPositionByRound> playerPositionByRound = new List<PlayerPositionByRound>();
+            var playerPositionByRound = new List<PlayerPositionByRound>();
 
             // create playerPositionByRound with empty PlayerPositionByTimeInRound
             foreach (IGrouping<int, PlayerPositionsInstance> roundsGroup in processedData.PlayerPositionsValues.GroupBy(x => x.Round))
@@ -2477,7 +2477,7 @@ namespace SourceEngine.Demo.Stats
             {
                 outputFilepath = GetOutputJsonFilepath(processedData, allStats, null, mapNameString, mapDateString);
 
-                StreamWriter sw = new StreamWriter(outputFilepath, false);
+                var sw = new StreamWriter(outputFilepath, false);
 
                 string json = JsonConvert.SerializeObject(allStats, Formatting.Indented);
 
@@ -2513,7 +2513,7 @@ namespace SourceEngine.Demo.Stats
                     mapDateString
                 );
 
-                StreamWriter sw = new StreamWriter(outputFilepath, false);
+                var sw = new StreamWriter(outputFilepath, false);
 
                 string json = JsonConvert.SerializeObject(playerPositionsStats, Formatting.Indented);
 

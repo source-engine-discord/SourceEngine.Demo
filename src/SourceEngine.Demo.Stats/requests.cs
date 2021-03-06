@@ -33,7 +33,7 @@ namespace SourceEngine.Demo.Stats
 
         private static async Task<string> do_GET(string url)
         {
-            HttpClient client = new HttpClient();
+            var client = new HttpClient();
             HttpResponseMessage response = await client.GetAsync(url);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();

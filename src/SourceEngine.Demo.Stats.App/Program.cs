@@ -20,7 +20,7 @@ namespace SourceEngine.Demo.Stats.App
 
         internal Config(string path)
         {
-            StreamReader sr = new StreamReader(path);
+            var sr = new StreamReader(path);
 
             Debug.Info("Reading config from {0}", path);
 
@@ -88,8 +88,8 @@ namespace SourceEngine.Demo.Stats.App
             bool sameFolderStructure = false;
             bool lowOutputMode = false;
 
-            List<string> foldersToProcess = new List<string>();
-            List<string> demosToProcess = new List<string>();
+            var foldersToProcess = new List<string>();
+            var demosToProcess = new List<string>();
 
             if (args.Length == 0)
             {
@@ -221,7 +221,7 @@ namespace SourceEngine.Demo.Stats.App
                 {
                     try
                     {
-                        Config cfg = new Config(cfgPath);
+                        var cfg = new Config(cfgPath);
 
                         Steam.setAPIKey(cfg.keyVals["apikey"]);
 
@@ -302,7 +302,7 @@ namespace SourceEngine.Demo.Stats.App
                 Directory.CreateDirectory(outputRootFolder);
             }
 
-            List<DemoInformation> demosInformation = new List<DemoInformation>();
+            var demosInformation = new List<DemoInformation>();
 
             foreach (string folder in foldersToProcess)
             {
@@ -375,7 +375,7 @@ namespace SourceEngine.Demo.Stats.App
                 IEnumerable<TeamPlayers> tpe;
                 IEnumerable<PlayerHurt> ph;
                 IEnumerable<PlayerKilledEventArgs> pke;
-                Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
+                var pe = new Dictionary<string, IEnumerable<Player>>();
                 IEnumerable<Equipment> pwe;
                 IEnumerable<int> poe;
                 IEnumerable<BombPlanted> bpe;
@@ -570,7 +570,7 @@ namespace SourceEngine.Demo.Stats.App
             IEnumerable<TeamPlayers> tpe,
             IEnumerable<DisconnectedPlayer> dpe)
         {
-            tanookiStats tanookiStats = new tanookiStats
+            var tanookiStats = new tanookiStats
             {
                 Joined = false,
                 Left = false,

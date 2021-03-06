@@ -77,7 +77,7 @@ namespace SourceEngine.Demo.Parser
             Encoding encoding,
             int initialBufferSize)
         {
-            List<byte> result = new List<byte>(initialBufferSize);
+            var result = new List<byte>(initialBufferSize);
 
             while (true)
             {

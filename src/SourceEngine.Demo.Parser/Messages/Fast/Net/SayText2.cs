@@ -56,7 +56,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
             // struct methods are called with a hidden ref to "this",
             // I have to make a local copy to be able to use it in the lambda expression
             IList<string> parameters = Params;
-            SayText2EventArgs e = new SayText2EventArgs
+            var e = new SayText2EventArgs
             {
                 Sender = parser.Players.Values.FirstOrDefault(x => x.Name == parameters[0]),
                 Text = Params[1],

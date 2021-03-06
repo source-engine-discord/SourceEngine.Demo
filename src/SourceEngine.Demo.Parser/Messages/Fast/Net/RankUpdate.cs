@@ -40,7 +40,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
         private void Raise(DemoParser parser)
         {
-            RankUpdateEventArgs e = new RankUpdateEventArgs
+            var e = new RankUpdateEventArgs
             {
                 SteamId = AccountId + VALVE_MAGIC_NUMBER,
                 RankOld = RankOld,

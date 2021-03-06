@@ -106,7 +106,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         {
             if (prop.Flags.HasFlagFast(SendPropertyFlags.Normal)) { }
 
-            Vector v = new Vector
+            var v = new Vector
             {
                 X = DecodeFloat(prop, reader),
                 Y = DecodeFloat(prop, reader),
@@ -147,9 +147,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
             int nElements = (int)reader.ReadInt(numBits);
 
-            object[] result = new object[nElements];
+            var result = new object[nElements];
 
-            FlattenedPropEntry temp = new FlattenedPropEntry("", flattenedProp.ArrayElementProp, null);
+            var temp = new FlattenedPropEntry("", flattenedProp.ArrayElementProp, null);
 
             for (int i = 0; i < nElements; i++)
                 result[i] = DecodeProp(temp, reader);
@@ -164,7 +164,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         public static Vector DecodeVectorXY(SendTableProperty prop, IBitStream reader)
         {
-            Vector v = new Vector
+            var v = new Vector
             {
                 X = DecodeFloat(prop, reader),
                 Y = DecodeFloat(prop, reader),

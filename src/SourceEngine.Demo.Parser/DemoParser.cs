@@ -691,7 +691,7 @@ namespace SourceEngine.Demo.Parser
 
                     if (newplayer && p.SteamID != 0)
                     {
-                        PlayerBindEventArgs bind = new PlayerBindEventArgs { Player = p };
+                        var bind = new PlayerBindEventArgs { Player = p };
                         RaisePlayerBind(bind);
                     }
                 }
@@ -716,7 +716,7 @@ namespace SourceEngine.Demo.Parser
         /// <returns><c>true</c>, if tick was parsed, <c>false</c> otherwise.</returns>
         private bool ParseTick()
         {
-            DemoCommand command = (DemoCommand)BitStream.ReadByte();
+            var command = (DemoCommand)BitStream.ReadByte();
 
             IngameTick = (int)BitStream.ReadInt(32); // tick number
             BitStream.ReadByte(); // player slot

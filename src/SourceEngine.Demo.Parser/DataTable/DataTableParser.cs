@@ -40,7 +40,7 @@ namespace SourceEngine.Demo.Parser.DataTable
 
             for (int i = 0; i < serverClassCount; i++)
             {
-                ServerClass entry = new ServerClass();
+                var entry = new ServerClass();
                 entry.ClassID = checked((int)bitstream.ReadInt(16));
 
                 if (entry.ClassID > serverClassCount)
@@ -75,7 +75,7 @@ namespace SourceEngine.Demo.Parser.DataTable
 
             List<FlattenedPropEntry> flattenedProps = ServerClasses[serverClassIndex].FlattenedProps;
 
-            List<int> priorities = new List<int> { 64 };
+            var priorities = new List<int> { 64 };
             priorities.AddRange(flattenedProps.Select(a => a.Prop.Priority).Distinct());
             priorities.Sort();
 
@@ -137,7 +137,7 @@ namespace SourceEngine.Demo.Parser.DataTable
 
         private void GatherProps(SendTable table, int serverClassIndex, string prefix)
         {
-            List<FlattenedPropEntry> tmpFlattenedProps = new List<FlattenedPropEntry>();
+            var tmpFlattenedProps = new List<FlattenedPropEntry>();
             GatherProps_IterateProps(table, serverClassIndex, tmpFlattenedProps, prefix);
 
             List<FlattenedPropEntry> flattenedProps = ServerClasses[serverClassIndex].FlattenedProps;

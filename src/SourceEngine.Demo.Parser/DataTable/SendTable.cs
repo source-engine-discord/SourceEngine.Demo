@@ -8,11 +8,11 @@ namespace SourceEngine.Demo.Parser.DataTable
     {
         public SendTable(IBitStream bitstream)
         {
-            Messages.Fast.Net.SendTable dataTable = new Messages.Fast.Net.SendTable();
+            var dataTable = new Messages.Fast.Net.SendTable();
 
             foreach (Messages.Fast.Net.SendTable.SendProp prop in dataTable.Parse(bitstream))
             {
-                SendTableProperty property = new SendTableProperty
+                var property = new SendTableProperty
                 {
                     DataTableName = prop.DtName,
                     HighValue = prop.HighValue,

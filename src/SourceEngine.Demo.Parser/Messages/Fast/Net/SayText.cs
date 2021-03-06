@@ -44,7 +44,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
         private void Raise(DemoParser parser)
         {
-            SayTextEventArgs e = new SayTextEventArgs
+            var e = new SayTextEventArgs
             {
                 EntityIndex = EntityIndex,
                 Text = Text,

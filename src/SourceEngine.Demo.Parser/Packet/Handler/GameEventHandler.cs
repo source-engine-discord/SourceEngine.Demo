@@ -76,7 +76,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             {
                 data = MapData(eventDescriptor, rawEvent);
 
-                RoundStartedEventArgs rs = new RoundStartedEventArgs
+                var rs = new RoundStartedEventArgs
                 {
                     TimeLimit = (int)data["timelimit"],
                     FragLimit = (int)data["fraglimit"],
@@ -103,7 +103,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             {
                 data = MapData(eventDescriptor, rawEvent);
 
-                Team t = Team.Spectate;
+                var t = Team.Spectate;
 
                 int winner = (int)data["winner"];
 
@@ -115,7 +115,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 //round length
                 double roundLength = parser.CurrentTime - timestampFreezetimeEnded;
 
-                RoundEndedEventArgs roundEnd = new RoundEndedEventArgs
+                var roundEnd = new RoundEndedEventArgs
                 {
                     Reason = (RoundEndReason)data["reason"],
                     Winner = t,
@@ -135,7 +135,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 //round length
                 double roundLength = parser.CurrentTime - timestampFreezetimeEnded;
 
-                RoundOfficiallyEndedEventArgs roundOfficiallyEnded = new RoundOfficiallyEndedEventArgs
+                var roundOfficiallyEnded = new RoundOfficiallyEndedEventArgs
                 {
                     Length = roundLength,
                 };
@@ -161,7 +161,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             {
                 data = MapData(eventDescriptor, rawEvent);
 
-                RoundMVPEventArgs roundMVPEvent = new RoundMVPEventArgs();
+                var roundMVPEvent = new RoundMVPEventArgs();
                 roundMVPEvent.Player = parser.Players.ContainsKey((int)data["userid"])
                     ? new Player(parser.Players[(int)data["userid"]])
                     : null;
@@ -175,7 +175,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             {
                 data = MapData(eventDescriptor, rawEvent);
 
-                BotTakeOverEventArgs botTakeOverArgs = new BotTakeOverEventArgs();
+                var botTakeOverArgs = new BotTakeOverEventArgs();
                 botTakeOverArgs.Taker = parser.Players.ContainsKey((int)data["userid"])
                     ? new Player(parser.Players[(int)data["userid"]])
                     : null;
@@ -188,7 +188,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
             if (eventDescriptor.Name == "begin_new_match")
             {
-                MatchStartedEventArgs matchStartedEventArgs = new MatchStartedEventArgs();
+                var matchStartedEventArgs = new MatchStartedEventArgs();
 
                 if (!string.IsNullOrEmpty(parser.Map))
                     matchStartedEventArgs.Mapname = parser.Map;
@@ -225,7 +225,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 //round length
                 timestampFreezetimeEnded = parser.CurrentTime;
 
-                FreezetimeEndedEventArgs freezetimeEnd = new FreezetimeEndedEventArgs
+                var freezetimeEnd = new FreezetimeEndedEventArgs
                 {
                     TimeEnd = parser.CurrentTime,
                 };
@@ -243,7 +243,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                     data = MapData(eventDescriptor, rawEvent);
 
-                    WeaponFiredEventArgs fire = new WeaponFiredEventArgs();
+                    var fire = new WeaponFiredEventArgs();
                     fire.Shooter = parser.Players.ContainsKey((int)data["userid"])
                         ? new Player(parser.Players[(int)data["userid"]])
                         : null;
@@ -288,7 +288,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 case "player_death":
                     data = MapData(eventDescriptor, rawEvent);
 
-                    PlayerKilledEventArgs kill = new PlayerKilledEventArgs();
+                    var kill = new PlayerKilledEventArgs();
 
                     kill.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 
@@ -358,7 +358,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 case "player_hurt":
                     data = MapData(eventDescriptor, rawEvent);
 
-                    PlayerHurtEventArgs hurt = new PlayerHurtEventArgs();
+                    var hurt = new PlayerHurtEventArgs();
                     hurt.Player = parser.Players.ContainsKey((int)data["userid"])
                         ? new Player(parser.Players[(int)data["userid"]])
                         : null;
@@ -415,7 +415,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                         if (blindPlayer != null && blindPlayer.Team != Team.Spectate)
                         {
-                            BlindEventArgs blind = new BlindEventArgs();
+                            var blind = new BlindEventArgs();
                             blind.Player = blindPlayer;
 
                             if (data.ContainsKey("attacker") && parser.Players.ContainsKey((int)data["attacker"]))
@@ -480,7 +480,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 case "player_connect":
                     data = MapData(eventDescriptor, rawEvent);
 
-                    PlayerInfo player = new PlayerInfo();
+                    var player = new PlayerInfo();
                     player.UserID = (int)data["userid"];
                     player.Name = (string)data["name"];
                     player.GUID = (string)data["networkid"];
@@ -496,7 +496,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 case "player_disconnect":
                     data = MapData(eventDescriptor, rawEvent);
 
-                    PlayerDisconnectEventArgs disconnect = new PlayerDisconnectEventArgs();
+                    var disconnect = new PlayerDisconnectEventArgs();
                     disconnect.Player = parser.Players.ContainsKey((int)data["userid"])
                         ? new Player(parser.Players[(int)data["userid"]])
                         : null;
@@ -521,9 +521,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                 case "player_team":
                     data = MapData(eventDescriptor, rawEvent);
-                    PlayerTeamEventArgs playerTeamEvent = new PlayerTeamEventArgs();
+                    var playerTeamEvent = new PlayerTeamEventArgs();
 
-                    Team t = Team.Spectate;
+                    var t = Team.Spectate;
 
                     int team = (int)data["team"];
 
@@ -758,7 +758,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (data.ContainsKey("userid") && parser.Players.ContainsKey((int)data["userid"]))
                 nade.ThrownBy = new Player(parser.Players[(int)data["userid"]]);
 
-            Vector vec = new Vector
+            var vec = new Vector
             {
                 X = (float)data["x"],
                 Y = (float)data["y"],
@@ -772,7 +772,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         private static Dictionary<string, object> MapData(GameEventList.Descriptor eventDescriptor, GameEvent rawEvent)
         {
-            Dictionary<string, object> data = new Dictionary<string, object>();
+            var data = new Dictionary<string, object>();
 
             for (int i = 0; i < eventDescriptor.Keys.Length; i++)
                 data.Add(eventDescriptor.Keys[i].Name, rawEvent.Keys[i]);

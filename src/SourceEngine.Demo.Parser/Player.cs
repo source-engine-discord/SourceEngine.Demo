@@ -111,7 +111,7 @@ namespace SourceEngine.Demo.Parser
         /// </summary>
         public Player Copy()
         {
-            Player me = new Player
+            var me = new Player
             {
                 EntityID = -1, // this should bot be copied
                 Entity = null,

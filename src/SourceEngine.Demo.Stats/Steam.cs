@@ -87,7 +87,7 @@ namespace SourceEngine.Demo.Stats
                 return null;
             }
 
-            Dictionary<long, string> output = new Dictionary<long, string>();
+            var output = new Dictionary<long, string>();
 
             foreach (STEAM_Player player in players.response.players)
                 output.Add(Convert.ToInt64(player.steamid), player.personaname);

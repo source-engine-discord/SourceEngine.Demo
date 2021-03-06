@@ -23,7 +23,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             while ((nTemp >>= 1) != 0)
                 ++nEntryBits;
 
-            List<string> history = new List<string>();
+            var history = new List<string>();
 
             int lastEntry = -1;
 
@@ -92,7 +92,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 if (table.Name == "userinfo")
                 {
                     // Now we'll parse the players out of it.
-                    BinaryReader playerReader = new BinaryReader(new MemoryStream(userdata));
+                    var playerReader = new BinaryReader(new MemoryStream(userdata));
                     PlayerInfo info = PlayerInfo.ParseFrom(playerReader);
 
                     parser.RawPlayers[entryIndex] = info;
