@@ -373,7 +373,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     hurt.Armor = (int)data["armor"];
                     hurt.HealthDamage = (int)data["dmg_health"];
                     hurt.ArmorDamage = (int)data["dmg_armor"];
-                    hurt.Hitgroup = (Hitgroup)(int)data["hitgroup"];
+                    hurt.HitGroup = (HitGroup)(int)data["hitgroup"];
 
                     hurt.Weapon = new Equipment((string)data["weapon"], "");
 

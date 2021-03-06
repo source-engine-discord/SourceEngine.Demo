@@ -35,7 +35,7 @@ namespace SourceEngine.Demo.Stats.Models
 
         public int ArmorDamage { get; set; }
 
-        public Hitgroup Hitgroup { get; set; }
+        public HitGroup HitGroup { get; set; }
 
         public bool PossiblyKilledByBombExplosion { get; set; }
     }

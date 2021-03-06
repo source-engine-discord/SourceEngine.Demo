@@ -217,7 +217,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     Weapon = new Equipment("weapon_ak47"),
                     HealthDamage = 100,
                     ArmorDamage = 50,
-                    Hitgroup = Hitgroup.Head,
+                    HitGroup = HitGroup.Head,
                     PossiblyKilledByBombExplosion = false,
                 },
                 new()
@@ -231,7 +231,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     Weapon = new Equipment("weapon_awp"),
                     HealthDamage = 150,
                     ArmorDamage = 75,
-                    Hitgroup = Hitgroup.Head,
+                    HitGroup = HitGroup.Head,
                     PossiblyKilledByBombExplosion = false,
                 },
             };

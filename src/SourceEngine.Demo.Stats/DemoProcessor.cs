@@ -707,7 +707,7 @@ namespace SourceEngine.Demo.Stats
                     Weapon = e.Weapon,
                     HealthDamage = e.HealthDamage,
                     ArmorDamage = e.ArmorDamage,
-                    Hitgroup = e.Hitgroup,
+                    HitGroup = e.HitGroup,
                     PossiblyKilledByBombExplosion = e.PossiblyKilledByBombExplosion,
                 };
 
@@ -1341,8 +1341,8 @@ namespace SourceEngine.Demo.Stats
                     //win method
                     reason = roundsWonReasons[i] switch
                     {
-                        RoundEndReason.TerroristWin => "T Kills",
-                        RoundEndReason.CTWin => "CT Kills",
+                        RoundEndReason.TerroristsWin => "T Kills",
+                        RoundEndReason.CTsWin => "CT Kills",
                         RoundEndReason.TargetBombed => "Bombed",
                         RoundEndReason.BombDefused => "Defused",
                         RoundEndReason.HostagesRescued => "HostagesRescued",
@@ -2434,7 +2434,7 @@ namespace SourceEngine.Demo.Stats
         {
             List<RoundEndReason> roundsWonReasons = roundEndReasonValues.ToList();
             roundsWonReasons.RemoveAll(
-                reason => reason is not RoundEndReason.TerroristWin && reason is not RoundEndReason.CTWin
+                reason => reason is not RoundEndReason.TerroristsWin && reason is not RoundEndReason.CTsWin
                     && reason is not RoundEndReason.TargetBombed && reason is not RoundEndReason.BombDefused
                     && reason is not RoundEndReason.HostagesRescued && reason is not RoundEndReason.HostagesNotRescued
                     && reason is not RoundEndReason.TargetSaved && reason is not RoundEndReason.SurvivalWin

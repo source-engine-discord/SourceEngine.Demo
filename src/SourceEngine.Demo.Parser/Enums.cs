@@ -1,11 +1,21 @@
 ﻿namespace SourceEngine.Demo.Parser
 {
+    /// <summary>
+    /// Reasons for which a round can end.
+    /// </summary>
     public enum RoundEndReason
     {
+        Invalid = -1,
+
         /// <summary>
-        /// Target Successfully Bombed!
+        /// The round hasn't ended yet.
         /// </summary>
-        TargetBombed = 1,
+        StillInProgress,
+
+        /// <summary>
+        /// Target successfully bombed!
+        /// </summary>
+        TargetBombed,
 
         /// <summary>
         /// The VIP has escaped.
@@ -13,24 +23,24 @@
         VIPEscaped,
 
         /// <summary>
-        /// VIP has been assassinated
+        /// VIP has been assassinated.
         /// </summary>
-        VIPKilled,
+        VIPAssassinated,
 
         /// <summary>
-        /// The terrorists have escaped
+        /// The terrorists have escaped!
         /// </summary>
         TerroristsEscaped,
 
         /// <summary>
-        /// The CTs have prevented most of the terrorists from escaping!
+        /// The CTs have prevented most of the terrorists from escaping.
         /// </summary>
-        CTStoppedEscape,
+        CTsPreventedEscape,
 
         /// <summary>
-        /// Escaping terrorists have all been neutralized
+        /// Escaping terrorists have all been neutralized.
         /// </summary>
-        TerroristsStopped,
+        EscapingTerroristsNeutralized,
 
         /// <summary>
         /// The bomb has been defused!
@@ -38,27 +48,27 @@
         BombDefused,
 
         /// <summary>
-        /// Counter-Terrorists Win!
+        /// Counter-Terrorists win!
         /// </summary>
-        CTWin,
+        CTsWin,
 
         /// <summary>
-        /// Terrorists Win!
+        /// Terrorists win!
         /// </summary>
-        TerroristWin,
+        TerroristsWin,
 
         /// <summary>
-        /// Round Draw!
+        /// Round draw!
         /// </summary>
-        Draw,
+        RoundDraw,
 
         /// <summary>
-        /// All Hostages have been rescued
+        /// All hostages have been rescued.
         /// </summary>
         HostagesRescued,
 
         /// <summary>
-        /// Target has been saved!
+        /// Bombing failed.
         /// </summary>
         TargetSaved,
 
@@ -68,49 +78,71 @@
         HostagesNotRescued,
 
         /// <summary>
-        /// Terrorists have not escaped!
+        /// Terrorists have not escaped.
         /// </summary>
         TerroristsNotEscaped,
 
         /// <summary>
-        /// VIP has not escaped!
+        /// VIP has not escaped.
         /// </summary>
         VIPNotEscaped,
 
         /// <summary>
-        /// Game Commencing!
+        /// Game commencing!
         /// </summary>
-        GameStart,
+        GameCommencing,
 
         /// <summary>
-        /// Terrorists Surrender
+        /// Terrorists surrender.
         /// </summary>
         TerroristsSurrender,
 
         /// <summary>
-        /// CTs Surrender
+        /// CTs surrender.
         /// </summary>
-        CTSurrender,
+        CTsSurrender,
 
         /// <summary>
-        /// SurvivalWin
+        /// Terrorists planted the bomb.
         /// </summary>
-        SurvivalWin = 21, // danger zone
+        TerroristsPlanted,
+
+        /// <summary>
+        /// CTs have reached a hostage.
+        /// </summary>
+        CTsReachedHostage,
+
+        /// <summary>
+        /// Danger Zone win.
+        /// </summary>
+        SurvivalWin,
 
         /// <summary>
         /// Unknown
         /// </summary>
-        Unknown, // Caused by an error where the round_end event was not triggered for a round
+        /// <remarks>
+        /// Caused by an error where the round_end event was not triggered for a round.
+        /// </remarks>
+        Unknown,
     }
 
+    /// <summary>
+    /// Reasons for which a player can be awarded MVP for a round.
+    /// </summary>
     public enum RoundMVPReason
     {
-        MostEliminations = 1,
+        Undefined,
+        MostEliminations,
         BombPlanted,
         BombDefused,
+        HostageRescued,
+        GunGameWinner,
     }
 
-    public enum Hitgroup
+    /// <summary>
+    /// Regions of the body which can take damage.
+    /// </summary>
+    public enum HitGroup
     {
         Generic = 0,
         Head = 1,

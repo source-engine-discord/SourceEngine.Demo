@@ -324,7 +324,7 @@ namespace SourceEngine.Demo.Parser
         /// Where the Player was hit.
         /// </summary>
         /// <value>The hitgroup.</value>
-        public Hitgroup Hitgroup { get; set; }
+        public HitGroup HitGroup { get; set; }
 
         /// <summary>
         /// Shows if it is possible that the player was killed by a bomb explosion (player_death is not triggered when it is due to
