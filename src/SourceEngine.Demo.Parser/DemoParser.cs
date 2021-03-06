@@ -730,7 +730,7 @@ namespace SourceEngine.Demo.Parser
 
             switch (command)
             {
-                case DemoCommand.Synctick:
+                case DemoCommand.SyncTick:
                     break;
                 case DemoCommand.Stop:
                     return false;

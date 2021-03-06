@@ -226,42 +226,42 @@ namespace SourceEngine.Demo.Parser.Structs
     internal enum DemoCommand
     {
         /// <summary>
-        /// it's a startup message, process as fast as possible
+        /// It's a startup message; process as fast as possible.
         /// </summary>
         Signon = 1,
 
         /// <summary>
-        /// it's a normal network packet that we stored off
+        /// It's a normal network packet that we stored off.
         /// </summary>
         Packet,
 
         /// <summary>
-        /// sync client clock to demo tick
+        /// Sync client clock to demo tick.
         /// </summary>
-        Synctick,
+        SyncTick,
 
         /// <summary>
-        /// Console Command
+        /// Console command.
         /// </summary>
         ConsoleCommand,
 
         /// <summary>
-        /// user input command
+        /// User input command.
         /// </summary>
         UserCommand,
 
         /// <summary>
-        /// network data tables
+        /// Network data tables.
         /// </summary>
         DataTables,
 
         /// <summary>
-        /// end of time.
+        /// End of time.
         /// </summary>
         Stop,
 
         /// <summary>
-        /// a blob of binary data understood by a callback function
+        /// A blob of binary data understood by a callback function.
         /// </summary>
         CustomData,
 
