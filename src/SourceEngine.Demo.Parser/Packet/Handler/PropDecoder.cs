@@ -271,7 +271,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         private static float ReadBitCoordMP(IBitStream reader, bool isIntegral, bool isLowPrecision)
         {
-            int intval = 0, fractval = 0;
+            int intval = 0;
             float value = 0.0f;
             bool isNegative = false;
 
@@ -316,7 +316,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 }
 
                 // If there's a fraction, read it in
-                fractval = (int)reader.ReadInt(isLowPrecision ? 3 : 5);
+                var fractval = (int)reader.ReadInt(isLowPrecision ? 3 : 5);
 
                 // Calculate the correct floating point value
                 value = intval + (float)fractval * (isLowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION);
@@ -330,7 +330,6 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         private static float ReadBitCellCoord(IBitStream reader, int bits, bool lowPrecision, bool integral)
         {
-            int intval = 0, fractval = 0;
             float value = 0.0f;
 
             if (integral)
@@ -339,8 +338,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             }
             else
             {
-                intval = (int)reader.ReadInt(bits);
-                fractval = (int)reader.ReadInt(
+                var intval = (int)reader.ReadInt(bits);
+                var fractval = (int)reader.ReadInt(
                     lowPrecision ? COORD_FRACTIONAL_BITS_MP_LOWPRECISION : COORD_FRACTIONAL_BITS
                 );
 

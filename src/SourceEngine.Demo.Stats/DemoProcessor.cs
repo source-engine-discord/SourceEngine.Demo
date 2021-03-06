@@ -2086,7 +2086,6 @@ namespace SourceEngine.Demo.Stats
         {
             List<teamStats> teamStats = new List<teamStats>();
 
-            var firstHalf = true;
             int swappedSidesCount = 0;
             int currentRoundChecking = 1;
 
@@ -2100,7 +2099,7 @@ namespace SourceEngine.Demo.Stats
                         : swappedSidesCount
                     : swappedSidesCount;
 
-                firstHalf = swappedSidesCount % 2 == 0 ? true : false;
+                bool firstHalf = swappedSidesCount % 2 == 0 ? true : false;
 
                 var currentRoundTeams = processedData.TeamPlayersValues.Where(t => t.Round == teamPlayers.Round)
                     .FirstOrDefault();
