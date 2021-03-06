@@ -2368,8 +2368,6 @@ namespace SourceEngine.Demo.Stats
 
         public static PlayerPositionsStats GetPlayerPositionsStats(ProcessedData processedData, AllStats allStats)
         {
-            PlayerPositionsStats playerPositionsStats;
-
             List<PlayerPositionByRound> playerPositionByRound = new List<PlayerPositionByRound>();
 
             // create playerPositionByRound with empty PlayerPositionByTimeInRound
@@ -2443,7 +2441,7 @@ namespace SourceEngine.Demo.Stats
                 }
             }
 
-            playerPositionsStats = new PlayerPositionsStats
+            var playerPositionsStats = new PlayerPositionsStats
             {
                 DemoName = allStats.mapInfo.DemoName,
                 PlayerPositionByRound = playerPositionByRound,

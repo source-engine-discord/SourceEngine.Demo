@@ -152,8 +152,7 @@ namespace SourceEngine.Demo.Stats
         {
             #region detect demos
 
-            string[] demos;
-            demos = Directory.GetFiles(
+            string[] demos = Directory.GetFiles(
                 Environment.CurrentDirectory + "/" + TARGET_FOLDER + "/",
                 "*.dem",
                 SearchOption.AllDirectories

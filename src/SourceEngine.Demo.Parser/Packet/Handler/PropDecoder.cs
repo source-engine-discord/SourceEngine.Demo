@@ -90,14 +90,13 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         public static float DecodeFloat(SendTableProperty prop, IBitStream reader)
         {
             float fVal = 0.0f;
-            ulong dwInterp;
 
             if (DecodeSpecialFloat(prop, reader, out fVal))
                 return fVal;
 
             //Encoding: The range between lowVal and highVal is splitted into the same steps.
             //Read an int, fit it into the range.
-            dwInterp = reader.ReadInt(prop.NumberOfBits);
+            ulong dwInterp = reader.ReadInt(prop.NumberOfBits);
             fVal = (float)dwInterp / ((1 << prop.NumberOfBits) - 1);
             fVal = prop.LowValue + (prop.HighValue - prop.LowValue) * fVal;
 
@@ -237,14 +236,13 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
         private static float ReadBitCoord(IBitStream reader)
         {
-            int intVal, fractVal;
             float value = 0;
 
             bool isNegative = false;
 
             // Read the required integer and fraction flags
-            intVal = (int)reader.ReadInt(1);
-            fractVal = (int)reader.ReadInt(1);
+            var intVal = (int)reader.ReadInt(1);
+            var fractVal = (int)reader.ReadInt(1);
 
             // If we got either parse them, otherwise it's a zero.
             if ((intVal | fractVal) != 0)
