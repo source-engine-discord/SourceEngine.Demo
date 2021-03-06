@@ -34,12 +34,12 @@ namespace SourceEngine.Demo.Parser.Tests
         private byte[] data;
         private IBitStream dbgAll;
 
-        private IBitStream CreateBS(byte[] data)
+        private IBitStream CreateBS(byte[] streamData)
         {
             IBitStream managed = new ManagedBitStream(), @unsafe = new UnsafeBitStream();
-            managed.Initialize(new AwkwardStream(new MemoryStream(data), rng));
-            @unsafe.Initialize(new AwkwardStream(new MemoryStream(data), rng));
-            return new DebugBitStream(new BitArrayStream(data), new DebugBitStream(managed, @unsafe));
+            managed.Initialize(new AwkwardStream(new MemoryStream(streamData), rng));
+            @unsafe.Initialize(new AwkwardStream(new MemoryStream(streamData), rng));
+            return new DebugBitStream(new BitArrayStream(streamData), new DebugBitStream(managed, @unsafe));
         }
 
         [Test]
