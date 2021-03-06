@@ -7,7 +7,6 @@ using System.Reflection;
 using Newtonsoft.Json;
 
 using SourceEngine.Demo.Parser;
-using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Parser.Entities;
 using SourceEngine.Demo.Parser.Structs;
 using SourceEngine.Demo.Stats.Models;
@@ -174,22 +173,30 @@ namespace SourceEngine.Demo.Stats
             DemoInformation demoInformation,
             bool parseChickens,
             bool parsePlayerPositions,
-            int hostagerescuezonecountoverride,
+            uint? hostagerescuezonecountoverride,
             bool lowOutputMode)
         {
             string file = demoInformation.DemoName;
-            string gamemode = demoInformation.GameMode;
-            string testType = demoInformation.TestType;
 
             var md = new MatchData();
+
+            // automatically decides rescue zone amounts unless overridden with a provided parameter
+            if (hostagerescuezonecountoverride is not { } hostageRescueZones)
+            {
+                if (demoInformation.GameMode is GameMode.DangerZone)
+                    hostageRescueZones = 2;
+                else if (demoInformation.GameMode is GameMode.Hostage)
+                    hostageRescueZones = 1;
+                else
+                    hostageRescueZones = 0;
+            }
 
             //Create demo parser instance
             dp = new DemoParser(
                 File.OpenRead(file),
                 parseChickens,
                 parsePlayerPositions,
-                gamemode,
-                hostagerescuezonecountoverride
+                hostageRescueZones
             );
 
             dp.ParseHeader();
@@ -202,7 +209,7 @@ namespace SourceEngine.Demo.Stats
                 {
                     if (md.events.Count > 0 && md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs"))
                     {
-                        int round = GetCurrentRoundNum(md, gamemode);
+                        int round = GetCurrentRoundNum(md, demoInformation.GameMode);
 
                         if (round > 0 && playerPosition.Player.SteamID > 0)
                         {
@@ -299,7 +306,7 @@ namespace SourceEngine.Demo.Stats
 
                 if (IsMessageFeedback(text))
                 {
-                    int round = GetCurrentRoundNum(md, gamemode);
+                    int round = GetCurrentRoundNum(md, demoInformation.GameMode);
 
                     long steamId = e.Sender?.SteamID ?? 0;
 
@@ -545,7 +552,7 @@ namespace SourceEngine.Demo.Stats
                 /*	The final round in a match does not throw a round_officially_ended event, but a round_freeze_end event is thrown after the game ends,
                     so assume that a game has ended if a second round_freeze_end event is found in the same round as a round_end_event and NO round_officially_ended event.
                     This does mean that if a round_officially_ended event is not triggered due to demo error, the parse will mess up. */
-                var minRoundsForWin = GetMinRoundsForWin(gamemode, testType);
+                var minRoundsForWin = GetMinRoundsForWin(demoInformation.GameMode, demoInformation.TestType);
 
                 if (numOfFreezetimesEnded == numOfRoundsOfficiallyEnded + 1 && numOfFreezetimesEnded == numOfRoundsEnded
                     && numOfRoundsEnded >= minRoundsForWin)
@@ -655,14 +662,14 @@ namespace SourceEngine.Demo.Stats
             // PLAYER EVENTS ===================================================
             dp.PlayerKilled += (_, e) =>
             {
-                e.Round = GetCurrentRoundNum(md, gamemode);
+                e.Round = GetCurrentRoundNum(md, demoInformation.GameMode);
 
                 md.addEvent(typeof(PlayerKilledEventArgs), e);
             };
 
             dp.PlayerHurt += (_, e) =>
             {
-                var round = GetCurrentRoundNum(md, gamemode);
+                var round = GetCurrentRoundNum(md, demoInformation.GameMode);
 
                 if (e.PossiblyKilledByBombExplosion
                 ) // a player_death event is not triggered due to death by bomb explosion
@@ -720,7 +727,7 @@ namespace SourceEngine.Demo.Stats
             {
                 if (e.Player != null && e.Player.Name != "unconnected" && e.Player.Name != "GOTV")
                 {
-                    int round = GetCurrentRoundNum(md, gamemode);
+                    int round = GetCurrentRoundNum(md, demoInformation.GameMode);
 
                     var disconnectedPlayer = new DisconnectedPlayer
                     {
@@ -819,7 +826,7 @@ namespace SourceEngine.Demo.Stats
             {
                 md.addEvent(typeof(WeaponFiredEventArgs), e);
 
-                var round = GetCurrentRoundNum(md, gamemode);
+                var round = GetCurrentRoundNum(md, demoInformation.GameMode);
 
                 var shotFired = new ShotFired
                 {
@@ -956,7 +963,7 @@ namespace SourceEngine.Demo.Stats
             var allStats = new AllStats
             {
                 versionNumber = GetVersionNumber(),
-                supportedGamemodes = Gamemodes.GetAll(),
+                supportedGamemodes = Enum.GetNames(typeof(GameMode)).Select(gm => gm.ToLower()).ToList(),
                 mapInfo = GetMapInfo(processedData, mapNameSplit),
                 tanookiStats = processedData.tanookiStats,
             };
@@ -1106,7 +1113,7 @@ namespace SourceEngine.Demo.Stats
             var mapInfo = new mapInfo
             {
                 MapName = processedData.DemoInformation.MapName,
-                TestType = processedData.DemoInformation.TestType,
+                TestType = processedData.DemoInformation.TestType.ToString().ToLower(),
                 TestDate = processedData.DemoInformation.TestDate,
             };
 
@@ -1127,10 +1134,9 @@ namespace SourceEngine.Demo.Stats
             GetRoundsWonReasons(processedData.RoundEndReasonValues);
 
             // use the provided game mode if given as a parameter
-            if (!string.IsNullOrWhiteSpace(processedData.DemoInformation.GameMode)
-                && processedData.DemoInformation.GameMode.ToLower() != "notprovided")
+            if (processedData.DemoInformation.GameMode is not GameMode.Unknown)
             {
-                mapInfo.GameMode = processedData.DemoInformation.GameMode;
+                mapInfo.GameMode = processedData.DemoInformation.GameMode.ToString().ToLower();
 
                 return mapInfo;
             }
@@ -1146,7 +1152,7 @@ namespace SourceEngine.Demo.Stats
                 ) // assume danger zone if more than one hostage rescue zone
             )
             {
-                mapInfo.GameMode = Gamemodes.DangerZone;
+                mapInfo.GameMode = nameof(GameMode.DangerZone).ToLower();
             }
             else if (processedData.TeamPlayersValues.Any(
                 t => t.Terrorists.Count > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count > 2)
@@ -1154,23 +1160,23 @@ namespace SourceEngine.Demo.Stats
             {
                 if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1
                     || processedData.MatchStartValues.Any(m => m.HasBombsites))
-                    mapInfo.GameMode = Gamemodes.Defuse;
+                    mapInfo.GameMode = nameof(GameMode.Defuse).ToLower();
                 else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
                     && !processedData.MatchStartValues.Any(m => m.HasBombsites))
-                    mapInfo.GameMode = Gamemodes.Hostage;
+                    mapInfo.GameMode = nameof(GameMode.Hostage).ToLower();
                 else // what the hell is this game mode ??
-                    mapInfo.GameMode = Gamemodes.Unknown;
+                    mapInfo.GameMode = nameof(GameMode.Unknown).ToLower();
             }
             else
             {
                 if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1
                     || processedData.MatchStartValues.Any(m => m.HasBombsites))
-                    mapInfo.GameMode = Gamemodes.WingmanDefuse;
+                    mapInfo.GameMode = nameof(GameMode.WingmanDefuse).ToLower();
                 else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
                     && !processedData.MatchStartValues.Any(m => m.HasBombsites))
-                    mapInfo.GameMode = Gamemodes.WingmanHostage;
+                    mapInfo.GameMode = nameof(GameMode.WingmanHostage).ToLower();
                 else // what the hell is this game mode ??
-                    mapInfo.GameMode = Gamemodes.Unknown;
+                    mapInfo.GameMode = nameof(GameMode.Unknown).ToLower();
             }
 
             return mapInfo;
@@ -2444,7 +2450,7 @@ namespace SourceEngine.Demo.Stats
             return roundsWonReasons;
         }
 
-        public static int GetCurrentRoundNum(MatchData md, string gamemode)
+        public static int GetCurrentRoundNum(MatchData md, GameMode gameMode)
         {
             int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
             List<TeamPlayers> teamPlayersList = md.GetEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
@@ -2460,7 +2466,7 @@ namespace SourceEngine.Demo.Stats
             }
 
             // add 1 for roundsCount when in danger zone
-            if (gamemode == Gamemodes.DangerZone)
+            if (gameMode is GameMode.DangerZone)
                 round++;
 
             return round;
@@ -2556,34 +2562,36 @@ namespace SourceEngine.Demo.Stats
                 == 1; // the team playing T Side first switches each OT for example, this checks the OT count for swaps
         }
 
-        public static int? GetMinRoundsForWin(string gamemode, string testType)
+        public static int? GetMinRoundsForWin(GameMode gameMode, TestType testType)
         {
-            switch (gamemode.ToLower(), testType.ToLower())
+            switch (gameMode, testType)
             {
-                case (Gamemodes.WingmanDefuse, "casual"):
-                case (Gamemodes.WingmanDefuse, "competitive"):
-                case (Gamemodes.WingmanHostage, "casual"):
-                case (Gamemodes.WingmanHostage, "competitive"):
+                case (GameMode.WingmanDefuse, TestType.Casual):
+                case (GameMode.WingmanDefuse, TestType.Competitive):
+                case (GameMode.WingmanHostage, TestType.Casual):
+                case (GameMode.WingmanHostage, TestType.Competitive):
                     return 9;
-                case (Gamemodes.Defuse, "casual"):
-                case (Gamemodes.Hostage, "casual"):
-                case (Gamemodes.Unknown, "casual")
-                    : // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the game mode
+                case (GameMode.Defuse, TestType.Casual):
+                case (GameMode.Hostage, TestType.Casual):
+                case (GameMode.Unknown, TestType.Casual):
+                    // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get
+                    // around this as it cannot figure out the game mode
                     return 11;
-                case (Gamemodes.Defuse, "competitive"):
-                case (Gamemodes.Hostage, "competitive"):
-                case (Gamemodes.Unknown, "competitive")
-                    : // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the game mode
+                case (GameMode.Defuse, TestType.Competitive):
+                case (GameMode.Hostage, TestType.Competitive):
+                case (GameMode.Unknown, TestType.Competitive):
+                    // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get
+                    // around this as it cannot figure out the game mode
                     return 16;
-                case (Gamemodes.DangerZone, "casual"):
-                case (Gamemodes.DangerZone, "competitive"):
+                case (GameMode.DangerZone, TestType.Casual):
+                case (GameMode.DangerZone, TestType.Competitive):
                     return 2;
                 default:
                     return null;
             }
         }
 
-        private static bool CheckIfStatsShouldBeCreated(string typeName, string gamemode)
+        private static bool CheckIfStatsShouldBeCreated(string typeName, GameMode gameMode)
         {
             switch (typeName.ToLower())
             {
@@ -2592,7 +2600,7 @@ namespace SourceEngine.Demo.Stats
                 case "bombsitestats":
                 case "hostagestats":
                 case "teamstats":
-                    return gamemode != Gamemodes.DangerZone;
+                    return gameMode is not GameMode.DangerZone;
                 default:
                     return true;
             }

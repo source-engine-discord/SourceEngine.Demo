@@ -6,7 +6,6 @@ using System.Reflection;
 using Shouldly;
 
 using SourceEngine.Demo.Parser;
-using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Parser.Entities;
 using SourceEngine.Demo.Parser.Structs;
 using SourceEngine.Demo.Stats.Models;
@@ -42,8 +41,8 @@ namespace SourceEngine.Demo.Stats.Tests
             {
                 DemoName = "demo1",
                 MapName = "de_testmap",
-                GameMode = Gamemodes.Defuse,
-                TestType = "casual",
+                GameMode = GameMode.Defuse,
+                TestType = TestType.Casual,
                 TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
             };
 
@@ -881,8 +880,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Assess
                 allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo1");
                 allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.Defuse);
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
+                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.Defuse).ToLower());
+                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
                 allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
@@ -894,8 +893,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 {
                     DemoName = "demo2",
                     MapName = "de_testmap2",
-                    GameMode = Gamemodes.Hostage,
-                    TestType = "casual",
+                    GameMode = GameMode.Hostage,
+                    TestType = TestType.Casual,
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
@@ -914,8 +913,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Assess
                 allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo2");
                 allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap2");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.Hostage);
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
+                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.Hostage).ToLower());
+                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
                 allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
@@ -927,8 +926,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 {
                     DemoName = "demo3",
                     MapName = "de_testmap3",
-                    GameMode = Gamemodes.WingmanDefuse,
-                    TestType = "casual",
+                    GameMode = GameMode.WingmanDefuse,
+                    TestType = TestType.Casual,
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
@@ -947,8 +946,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Assess
                 allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo3");
                 allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap3");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.WingmanDefuse);
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
+                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.WingmanDefuse).ToLower());
+                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
                 allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
@@ -960,8 +959,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 {
                     DemoName = "demo4",
                     MapName = "de_testmap4",
-                    GameMode = Gamemodes.WingmanHostage,
-                    TestType = "casual",
+                    GameMode = GameMode.WingmanHostage,
+                    TestType = TestType.Casual,
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
@@ -980,8 +979,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Assess
                 allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo4");
                 allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap4");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.WingmanHostage);
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
+                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.WingmanHostage).ToLower());
+                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
                 allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
@@ -993,8 +992,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 {
                     DemoName = "demo5",
                     MapName = "de_testmap5",
-                    GameMode = Gamemodes.DangerZone,
-                    TestType = "casual",
+                    GameMode = GameMode.DangerZone,
+                    TestType = TestType.Casual,
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
@@ -1013,8 +1012,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Assess
                 allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo5");
                 allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap5");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(Gamemodes.DangerZone);
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe("casual");
+                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.DangerZone).ToLower());
+                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
                 allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
@@ -1161,12 +1160,13 @@ namespace SourceEngine.Demo.Stats.Tests
                 AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
 
                 // Assess
-                allOutputData.AllStats.supportedGamemodes.Count.ShouldBe(5);
-                allOutputData.AllStats.supportedGamemodes[0].ShouldBe(Gamemodes.Defuse);
-                allOutputData.AllStats.supportedGamemodes[1].ShouldBe(Gamemodes.Hostage);
-                allOutputData.AllStats.supportedGamemodes[2].ShouldBe(Gamemodes.WingmanDefuse);
-                allOutputData.AllStats.supportedGamemodes[3].ShouldBe(Gamemodes.WingmanHostage);
-                allOutputData.AllStats.supportedGamemodes[4].ShouldBe(Gamemodes.DangerZone);
+                allOutputData.AllStats.supportedGamemodes.Count.ShouldBe(6);
+                allOutputData.AllStats.supportedGamemodes[0].ShouldBe(nameof(GameMode.DangerZone).ToLower());
+                allOutputData.AllStats.supportedGamemodes[1].ShouldBe(nameof(GameMode.Defuse).ToLower());
+                allOutputData.AllStats.supportedGamemodes[2].ShouldBe(nameof(GameMode.Hostage).ToLower());
+                allOutputData.AllStats.supportedGamemodes[3].ShouldBe(nameof(GameMode.WingmanDefuse).ToLower());
+                allOutputData.AllStats.supportedGamemodes[4].ShouldBe(nameof(GameMode.WingmanHostage).ToLower());
+                allOutputData.AllStats.supportedGamemodes[5].ShouldBe(nameof(GameMode.Unknown).ToLower());
             }
 
             [Fact]

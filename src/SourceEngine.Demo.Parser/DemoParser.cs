@@ -9,7 +9,6 @@ using System.Text;
 #endif
 
 using SourceEngine.Demo.Parser.BitStream;
-using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Parser.DataTable;
 using SourceEngine.Demo.Parser.Entities;
 using SourceEngine.Demo.Parser.Messages.Fast.Net;
@@ -39,8 +38,8 @@ namespace SourceEngine.Demo.Parser
         private readonly bool parsePlayerPositions;
         private string gamemode;
 
-        private readonly int
-            numOfHostageRescueZonesLookingFor; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
+        // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
+        private readonly uint numOfHostageRescueZonesLookingFor;
 
         public readonly Dictionary<int, BoundingBox> Triggers = new();
         internal readonly Dictionary<int, Player> InfernoOwners = new();
@@ -528,14 +527,12 @@ namespace SourceEngine.Demo.Parser
         /// <param name="parsePlayerPositions">
         /// <c>true</c> if player positions should be parsed; <c>false</c> otherwise.
         /// </param>
-        /// <param name="gamemode">The kind of game that was played. Used to infer the amount of rescue zones.</param>
         /// <param name="hostagerescuezonecountoverride">Amount of hostage rescue zones to assume are present.</param>
         public DemoParser(
             Stream input,
             bool parseChickens = true,
             bool parsePlayerPositions = true,
-            string gamemode = "",
-            int hostagerescuezonecountoverride = 0)
+            uint hostagerescuezonecountoverride = 0)
         {
             BitStream = BitStreamUtil.Create(input);
 
@@ -544,17 +541,7 @@ namespace SourceEngine.Demo.Parser
 
             this.parseChickens = parseChickens;
             this.parsePlayerPositions = parsePlayerPositions;
-            this.gamemode = gamemode;
-
-            // automatically decides rescue zone amounts unless overridden with a provided parameter
-            if (hostagerescuezonecountoverride > 0)
-                numOfHostageRescueZonesLookingFor = hostagerescuezonecountoverride;
-            else if (gamemode == Gamemodes.DangerZone)
-                numOfHostageRescueZonesLookingFor = 2;
-            else if (gamemode == Gamemodes.Hostage)
-                numOfHostageRescueZonesLookingFor = 1;
-            else
-                numOfHostageRescueZonesLookingFor = 0;
+            numOfHostageRescueZonesLookingFor = hostagerescuezonecountoverride;
         }
 
         /// <summary>

@@ -34,5 +34,8 @@
     <ItemGroup>
         <None Update="..\..\LICENSE.txt" CopyToPublishDirectory="Never" />
     </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    </ItemGroup>
 
 </Project>

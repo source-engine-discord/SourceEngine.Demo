@@ -31,27 +31,76 @@ Latest release:
 ### Usage
 
 ```
-  -config                            [path]                       Path to config file.
-  -folders                           [paths (space seperated)]    Processes all demo files in each folder specified.
-  -demos                             [paths (space seperated)]    Processess a list of single demo files at paths.
-  -gamemodeoverride                  [string]                     Defines the gamemode for the match instead of having the parser attempt to figure it out. -> (defuse / hostage / wingmandefuse / wingmanhostage / dangerzone)
-  -testtype                          [string]                     Defines the test type for the match. Otherwise it attempts to grab it from the filename in SE Discord's filename formatting. Only matters for defuse and hostage. -> (competitive / casual)
-  -testdateoverride                  [string]                     Defines the test date of the match. Otherwise it attempts to grab it from the filename. -> (dd/mm/yyyy)
-  -hostagerescuezonecountoverride    [int]                        Defines the number of hostage rescue zones in the map. Without this, the parser assumes hostage has 1 and danger zone has 2 -> (0-2)
-  -recursive                                                      Switch for recursive demo search.
-  -steaminfo                                                      Takes steam names from steam.
-  -clear                                                          Clears the data folder.
-  -nochickens                                                     Disables checks for number of chickens killed when parsing.
-  -noplayerpositions                                              Disables checks for player positions when parsing.
-  -samefilename                                                   Uses the demo's filename as the output filename.
-  -samefolderstructure                                            Uses the demo's folder structure inside the root folder for the output json file.
-  -lowoutputmode                                                  Does not print out the progress bar and round completed messages to console.
+  --config                            (Default: config.cfg) Path to config file.
+
+  --folders                           Space-delimited list of directories in
+                                      which to search for demos to parse.
+
+  --demos                             Space-delimited list of paths to
+                                      individual demos to parse.
+
+  --output                            (Default: parsed) Path to the output
+                                      directory.
+
+  --gamemodeoverride                  (Default: Unknown) Assume the demo is for
+                                      this game mode rather than attempting to
+                                      infer the game mode. Valid values:
+                                      DangerZone, Defuse, Hostage,
+                                      WingmanDefuse, WingmanHostage, Unknown
+
+  --testtype                          (Default: Unknown) The playtest type of
+                                      the recorded match. If unset, attempt to
+                                      parse it from the file name instead
+                                      assuming the format
+                                      date_mapname_testtype.Only relevant for
+                                      defuse and hostage game modes. Valid
+                                      values: Casual, Competitive, Unknown
+
+  --testdateoverride                  Recording date of the match in dd/MM/yyyy
+                                      format. If unset, attempt to parse from
+                                      the file name instead assuming the format
+                                      date_mapname_testtype.
+
+  --hostagerescuezonecountoverride    Number of hostage rescue zones in the map.
+                                      If unset, a total of 1 is assumed for the
+                                      hostage game mode and 2 for Danger Zone.
+                                      Valid values: 0-2
+
+  --recursive                         (Default: false) Recursively search for
+                                      demos.
+
+  --steaminfo                         (Default: false) Retrieve player names
+                                      from Steam.
+
+  --clear                             (Default: false) Clear the data folder.
+
+  --nochickens                        (Default: false) Disable counting of
+                                      chicken death stats.
+
+  --noplayerpositions                 (Default: false) Disable parsing of player
+                                      positions.
+
+  --samefilename                      (Default: false) Use the demo's filename
+                                      as the output filename.
+
+  --samefolderstructure               (Default: false) Use the demo's folder
+                                      structure inside the root folder for the
+                                      output JSON file.
+
+  --lowoutputmode                     (Default: false) Don't output the progress
+                                      bar and 'round completed' messages to the
+                                      console.
+
+  --help                              Display this help screen.
+
+  --version                           Display version information.
+
 ```
 
 Example:
 
 ```
-IDemO -folders "demos" -output "parsed" -recursive -nochickens -noplayerpositions -samefilename -samefolderstructure
+IDemO --folders "demos" --output "parsed" --recursive --nochickens --noplayerpositions --samefilename --samefolderstructure
 ```
 
 ## Development

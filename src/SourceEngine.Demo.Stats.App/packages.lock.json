@@ -2,6 +2,12 @@
   "version": 1,
   "dependencies": {
     ".NETCoreApp,Version=v5.0": {
+      "CommandLineParser": {
+        "type": "Direct",
+        "requested": "[2.8.0, )",
+        "resolved": "2.8.0",
+        "contentHash": "eco2HlKQBY4Joz9odHigzGpVzv6pjsXnY5lziioMveQxr+i2Z7xYcIOMeZTgYiqnMtMAbXMXsVhrNfWO5vJS8Q=="
+      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "12.0.3",
@@ -14,7 +20,7 @@
         "type": "Project",
         "dependencies": {
           "Newtonsoft.Json": "12.0.3",
-          "SourceEngine.Demo.Parser": "2.5.0"
+          "SourceEngine.Demo.Parser": "2.5.2"
         }
       }
     },
