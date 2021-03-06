@@ -36,7 +36,7 @@ namespace SourceEngine.Demo.Stats.Tests
 
         public void MockData()
         {
-            var DemoInformation = new DemoInformation()
+            var DemoInformation = new DemoInformation
             {
                 DemoName = "demo1",
                 MapName = "de_testmap",
@@ -45,7 +45,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
             };
 
-            var tanookiStats = new tanookiStats()
+            var tanookiStats = new tanookiStats
             {
                 Joined = true,
                 Left = true,
@@ -54,7 +54,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 RoundsLasted = 1,
             };
 
-            var MatchStartValues = new List<MatchStartedEventArgs>()
+            var MatchStartValues = new List<MatchStartedEventArgs>
             {
                 new()
                 {
@@ -63,7 +63,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var SwitchSidesValues = new List<SwitchSidesEventArgs>()
+            var SwitchSidesValues = new List<SwitchSidesEventArgs>
             {
                 new()
                 {
@@ -71,7 +71,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var MessagesValues = new List<FeedbackMessage>()
+            var MessagesValues = new List<FeedbackMessage>
             {
                 new()
                 {
@@ -92,12 +92,12 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var TeamPlayersValues = new List<TeamPlayers>()
+            var TeamPlayersValues = new List<TeamPlayers>
             {
                 new()
                 {
                     Round = 1,
-                    Terrorists = new List<Player>()
+                    Terrorists = new List<Player>
                     {
                         new()
                         {
@@ -106,13 +106,13 @@ namespace SourceEngine.Demo.Stats.Tests
                             Team = Team.Terrorist,
                             EntityID = 45,
                             UserID = 1,
-                            LastAlivePosition = new Vector()
+                            LastAlivePosition = new Vector
                             {
                                 X = 100,
                                 Y = 100,
                                 Z = 100,
                             },
-                            Position = new Vector()
+                            Position = new Vector
                             {
                                 X = 200,
                                 Y = 200,
@@ -122,7 +122,7 @@ namespace SourceEngine.Demo.Stats.Tests
                             RoundStartEquipmentValue = 2700,
                         },
                     },
-                    CounterTerrorists = new List<Player>()
+                    CounterTerrorists = new List<Player>
                     {
                         new()
                         {
@@ -131,13 +131,13 @@ namespace SourceEngine.Demo.Stats.Tests
                             Team = Team.CounterTerrorist,
                             EntityID = 46,
                             UserID = 2,
-                            LastAlivePosition = new Vector()
+                            LastAlivePosition = new Vector
                             {
                                 X = 90,
                                 Y = 900,
                                 Z = 9000,
                             },
-                            Position = new Vector()
+                            Position = new Vector
                             {
                                 X = 80,
                                 Y = 800,
@@ -151,7 +151,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 new()
                 {
                     Round = 2,
-                    Terrorists = new List<Player>()
+                    Terrorists = new List<Player>
                     {
                         new()
                         {
@@ -159,13 +159,13 @@ namespace SourceEngine.Demo.Stats.Tests
                             SteamID = 12321313213,
                             EntityID = 46,
                             UserID = 2,
-                            LastAlivePosition = new Vector()
+                            LastAlivePosition = new Vector
                             {
                                 X = 400,
                                 Y = 400,
                                 Z = 400,
                             },
-                            Position = new Vector()
+                            Position = new Vector
                             {
                                 X = 500,
                                 Y = 500,
@@ -175,7 +175,7 @@ namespace SourceEngine.Demo.Stats.Tests
                             RoundStartEquipmentValue = 200,
                         },
                     },
-                    CounterTerrorists = new List<Player>()
+                    CounterTerrorists = new List<Player>
                     {
                         new()
                         {
@@ -183,13 +183,13 @@ namespace SourceEngine.Demo.Stats.Tests
                             SteamID = 32443298432,
                             EntityID = 45,
                             UserID = 1,
-                            LastAlivePosition = new Vector()
+                            LastAlivePosition = new Vector
                             {
                                 X = 70,
                                 Y = 70,
                                 Z = 70,
                             },
-                            Position = new Vector()
+                            Position = new Vector
                             {
                                 X = 60,
                                 Y = 60,
@@ -202,7 +202,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var PlayerHurtValues = new List<PlayerHurt>()
+            var PlayerHurtValues = new List<PlayerHurt>
             {
                 new()
                 {
@@ -234,7 +234,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var PlayerKilledEventsValues = new List<PlayerKilledEventArgs>()
+            var PlayerKilledEventsValues = new List<PlayerKilledEventArgs>
             {
                 new()
                 {
@@ -270,43 +270,43 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var PlayerValues = new Dictionary<string, IEnumerable<Player>>()
+            var PlayerValues = new Dictionary<string, IEnumerable<Player>>
             {
                 {
-                    "Kills", new List<Player>()
+                    "Kills", new List<Player>
                     {
                         TeamPlayersValues[0].Terrorists[0],
                         TeamPlayersValues[1].CounterTerrorists[0],
                     }
                 },
                 {
-                    "Deaths", new List<Player>()
+                    "Deaths", new List<Player>
                     {
                         TeamPlayersValues[0].CounterTerrorists[0],
                         TeamPlayersValues[1].Terrorists[0],
                     }
                 },
                 {
-                    "Headshots", new List<Player>()
+                    "Headshots", new List<Player>
                     {
                         TeamPlayersValues[0].Terrorists[0],
                     }
                 },
                 {
-                    "Assists", new List<Player>()
+                    "Assists", new List<Player>
                     {
                         TeamPlayersValues[0].CounterTerrorists[0],
                     }
                 },
                 {
-                    "MVPs", new List<Player>()
+                    "MVPs", new List<Player>
                     {
                         TeamPlayersValues[0].Terrorists[0],
                         TeamPlayersValues[1].CounterTerrorists[0],
                     }
                 },
                 {
-                    "Shots", new List<Player>()
+                    "Shots", new List<Player>
                     {
                         TeamPlayersValues[0].Terrorists[0],
                         TeamPlayersValues[0].Terrorists[0],
@@ -318,20 +318,20 @@ namespace SourceEngine.Demo.Stats.Tests
                     }
                 },
                 {
-                    "Plants", new List<Player>()
+                    "Plants", new List<Player>
                     {
                         TeamPlayersValues[0].Terrorists[0],
                         TeamPlayersValues[1].Terrorists[0],
                     }
                 },
                 {
-                    "Defuses", new List<Player>()
+                    "Defuses", new List<Player>
                     {
                         TeamPlayersValues[1].CounterTerrorists[0],
                     }
                 },
                 {
-                    "Rescues", new List<Player>()
+                    "Rescues", new List<Player>
                     {
                         TeamPlayersValues[0].CounterTerrorists[0],
                         TeamPlayersValues[0].CounterTerrorists[0],
@@ -339,7 +339,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var WeaponValues = new List<Equipment>()
+            var WeaponValues = new List<Equipment>
             {
                 new()
                 {
@@ -353,13 +353,13 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var PenetrationValues = new List<int>()
+            var PenetrationValues = new List<int>
             {
                 0,
                 1,
             };
 
-            var BombsitePlantValues = new List<BombPlanted>()
+            var BombsitePlantValues = new List<BombPlanted>
             {
                 new()
                 {
@@ -383,7 +383,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var BombsiteExplodeValues = new List<BombExploded>()
+            var BombsiteExplodeValues = new List<BombExploded>
             {
                 new()
                 {
@@ -394,7 +394,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var BombsiteDefuseValues = new List<BombDefused>()
+            var BombsiteDefuseValues = new List<BombDefused>
             {
                 new()
                 {
@@ -406,7 +406,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var HostageRescueValues = new List<HostageRescued>()
+            var HostageRescueValues = new List<HostageRescued>
             {
                 new()
                 {
@@ -434,7 +434,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var HostagePickedUpValues = new List<HostagePickedUp>()
+            var HostagePickedUpValues = new List<HostagePickedUp>
             {
                 new()
                 {
@@ -462,25 +462,25 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var TeamValues = new List<Team>()
+            var TeamValues = new List<Team>
             {
                 Team.Terrorist,
                 Team.CounterTerrorist,
             };
 
-            var RoundEndReasonValues = new List<RoundEndReason>()
+            var RoundEndReasonValues = new List<RoundEndReason>
             {
                 RoundEndReason.TargetBombed,
                 RoundEndReason.BombDefused,
             };
 
-            var RoundLengthValues = new List<double>()
+            var RoundLengthValues = new List<double>
             {
                 80,
                 105,
             };
 
-            var TeamEquipmentValues = new List<TeamEquipment>()
+            var TeamEquipmentValues = new List<TeamEquipment>
             {
                 new()
                 {
@@ -500,13 +500,13 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var GrenadeValues = new List<NadeEventArgs>()
+            var GrenadeValues = new List<NadeEventArgs>
             {
                 new FlashEventArgs
                 {
                     NadeType = EquipmentElement.Flash,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
-                    Position = new Vector()
+                    Position = new Vector
                     {
                         X = 500,
                         Y = 500,
@@ -518,7 +518,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 {
                     NadeType = EquipmentElement.Smoke,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
-                    Position = new Vector()
+                    Position = new Vector
                     {
                         X = 500,
                         Y = 500,
@@ -529,7 +529,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 {
                     NadeType = EquipmentElement.HE,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
-                    Position = new Vector()
+                    Position = new Vector
                     {
                         X = 500,
                         Y = 500,
@@ -542,7 +542,7 @@ namespace SourceEngine.Demo.Stats.Tests
                         EquipmentElement
                             .Molotov, // all molotovs are down as incendiaries, specified why in DemoParser.cs, search for "FireNadeStarted".
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
-                    Position = new Vector()
+                    Position = new Vector
                     {
                         X = 500,
                         Y = 500,
@@ -553,7 +553,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 {
                     NadeType = EquipmentElement.Incendiary,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
-                    Position = new Vector()
+                    Position = new Vector
                     {
                         X = 500,
                         Y = 500,
@@ -564,7 +564,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 {
                     NadeType = EquipmentElement.Decoy,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
-                    Position = new Vector()
+                    Position = new Vector
                     {
                         X = 500,
                         Y = 500,
@@ -573,9 +573,9 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var ChickenValues = new List<ChickenKilledEventArgs>() { new() { } };
+            var ChickenValues = new List<ChickenKilledEventArgs> { new() { } };
 
-            var ShotsFiredValues = new List<ShotFired>()
+            var ShotsFiredValues = new List<ShotFired>
             {
                 new()
                 {
@@ -628,7 +628,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var playerPositionsStats = new List<PlayerPositionsInstance>()
+            var playerPositionsStats = new List<PlayerPositionsInstance>
             {
                 new()
                 {
@@ -642,14 +642,14 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            ProcessedData = new ProcessedData()
+            ProcessedData = new ProcessedData
             {
                 DemoInformation = DemoInformation,
                 SameFilename = true,
                 SameFolderStructure = true,
                 ParseChickens = true,
                 ParsePlayerPositions = true,
-                FoldersToProcess = new List<string>() { "someFolder" },
+                FoldersToProcess = new List<string> { "someFolder" },
                 OutputRootFolder = "outputFolder",
                 tanookiStats = tanookiStats,
                 MatchStartValues = MatchStartValues,
@@ -888,7 +888,7 @@ namespace SourceEngine.Demo.Stats.Tests
             public void Should_return_map_info_correctly_for_hostage_maps()
             {
                 // Arrange
-                ProcessedData.DemoInformation = new DemoInformation()
+                ProcessedData.DemoInformation = new DemoInformation
                 {
                     DemoName = "demo2",
                     MapName = "de_testmap2",
@@ -897,7 +897,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
-                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
+                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>
                 {
                     new()
                     {
@@ -921,7 +921,7 @@ namespace SourceEngine.Demo.Stats.Tests
             public void Should_return_map_info_correctly_for_wingman_defuse_maps()
             {
                 // Arrange
-                ProcessedData.DemoInformation = new DemoInformation()
+                ProcessedData.DemoInformation = new DemoInformation
                 {
                     DemoName = "demo3",
                     MapName = "de_testmap3",
@@ -930,7 +930,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
-                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
+                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>
                 {
                     new()
                     {
@@ -954,7 +954,7 @@ namespace SourceEngine.Demo.Stats.Tests
             public void Should_return_map_info_correctly_for_wingman_hostage_maps()
             {
                 // Arrange
-                ProcessedData.DemoInformation = new DemoInformation()
+                ProcessedData.DemoInformation = new DemoInformation
                 {
                     DemoName = "demo4",
                     MapName = "de_testmap4",
@@ -963,7 +963,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
-                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
+                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>
                 {
                     new()
                     {
@@ -987,7 +987,7 @@ namespace SourceEngine.Demo.Stats.Tests
             public void Should_return_map_info_correctly_for_danger_zone_maps()
             {
                 // Arrange
-                ProcessedData.DemoInformation = new DemoInformation()
+                ProcessedData.DemoInformation = new DemoInformation
                 {
                     DemoName = "demo5",
                     MapName = "de_testmap5",
@@ -996,7 +996,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
-                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>()
+                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>
                 {
                     new()
                     {

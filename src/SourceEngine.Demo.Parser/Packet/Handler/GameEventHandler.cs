@@ -75,7 +75,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             {
                 data = MapData(eventDescriptor, rawEvent);
 
-                RoundStartedEventArgs rs = new RoundStartedEventArgs()
+                RoundStartedEventArgs rs = new RoundStartedEventArgs
                 {
                     TimeLimit = (int)data["timelimit"],
                     FragLimit = (int)data["fraglimit"],
@@ -114,7 +114,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 //round length
                 double roundLength = parser.CurrentTime - timestampFreezetimeEnded;
 
-                RoundEndedEventArgs roundEnd = new RoundEndedEventArgs()
+                RoundEndedEventArgs roundEnd = new RoundEndedEventArgs
                 {
                     Reason = (RoundEndReason)data["reason"],
                     Winner = t,
@@ -134,7 +134,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 //round length
                 double roundLength = parser.CurrentTime - timestampFreezetimeEnded;
 
-                RoundOfficiallyEndedEventArgs roundOfficiallyEnded = new RoundOfficiallyEndedEventArgs()
+                RoundOfficiallyEndedEventArgs roundOfficiallyEnded = new RoundOfficiallyEndedEventArgs
                 {
                     Length = roundLength,
                 };
@@ -230,7 +230,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 //round length
                 timestampFreezetimeEnded = parser.CurrentTime;
 
-                FreezetimeEndedEventArgs freezetimeEnd = new FreezetimeEndedEventArgs()
+                FreezetimeEndedEventArgs freezetimeEnd = new FreezetimeEndedEventArgs
                 {
                     TimeEnd = parser.CurrentTime,
                 };

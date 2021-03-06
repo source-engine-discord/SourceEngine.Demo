@@ -528,7 +528,7 @@ namespace SourceEngine.Demo.Stats.App
                 if (mdTest.passed)
                 {
                     // create the json output files using the data gathered
-                    var processedData = new ProcessedData()
+                    var processedData = new ProcessedData
                     {
                         DemoInformation = demosInformation[i],
                         SameFilename = sameFilename,

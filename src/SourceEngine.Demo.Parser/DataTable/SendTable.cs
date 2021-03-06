@@ -10,7 +10,7 @@ namespace SourceEngine.Demo.Parser.DataTable
 
             foreach (var prop in dataTable.Parse(bitstream))
             {
-                SendTableProperty property = new SendTableProperty()
+                SendTableProperty property = new SendTableProperty
                 {
                     DataTableName = prop.DtName,
                     HighValue = prop.HighValue,

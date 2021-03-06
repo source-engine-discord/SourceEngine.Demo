@@ -614,7 +614,7 @@ namespace SourceEngine.Demo.Parser
 
         private void RecordPlayerPositions()
         {
-            var playerPositionsEventArgs = new PlayerPositionsEventArgs()
+            var playerPositionsEventArgs = new PlayerPositionsEventArgs
             {
                 CurrentTime = CurrentTime,
                 PlayerPositions = new List<PlayerPositionEventArgs>(),
@@ -625,7 +625,7 @@ namespace SourceEngine.Demo.Parser
                 var player = new Player(participant);
 
                 playerPositionsEventArgs.PlayerPositions.Add(
-                    new PlayerPositionEventArgs()
+                    new PlayerPositionEventArgs
                     {
                         Player = player,
                     }
@@ -690,7 +690,7 @@ namespace SourceEngine.Demo.Parser
 
                     if (newplayer && p.SteamID != 0)
                     {
-                        PlayerBindEventArgs bind = new PlayerBindEventArgs() { Player = p };
+                        PlayerBindEventArgs bind = new PlayerBindEventArgs { Player = p };
                         RaisePlayerBind(bind);
                     }
                 }
@@ -1331,7 +1331,7 @@ namespace SourceEngine.Demo.Parser
                         if (!rescueZoneIdsDoneAtLeastOnceMin.Any(x => x == trigger.Index))
                             rescueZoneIdsDoneAtLeastOnceMin.Add(trigger.Index);
 
-                        trigger.Min = new Vector()
+                        trigger.Min = new Vector
                         {
                             X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count - 1].X + vector.Value.X,
                             Y = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count - 1].Y + vector.Value.Y,
@@ -1351,7 +1351,7 @@ namespace SourceEngine.Demo.Parser
                         if (!rescueZoneIdsDoneAtLeastOnceMax.Any(x => x == trigger.Index))
                             rescueZoneIdsDoneAtLeastOnceMax.Add(trigger.Index);
 
-                        trigger.Max = new Vector()
+                        trigger.Max = new Vector
                         {
                             X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count - 1].X + vector.Value.X,
                             Y = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count - 1].Y + vector.Value.Y,
