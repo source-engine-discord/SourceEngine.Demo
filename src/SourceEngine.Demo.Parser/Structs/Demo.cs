@@ -5,37 +5,81 @@ using SourceEngine.Demo.Parser.BitStream;
 namespace SourceEngine.Demo.Parser.Structs
 {
     /// <summary>
-    /// A Demo header.
+    /// Header of a demo file.
     /// </summary>
     public class DemoHeader
     {
         private const int MAX_OSPATH = 260;
 
-        public string Filestamp { get; private set; } // Should be HL2DEMO
+        /// <summary>
+        /// File type.
+        /// </summary>
+        /// <remarks>
+        /// Should always be <c>DEMO_HEADER_ID</c> (<c>"HL2DEMO"</c>).
+        /// </remarks>
+        public string Filestamp { get; private set; }
 
-        public int Protocol { get; private set; } // Should be DEMO_PROTOCOL (4)
+        /// <summary>
+        /// Demo protocol version number.
+        /// </summary>
+        /// <remarks>
+        /// Should always be <c>DEMO_PROTOCOL</c> (<c>4</c>).
+        /// </remarks>
+        public int Protocol { get; private set; }
 
-        [Obsolete("This was a typo. Use NetworkProtocol instead")]
-        public int NetworkProtocal => NetworkProtocol;
+        /// <summary>
+        /// Network protocol version.
+        /// </summary>
+        /// <remarks>
+        /// Derived from the <c>PatchVersion</c> in <c>steam.inf</c>.
+        /// </remarks>
+        public int NetworkProtocol { get; private set; }
 
-        public int NetworkProtocol { get; private set; } // Should be PROTOCOL_VERSION
+        /// <summary>
+        /// Name of the server.
+        /// </summary>
+        public string ServerName { get; private set; }
 
-        public string ServerName { get; private set; } // Name of server
+        /// <summary>
+        /// Name of the client that recorded the game.
+        /// </summary>
+        public string ClientName { get; private set; }
 
-        public string ClientName { get; private set; } // Name of client who recorded the game
+        /// <summary>
+        /// Name of the map.
+        /// </summary>
+        public string MapName { get; private set; }
 
-        public string MapName { get; private set; } // Name of map
+        /// <summary>
+        /// Path to the game directory.
+        /// </summary>
+        public string GameDirectory { get; private set; }
 
-        public string GameDirectory { get; private set; } // Name of game directory (com_gamedir)
+        /// <summary>
+        /// Length of the demo in seconds.
+        /// </summary>
+        public float PlaybackTime { get; private set; }
 
-        public float PlaybackTime { get; private set; } // Time of track
+        /// <summary>
+        /// Number of ticks in the demo.
+        /// </summary>
+        public int PlaybackTicks { get; private set; }
 
-        public int PlaybackTicks { get; private set; } // # of ticks in track
+        /// <summary>
+        /// Number of frames in the demo.
+        /// </summary>
+        public int PlaybackFrames { get; private set; }
 
-        public int PlaybackFrames { get; private set; } // # of frames in track
+        /// <summary>
+        /// Length of the sign-on data in bytes.
+        /// </summary>
+        public int SignonLength { get; private set; }
 
-        public int SignonLength { get; private set; } // length of sigondata in bytes
-
+        /// <summary>
+        /// Parse a raw data stream into a new <see cref="DemoHeader"/>.
+        /// </summary>
+        /// <param name="reader">The data stream to parse.</param>
+        /// <returns>A <see cref="DemoHeader"/> containing values from the parsed stream.</returns>
         public static DemoHeader ParseFrom(IBitStream reader)
         {
             return new()
