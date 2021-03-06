@@ -311,44 +311,17 @@ namespace SourceEngine.Demo.Stats.App
 
             foreach (string folder in foldersToProcess)
             {
-                try
+                string[] subDemos = Directory.GetFiles(
+                    Path.GetFullPath(folder),
+                    "*.dem",
+                    recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
+                );
+
+                foreach (string demo in subDemos)
                 {
-                    string[] subDemos = Directory.GetFiles(
-                        Path.GetFullPath(folder),
-                        "*.dem",
-                        recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
-                    );
+                    string[] pathSplit = demo.Split('\\');
 
-                    foreach (string demo in subDemos)
-                    {
-                        string[] pathSplit = demo.Split('\\');
-
-                        string[] filenameSplit = pathSplit[^1].Split('.');
-                        bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
-
-                        AddDemoInformation(
-                            demosInformation,
-                            demo,
-                            gamemodeoverride,
-                            testType,
-                            testdateoverride,
-                            isFaceitDemo,
-                            filenameSplit,
-                            pathSplit
-                        );
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw e;
-                }
-            }
-
-            foreach (string demo in demosToProcess)
-            {
-                try
-                {
-                    string[] filenameSplit = demo.Split('.');
+                    string[] filenameSplit = pathSplit[^1].Split('.');
                     bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
 
                     AddDemoInformation(
@@ -359,13 +332,26 @@ namespace SourceEngine.Demo.Stats.App
                         testdateoverride,
                         isFaceitDemo,
                         filenameSplit,
-                        Array.Empty<string>()
+                        pathSplit
                     );
                 }
-                catch (Exception e)
-                {
-                    throw e;
-                }
+            }
+
+            foreach (string demo in demosToProcess)
+            {
+                string[] filenameSplit = demo.Split('.');
+                bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid guid);
+
+                AddDemoInformation(
+                    demosInformation,
+                    demo,
+                    gamemodeoverride,
+                    testType,
+                    testdateoverride,
+                    isFaceitDemo,
+                    filenameSplit,
+                    Array.Empty<string>()
+                );
             }
 
             Debug.Info("Starting processing of {0} demos.\n", demosInformation.Count);
