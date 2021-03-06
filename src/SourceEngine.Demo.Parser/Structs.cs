@@ -314,7 +314,7 @@ namespace SourceEngine.Demo.Parser
         Signon = 1,
 
         /// <summary>
-        // it's a normal network packet that we stored off
+        /// it's a normal network packet that we stored off
         /// </summary>
         Packet,
 

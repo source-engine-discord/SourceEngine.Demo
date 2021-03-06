@@ -19,6 +19,7 @@ namespace SourceEngine.Demo.Parser.Packet
         /// </summary>
         /// <param name="bitstream">Bitstream.</param>
         /// <param name="demo">Demo.</param>
+        /// <param name="parseChickens"><c>true</c> if chickens should be counted; <c>false</c> otherwise.</param>
         public static void ParsePacket(IBitStream bitstream, DemoParser demo, bool parseChickens)
         {
             //As long as there is stuff to read

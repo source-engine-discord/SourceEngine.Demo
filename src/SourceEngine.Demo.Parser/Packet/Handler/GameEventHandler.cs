@@ -47,6 +47,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         /// </summary>
         /// <param name="rawEvent">The raw event.</param>
         /// <param name="parser">The parser to mutate.</param>
+        /// <param name="parseChickens"><c>true</c> if chickens should be counted; <c>false</c> otherwise.</param>
         public static void Apply(GameEvent rawEvent, DemoParser parser, bool parseChickens)
         {
             int numOfChickensAlive = 0;

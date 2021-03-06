@@ -14,11 +14,11 @@ namespace SourceEngine.Demo.Stats.App
 
     //Todo: add some other settings that can be written in a text file
     //Todo: add a formal config parser
-    public class Config
+    internal class Config
     {
-        public readonly Dictionary<string, string> keyVals = new();
+        internal readonly Dictionary<string, string> keyVals = new();
 
-        public Config(string path)
+        internal Config(string path)
         {
             StreamReader sr = new StreamReader(path);
 

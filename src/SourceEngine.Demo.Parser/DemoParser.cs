@@ -366,7 +366,7 @@ namespace SourceEngine.Demo.Parser
         internal readonly List<CreateStringTable> stringTables = new();
 
         /// <summary>
-        /// An map entity <-> weapon. Used to remember whether a weapon is a p250,
+        /// Map an entity to a weapon. Used to remember whether a weapon is a p250,
         /// how much ammunition it has, etc.
         /// </summary>
         private readonly Equipment[] weapons = new Equipment[MAX_ENTITIES];
@@ -523,6 +523,12 @@ namespace SourceEngine.Demo.Parser
         /// Hint: ParseHeader() is probably what you want to look into next.
         /// </summary>
         /// <param name="input">An input-stream.</param>
+        /// <param name="parseChickens"><c>true</c> if chickens should be counted; <c>false</c> otherwise.</param>
+        /// <param name="parsePlayerPositions">
+        /// <c>true</c> if player positions should be parsed; <c>false</c> otherwise.
+        /// </param>
+        /// <param name="gamemode">The kind of game that was played. Used to infer the amount of rescue zones.</param>
+        /// <param name="hostagerescuezonecountoverride">Amount of hostage rescue zones to assume are present.</param>
         public DemoParser(
             Stream input,
             bool parseChickens = true,
