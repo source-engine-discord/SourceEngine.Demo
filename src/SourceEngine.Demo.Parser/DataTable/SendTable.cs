@@ -10,7 +10,7 @@ namespace SourceEngine.Demo.Parser.DataTable
         {
             Messages.Fast.Net.SendTable dataTable = new Messages.Fast.Net.SendTable();
 
-            foreach (var prop in dataTable.Parse(bitstream))
+            foreach (Messages.Fast.Net.SendTable.SendProp prop in dataTable.Parse(bitstream))
             {
                 SendTableProperty property = new SendTableProperty
                 {

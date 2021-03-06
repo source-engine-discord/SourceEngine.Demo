@@ -21,7 +21,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         public static void HandleGameEventList(IEnumerable<GameEventList.Descriptor> gel, DemoParser parser)
         {
             parser.EventDescriptors = new Dictionary<int, GameEventList.Descriptor>();
-            foreach (var d in gel)
+            foreach (GameEventList.Descriptor d in gel)
                 parser.EventDescriptors[d.EventId] = d;
         }
 
@@ -58,16 +58,16 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                         parser
                     ); //awkward temporary method of counting the number of chickens as killing a chicken does not seem to trigger the other_death event
 
-            var descriptors = parser.EventDescriptors;
+            Dictionary<int, GameEventList.Descriptor> descriptors = parser.EventDescriptors;
 
             //previous blind implementation
-            var blindPlayers = parser.BlindPlayers;
+            List<Player> blindPlayers = parser.BlindPlayers;
 
             if (descriptors == null)
                 return;
 
             Dictionary<string, object> data;
-            var eventDescriptor = descriptors[rawEvent.EventId];
+            GameEventList.Descriptor eventDescriptor = descriptors[rawEvent.EventId];
 
             if (parser.Players.Count == 0 && eventDescriptor.Name != "player_connect")
                 return;
@@ -201,8 +201,8 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 parser.HandleBombSitesAndRescueZones();
 
                 //checks if the map contains bombsite triggers to figure out the game mode
-                var bombsiteCenterA = parser.bombsiteACenter;
-                var bombsiteCenterB = parser.bombsiteBCenter;
+                Vector bombsiteCenterA = parser.bombsiteACenter;
+                Vector bombsiteCenterB = parser.bombsiteBCenter;
 
                 bool hasBombsiteA = bombsiteCenterA.X != 0 || bombsiteCenterA.Y != 0 || bombsiteCenterA.Z != 0
                     || bombsiteCenterA.Absolute != 0 || bombsiteCenterA.AbsoluteSquared != 0
@@ -409,7 +409,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                     if (parser.Players.ContainsKey((int)data["userid"]))
                     {
-                        var blindPlayer = parser.Players.ContainsKey((int)data["userid"])
+                        Player blindPlayer = parser.Players.ContainsKey((int)data["userid"])
                             ? new Player(parser.Players[(int)data["userid"]])
                             : null;
 
@@ -461,14 +461,14 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     parser.RaiseSmokeEnd(FillNadeEvent<SmokeEventArgs>(MapData(eventDescriptor, rawEvent), parser));
                     break;
                 case "inferno_startburn":
-                    var fireData = MapData(eventDescriptor, rawEvent);
+                    Dictionary<string, object> fireData = MapData(eventDescriptor, rawEvent);
                     var fireArgs = FillNadeEvent<FireEventArgs>(fireData, parser);
                     var fireStarted = new Tuple<int, FireEventArgs>((int)fireData["entityid"], fireArgs);
                     parser.StartBurnEvents.Enqueue(fireStarted);
                     parser.RaiseFireStart(fireArgs);
                     break;
                 case "inferno_expire":
-                    var fireEndData = MapData(eventDescriptor, rawEvent);
+                    Dictionary<string, object> fireEndData = MapData(eventDescriptor, rawEvent);
                     var fireEndArgs = FillNadeEvent<FireEventArgs>(fireEndData, parser);
                     int entityID = (int)fireEndData["entityid"];
                     fireEndArgs.ThrownBy = parser.InfernoOwners[entityID];
@@ -583,7 +583,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                         }
                         else
                         {
-                            var relevantTrigger = parser.triggers.Single(a => a.Index == site);
+                            BoundingBoxInformation relevantTrigger = parser.triggers.Single(a => a.Index == site);
 
                             if (relevantTrigger.Contains(parser.bombsiteACenter))
                             {

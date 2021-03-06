@@ -10,7 +10,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
     {
         public static object DecodeProp(FlattenedPropEntry prop, IBitStream stream)
         {
-            var sendProp = prop.Prop;
+            SendTableProperty sendProp = prop.Prop;
 
             switch (sendProp.Type)
             {
@@ -23,7 +23,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 case SendPropertyType.Vector:
                     return DecodeVector(sendProp, stream);
                 case SendPropertyType.Array:
-                    var test = DecodeArray(prop, stream);
+                    object[] test = DecodeArray(prop, stream);
                     return test;
                 case SendPropertyType.String:
                     return DecodeString(sendProp, stream);

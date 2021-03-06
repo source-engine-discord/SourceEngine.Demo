@@ -32,7 +32,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     if (reader.ReadBit())
                     {
                         //create it
-                        var e = ReadEnterPVS(reader, currentEntity, parser);
+                        Entity e = ReadEnterPVS(reader, currentEntity, parser);
 
                         parser.Entities[currentEntity] = e;
 
@@ -102,7 +102,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                 if (parser.instanceBaseline.ContainsKey(serverClassID))
                     using (new PropertyCollector(newEntity, preprocessedBaseline))
-                    using (var bitStream = BitStreamUtil.Create(parser.instanceBaseline[serverClassID]))
+                    using (IBitStream bitStream = BitStreamUtil.Create(parser.instanceBaseline[serverClassID]))
                     {
                         newEntity.ApplyUpdate(bitStream);
                     }
@@ -123,7 +123,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 Underlying = underlying;
                 Capture = capture;
 
-                foreach (var prop in Underlying.Props)
+                foreach (PropertyEntry prop in Underlying.Props)
                 {
                     switch (prop.Entry.Prop.Type)
                     {
@@ -154,7 +154,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
             public void Dispose()
             {
-                foreach (var prop in Underlying.Props)
+                foreach (PropertyEntry prop in Underlying.Props)
                 {
                     switch (prop.Entry.Prop.Type)
                     {

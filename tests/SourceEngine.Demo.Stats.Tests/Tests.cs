@@ -24,12 +24,12 @@ namespace SourceEngine.Demo.Stats.Tests
             MatchData = new MatchData();
             MockData();
 
-            foreach (var teamPlayers in ProcessedData.TeamPlayersValues)
+            foreach (TeamPlayers teamPlayers in ProcessedData.TeamPlayersValues)
             {
-                foreach (var player in teamPlayers.Terrorists)
+                foreach (Player player in teamPlayers.Terrorists)
                     MatchData.BindPlayer(player);
 
-                foreach (var player in teamPlayers.CounterTerrorists)
+                foreach (Player player in teamPlayers.CounterTerrorists)
                     MatchData.BindPlayer(player);
             }
         }

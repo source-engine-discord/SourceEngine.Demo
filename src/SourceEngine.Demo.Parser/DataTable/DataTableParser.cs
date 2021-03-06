@@ -73,7 +73,7 @@ namespace SourceEngine.Demo.Parser.DataTable
 
             GatherProps(table, serverClassIndex, "");
 
-            var flattenedProps = ServerClasses[serverClassIndex].FlattenedProps;
+            List<FlattenedPropEntry> flattenedProps = ServerClasses[serverClassIndex].FlattenedProps;
 
             List<int> priorities = new List<int> { 64 };
             priorities.AddRange(flattenedProps.Select(a => a.Prop.Priority).Distinct());
@@ -121,7 +121,7 @@ namespace SourceEngine.Demo.Parser.DataTable
                     .Select(a => new ExcludeEntry(a.Name, a.DataTableName, sendTable.Name))
             );
 
-            foreach (var prop in sendTable.Properties.Where(a => a.Type == SendPropertyType.DataTable))
+            foreach (SendTableProperty prop in sendTable.Properties.Where(a => a.Type == SendPropertyType.DataTable))
             {
                 if (collectBaseClasses && prop.Name == "baseclass")
                 {

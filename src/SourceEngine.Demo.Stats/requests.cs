@@ -12,7 +12,7 @@ namespace SourceEngine.Demo.Stats
             var client = new HttpClient();
             var content = new FormUrlEncodedContent(data);
 
-            var response = client.PostAsync(url, content).Result;
+            HttpResponseMessage response = client.PostAsync(url, content).Result;
 
             if (response.IsSuccessStatusCode)
                 return await response.Content.ReadAsStringAsync();

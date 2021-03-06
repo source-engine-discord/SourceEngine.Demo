@@ -16,7 +16,7 @@ namespace SourceEngine.Demo.Parser.Packet
             ID = id;
             ServerClass = serverClass;
 
-            var flattenedProps = ServerClass.FlattenedProps;
+            List<FlattenedPropEntry> flattenedProps = ServerClass.FlattenedProps;
             Props = new PropertyEntry[flattenedProps.Count];
             for (int i = 0; i < flattenedProps.Count; i++)
                 Props[i] = new PropertyEntry(flattenedProps[i], i);
@@ -53,7 +53,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 entries.Add(Props[index]);
 
             //Now read the updated props
-            foreach (var prop in entries)
+            foreach (PropertyEntry prop in entries)
                 prop.Decode(reader, this);
         }
 
@@ -97,7 +97,7 @@ namespace SourceEngine.Demo.Parser.Packet
 
         public void Leave()
         {
-            foreach (var prop in Props)
+            foreach (PropertyEntry prop in Props)
                 prop.Destroy();
         }
 
@@ -216,7 +216,7 @@ namespace SourceEngine.Demo.Parser.Packet
                     break;
                 case SendPropertyType.Vector:
                 {
-                    var val = PropDecoder.DecodeVector(Entry.Prop, stream);
+                    Vector val = PropDecoder.DecodeVector(Entry.Prop, stream);
                     VectorRecived?.Invoke(this, new PropertyUpdateEventArgs<Vector>(val, e, this));
 
                     SaveValue(val);
@@ -226,7 +226,7 @@ namespace SourceEngine.Demo.Parser.Packet
                     break;
                 case SendPropertyType.Array:
                 {
-                    var val = PropDecoder.DecodeArray(Entry, stream);
+                    object[] val = PropDecoder.DecodeArray(Entry, stream);
                     ArrayRecived?.Invoke(this, new PropertyUpdateEventArgs<object[]>(val, e, this));
 
                     SaveValue(val);
@@ -246,7 +246,7 @@ namespace SourceEngine.Demo.Parser.Packet
                     break;
                 case SendPropertyType.VectorXY:
                 {
-                    var val = PropDecoder.DecodeVectorXY(Entry.Prop, stream);
+                    Vector val = PropDecoder.DecodeVectorXY(Entry.Prop, stream);
                     VectorRecived?.Invoke(this, new PropertyUpdateEventArgs<Vector>(val, e, this));
 
                     SaveValue(val);
@@ -327,11 +327,11 @@ namespace SourceEngine.Demo.Parser.Packet
 
         public static void Emit(Entity entity, IEnumerable<object> captured)
         {
-            foreach (var arg in captured)
+            foreach (object arg in captured)
             {
                 if (arg is RecordedPropertyUpdate<int> intReceived)
                 {
-                    var e = entity.Props[intReceived.PropIndex].IntRecived;
+                    EventHandler<PropertyUpdateEventArgs<int>> e = entity.Props[intReceived.PropIndex].IntRecived;
 
                     e?.Invoke(
                         null,
@@ -344,7 +344,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 }
                 else if (arg is RecordedPropertyUpdate<long> int64Received)
                 {
-                    var e = entity.Props[int64Received.PropIndex].Int64Received;
+                    EventHandler<PropertyUpdateEventArgs<long>> e = entity.Props[int64Received.PropIndex].Int64Received;
 
                     e?.Invoke(
                         null,
@@ -357,7 +357,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 }
                 else if (arg is RecordedPropertyUpdate<float> floatReceived)
                 {
-                    var e = entity.Props[floatReceived.PropIndex].FloatRecived;
+                    EventHandler<PropertyUpdateEventArgs<float>> e = entity.Props[floatReceived.PropIndex].FloatRecived;
 
                     e?.Invoke(
                         null,
@@ -370,7 +370,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 }
                 else if (arg is RecordedPropertyUpdate<Vector> vectorReceived)
                 {
-                    var e = entity.Props[vectorReceived.PropIndex].VectorRecived;
+                    EventHandler<PropertyUpdateEventArgs<Vector>> e = entity.Props[vectorReceived.PropIndex].VectorRecived;
 
                     e?.Invoke(
                         null,
@@ -383,7 +383,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 }
                 else if (arg is RecordedPropertyUpdate<string> stringReceived)
                 {
-                    var e = entity.Props[stringReceived.PropIndex].StringRecived;
+                    EventHandler<PropertyUpdateEventArgs<string>> e = entity.Props[stringReceived.PropIndex].StringRecived;
 
                     e?.Invoke(
                         null,
@@ -396,7 +396,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 }
                 else if (arg is RecordedPropertyUpdate<object[]> arrayReceived)
                 {
-                    var e = entity.Props[arrayReceived.PropIndex].ArrayRecived;
+                    EventHandler<PropertyUpdateEventArgs<object[]>> e = entity.Props[arrayReceived.PropIndex].ArrayRecived;
 
                     e?.Invoke(
                         null,

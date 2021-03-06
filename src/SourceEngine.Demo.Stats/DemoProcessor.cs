@@ -112,7 +112,7 @@ namespace SourceEngine.Demo.Stats
                 if (!playerLookups.ContainsKey(p.UserID))
                 {
                     // check if player has been added twice with different UserIDs
-                    var duplicate = playerLookups.FirstOrDefault(x => x.Value == p.SteamID);
+                    KeyValuePair<int, long> duplicate = playerLookups.FirstOrDefault(x => x.Value == p.SteamID);
 
                     if (duplicate.Key == 0) // if the steam ID was 0
                         duplicate = playerLookups.FirstOrDefault(x => x.Key == duplicateIdToRemoveTicks);
@@ -150,7 +150,7 @@ namespace SourceEngine.Demo.Stats
                     // replace current mappings between an ancient userID & the old userID, to use the new userID as the value instead
                     if (playerReplacements.Any(r => r.Value == idRemoved))
                     {
-                        var keysToReplaceValue = playerReplacements.Where(r => r.Value == idRemoved).Select(r => r.Key);
+                        IEnumerable<int> keysToReplaceValue = playerReplacements.Where(r => r.Value == idRemoved).Select(r => r.Key);
 
                         foreach (var userId in keysToReplaceValue.ToList())
                             playerReplacements[userId] = p.UserID;
@@ -223,7 +223,7 @@ namespace SourceEngine.Demo.Stats
                         if (round > 0 && playerPosition.Player.SteamID > 0)
                         {
                             bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(md, playerPosition.Player, round);
-                            var freezetimeEndedEvents = md.events
+                            List<object> freezetimeEndedEvents = md.events
                                 .Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value)
                                 .ElementAt(0);
 
@@ -298,7 +298,7 @@ namespace SourceEngine.Demo.Stats
                 md.addEvent(typeof(MatchStartedEventArgs), e);
 
                 //adds all stored fb messages back
-                foreach (var feedbackMessage in currentfeedbackMessages)
+                foreach (FeedbackMessage feedbackMessage in currentfeedbackMessages)
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
 
                 //print rounds complete out to console
@@ -345,13 +345,13 @@ namespace SourceEngine.Demo.Stats
                         player?.ViewDirectionY
                     );
 
-                    var roundsOfficiallyEndedEvents =
+                    List<object> roundsOfficiallyEndedEvents =
                         md.events.Any(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
                             ? md.events.Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
                                 .Select(v => v.Value).ElementAt(0)
                             : null;
 
-                    var freezetimesEndedEvents = md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
+                    List<object> freezetimesEndedEvents = md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                         ? md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value)
                             .ElementAt(0)
                         : null;
@@ -400,13 +400,13 @@ namespace SourceEngine.Demo.Stats
 
             dp.RoundEnd += (_, e) =>
             {
-                var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
+                IEnumerable<List<object>> roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
                     .Select(v => v.Value);
 
-                var roundsOfficiallyEndedEvents = md.events
+                IEnumerable<List<object>> roundsOfficiallyEndedEvents = md.events
                     .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
-                var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
+                IEnumerable<List<object>> freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                     .Select(v => v.Value);
 
                 int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
@@ -466,13 +466,13 @@ namespace SourceEngine.Demo.Stats
 
             dp.RoundOfficiallyEnded += (_, e) =>
             {
-                var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
+                IEnumerable<List<object>> roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
                     .Select(v => v.Value);
 
-                var roundsOfficiallyEndedEvents = md.events
+                IEnumerable<List<object>> roundsOfficiallyEndedEvents = md.events
                     .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
-                var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
+                IEnumerable<List<object>> freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                     .Select(v => v.Value);
 
                 int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
@@ -560,13 +560,13 @@ namespace SourceEngine.Demo.Stats
 
             dp.FreezetimeEnded += (_, e) =>
             {
-                var freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
+                IEnumerable<List<object>> freezetimesEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                     .Select(v => v.Value);
 
-                var roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
+                IEnumerable<List<object>> roundsEndedEvents = md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs")
                     .Select(v => v.Value);
 
-                var roundsOfficiallyEndedEvents = md.events
+                IEnumerable<List<object>> roundsOfficiallyEndedEvents = md.events
                     .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
                 int numOfFreezetimesEnded =
@@ -649,7 +649,7 @@ namespace SourceEngine.Demo.Stats
 
                 //work out teams at current round
                 int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-                var players = dp.PlayingParticipants;
+                IEnumerable<Player> players = dp.PlayingParticipants;
 
                 TeamPlayers teams = new TeamPlayers
                 {
@@ -663,7 +663,7 @@ namespace SourceEngine.Demo.Stats
                 int tEquipValue = 0, ctEquipValue = 0;
                 int tExpenditure = 0, ctExpenditure = 0;
 
-                foreach (var player in teams.Terrorists)
+                foreach (Player player in teams.Terrorists)
                 {
                     tEquipValue += player.CurrentEquipmentValue; // player.FreezetimeEndEquipmentValue = 0 ???
                     tExpenditure +=
@@ -672,7 +672,7 @@ namespace SourceEngine.Demo.Stats
                             .RoundStartEquipmentValue; // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
                 }
 
-                foreach (var player in teams.CounterTerrorists)
+                foreach (Player player in teams.CounterTerrorists)
                 {
                     ctEquipValue += player.CurrentEquipmentValue; // player.FreezetimeEndEquipmentValue = 0 ???
                     ctExpenditure +=
@@ -990,7 +990,7 @@ namespace SourceEngine.Demo.Stats
 
             var mapNameString = mapNameSplit.Length > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
-            var dataAndPlayerNames = GetDataAndPlayerNames(processedData);
+            DataAndPlayerNames dataAndPlayerNames = GetDataAndPlayerNames(processedData);
 
             PlayerPositionsStats playerPositionsStats = null;
 
@@ -1009,7 +1009,7 @@ namespace SourceEngine.Demo.Stats
                     dataAndPlayerNames.PlayerNames
                 );
 
-            var generalroundsStats = GetGeneralRoundsStats(processedData, dataAndPlayerNames.PlayerNames);
+            GeneralroundsStats generalroundsStats = GetGeneralRoundsStats(processedData, dataAndPlayerNames.PlayerNames);
             if (CheckIfStatsShouldBeCreated("winnersStats", processedData.DemoInformation.GameMode))
                 allStats.winnersStats = generalroundsStats.winnersStats;
 
@@ -1026,7 +1026,7 @@ namespace SourceEngine.Demo.Stats
                 allStats.rescueZoneStats = GetRescueZoneStats();
 
             string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
-            var nadeGroups = GetNadeGroups(processedData, nadeTypes);
+            List<IEnumerable<NadeEventArgs>> nadeGroups = GetNadeGroups(processedData, nadeTypes);
             if (CheckIfStatsShouldBeCreated("grenadesTotalStats", processedData.DemoInformation.GameMode))
                 allStats.grenadesTotalStats = GetGrenadesTotalStats(nadeGroups, nadeTypes);
 
@@ -1230,7 +1230,7 @@ namespace SourceEngine.Demo.Stats
             List<playerStats> playerStats = new List<playerStats>();
 
             // remove team kills and suicides from kills (easy messy implementation)
-            foreach (var kill in processedData.PlayerKilledEventsValues)
+            foreach (PlayerKilledEventArgs kill in processedData.PlayerKilledEventsValues)
             {
                 if (kill.Killer != null && kill.Killer.Name != "unconnected")
                 {
@@ -1249,7 +1249,7 @@ namespace SourceEngine.Demo.Stats
 
             foreach (long player in data.Keys)
             {
-                var match = playerNames.Where(p => p.Key.ToString() == player.ToString());
+                IEnumerable<KeyValuePair<long, Dictionary<string, string>>> match = playerNames.Where(p => p.Key.ToString() == player.ToString());
                 var playerName = match.ElementAt(0).Value.ElementAt(0).Value;
                 var steamID = match.ElementAt(0).Key;
 
@@ -1328,8 +1328,8 @@ namespace SourceEngine.Demo.Stats
 
             // winning team & total rounds stats
             IEnumerable<SwitchSidesEventArgs> switchSides = processedData.SwitchSidesValues;
-            var roundsWonTeams = GetRoundsWonTeams(processedData.TeamValues);
-            var roundsWonReasons = GetRoundsWonReasons(processedData.RoundEndReasonValues);
+            List<Team> roundsWonTeams = GetRoundsWonTeams(processedData.TeamValues);
+            List<RoundEndReason> roundsWonReasons = GetRoundsWonReasons(processedData.RoundEndReasonValues);
             int totalRoundsWonTeamAlpha = 0, totalRoundsWonTeamBeta = 0;
 
             for (int i = 0; i < roundsWonTeams.Count; i++)
@@ -1399,17 +1399,17 @@ namespace SourceEngine.Demo.Stats
 
                     // team count values
                     int roundNum = i + 1;
-                    var currentRoundTeams =
+                    TeamPlayers currentRoundTeams =
                         processedData.TeamPlayersValues.FirstOrDefault(t => t.Round == roundNum);
 
-                    foreach (var player in currentRoundTeams.Terrorists) // make sure steamID's aren't 0
+                    foreach (Player player in currentRoundTeams.Terrorists) // make sure steamID's aren't 0
                     {
                         player.SteamID = player.SteamID == 0
                             ? GetSteamIdByPlayerName(playerNames, player.Name)
                             : player.SteamID;
                     }
 
-                    foreach (var player in currentRoundTeams.CounterTerrorists) // make sure steamID's aren't 0
+                    foreach (Player player in currentRoundTeams.CounterTerrorists) // make sure steamID's aren't 0
                     {
                         player.SteamID = player.SteamID == 0
                             ? GetSteamIdByPlayerName(playerNames, player.Name)
@@ -1431,7 +1431,7 @@ namespace SourceEngine.Demo.Stats
                         : 0;
 
                     // equip values
-                    var teamEquipValues = processedData.TeamEquipmentValues.Count() >= i
+                    TeamEquipment teamEquipValues = processedData.TeamEquipmentValues.Count() >= i
                         ? processedData.TeamEquipmentValues.ElementAt(i)
                         : null;
 
@@ -1560,7 +1560,7 @@ namespace SourceEngine.Demo.Stats
                             };
 
                             //update data to ensure that future references to it are also updated
-                            var newHostagePickedUpValues = processedData.HostagePickedUpValues.ToList();
+                            List<HostagePickedUp> newHostagePickedUpValues = processedData.HostagePickedUpValues.ToList();
                             newHostagePickedUpValues.Add(hostagePickedUpA);
                             processedData.HostagePickedUpValues = newHostagePickedUpValues;
                         }
@@ -1577,7 +1577,7 @@ namespace SourceEngine.Demo.Stats
                             };
 
                             //update data to ensure that future references to it are also updated
-                            var newHostagePickedUpValues = processedData.HostagePickedUpValues.ToList();
+                            List<HostagePickedUp> newHostagePickedUpValues = processedData.HostagePickedUpValues.ToList();
                             newHostagePickedUpValues.Add(hostagePickedUpB);
                             processedData.HostagePickedUpValues = newHostagePickedUpValues;
                         }
@@ -1679,11 +1679,11 @@ namespace SourceEngine.Demo.Stats
         {
             List<bombsiteStats> bombsiteStats = new List<bombsiteStats>();
 
-            var bombsiteATrigger = dp?.triggers.Count > 0
+            BoundingBoxInformation bombsiteATrigger = dp?.triggers.Count > 0
                 ? dp.triggers.FirstOrDefault(x => x.Index == dp.bombsiteAIndex)
                 : null;
 
-            var bombsiteBTrigger = dp?.triggers.Count > 0
+            BoundingBoxInformation bombsiteBTrigger = dp?.triggers.Count > 0
                 ? dp.triggers.FirstOrDefault(x => x.Index == dp.bombsiteBIndex)
                 : null;
 
@@ -1784,7 +1784,7 @@ namespace SourceEngine.Demo.Stats
             List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
 
             if (dp?.triggers?.Count > 0)
-                foreach (var rescueZone in dp.triggers.Where(
+                foreach (BoundingBoxInformation rescueZone in dp.triggers.Where(
                     x => x.Index != dp.bombsiteAIndex && x.Index != dp.bombsiteBIndex
                 ))
                 {
@@ -1806,14 +1806,14 @@ namespace SourceEngine.Demo.Stats
 
         public static List<IEnumerable<NadeEventArgs>> GetNadeGroups(ProcessedData processedData, string[] nadeTypes)
         {
-            var flashes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[0]));
-            var smokes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[1]));
-            var hegrenades = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[2]));
-            var incendiaries = processedData.GrenadeValues.Where(
+            IEnumerable<NadeEventArgs> flashes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[0]));
+            IEnumerable<NadeEventArgs> smokes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[1]));
+            IEnumerable<NadeEventArgs> hegrenades = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[2]));
+            IEnumerable<NadeEventArgs> incendiaries = processedData.GrenadeValues.Where(
                 f => f.NadeType.ToString().Equals(nadeTypes[3]) || f.NadeType.ToString().Equals("Molotov")
             ); // should never be "Molotov" as all molotovs are down as incendiaries, specified why in DemoParser.cs, search for "FireNadeStarted".
 
-            var decoys = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[4]));
+            IEnumerable<NadeEventArgs> decoys = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[4]));
 
             return new List<IEnumerable<NadeEventArgs>>
             {
@@ -1852,13 +1852,13 @@ namespace SourceEngine.Demo.Stats
         {
             List<grenadesSpecificStats> grenadesSpecificStats = new List<grenadesSpecificStats>();
 
-            foreach (var nadeGroup in nadeGroups)
+            foreach (IEnumerable<NadeEventArgs> nadeGroup in nadeGroups)
             {
                 if (nadeGroup.Any())
                 {
                     bool flashGroup = nadeGroup.ElementAt(0).NadeType.ToString() == nadeTypes[0];
 
-                    foreach (var nade in nadeGroup)
+                    foreach (NadeEventArgs nade in nadeGroup)
                     {
                         string[] positions = SplitPositionString(nade.Position.ToString());
 
@@ -1921,7 +1921,7 @@ namespace SourceEngine.Demo.Stats
                 if (kills.ElementAt(i) != null && kills.ElementAt(i).LastAlivePosition != null
                     && deaths.ElementAt(i) != null && deaths.ElementAt(i).LastAlivePosition != null)
                 {
-                    var playerKilledEvent = processedData.PlayerKilledEventsValues.ElementAt(i);
+                    PlayerKilledEventArgs playerKilledEvent = processedData.PlayerKilledEventsValues.ElementAt(i);
 
                     if (playerKilledEvent != null)
                     {
@@ -2011,23 +2011,23 @@ namespace SourceEngine.Demo.Stats
         {
             List<FeedbackMessage> feedbackMessages = new List<FeedbackMessage>();
 
-            foreach (var message in processedData.MessagesValues)
+            foreach (FeedbackMessage message in processedData.MessagesValues)
             {
-                var currentRoundTeams = processedData.TeamPlayersValues
+                TeamPlayers currentRoundTeams = processedData.TeamPlayersValues
                     .FirstOrDefault(t => t.Round == message.Round);
 
                 if (currentRoundTeams != null && (message.SteamID == 0 || message.TeamName == null)
                 ) // excludes warmup round
                 {
                     // retrieve steam ID using player name if the event does not return it correctly
-                    foreach (var player in currentRoundTeams.Terrorists)
+                    foreach (Player player in currentRoundTeams.Terrorists)
                     {
                         player.SteamID = player.SteamID == 0
                             ? GetSteamIdByPlayerName(playerNames, player.Name)
                             : player.SteamID;
                     }
 
-                    foreach (var player in currentRoundTeams.CounterTerrorists)
+                    foreach (Player player in currentRoundTeams.CounterTerrorists)
                     {
                         player.SteamID = player.SteamID == 0
                             ? GetSteamIdByPlayerName(playerNames, player.Name)
@@ -2064,7 +2064,7 @@ namespace SourceEngine.Demo.Stats
             int swappedSidesCount = 0;
             int currentRoundChecking = 1;
 
-            foreach (var teamPlayers in processedData.TeamPlayersValues)
+            foreach (TeamPlayers teamPlayers in processedData.TeamPlayersValues)
             {
                 // players in each team per round
                 swappedSidesCount = switchSides.Count() > swappedSidesCount
@@ -2076,21 +2076,21 @@ namespace SourceEngine.Demo.Stats
 
                 bool firstHalf = swappedSidesCount % 2 == 0;
 
-                var currentRoundTeams =
+                TeamPlayers currentRoundTeams =
                     processedData.TeamPlayersValues.FirstOrDefault(t => t.Round == teamPlayers.Round);
 
-                var alphaPlayers = currentRoundTeams != null
+                List<Player> alphaPlayers = currentRoundTeams != null
                     ? firstHalf ? currentRoundTeams.Terrorists : currentRoundTeams.CounterTerrorists
                     : null;
 
-                var bravoPlayers = currentRoundTeams != null
+                List<Player> bravoPlayers = currentRoundTeams != null
                     ? firstHalf ? currentRoundTeams.CounterTerrorists : currentRoundTeams.Terrorists
                     : null;
 
                 List<long> alphaSteamIds = new List<long>();
                 List<long> bravoSteamIds = new List<long>();
 
-                foreach (var player in alphaPlayers)
+                foreach (Player player in alphaPlayers)
                 {
                     player.SteamID = player.SteamID == 0
                         ? GetSteamIdByPlayerName(playerNames, player.Name)
@@ -2099,7 +2099,7 @@ namespace SourceEngine.Demo.Stats
                     alphaSteamIds.Add(player.SteamID);
                 }
 
-                foreach (var player in bravoPlayers)
+                foreach (Player player in bravoPlayers)
                 {
                     player.SteamID = player.SteamID == 0
                         ? GetSteamIdByPlayerName(playerNames, player.Name)
@@ -2147,7 +2147,7 @@ namespace SourceEngine.Demo.Stats
                     bravoSteamIds.Remove(steamId);
 
                 // kills/death stats this round
-                var deathsThisRound = processedData.PlayerKilledEventsValues.Where(k => k.Round == teamPlayers.Round);
+                IEnumerable<PlayerKilledEventArgs> deathsThisRound = processedData.PlayerKilledEventsValues.Where(k => k.Round == teamPlayers.Round);
 
                 // kills this round
                 int alphaKills =
@@ -2238,7 +2238,7 @@ namespace SourceEngine.Demo.Stats
                     .Select(d => d.PenetratedObjects).DefaultIfEmpty().Max();
 
                 // shots fired this round
-                var shotsFiredThisRound = processedData.ShotsFiredValues.Where(s => s.Round == teamPlayers.Round);
+                IEnumerable<ShotFired> shotsFiredThisRound = processedData.ShotsFiredValues.Where(s => s.Round == teamPlayers.Round);
 
                 int alphaShotsFired =
                     shotsFiredThisRound.Count(s => s.Shooter != null && alphaSteamIds.Contains(s.Shooter.SteamID));
@@ -2298,21 +2298,21 @@ namespace SourceEngine.Demo.Stats
                 );
             }
 
-            foreach (var roundsGroup in processedData.PlayerHurtValues.GroupBy(x => x.Round))
+            foreach (IGrouping<int, PlayerHurt> roundsGroup in processedData.PlayerHurtValues.GroupBy(x => x.Round))
             {
                 int lastRound = processedData.RoundEndReasonValues.Count();
 
                 foreach (var round in roundsGroup.Where(x => x.Round > 0 && x.Round <= lastRound).Select(x => x.Round)
                     .Distinct())
                 {
-                    foreach (var steamIdsGroup in roundsGroup.Where(
+                    foreach (IGrouping<long, PlayerHurt> steamIdsGroup in roundsGroup.Where(
                         x => x.Round == round && x.Player?.SteamID != 0 && x.Player?.SteamID != x.Attacker?.SteamID
                             && x.Weapon.Class != EquipmentClass.Grenade && x.Weapon.Class != EquipmentClass.Equipment
                             && x.Weapon.Class != EquipmentClass.Unknown && x.Weapon.Weapon != EquipmentElement.Unknown
                             && x.Weapon.Weapon != EquipmentElement.Bomb && x.Weapon.Weapon != EquipmentElement.World
                     ).OrderBy(x => x.TimeInRound).GroupBy(x => x.Attacker.SteamID))
                     {
-                        var firstDamage = steamIdsGroup.FirstOrDefault();
+                        PlayerHurt firstDamage = steamIdsGroup.FirstOrDefault();
 
                         var firstDamageByPlayer = new DamageGivenByPlayerInRound
                         {
@@ -2345,7 +2345,7 @@ namespace SourceEngine.Demo.Stats
             List<PlayerPositionByRound> playerPositionByRound = new List<PlayerPositionByRound>();
 
             // create playerPositionByRound with empty PlayerPositionByTimeInRound
-            foreach (var roundsGroup in processedData.PlayerPositionsValues.GroupBy(x => x.Round))
+            foreach (IGrouping<int, PlayerPositionsInstance> roundsGroup in processedData.PlayerPositionsValues.GroupBy(x => x.Round))
             {
                 int lastRound = processedData.RoundEndReasonValues.Count();
 
@@ -2363,9 +2363,9 @@ namespace SourceEngine.Demo.Stats
             }
 
             //create PlayerPositionByTimeInRound with empty PlayerPositionBySteamId
-            foreach (var playerPositionsStat in playerPositionByRound)
+            foreach (PlayerPositionByRound playerPositionsStat in playerPositionByRound)
             {
-                foreach (var timeInRoundsGroup in processedData.PlayerPositionsValues
+                foreach (IGrouping<int, PlayerPositionsInstance> timeInRoundsGroup in processedData.PlayerPositionsValues
                     .Where(x => x.Round == playerPositionsStat.Round).GroupBy(x => x.TimeInRound))
                 {
                     foreach (var timeInRound in timeInRoundsGroup.Select(x => x.TimeInRound).Distinct())
@@ -2382,17 +2382,17 @@ namespace SourceEngine.Demo.Stats
             }
 
             //create PlayerPositionBySteamId
-            foreach (var playerPositionsStat in playerPositionByRound)
+            foreach (PlayerPositionByRound playerPositionsStat in playerPositionByRound)
             {
-                foreach (var playerPositionByTimeInRound in playerPositionsStat.PlayerPositionByTimeInRound)
+                foreach (PlayerPositionByTimeInRound playerPositionByTimeInRound in playerPositionsStat.PlayerPositionByTimeInRound)
                 {
-                    foreach (var steamIdsGroup in processedData.PlayerPositionsValues
+                    foreach (IGrouping<long, PlayerPositionsInstance> steamIdsGroup in processedData.PlayerPositionsValues
                         .Where(
                             x => x.Round == playerPositionsStat.Round
                                 && x.TimeInRound == playerPositionByTimeInRound.TimeInRound
                         ).GroupBy(x => x.SteamID).Distinct())
                     {
-                        foreach (var playerPositionsInstance in steamIdsGroup)
+                        foreach (PlayerPositionsInstance playerPositionsInstance in steamIdsGroup)
                         {
                             // skip players who have died this round
                             if (!processedData.PlayerKilledEventsValues.Any(
@@ -2548,7 +2548,7 @@ namespace SourceEngine.Demo.Stats
 
         public IEnumerable<object> SelectWeaponsEventsByName(string name)
         {
-            var shots = from shot in GetEvents<WeaponFiredEventArgs>()
+            IEnumerable<object> shots = from shot in GetEvents<WeaponFiredEventArgs>()
                 where (shot as WeaponFiredEventArgs).Weapon.Weapon.ToString() == name
                 select shot;
 
@@ -2564,7 +2564,7 @@ namespace SourceEngine.Demo.Stats
 
         public static List<Team> GetRoundsWonTeams(IEnumerable<Team> teamValues)
         {
-            var roundsWonTeams = teamValues.ToList();
+            List<Team> roundsWonTeams = teamValues.ToList();
             roundsWonTeams.RemoveAll(
                 r => !r.ToString().Equals("Terrorist") && !r.ToString().Equals("CounterTerrorist")
                     && !r.ToString().Equals("Unknown")
@@ -2575,7 +2575,7 @@ namespace SourceEngine.Demo.Stats
 
         public static List<RoundEndReason> GetRoundsWonReasons(IEnumerable<RoundEndReason> roundEndReasonValues)
         {
-            var roundsWonReasons = roundEndReasonValues.ToList();
+            List<RoundEndReason> roundsWonReasons = roundEndReasonValues.ToList();
             roundsWonReasons.RemoveAll(
                 r => !r.ToString().Equals(winReasonTKills) && !r.ToString().Equals(winReasonCtKills)
                     && !r.ToString().Equals(winReasonBombed) && !r.ToString().Equals(winReasonDefused)
@@ -2596,7 +2596,7 @@ namespace SourceEngine.Demo.Stats
 
             if (teamPlayersList.Count > 0 && teamPlayersList.Any(t => t.Round == 1))
             {
-                var teamPlayers = teamPlayersList.First(t => t.Round == 1);
+                TeamPlayers teamPlayers = teamPlayersList.First(t => t.Round == 1);
 
                 if (teamPlayers.Terrorists.Count > 0 && teamPlayers.CounterTerrorists.Count > 0)
                     round = roundsCount + 1;
@@ -2611,7 +2611,7 @@ namespace SourceEngine.Demo.Stats
 
         public static bool CheckIfPlayerAliveAtThisPointInRound(MatchData md, Player player, int round)
         {
-            var kills = md.events.Where(k => k.Key.Name.ToString() == "PlayerKilledEventArgs")
+            IEnumerable<PlayerKilledEventArgs> kills = md.events.Where(k => k.Key.Name.ToString() == "PlayerKilledEventArgs")
                 .Select(v => (PlayerKilledEventArgs)v.Value.ElementAt(0));
 
             return !kills.Any(x => x.Round == round && x.Victim?.SteamID != 0 && x.Victim.SteamID == player?.SteamID);

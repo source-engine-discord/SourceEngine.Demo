@@ -557,7 +557,7 @@ namespace SourceEngine.Demo.Parser
         /// </summary>
         public void ParseHeader()
         {
-            var header = DemoHeader.ParseFrom(BitStream);
+            DemoHeader header = DemoHeader.ParseFrom(BitStream);
 
             if (header.Filestamp != "HL2DEMO")
                 throw new InvalidDataException("Invalid File-Type - expecting HL2DEMO");
@@ -621,7 +621,7 @@ namespace SourceEngine.Demo.Parser
                 PlayerPositions = new List<PlayerPositionEventArgs>(),
             };
 
-            foreach (var participant in PlayingParticipants)
+            foreach (Player participant in PlayingParticipants)
             {
                 var player = new Player(participant);
 
@@ -654,7 +654,7 @@ namespace SourceEngine.Demo.Parser
                 if (RawPlayers[i] == null)
                     continue;
 
-                var rawPlayer = RawPlayers[i];
+                PlayerInfo rawPlayer = RawPlayers[i];
 
                 if (rawPlayer.GUID.Equals("BOT") && !rawPlayer.Name.Equals("GOTV"))
                 {
@@ -821,7 +821,7 @@ namespace SourceEngine.Demo.Parser
                     {
                         ctID = teamID;
                         CTScore = score;
-                        foreach (var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
+                        foreach (Player p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
                             p.Team = Team.CounterTerrorist;
                     }
 
@@ -829,7 +829,7 @@ namespace SourceEngine.Demo.Parser
                     {
                         tID = teamID;
                         TScore = score;
-                        foreach (var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
+                        foreach (Player p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
                             p.Team = Team.Terrorist;
                     }
                 };
@@ -848,7 +848,7 @@ namespace SourceEngine.Demo.Parser
                         if (teamID != -1)
                         {
                             ctID = teamID;
-                            foreach (var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
+                            foreach (Player p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
                                 p.Team = Team.CounterTerrorist;
                         }
                     }
@@ -861,7 +861,7 @@ namespace SourceEngine.Demo.Parser
                         if (teamID != -1)
                         {
                             tID = teamID;
-                            foreach (var p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
+                            foreach (Player p in PlayerInformations.Where(a => a != null && a.TeamID == teamID))
                                 p.Team = Team.Terrorist;
                         }
                     }
@@ -1089,7 +1089,7 @@ namespace SourceEngine.Demo.Parser
 
         private void MapEquipment()
         {
-            foreach (var sc in SendTableParser.ServerClasses)
+            foreach (ServerClass sc in SendTableParser.ServerClasses)
             {
                 if (sc.BaseClasses.ElementAtOrDefault(6)?.Name != "CWeaponCSBase") continue;
 
@@ -1155,7 +1155,7 @@ namespace SourceEngine.Demo.Parser
 
         private void AttributeWeapon(int weaponEntityIndex, Player p)
         {
-            var weapon = weapons[weaponEntityIndex];
+            Equipment weapon = weapons[weaponEntityIndex];
             weapon.Owner = p;
             p.rawWeapons[weaponEntityIndex] = weapon;
         }
@@ -1165,7 +1165,7 @@ namespace SourceEngine.Demo.Parser
             for (int i = 0; i < MAX_ENTITIES; i++)
                 weapons[i] = new Equipment();
 
-            foreach (var s in SendTableParser.ServerClasses.Where(
+            foreach (ServerClass s in SendTableParser.ServerClasses.Where(
                 a => a.BaseClasses.Any(c => c.Name == "CWeaponCSBase")
             ))
                 s.OnNewEntity += HandleWeapon;
@@ -1173,7 +1173,7 @@ namespace SourceEngine.Demo.Parser
 
         private void HandleWeapon(object sender, EntityCreatedEventArgs e)
         {
-            var equipment = weapons[e.Entity.ID];
+            Equipment equipment = weapons[e.Entity.ID];
             equipment.EntityID = e.Entity.ID;
             equipment.Weapon = equipmentMapping[e.Class];
             equipment.AmmoInMagazine = -1;
@@ -1365,7 +1365,7 @@ namespace SourceEngine.Demo.Parser
 
         private void HandleInfernos()
         {
-            var inferno = SendTableParser.FindByName("CInferno");
+            ServerClass inferno = SendTableParser.FindByName("CInferno");
 
             inferno.OnNewEntity += (_, infEntity) =>
             {
@@ -1668,10 +1668,10 @@ namespace SourceEngine.Demo.Parser
         {
             BitStream.Dispose();
 
-            foreach (var entity in Entities)
+            foreach (Entity entity in Entities)
                 entity?.Leave();
 
-            foreach (var serverClass in SendTableParser.ServerClasses)
+            foreach (ServerClass serverClass in SendTableParser.ServerClasses)
                 serverClass.Dispose();
 
             TickDone = null;
