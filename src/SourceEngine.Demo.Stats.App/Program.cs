@@ -219,7 +219,6 @@ namespace SourceEngine.Demo.Stats.App
             if (steaminfo)
             {
                 if (File.Exists(cfgPath))
-                {
                     try
                     {
                         var cfg = new Config(cfgPath);
@@ -233,11 +232,8 @@ namespace SourceEngine.Demo.Stats.App
                     {
                         Debug.Error("CONFIG ERROR... INFO:: {0}\nSteam names will not be retrieved!!!", e.Message);
                     }
-                }
                 else
-                {
                     Debug.Error("Config unreadable... Steam names will not be retrieved!!!");
-                }
             }
 
             //If the optional parameter -gamemodeoverride has been provided

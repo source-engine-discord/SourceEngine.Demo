@@ -9,11 +9,11 @@ namespace SourceEngine.Demo.Parser.DataTable
 {
     internal class DataTableParser
     {
-        private List<ServerClass> CurrentBaseclasses = new();
         private readonly List<ExcludeEntry> CurrentExcludes = new();
 
         public readonly List<SendTable> DataTables = new();
         public readonly List<ServerClass> ServerClasses = new();
+        private List<ServerClass> CurrentBaseclasses = new();
 
         public int ClassBits => (int)Math.Ceiling(Math.Log(ServerClasses.Count, 2));
 

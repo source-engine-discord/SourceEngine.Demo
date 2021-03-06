@@ -6,9 +6,8 @@ namespace SourceEngine.Demo.Parser.Entities
 {
     public class Player
     {
-        internal int ActiveWeaponID;
-
         internal readonly int[] AmmoLeft = new int[32];
+        internal int ActiveWeaponID;
 
         internal Entity Entity;
 

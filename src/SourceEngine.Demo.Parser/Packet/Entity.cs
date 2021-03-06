@@ -335,11 +335,7 @@ namespace SourceEngine.Demo.Parser.Packet
 
                     e?.Invoke(
                         null,
-                        new PropertyUpdateEventArgs<int>(
-                            intReceived.Value,
-                            entity,
-                            entity.Props[intReceived.PropIndex]
-                        )
+                        new PropertyUpdateEventArgs<int>(intReceived.Value, entity, entity.Props[intReceived.PropIndex])
                     );
                 }
                 else if (arg is RecordedPropertyUpdate<long> int64Received)
@@ -370,7 +366,8 @@ namespace SourceEngine.Demo.Parser.Packet
                 }
                 else if (arg is RecordedPropertyUpdate<Vector> vectorReceived)
                 {
-                    EventHandler<PropertyUpdateEventArgs<Vector>> e = entity.Props[vectorReceived.PropIndex].VectorRecived;
+                    EventHandler<PropertyUpdateEventArgs<Vector>> e = entity.Props[vectorReceived.PropIndex]
+                        .VectorRecived;
 
                     e?.Invoke(
                         null,
@@ -383,7 +380,8 @@ namespace SourceEngine.Demo.Parser.Packet
                 }
                 else if (arg is RecordedPropertyUpdate<string> stringReceived)
                 {
-                    EventHandler<PropertyUpdateEventArgs<string>> e = entity.Props[stringReceived.PropIndex].StringRecived;
+                    EventHandler<PropertyUpdateEventArgs<string>> e = entity.Props[stringReceived.PropIndex]
+                        .StringRecived;
 
                     e?.Invoke(
                         null,
@@ -396,7 +394,8 @@ namespace SourceEngine.Demo.Parser.Packet
                 }
                 else if (arg is RecordedPropertyUpdate<object[]> arrayReceived)
                 {
-                    EventHandler<PropertyUpdateEventArgs<object[]>> e = entity.Props[arrayReceived.PropIndex].ArrayRecived;
+                    EventHandler<PropertyUpdateEventArgs<object[]>> e = entity.Props[arrayReceived.PropIndex]
+                        .ArrayRecived;
 
                     e?.Invoke(
                         null,

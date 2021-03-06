@@ -23,11 +23,11 @@ namespace SourceEngine.Demo.Parser.BitStream
         private const uint MSK_2 = 0x00007F00;
         private const uint MSK_3 = 0x007F0000;
         private const uint MSK_4 = 0x7F000000;
+        private readonly byte[] Buffer = new byte[BUFSIZE];
 
         private readonly Stack<long> ChunkTargets = new();
 
         private int BitsInBuffer;
-        private readonly byte[] Buffer = new byte[BUFSIZE];
         private bool EndOfStream;
         private GCHandle HBuffer;
         private long LazyGlobalPosition;

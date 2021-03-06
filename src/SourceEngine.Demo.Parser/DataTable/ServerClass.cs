@@ -7,12 +7,11 @@ namespace SourceEngine.Demo.Parser.DataTable
 {
     internal class ServerClass : IDisposable
     {
+        public readonly List<FlattenedPropEntry> FlattenedProps = new();
         public List<ServerClass> BaseClasses = new();
         public int ClassID;
         public int DataTableID;
         public string DTName;
-
-        public readonly List<FlattenedPropEntry> FlattenedProps = new();
         public string Name;
 
         public void Dispose()

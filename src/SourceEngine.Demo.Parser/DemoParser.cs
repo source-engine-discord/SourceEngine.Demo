@@ -512,8 +512,7 @@ namespace SourceEngine.Demo.Parser
         /// This contains additional information about each player, such as Kills, Deaths, etc.
         /// This is networked separately from the player, so we need to cache it somewhere else.
         /// </summary>
-        private readonly PlayerResource[] additionalInformations =
-            new PlayerResource[MAXPLAYERS];
+        private readonly PlayerResource[] additionalInformations = new PlayerResource[MAXPLAYERS];
 
         /// <summary>
         /// Initializes a new DemoParser. Right point if you want to start analyzing demos.
@@ -1016,14 +1015,11 @@ namespace SourceEngine.Demo.Parser
             playerEntity.FindProperty("m_angEyeAngles[1]").FloatRecived += (_, e) => p.ViewDirectionY = e.Value;
             playerEntity.FindProperty("m_flFlashDuration").FloatRecived += (_, e) => p.FlashDuration = e.Value;
 
-            playerEntity.FindProperty("localdata.m_vecVelocity[0]").FloatRecived +=
-                (_, e) => p.Velocity.X = e.Value;
+            playerEntity.FindProperty("localdata.m_vecVelocity[0]").FloatRecived += (_, e) => p.Velocity.X = e.Value;
 
-            playerEntity.FindProperty("localdata.m_vecVelocity[1]").FloatRecived +=
-                (_, e) => p.Velocity.Y = e.Value;
+            playerEntity.FindProperty("localdata.m_vecVelocity[1]").FloatRecived += (_, e) => p.Velocity.Y = e.Value;
 
-            playerEntity.FindProperty("localdata.m_vecVelocity[2]").FloatRecived +=
-                (_, e) => p.Velocity.Z = e.Value;
+            playerEntity.FindProperty("localdata.m_vecVelocity[2]").FloatRecived += (_, e) => p.Velocity.Z = e.Value;
 
             playerEntity.FindProperty("m_unCurrentEquipmentValue").IntRecived +=
                 (_, e) => p.CurrentEquipmentValue = e.Value;
