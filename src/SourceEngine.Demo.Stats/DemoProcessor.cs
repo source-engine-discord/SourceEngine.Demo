@@ -1000,17 +1000,12 @@ namespace SourceEngine.Demo.Stats
             if (CheckIfStatsShouldBeCreated("rescueZoneStats", processedData.DemoInformation.GameMode))
                 allStats.rescueZoneStats = GetRescueZoneStats();
 
-            EquipmentElement[] nadeTypes =
-            {
-                EquipmentElement.Flash,
-                EquipmentElement.Smoke,
-                EquipmentElement.HE,
-                EquipmentElement.Incendiary,
-                EquipmentElement.Decoy,
-            };
-            List<IEnumerable<NadeEventArgs>> nadeGroups = GetNadeGroups(processedData);
+            Dictionary<EquipmentElement, List<NadeEventArgs>> nadeGroups = processedData.GrenadeValues
+                .Where(e => e.NadeType >= EquipmentElement.Decoy && e.NadeType <= EquipmentElement.HE)
+                .GroupBy(e => e.NadeType).ToDictionary(g => g.Key, g => g.ToList());
+
             if (CheckIfStatsShouldBeCreated("grenadesTotalStats", processedData.DemoInformation.GameMode))
-                allStats.grenadesTotalStats = GetGrenadesTotalStats(nadeGroups, nadeTypes);
+                allStats.grenadesTotalStats = GetGrenadesTotalStats(nadeGroups);
 
             if (CheckIfStatsShouldBeCreated("grenadesSpecificStats", processedData.DemoInformation.GameMode))
                 allStats.grenadesSpecificStats = GetGrenadesSpecificStats(nadeGroups, dataAndPlayerNames.PlayerNames);
@@ -1744,49 +1739,18 @@ namespace SourceEngine.Demo.Stats
             return rescueZoneStats;
         }
 
-        public static List<IEnumerable<NadeEventArgs>> GetNadeGroups(ProcessedData processedData)
-        {
-            IEnumerable<NadeEventArgs> flashes =
-                processedData.GrenadeValues.Where(f => f.NadeType is EquipmentElement.Flash);
-
-            IEnumerable<NadeEventArgs> smokes =
-                processedData.GrenadeValues.Where(f => f.NadeType is EquipmentElement.Smoke);
-
-            IEnumerable<NadeEventArgs> hegrenades =
-                processedData.GrenadeValues.Where(f => f.NadeType is EquipmentElement.HE);
-
-            // should never be "Molotov" as all molotovs are down as incendiaries, specified why in DemoParser.cs,
-            // search for "FireNadeStarted".
-            IEnumerable<NadeEventArgs> incendiaries = processedData.GrenadeValues.Where(
-                f => f.NadeType is EquipmentElement.Incendiary || f.NadeType is EquipmentElement.Molotov
-            );
-
-            IEnumerable<NadeEventArgs> decoys =
-                processedData.GrenadeValues.Where(f => f.NadeType is EquipmentElement.Decoy);
-
-            return new List<IEnumerable<NadeEventArgs>>
-            {
-                flashes,
-                smokes,
-                hegrenades,
-                incendiaries,
-                decoys,
-            };
-        }
-
         public static List<grenadesTotalStats> GetGrenadesTotalStats(
-            List<IEnumerable<NadeEventArgs>> nadeGroups,
-            EquipmentElement[] nadeTypes)
+            Dictionary<EquipmentElement, List<NadeEventArgs>> nadeGroups)
         {
-            var grenadesTotalStats = new List<grenadesTotalStats>();
+            var grenadesTotalStats = new List<grenadesTotalStats>(nadeGroups.Count);
 
-            for (int i = 0; i < nadeTypes.Length; i++)
+            foreach ((EquipmentElement nadeType, List<NadeEventArgs> events) in nadeGroups)
             {
                 grenadesTotalStats.Add(
                     new grenadesTotalStats
                     {
-                        NadeType = nadeTypes[i].ToString(),
-                        AmountUsed = nadeGroups.ElementAt(i).Count(),
+                        NadeType = nadeType.ToString(),
+                        AmountUsed = events.Count,
                     }
                 );
             }
@@ -1795,57 +1759,36 @@ namespace SourceEngine.Demo.Stats
         }
 
         public static List<grenadesSpecificStats> GetGrenadesSpecificStats(
-            IEnumerable<IEnumerable<NadeEventArgs>> nadeGroups,
+            Dictionary<EquipmentElement, List<NadeEventArgs>> nadeGroups,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
-            var grenadesSpecificStats = new List<grenadesSpecificStats>();
+            var grenadesSpecificStats = new List<grenadesSpecificStats>(nadeGroups.Count);
 
-            foreach (IEnumerable<NadeEventArgs> nadeGroup in nadeGroups)
+            foreach ((EquipmentElement nadeType, List<NadeEventArgs> events) in nadeGroups)
             {
-                if (nadeGroup.Any())
+                foreach (NadeEventArgs nade in events)
                 {
-                    bool flashGroup = nadeGroup.ElementAt(0).NadeType is EquipmentElement.Flash;
+                    // Retrieve Steam ID using player name if the event does not return it correctly.
+                    long steamId = nade.ThrownBy.SteamID == 0
+                        ? GetSteamIdByPlayerName(playerNames, nade.ThrownBy.Name)
+                        : nade.ThrownBy.SteamID;
 
-                    foreach (NadeEventArgs nade in nadeGroup)
+                    var stats = new grenadesSpecificStats
                     {
-                        string[] positions = SplitPositionString(nade.Position.ToString());
+                        NadeType = nade.NadeType.ToString(),
+                        SteamID = steamId,
+                        XPosition = nade.Position.X,
+                        YPosition = nade.Position.Y,
+                        ZPosition = nade.Position.Z,
+                    };
 
-                        //retrieve steam ID using player name if the event does not return it correctly
-                        long steamId = nade.ThrownBy.SteamID == 0
-                            ? GetSteamIdByPlayerName(playerNames, nade.ThrownBy.Name)
-                            : nade.ThrownBy.SteamID;
-
-                        if (flashGroup)
-                        {
-                            var flash = nade as FlashEventArgs;
-                            int numOfPlayersFlashed = flash.FlashedPlayers.Length;
-
-                            grenadesSpecificStats.Add(
-                                new grenadesSpecificStats
-                                {
-                                    NadeType = nade.NadeType.ToString(),
-                                    SteamID = steamId,
-                                    XPosition = double.Parse(positions[0]),
-                                    YPosition = double.Parse(positions[1]),
-                                    ZPosition = double.Parse(positions[2]),
-                                    NumPlayersFlashed = numOfPlayersFlashed,
-                                }
-                            );
-                        }
-                        else
-                        {
-                            grenadesSpecificStats.Add(
-                                new grenadesSpecificStats
-                                {
-                                    NadeType = nade.NadeType.ToString(),
-                                    SteamID = steamId,
-                                    XPosition = double.Parse(positions[0]),
-                                    YPosition = double.Parse(positions[1]),
-                                    ZPosition = double.Parse(positions[2]),
-                                }
-                            );
-                        }
+                    if (nadeType is EquipmentElement.Flash)
+                    {
+                        var flash = nade as FlashEventArgs;
+                        stats.NumPlayersFlashed = flash.FlashedPlayers.Length;
                     }
+
+                    grenadesSpecificStats.Add(stats);
                 }
             }
 
