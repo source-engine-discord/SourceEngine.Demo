@@ -376,12 +376,12 @@ namespace SourceEngine.Demo.Stats.App
             Console.CursorVisible = false;
 
             //Process all the found demos
-            for (int i = 0; i < demosInformation.Count; i++)
+            foreach (DemoInformation t in demosInformation)
             {
-                Console.WriteLine($"Parsing demo {demosInformation[i].DemoName}");
+                Console.WriteLine($"Parsing demo {t.DemoName}");
 
                 MatchData mdTest = MatchData.FromDemoFile(
-                    demosInformation[i],
+                    t,
                     parseChickens,
                     parsePlayerPositions,
                     hostagerescuezonecountoverride,
@@ -530,7 +530,7 @@ namespace SourceEngine.Demo.Stats.App
                     // create the json output files using the data gathered
                     var processedData = new ProcessedData
                     {
-                        DemoInformation = demosInformation[i],
+                        DemoInformation = t,
                         SameFilename = sameFilename,
                         SameFolderStructure = sameFolderStructure,
                         ParseChickens = parseChickens,
@@ -567,11 +567,11 @@ namespace SourceEngine.Demo.Stats.App
 
                     passCount++;
 
-                    Console.WriteLine($"Finished parsing demo {demosInformation[i].DemoName}.\n");
+                    Console.WriteLine($"Finished parsing demo {t.DemoName}.\n");
                 }
                 else
                 {
-                    Console.WriteLine($"Failed parsing demo {demosInformation[i].DemoName}.\n");
+                    Console.WriteLine($"Failed parsing demo {t.DemoName}.\n");
                 }
             }
 

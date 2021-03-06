@@ -83,10 +83,8 @@ namespace SourceEngine.Demo.Parser.DataTable
 
             int start = 0;
 
-            for (int priorityIndex = 0; priorityIndex < priorities.Count; priorityIndex++)
+            foreach (int priority in priorities)
             {
-                int priority = priorities[priorityIndex];
-
                 while (true)
                 {
                     int currentProp = start;
