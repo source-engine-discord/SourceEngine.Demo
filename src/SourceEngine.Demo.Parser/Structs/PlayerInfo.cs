@@ -22,12 +22,12 @@ namespace SourceEngine.Demo.Parser.Structs
             IsFakePlayer = reader.ReadBoolean();
             IsHLTV = reader.ReadBoolean();
 
-            customFiles0 = reader.ReadInt32();
-            customFiles1 = reader.ReadInt32();
-            customFiles2 = reader.ReadInt32();
-            customFiles3 = reader.ReadInt32();
+            CustomFiles0 = reader.ReadInt32();
+            CustomFiles1 = reader.ReadInt32();
+            CustomFiles2 = reader.ReadInt32();
+            CustomFiles3 = reader.ReadInt32();
 
-            filesDownloaded = reader.ReadByte();
+            FilesDownloaded = reader.ReadByte();
         }
 
         /// version for future compatibility
@@ -58,17 +58,14 @@ namespace SourceEngine.Demo.Parser.Structs
         public bool IsHLTV { get; set; }
 
         // custom files CRC for this player
-        public int customFiles0 { get; set; }
+        public int CustomFiles0 { get; set; }
 
-        public int customFiles1 { get; set; }
+        public int CustomFiles1 { get; set; }
 
-        public int customFiles2 { get; set; }
+        public int CustomFiles2 { get; set; }
 
-        public int customFiles3 { get; set; }
+        public int CustomFiles3 { get; set; }
 
-        private byte filesDownloaded { get; set; }
-
-        // this counter increases each time the server downloaded a new file
         private byte FilesDownloaded { get; set; }
 
         public static int SizeOf => 8 + 8 + 128 + 4 + 3 + 4 + 1 + 1 + 4 * 8 + 1;
