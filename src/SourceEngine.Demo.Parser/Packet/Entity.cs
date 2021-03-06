@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+using SourceEngine.Demo.Parser.BitStream;
 using SourceEngine.Demo.Parser.DataTable;
 using SourceEngine.Demo.Parser.Packet.Handler;
 

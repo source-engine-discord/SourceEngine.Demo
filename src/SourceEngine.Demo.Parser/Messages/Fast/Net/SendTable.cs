@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
+using SourceEngine.Demo.Parser.BitStream;
+
 namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
     public struct SendTable

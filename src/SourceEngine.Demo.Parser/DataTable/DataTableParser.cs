@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using SourceEngine.Demo.Parser.BitStream;
 using SourceEngine.Demo.Parser.Messages;
 
 namespace SourceEngine.Demo.Parser.DataTable

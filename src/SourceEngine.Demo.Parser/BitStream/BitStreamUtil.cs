@@ -4,9 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-using SourceEngine.Demo.Parser.BitStreamImpl;
-
-namespace SourceEngine.Demo.Parser
+namespace SourceEngine.Demo.Parser.BitStream
 {
     public static class BitStreamUtil
     {

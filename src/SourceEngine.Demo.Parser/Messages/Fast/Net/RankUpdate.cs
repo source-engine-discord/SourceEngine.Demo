@@ -1,4 +1,6 @@
-﻿namespace SourceEngine.Demo.Parser.Messages.Fast.Net
+﻿using SourceEngine.Demo.Parser.BitStream;
+
+namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 {
     /// <summary>
     /// FastNetMessage adaptation of CCSUsrMsg_ServerRankUpdate.RankUpdate protobuf message

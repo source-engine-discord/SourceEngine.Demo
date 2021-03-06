@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 
+using SourceEngine.Demo.Parser.BitStream;
 using SourceEngine.Demo.Parser.Packet.Handler;
 
 namespace SourceEngine.Demo.Parser.Messages.Fast.Net

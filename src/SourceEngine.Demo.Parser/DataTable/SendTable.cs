@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using SourceEngine.Demo.Parser.BitStream;
+
 namespace SourceEngine.Demo.Parser.DataTable
 {
     internal class SendTable

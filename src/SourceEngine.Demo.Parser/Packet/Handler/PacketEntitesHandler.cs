@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using SourceEngine.Demo.Parser.BitStream;
 using SourceEngine.Demo.Parser.DataTable;
 using SourceEngine.Demo.Parser.Messages.Fast.Net;
 

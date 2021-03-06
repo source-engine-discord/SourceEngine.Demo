@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace SourceEngine.Demo.Parser
+namespace SourceEngine.Demo.Parser.BitStream
 {
     public interface IBitStream : IDisposable
     {

@@ -1,4 +1,5 @@
-﻿using SourceEngine.Demo.Parser.Messages;
+﻿using SourceEngine.Demo.Parser.BitStream;
+using SourceEngine.Demo.Parser.Messages;
 using SourceEngine.Demo.Parser.Messages.Fast.Net;
 
 namespace SourceEngine.Demo.Parser.Packet

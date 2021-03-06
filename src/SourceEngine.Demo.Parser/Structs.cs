@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 
+using SourceEngine.Demo.Parser.BitStream;
+
 namespace SourceEngine.Demo.Parser
 {
     /// <summary>

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace SourceEngine.Demo.Parser.BitStreamImpl
+namespace SourceEngine.Demo.Parser.BitStream
 {
     public class BitArrayStream : IBitStream
     {

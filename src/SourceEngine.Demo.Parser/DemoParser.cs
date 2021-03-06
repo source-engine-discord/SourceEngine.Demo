@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
+using SourceEngine.Demo.Parser.BitStream;
 using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Parser.DataTable;
 using SourceEngine.Demo.Parser.Messages.Fast.Net;

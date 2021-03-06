@@ -5,7 +5,7 @@ using System.Linq;
 
 using NUnit.Framework;
 
-using SourceEngine.Demo.Parser.BitStreamImpl;
+using SourceEngine.Demo.Parser.BitStream;
 
 namespace SourceEngine.Demo.Parser.Tests
 {

@@ -5,7 +5,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace SourceEngine.Demo.Parser.BitStreamImpl
+namespace SourceEngine.Demo.Parser.BitStream
 {
     public unsafe class UnsafeBitStream : IBitStream
     {

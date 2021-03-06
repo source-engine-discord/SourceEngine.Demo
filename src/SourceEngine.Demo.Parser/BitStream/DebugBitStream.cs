@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace SourceEngine.Demo.Parser.BitStreamImpl
+namespace SourceEngine.Demo.Parser.BitStream
 {
     public class DebugBitStream : IBitStream
     {

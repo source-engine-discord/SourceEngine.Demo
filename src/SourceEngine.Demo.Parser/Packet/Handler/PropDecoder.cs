@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 
+using SourceEngine.Demo.Parser.BitStream;
 using SourceEngine.Demo.Parser.DataTable;
 
 namespace SourceEngine.Demo.Parser.Packet.Handler
