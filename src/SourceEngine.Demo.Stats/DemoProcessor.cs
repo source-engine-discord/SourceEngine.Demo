@@ -30,18 +30,6 @@ namespace SourceEngine.Demo.Stats
 
     public class MatchData
     {
-        private const string winReasonTKills = "TerroristWin",
-            winReasonCtKills = "CTWin",
-            winReasonBombed = "TargetBombed",
-            winReasonDefused = "BombDefused",
-            winReasonRescued = "HostagesRescued",
-            winReasonNotRescued = "HostagesNotRescued",
-            winReasonTSaved = "TargetSaved",
-            winReasonDangerZone = "SurvivalWin";
-
-        private const string
-            winReasonUnknown = "Unknown"; // Caused by an error where the round_end event was not triggered for a round
-
         private static DemoParser dp;
         public readonly Dictionary<int, long> playerLookups = new();
         public readonly Dictionary<int, int> playerReplacements = new();
@@ -230,16 +218,12 @@ namespace SourceEngine.Demo.Stats
 
                             if (playerAlive && freezetimeEndedThisRound)
                             {
-                                var teamSide = playerPosition.Player.Team.ToString().ToLower() == "terrorist"
-                                    ? "T"
-                                    : "CT";
-
                                 var playerPositionsInstance = new PlayerPositionsInstance
                                 {
                                     Round = round,
                                     TimeInRound = (int)e.CurrentTime - (int)freezetimeEndedEventLast.TimeEnd,
                                     SteamID = playerPosition.Player.SteamID,
-                                    TeamSide = teamSide,
+                                    TeamSide = playerPosition.Player.Team is Team.Terrorist ? "T" : "CT",
                                     XPosition = playerPosition.Player.Position.X,
                                     YPosition = playerPosition.Player.Position.Y,
                                     ZPosition = playerPosition.Player.Position.Z,
@@ -644,8 +628,8 @@ namespace SourceEngine.Demo.Stats
 
                 var teams = new TeamPlayers
                 {
-                    Terrorists = players.Where(p => p.Team.ToString().Equals("Terrorist")).ToList(),
-                    CounterTerrorists = players.Where(p => p.Team.ToString().Equals("CounterTerrorist")).ToList(),
+                    Terrorists = players.Where(p => p.Team is Team.Terrorist).ToList(),
+                    CounterTerrorists = players.Where(p => p.Team is Team.CounterTerrorist).ToList(),
                     Round = roundsCount + 1,
                 };
 
@@ -657,19 +641,15 @@ namespace SourceEngine.Demo.Stats
                 foreach (Player player in teams.Terrorists)
                 {
                     tEquipValue += player.CurrentEquipmentValue; // player.FreezetimeEndEquipmentValue = 0 ???
-                    tExpenditure +=
-                        player.CurrentEquipmentValue
-                        - player
-                            .RoundStartEquipmentValue; // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
+                    // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
+                    tExpenditure += player.CurrentEquipmentValue - player.RoundStartEquipmentValue;
                 }
 
                 foreach (Player player in teams.CounterTerrorists)
                 {
                     ctEquipValue += player.CurrentEquipmentValue; // player.FreezetimeEndEquipmentValue = 0 ???
-                    ctExpenditure +=
-                        player.CurrentEquipmentValue
-                        - player
-                            .RoundStartEquipmentValue; // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
+                    // (player.FreezetimeEndEquipmentValue = 0 - player.RoundStartEquipmentValue) ???
+                    ctExpenditure += player.CurrentEquipmentValue - player.RoundStartEquipmentValue;
                 }
 
                 var teamEquipmentStats = new TeamEquipment
@@ -1020,17 +1000,20 @@ namespace SourceEngine.Demo.Stats
             if (CheckIfStatsShouldBeCreated("rescueZoneStats", processedData.DemoInformation.GameMode))
                 allStats.rescueZoneStats = GetRescueZoneStats();
 
-            string[] nadeTypes = { "Flash", "Smoke", "HE", "Incendiary", "Decoy" };
-            List<IEnumerable<NadeEventArgs>> nadeGroups = GetNadeGroups(processedData, nadeTypes);
+            EquipmentElement[] nadeTypes =
+            {
+                EquipmentElement.Flash,
+                EquipmentElement.Smoke,
+                EquipmentElement.HE,
+                EquipmentElement.Incendiary,
+                EquipmentElement.Decoy,
+            };
+            List<IEnumerable<NadeEventArgs>> nadeGroups = GetNadeGroups(processedData);
             if (CheckIfStatsShouldBeCreated("grenadesTotalStats", processedData.DemoInformation.GameMode))
                 allStats.grenadesTotalStats = GetGrenadesTotalStats(nadeGroups, nadeTypes);
 
             if (CheckIfStatsShouldBeCreated("grenadesSpecificStats", processedData.DemoInformation.GameMode))
-                allStats.grenadesSpecificStats = GetGrenadesSpecificStats(
-                    nadeGroups,
-                    nadeTypes,
-                    dataAndPlayerNames.PlayerNames
-                );
+                allStats.grenadesSpecificStats = GetGrenadesSpecificStats(nadeGroups, dataAndPlayerNames.PlayerNames);
 
             if (CheckIfStatsShouldBeCreated("killsStats", processedData.DemoInformation.GameMode))
                 allStats.killsStats = GetKillsStats(processedData, dataAndPlayerNames.PlayerNames);
@@ -1364,31 +1347,31 @@ namespace SourceEngine.Demo.Stats
                     // total rounds calculation
                     if (GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(half, overtimeCount))
                     {
-                        if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
+                        if (roundsWonTeams.ElementAt(i) is Team.Terrorist)
                             totalRoundsWonTeamAlpha++;
-                        else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
+                        else if (roundsWonTeams.ElementAt(i) is Team.CounterTerrorist)
                             totalRoundsWonTeamBeta++;
                     }
                     else
                     {
-                        if (roundsWonTeams.ElementAt(i).ToString() == "Terrorist")
+                        if (roundsWonTeams.ElementAt(i) is Team.Terrorist)
                             totalRoundsWonTeamBeta++;
-                        else if (roundsWonTeams.ElementAt(i).ToString() == "CounterTerrorist")
+                        else if (roundsWonTeams.ElementAt(i) is Team.CounterTerrorist)
                             totalRoundsWonTeamAlpha++;
                     }
 
                     //win method
-                    reason = roundsWonReasons[i].ToString() switch
+                    reason = roundsWonReasons[i] switch
                     {
-                        winReasonTKills => "T Kills",
-                        winReasonCtKills => "CT Kills",
-                        winReasonBombed => "Bombed",
-                        winReasonDefused => "Defused",
-                        winReasonRescued => "HostagesRescued",
-                        winReasonNotRescued => "HostagesNotRescued",
-                        winReasonTSaved => "TSaved",
-                        winReasonDangerZone => "Danger Zone Won",
-                        winReasonUnknown => "Unknown",
+                        RoundEndReason.TerroristWin => "T Kills",
+                        RoundEndReason.CTWin => "CT Kills",
+                        RoundEndReason.TargetBombed => "Bombed",
+                        RoundEndReason.BombDefused => "Defused",
+                        RoundEndReason.HostagesRescued => "HostagesRescued",
+                        RoundEndReason.HostagesNotRescued => "HostagesNotRescued",
+                        RoundEndReason.TargetSaved => "TSaved",
+                        RoundEndReason.SurvivalWin => "Danger Zone Won",
+                        RoundEndReason.Unknown => "Unknown",
                         _ => reason,
                     };
 
@@ -1676,98 +1659,61 @@ namespace SourceEngine.Demo.Stats
 
         public static List<bombsiteStats> GetBombsiteStats(ProcessedData processedData)
         {
-            var bombsiteStats = new List<bombsiteStats>();
-
             BoundingBoxInformation bombsiteATrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteAIndex);
-
             BoundingBoxInformation bombsiteBTrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteBIndex);
 
-            var bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => (char)x.Bombsite));
-            var bombsiteExplosions = new List<char>(processedData.BombsiteExplodeValues.Select(x => (char)x.Bombsite));
-
-            var bombsiteDefuses = new List<char>(processedData.BombsiteDefuseValues.Select(x => (char)x.Bombsite));
-
-            int plantsA = bombsitePlants.Count(b => b.ToString().Equals("A"));
-            int explosionsA = bombsiteExplosions.Count(b => b.ToString().Equals("A"));
-            int defusesA = bombsiteDefuses.Count(b => b.ToString().Equals("A"));
-
-            int plantsB = bombsitePlants.Count(b => b.ToString().Equals("B"));
-            int explosionsB = bombsiteExplosions.Count(b => b.ToString().Equals("B"));
-            int defusesB = bombsiteDefuses.Count(b => b.ToString().Equals("B"));
-
-            bombsiteStats.Add(
-                new bombsiteStats
+            return new()
+            {
+                new()
                 {
                     Bombsite = 'A',
-                    Plants = plantsA,
-                    Explosions = explosionsA,
-                    Defuses = defusesA,
+                    Plants = processedData.BombsitePlantValues.Count(plant => plant.Bombsite == 'A'),
+                    Explosions = processedData.BombsiteExplodeValues.Count(explosion => explosion.Bombsite == 'A'),
+                    Defuses = processedData.BombsiteDefuseValues.Count(defuse => defuse.Bombsite == 'A'),
                     XPositionMin = bombsiteATrigger?.Min.X,
                     YPositionMin = bombsiteATrigger?.Min.Y,
                     ZPositionMin = bombsiteATrigger?.Min.Z,
                     XPositionMax = bombsiteATrigger?.Max.X,
                     YPositionMax = bombsiteATrigger?.Max.Y,
                     ZPositionMax = bombsiteATrigger?.Max.Z,
-                }
-            );
-
-            bombsiteStats.Add(
-                new bombsiteStats
+                },
+                new()
                 {
                     Bombsite = 'B',
-                    Plants = plantsB,
-                    Explosions = explosionsB,
-                    Defuses = defusesB,
+                    Plants = processedData.BombsitePlantValues.Count(plant => plant.Bombsite == 'B'),
+                    Explosions = processedData.BombsiteExplodeValues.Count(explosion => explosion.Bombsite == 'B'),
+                    Defuses = processedData.BombsiteDefuseValues.Count(defuse => defuse.Bombsite == 'B'),
                     XPositionMin = bombsiteBTrigger?.Min.X,
                     YPositionMin = bombsiteBTrigger?.Min.Y,
                     ZPositionMin = bombsiteBTrigger?.Min.Z,
                     XPositionMax = bombsiteBTrigger?.Max.X,
                     YPositionMax = bombsiteBTrigger?.Max.Y,
                     ZPositionMax = bombsiteBTrigger?.Max.Z,
-                }
-            );
-
-            return bombsiteStats;
+                },
+            };
         }
 
         public static List<hostageStats> GetHostageStats(ProcessedData processedData)
         {
-            var hostageStats = new List<hostageStats>();
-
-            var hostageIndexA = processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'A')?.HostageIndex;
-
-            var hostageIndexB = processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'B')?.HostageIndex;
-
-            var hostagePickedUps = new List<char>(processedData.HostagePickedUpValues.Select(x => x.Hostage));
-            var hostageRescues = new List<char>(processedData.HostageRescueValues.Select(x => x.Hostage));
-
-            int pickedUpsA = hostagePickedUps.Count(b => b.ToString().Equals("A"));
-            int pickedUpsB = hostagePickedUps.Count(b => b.ToString().Equals("B"));
-
-            int rescuesA = hostageRescues.Count(b => b.ToString().Equals("A"));
-            int rescuesB = hostageRescues.Count(b => b.ToString().Equals("B"));
-
-            hostageStats.Add(
-                new hostageStats
+            return new()
+            {
+                new()
                 {
                     Hostage = 'A',
-                    HostageIndex = hostageIndexA,
-                    PickedUps = pickedUpsA,
-                    Rescues = rescuesA,
-                }
-            );
-
-            hostageStats.Add(
-                new hostageStats
+                    HostageIndex =
+                        processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'A')?.HostageIndex,
+                    PickedUps = processedData.HostagePickedUpValues.Count(pickup => pickup.Hostage == 'A'),
+                    Rescues = processedData.HostageRescueValues.Count(rescue => rescue.Hostage == 'A'),
+                },
+                new()
                 {
                     Hostage = 'B',
-                    HostageIndex = hostageIndexB,
-                    PickedUps = pickedUpsB,
-                    Rescues = rescuesB,
-                }
-            );
-
-            return hostageStats;
+                    HostageIndex =
+                        processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'B')?.HostageIndex,
+                    PickedUps = processedData.HostagePickedUpValues.Count(pickup => pickup.Hostage == 'B'),
+                    Rescues = processedData.HostageRescueValues.Count(rescue => rescue.Hostage == 'B'),
+                },
+            };
         }
 
         public static List<rescueZoneStats> GetRescueZoneStats()
@@ -1798,23 +1744,25 @@ namespace SourceEngine.Demo.Stats
             return rescueZoneStats;
         }
 
-        public static List<IEnumerable<NadeEventArgs>> GetNadeGroups(ProcessedData processedData, string[] nadeTypes)
+        public static List<IEnumerable<NadeEventArgs>> GetNadeGroups(ProcessedData processedData)
         {
             IEnumerable<NadeEventArgs> flashes =
-                processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[0]));
+                processedData.GrenadeValues.Where(f => f.NadeType is EquipmentElement.Flash);
 
             IEnumerable<NadeEventArgs> smokes =
-                processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[1]));
+                processedData.GrenadeValues.Where(f => f.NadeType is EquipmentElement.Smoke);
 
             IEnumerable<NadeEventArgs> hegrenades =
-                processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[2]));
+                processedData.GrenadeValues.Where(f => f.NadeType is EquipmentElement.HE);
 
+            // should never be "Molotov" as all molotovs are down as incendiaries, specified why in DemoParser.cs,
+            // search for "FireNadeStarted".
             IEnumerable<NadeEventArgs> incendiaries = processedData.GrenadeValues.Where(
-                f => f.NadeType.ToString().Equals(nadeTypes[3]) || f.NadeType.ToString().Equals("Molotov")
-            ); // should never be "Molotov" as all molotovs are down as incendiaries, specified why in DemoParser.cs, search for "FireNadeStarted".
+                f => f.NadeType is EquipmentElement.Incendiary || f.NadeType is EquipmentElement.Molotov
+            );
 
             IEnumerable<NadeEventArgs> decoys =
-                processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[4]));
+                processedData.GrenadeValues.Where(f => f.NadeType is EquipmentElement.Decoy);
 
             return new List<IEnumerable<NadeEventArgs>>
             {
@@ -1828,7 +1776,7 @@ namespace SourceEngine.Demo.Stats
 
         public static List<grenadesTotalStats> GetGrenadesTotalStats(
             List<IEnumerable<NadeEventArgs>> nadeGroups,
-            string[] nadeTypes)
+            EquipmentElement[] nadeTypes)
         {
             var grenadesTotalStats = new List<grenadesTotalStats>();
 
@@ -1837,7 +1785,7 @@ namespace SourceEngine.Demo.Stats
                 grenadesTotalStats.Add(
                     new grenadesTotalStats
                     {
-                        NadeType = nadeTypes[i],
+                        NadeType = nadeTypes[i].ToString(),
                         AmountUsed = nadeGroups.ElementAt(i).Count(),
                     }
                 );
@@ -1848,7 +1796,6 @@ namespace SourceEngine.Demo.Stats
 
         public static List<grenadesSpecificStats> GetGrenadesSpecificStats(
             IEnumerable<IEnumerable<NadeEventArgs>> nadeGroups,
-            string[] nadeTypes,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
             var grenadesSpecificStats = new List<grenadesSpecificStats>();
@@ -1857,7 +1804,7 @@ namespace SourceEngine.Demo.Stats
             {
                 if (nadeGroup.Any())
                 {
-                    bool flashGroup = nadeGroup.ElementAt(0).NadeType.ToString() == nadeTypes[0];
+                    bool flashGroup = nadeGroup.ElementAt(0).NadeType is EquipmentElement.Flash;
 
                     foreach (NadeEventArgs nade in nadeGroup)
                     {
@@ -2572,8 +2519,7 @@ namespace SourceEngine.Demo.Stats
         {
             List<Team> roundsWonTeams = teamValues.ToList();
             roundsWonTeams.RemoveAll(
-                r => !r.ToString().Equals("Terrorist") && !r.ToString().Equals("CounterTerrorist")
-                    && !r.ToString().Equals("Unknown")
+                team => team is not Team.Terrorist && team is not Team.CounterTerrorist && team is not Team.Unknown
             );
 
             return roundsWonTeams;
@@ -2583,11 +2529,11 @@ namespace SourceEngine.Demo.Stats
         {
             List<RoundEndReason> roundsWonReasons = roundEndReasonValues.ToList();
             roundsWonReasons.RemoveAll(
-                r => !r.ToString().Equals(winReasonTKills) && !r.ToString().Equals(winReasonCtKills)
-                    && !r.ToString().Equals(winReasonBombed) && !r.ToString().Equals(winReasonDefused)
-                    && !r.ToString().Equals(winReasonRescued) && !r.ToString().Equals(winReasonNotRescued)
-                    && !r.ToString().Equals(winReasonTSaved) && !r.ToString().Equals(winReasonDangerZone)
-                    && !r.ToString().Equals("Unknown")
+                reason => reason is not RoundEndReason.TerroristWin && reason is not RoundEndReason.CTWin
+                    && reason is not RoundEndReason.TargetBombed && reason is not RoundEndReason.BombDefused
+                    && reason is not RoundEndReason.HostagesRescued && reason is not RoundEndReason.HostagesNotRescued
+                    && reason is not RoundEndReason.TargetSaved && reason is not RoundEndReason.SurvivalWin
+                    && reason is not RoundEndReason.Unknown
             );
 
             return roundsWonReasons;
