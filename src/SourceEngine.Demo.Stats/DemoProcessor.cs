@@ -36,9 +36,8 @@ namespace SourceEngine.Demo.Stats
 
         private readonly Dictionary<int, TickCounter> playerTicks = new();
 
-        public bool
-            changingPlantedRoundsToA,
-            changingPlantedRoundsToB; // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
+        // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
+        public bool changingPlantedRoundsToA, changingPlantedRoundsToB;
 
         public Dictionary<Type, List<object>> events = new();
 
@@ -312,15 +311,6 @@ namespace SourceEngine.Demo.Stats
                     teamName = teamName == "Spectate" ? "Spectator" : teamName;
 
                     bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(md, player, round);
-                    string[] currentPositions = SplitPositionString(player?.Position.ToString());
-                    string[] lastAlivePositions =
-                        playerAlive ? null : SplitPositionString(player?.LastAlivePosition.ToString());
-
-                    string setPosCurrentPosition = GenerateSetPosCommand(
-                        currentPositions,
-                        player?.ViewDirectionX,
-                        player?.ViewDirectionY
-                    );
 
                     List<object> roundsOfficiallyEndedEvents =
                         md.events.Any(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
@@ -343,10 +333,8 @@ namespace SourceEngine.Demo.Stats
 
                     if (numOfFreezetimesEnded > numOfRoundsOfficiallyEnded)
                     {
-                        var freezetimeEnded =
-                            (FreezetimeEndedEventArgs)freezetimesEndedEvents
-                                .LastOrDefault(); // would it be better to use '.OrderByDescending(f => f.TimeEnd).FirstOrDefault()' ?
-
+                        // would it be better to use '.OrderByDescending(f => f.TimeEnd).FirstOrDefault()' ?
+                        var freezetimeEnded = (FreezetimeEndedEventArgs)freezetimesEndedEvents.LastOrDefault();
                         timeInRound = dp.CurrentTime - freezetimeEnded.TimeEnd;
                     }
 
@@ -355,21 +343,20 @@ namespace SourceEngine.Demo.Stats
                         Round = round,
                         SteamID = steamId,
                         TeamName = teamName, // works out TeamName in GetFeedbackMessages() if it is null
-                        XCurrentPosition = double.Parse(currentPositions[0]),
-                        YCurrentPosition = double.Parse(currentPositions[1]),
-                        ZCurrentPosition = double.Parse(currentPositions[2]),
-                        XLastAlivePosition =
-                            lastAlivePositions != null ? (double?)double.Parse(lastAlivePositions[0]) : null,
-                        YLastAlivePosition =
-                            lastAlivePositions != null ? (double?)double.Parse(lastAlivePositions[1]) : null,
-                        ZLastAlivePosition =
-                            lastAlivePositions != null ? (double?)double.Parse(lastAlivePositions[2]) : null,
+                        XCurrentPosition = player?.Position.X,
+                        YCurrentPosition = player?.Position.Y,
+                        ZCurrentPosition = player?.Position.Z,
+                        XLastAlivePosition = playerAlive ? player?.LastAlivePosition.X : null,
+                        YLastAlivePosition = playerAlive ? player?.LastAlivePosition.Y : null,
+                        ZLastAlivePosition = playerAlive ? player?.LastAlivePosition.Z : null,
                         XCurrentViewAngle = player?.ViewDirectionX,
                         YCurrentViewAngle = player?.ViewDirectionY,
-                        SetPosCommandCurrentPosition = setPosCurrentPosition,
+                        SetPosCommandCurrentPosition = GenerateSetPosCommand(player),
                         Message = text,
-                        TimeInRound =
-                            timeInRound, // counts messages sent after the round_end event fires as the next round, set to '0' as if it was the next round's warmup (done this way instead of using round starts to avoid potential issues when restarting rounds)
+                        // counts messages sent after the round_end event fires as the next round, set to '0' as if it
+                        // was the next round's warmup (done this way instead of using round starts to avoid potential
+                        // issues when restarting rounds)
+                        TimeInRound = timeInRound,
                     };
 
                     md.addEvent(typeof(FeedbackMessage), feedbackMessage);
@@ -1438,15 +1425,27 @@ namespace SourceEngine.Demo.Stats
 
                     // bombsite planted/exploded/defused at
                     string bombsite = null;
-                    BombPlanted bombPlanted = null;
-                    BombExploded bombExploded = null;
-                    BombDefused bombDefused = null;
                     BombPlantedError bombPlantedError = null;
 
-                    if (processedData.BombsitePlantValues.Any(p => p.Round == roundNum))
-                    {
-                        bombPlanted = processedData.BombsitePlantValues.FirstOrDefault(p => p.Round == roundNum);
+                    BombPlanted bombPlanted =
+                        processedData.BombsitePlantValues.FirstOrDefault(p => p.Round == roundNum);
 
+                    BombExploded bombExploded =
+                        processedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum);
+
+                    BombDefused bombDefused =
+                        processedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum);
+
+                    if (bombDefused is not null)
+                    {
+                        bombsite ??= bombDefused.Bombsite is null ? null : bombDefused.Bombsite.ToString();
+                    }
+                    else if (bombExploded is not null)
+                    {
+                        bombsite ??= bombExploded.Bombsite is null ? null : bombExploded.Bombsite.ToString();
+                    }
+                    else if (bombPlanted is not null)
+                    {
                         bombsite = bombPlanted.Bombsite.ToString();
 
                         //check to see if either of the bombsites have bugged out
@@ -1473,24 +1472,9 @@ namespace SourceEngine.Demo.Stats
                         }
 
                         //plant position
-                        string[] positions = SplitPositionString(bombPlanted.Player.LastAlivePosition.ToString());
-                        bombPlanted.XPosition = double.Parse(positions[0]);
-                        bombPlanted.YPosition = double.Parse(positions[1]);
-                        bombPlanted.ZPosition = double.Parse(positions[2]);
-                    }
-
-                    if (processedData.BombsiteExplodeValues.Any(p => p.Round == roundNum))
-                    {
-                        bombExploded = processedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum);
-
-                        bombsite ??= bombExploded.Bombsite == null ? null : bombExploded.Bombsite.ToString();
-                    }
-
-                    if (processedData.BombsiteDefuseValues.Any(p => p.Round == roundNum))
-                    {
-                        bombDefused = processedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum);
-
-                        bombsite ??= bombDefused.Bombsite == null ? null : bombDefused.Bombsite.ToString();
+                        bombPlanted.XPosition = bombPlanted.Player.LastAlivePosition.X;
+                        bombPlanted.YPosition = bombPlanted.Player.LastAlivePosition.Y;
+                        bombPlanted.ZPosition = bombPlanted.Player.LastAlivePosition.Z;
                     }
 
                     var timeInRoundPlanted = bombPlanted?.TimeInRound;
@@ -1560,26 +1544,20 @@ namespace SourceEngine.Demo.Stats
                         }
 
                         //rescue position
-                        string[] positionsRescueA = hostageRescuedA != null
-                            ? SplitPositionString(hostageRescuedA.Player.LastAlivePosition.ToString())
-                            : null;
-
-                        if (positionsRescueA != null)
+                        Vector positionRescueA = hostageRescuedA?.Player.LastAlivePosition;
+                        if (positionRescueA != null)
                         {
-                            hostageRescuedA.XPosition = double.Parse(positionsRescueA[0]);
-                            hostageRescuedA.YPosition = double.Parse(positionsRescueA[1]);
-                            hostageRescuedA.ZPosition = double.Parse(positionsRescueA[2]);
+                            hostageRescuedA.XPosition = positionRescueA.X;
+                            hostageRescuedA.YPosition = positionRescueA.Y;
+                            hostageRescuedA.ZPosition = positionRescueA.Z;
                         }
 
-                        string[] positionsRescueB = hostageRescuedB != null
-                            ? SplitPositionString(hostageRescuedB.Player.LastAlivePosition.ToString())
-                            : null;
-
-                        if (positionsRescueB != null)
+                        Vector positionRescueB = hostageRescuedB?.Player.LastAlivePosition;
+                        if (positionRescueB != null)
                         {
-                            hostageRescuedB.XPosition = double.Parse(positionsRescueB[0]);
-                            hostageRescuedB.YPosition = double.Parse(positionsRescueB[1]);
-                            hostageRescuedB.ZPosition = double.Parse(positionsRescueB[2]);
+                            hostageRescuedB.XPosition = positionRescueB.X;
+                            hostageRescuedB.YPosition = positionRescueB.Y;
+                            hostageRescuedB.ZPosition = positionRescueB.Z;
                         }
                     }
 
@@ -1818,11 +1796,8 @@ namespace SourceEngine.Demo.Stats
                     {
                         int round = playerKilledEvent.Round;
 
-                        string[] killPositionSplit =
-                            SplitPositionString(kills.ElementAt(i).LastAlivePosition.ToString());
-
-                        string[] deathPositionSplit =
-                            SplitPositionString(deaths.ElementAt(i).LastAlivePosition.ToString());
+                        Vector killPosition = kills.ElementAt(i).LastAlivePosition;
+                        Vector deathPosition= deaths.ElementAt(i).LastAlivePosition;
 
                         //retrieve steam ID using player name if the event does not return it correctly
                         long killerSteamId = kills.ElementAt(i) != null
@@ -1870,14 +1845,14 @@ namespace SourceEngine.Demo.Stats
                                 WeaponType = weaponUsedType,
                                 KillerSteamID = killerSteamId,
                                 KillerBotTakeover = playerKilledEvent.KillerBotTakeover,
-                                XPositionKill = double.Parse(killPositionSplit[0]),
-                                YPositionKill = double.Parse(killPositionSplit[1]),
-                                ZPositionKill = double.Parse(killPositionSplit[2]),
+                                XPositionKill = killPosition.X,
+                                YPositionKill = killPosition.Y,
+                                ZPositionKill = killPosition.Z,
                                 VictimSteamID = victimSteamId,
                                 VictimBotTakeover = playerKilledEvent.VictimBotTakeover,
-                                XPositionDeath = double.Parse(deathPositionSplit[0]),
-                                YPositionDeath = double.Parse(deathPositionSplit[1]),
-                                ZPositionDeath = double.Parse(deathPositionSplit[2]),
+                                XPositionDeath = deathPosition.X,
+                                YPositionDeath = deathPosition.Y,
+                                ZPositionDeath = deathPosition.Z,
                                 AssisterSteamID = assisterSteamId,
                                 AssisterBotTakeover = playerKilledEvent.AssisterBotTakeover,
                                 FirstKillOfTheRound = firstKillOfTheRound,
@@ -2520,30 +2495,14 @@ namespace SourceEngine.Demo.Stats
             return newUserId == 0 ? userId : newUserId;
         }
 
-        public static string[] SplitPositionString(string position)
+        public static string GenerateSetPosCommand(Player player)
         {
-            var positionString = position.Split(new[] { "{X: ", ", Y: ", ", Z: ", " }" }, StringSplitOptions.None);
+            if (player is null)
+                return "";
 
-            return positionString.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
-        }
-
-        public static string GenerateSetPosCommand(
-            string[] currentPositions,
-            float? viewDirectionX,
-            float? viewDirectionY)
-        {
-            return string.Concat(
-                "setpos ",
-                currentPositions[0],
-                " ",
-                currentPositions[1],
-                " ",
-                currentPositions[2],
-                "; setang ",
-                Convert.ToString(viewDirectionX),
-                " ",
-                Convert.ToString(viewDirectionY) // Z axis is optional
-            );
+            // Z axis for setang is optional.
+            return $"setpos {player.Position.X} {player.Position.Y} {player.Position.Z}; "
+                + $"setang {player.ViewDirectionX} {player.ViewDirectionY}";
         }
 
         public static bool IsMessageFeedback(string text)

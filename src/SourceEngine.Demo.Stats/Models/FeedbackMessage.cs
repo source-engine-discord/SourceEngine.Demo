@@ -8,14 +8,14 @@
 
         public string TeamName { get; set; }
 
-        public double XCurrentPosition { get; set; }
+        public double? XCurrentPosition { get; set; }
 
-        public double YCurrentPosition { get; set; }
+        public double? YCurrentPosition { get; set; }
 
-        public double ZCurrentPosition { get; set; }
+        public double? ZCurrentPosition { get; set; }
 
-        public double?
-            XLastAlivePosition { get; set; } // If alive, LastAlivePosition values are set to null in dp.SayText2 +=
+        // If alive, LastAlivePosition values are set to null in dp.SayText2 +=
+        public double? XLastAlivePosition { get; set; }
 
         public double? YLastAlivePosition { get; set; }
 
