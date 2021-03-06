@@ -36,7 +36,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 else if (cmd == (int)SVC_Messages.svc_GameEventList)
                 {
                     //and all this other stuff
-                    new GameEventList().Parse(bitstream, demo);
+                    GameEventList.Parse(bitstream, demo);
                 }
                 else if (cmd == (int)SVC_Messages.svc_GameEvent)
                 {

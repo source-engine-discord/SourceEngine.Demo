@@ -757,7 +757,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             }
         }
 
-        private static T FillNadeEvent<T>(Dictionary<string, object> data, DemoParser parser)
+        private static T FillNadeEvent<T>(IReadOnlyDictionary<string, object> data, DemoParser parser)
             where T : NadeEventArgs, new()
         {
             var nade = new T();

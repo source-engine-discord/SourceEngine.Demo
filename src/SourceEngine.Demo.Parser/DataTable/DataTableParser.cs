@@ -152,7 +152,7 @@ namespace SourceEngine.Demo.Parser.DataTable
         private void GatherProps_IterateProps(
             SendTable table,
             int ServerClassIndex,
-            List<FlattenedPropEntry> flattenedProps,
+            ICollection<FlattenedPropEntry> flattenedProps,
             string prefix)
         {
             for (int i = 0; i < table.Properties.Count; i++)

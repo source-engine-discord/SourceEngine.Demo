@@ -598,7 +598,7 @@ namespace SourceEngine.Demo.Stats.App
                 RoundsLasted = -1,
             };
 
-            long tanookiId = 76561198123165941;
+            const long tanookiId = 76561198123165941;
 
             if (tpe.Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId))
                 || tpe.Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
@@ -645,14 +645,14 @@ namespace SourceEngine.Demo.Stats.App
         }
 
         private static void AddDemoInformation(
-            List<DemoInformation> demosInformation,
+            ICollection<DemoInformation> demosInformation,
             string demo,
             string gamemode,
             string testType,
             string testdateoverride,
             bool isFaceitDemo,
             string[] filenameSplit,
-            string[] pathSplit)
+            IReadOnlyList<string> pathSplit)
         {
             string testDate, mapname;
 
@@ -666,8 +666,8 @@ namespace SourceEngine.Demo.Stats.App
             }
             else
             {
-                if (pathSplit.Length > 0) // searching by folder
-                    filenameSplit = pathSplit[pathSplit.Length - 1].Split('_', '.', '-');
+                if (pathSplit.Count > 0) // searching by folder
+                    filenameSplit = pathSplit[pathSplit.Count - 1].Split('_', '.', '-');
                 else // searching by demo
                     filenameSplit = demo.Split('_', '.', '-');
 

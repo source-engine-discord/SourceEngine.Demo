@@ -5,7 +5,7 @@ namespace SourceEngine.Demo.Parser.StringTable
 {
     internal class StringTableParser
     {
-        public void ParsePacket(IBitStream reader, DemoParser parser)
+        public static void ParsePacket(IBitStream reader, DemoParser parser)
         {
             int numTables = reader.ReadByte();
 
@@ -17,7 +17,7 @@ namespace SourceEngine.Demo.Parser.StringTable
             }
         }
 
-        public void ParseStringTable(IBitStream reader, string tableName, DemoParser parser)
+        public static void ParseStringTable(IBitStream reader, string tableName, DemoParser parser)
         {
             int numStrings = (int)reader.ReadInt(16);
 

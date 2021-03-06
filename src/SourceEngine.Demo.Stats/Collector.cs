@@ -65,7 +65,6 @@ namespace SourceEngine.Demo.Stats
 
         //Runtime
         private readonly List<PlayerData> allPlayers = new();
-        public bool ALLTHEDATA = true;
 
         private RecorderSettings currentRS;
 
@@ -112,8 +111,7 @@ namespace SourceEngine.Demo.Stats
                     if (e.Weapon.Class == EquipmentClass.Grenade)
                         pushData(e.Killer, "Grenade Kills", 1);
 
-                    if (ALLTHEDATA)
-                        pushData(e.Killer, e.Weapon.Weapon + " Kills", 1);
+                    pushData(e.Killer, e.Weapon.Weapon + " Kills", 1);
                 };
 
                 ev.parser.WeaponFired += (object sender, WeaponFiredEventArgs e) =>

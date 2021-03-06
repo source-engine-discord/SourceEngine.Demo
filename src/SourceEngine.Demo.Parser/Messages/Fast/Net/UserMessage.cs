@@ -46,7 +46,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                                 new SayText2().Parse(bitstream, parser);
                                 break;
                             case (int)User_Messages.um_ServerRankUpdate:
-                                new ServerRankUpdate().Parse(bitstream, parser);
+                                ServerRankUpdate.Parse(bitstream, parser);
                                 break;
                         }
 

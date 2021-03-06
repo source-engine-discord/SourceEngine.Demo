@@ -73,12 +73,12 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
             }
         }
 
-        public void Parse(IBitStream bitstream, DemoParser parser)
+        public static void Parse(IBitStream bitstream, DemoParser parser)
         {
             GameEventHandler.HandleGameEventList(ReadDescriptors(bitstream), parser);
         }
 
-        private IEnumerable<Descriptor> ReadDescriptors(IBitStream bitstream)
+        private static IEnumerable<Descriptor> ReadDescriptors(IBitStream bitstream)
         {
             while (!bitstream.ChunkFinished)
             {

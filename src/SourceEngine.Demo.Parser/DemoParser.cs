@@ -747,7 +747,7 @@ namespace SourceEngine.Demo.Parser
                     break;
                 case DemoCommand.StringTables:
                     BitStream.BeginChunk(BitStream.ReadSignedInt(32) * 8);
-                    StringTables.ParsePacket(BitStream, this);
+                    StringTableParser.ParsePacket(BitStream, this);
                     BitStream.EndChunk();
                     break;
                 case DemoCommand.UserCommand:

@@ -227,13 +227,13 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             return false;
         }
 
-        private static readonly int COORD_FRACTIONAL_BITS = 5;
-        private static readonly int COORD_DENOMINATOR = 1 << COORD_FRACTIONAL_BITS;
-        private static readonly float COORD_RESOLUTION = 1.0f / COORD_DENOMINATOR;
+        private const int COORD_FRACTIONAL_BITS = 5;
+        private const int COORD_DENOMINATOR = 1 << COORD_FRACTIONAL_BITS;
+        private const float COORD_RESOLUTION = 1.0f / COORD_DENOMINATOR;
 
-        private static readonly int COORD_FRACTIONAL_BITS_MP_LOWPRECISION = 3;
-        private static readonly float COORD_DENOMINATOR_LOWPRECISION = 1 << COORD_FRACTIONAL_BITS_MP_LOWPRECISION;
-        private static readonly float COORD_RESOLUTION_LOWPRECISION = 1.0f / COORD_DENOMINATOR_LOWPRECISION;
+        private const int COORD_FRACTIONAL_BITS_MP_LOWPRECISION = 3;
+        private const float COORD_DENOMINATOR_LOWPRECISION = 1 << COORD_FRACTIONAL_BITS_MP_LOWPRECISION;
+        private const float COORD_RESOLUTION_LOWPRECISION = 1.0f / COORD_DENOMINATOR_LOWPRECISION;
 
         private static float ReadBitCoord(IBitStream reader)
         {
@@ -352,9 +352,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             return value;
         }
 
-        private static readonly int NORMAL_FRACTIONAL_BITS = 11;
-        private static readonly int NORMAL_DENOMINATOR = (1 << NORMAL_FRACTIONAL_BITS) - 1;
-        private static readonly float NORMAL_RESOLUTION = 1.0f / NORMAL_DENOMINATOR;
+        private const int NORMAL_FRACTIONAL_BITS = 11;
+        private const int NORMAL_DENOMINATOR = (1 << NORMAL_FRACTIONAL_BITS) - 1;
+        private const float NORMAL_RESOLUTION = 1.0f / NORMAL_DENOMINATOR;
 
         private static float ReadBitNormal(IBitStream reader)
         {

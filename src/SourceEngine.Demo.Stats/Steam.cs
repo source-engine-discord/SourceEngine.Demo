@@ -61,9 +61,9 @@ namespace SourceEngine.Demo.Stats
             api_key = key;
         }
 
-        public static Dictionary<long, string> getSteamUserNamesLookupTable(List<long> IDS)
+        public static Dictionary<long, string> getSteamUserNamesLookupTable(IEnumerable<long> IDS)
         {
-            string method = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/";
+            const string method = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/";
 
             string idsList = "";
             foreach (long id in IDS)

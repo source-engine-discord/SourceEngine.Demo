@@ -56,7 +56,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 prop.Decode(reader, this);
         }
 
-        private int ReadFieldIndex(IBitStream reader, int lastIndex, bool bNewWay)
+        private static int ReadFieldIndex(IBitStream reader, int lastIndex, bool bNewWay)
         {
             if (bNewWay)
                 if (reader.ReadBit())
@@ -285,7 +285,7 @@ namespace SourceEngine.Demo.Parser.Packet
         }
 
         [Conditional("SAVE_PROP_VALUES")]
-        private void SaveValue(object value)
+        private static void SaveValue(object value)
         {
             #if SAVE_PROP_VALUES
             this.Value = value;
@@ -362,7 +362,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 );
         }
 
-        public static void Emit(Entity entity, object[] captured)
+        public static void Emit(Entity entity, IEnumerable<object> captured)
         {
             foreach (var arg in captured)
             {

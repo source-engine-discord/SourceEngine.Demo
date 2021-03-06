@@ -8,7 +8,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
     /// </summary>
     public struct ServerRankUpdate
     {
-        public void Parse(IBitStream bitstream, DemoParser parser)
+        public static void Parse(IBitStream bitstream, DemoParser parser)
         {
             while (!bitstream.ChunkFinished)
             {

@@ -8,7 +8,7 @@ namespace SourceEngine.Demo.Stats
 {
     internal static class EXTMethods
     {
-        public static PlayerData fromSteamID(this List<PlayerData> players, long steamid)
+        public static PlayerData fromSteamID(this IEnumerable<PlayerData> players, long steamid)
         {
             foreach (PlayerData dat in players)
             {
@@ -61,7 +61,7 @@ namespace SourceEngine.Demo.Stats
             dat.collected[rs.matchID][attrib] += value;
         }
 
-        public static List<string> getAllHeaders(this List<PlayerData> players, int matchID = -1)
+        public static List<string> getAllHeaders(this IEnumerable<PlayerData> players, int matchID = -1)
         {
             List<string> collected = new List<string>();
 

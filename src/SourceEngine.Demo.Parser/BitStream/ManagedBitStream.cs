@@ -18,8 +18,8 @@ namespace SourceEngine.Demo.Parser.BitStreamImpl
         private const uint MSK_2 = 0x00007F00;
         private const uint MSK_3 = 0x007F0000;
         private const uint MSK_4 = 0x7F000000;
-        private static readonly int SLED = 4;
-        private static readonly int BUFSIZE = 2048 + SLED;
+        private const int SLED = 4;
+        private const int BUFSIZE = 2048 + SLED;
         private readonly byte[] Buffer = new byte[BUFSIZE];
 
         private readonly Stack<long> ChunkTargets = new();

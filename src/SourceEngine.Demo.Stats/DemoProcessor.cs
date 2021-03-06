@@ -1143,17 +1143,17 @@ namespace SourceEngine.Demo.Stats
             };
         }
 
-        public versionNumber GetVersionNumber()
+        public static versionNumber GetVersionNumber()
         {
             return new() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3) };
         }
 
-        public List<string> GetSupportedGamemodes()
+        public static List<string> GetSupportedGamemodes()
         {
             return Gamemodes.GetAll();
         }
 
-        public mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
+        public static mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
         {
             mapInfo mapInfo = new mapInfo()
             {
@@ -1692,7 +1692,7 @@ namespace SourceEngine.Demo.Stats
             };
         }
 
-        public List<bombsiteStats> GetBombsiteStats(ProcessedData processedData)
+        public static List<bombsiteStats> GetBombsiteStats(ProcessedData processedData)
         {
             List<bombsiteStats> bombsiteStats = new List<bombsiteStats>();
 
@@ -1754,7 +1754,7 @@ namespace SourceEngine.Demo.Stats
             return bombsiteStats;
         }
 
-        public List<hostageStats> GetHostageStats(ProcessedData processedData)
+        public static List<hostageStats> GetHostageStats(ProcessedData processedData)
         {
             List<hostageStats> hostageStats = new List<hostageStats>();
 
@@ -1796,7 +1796,7 @@ namespace SourceEngine.Demo.Stats
             return hostageStats;
         }
 
-        public List<rescueZoneStats> GetRescueZoneStats()
+        public static List<rescueZoneStats> GetRescueZoneStats()
         {
             List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
 
@@ -1821,7 +1821,7 @@ namespace SourceEngine.Demo.Stats
             return rescueZoneStats;
         }
 
-        public List<IEnumerable<NadeEventArgs>> GetNadeGroups(ProcessedData processedData, string[] nadeTypes)
+        public static List<IEnumerable<NadeEventArgs>> GetNadeGroups(ProcessedData processedData, string[] nadeTypes)
         {
             var flashes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[0]));
             var smokes = processedData.GrenadeValues.Where(f => f.NadeType.ToString().Equals(nadeTypes[1]));
@@ -1842,7 +1842,7 @@ namespace SourceEngine.Demo.Stats
             };
         }
 
-        public List<grenadesTotalStats> GetGrenadesTotalStats(
+        public static List<grenadesTotalStats> GetGrenadesTotalStats(
             List<IEnumerable<NadeEventArgs>> nadeGroups,
             string[] nadeTypes)
         {
@@ -1862,8 +1862,8 @@ namespace SourceEngine.Demo.Stats
             return grenadesTotalStats;
         }
 
-        public List<grenadesSpecificStats> GetGrenadesSpecificStats(
-            List<IEnumerable<NadeEventArgs>> nadeGroups,
+        public static List<grenadesSpecificStats> GetGrenadesSpecificStats(
+            IEnumerable<IEnumerable<NadeEventArgs>> nadeGroups,
             string[] nadeTypes,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
@@ -1924,7 +1924,7 @@ namespace SourceEngine.Demo.Stats
             return grenadesSpecificStats;
         }
 
-        public List<killsStats> GetKillsStats(
+        public static List<killsStats> GetKillsStats(
             ProcessedData processedData,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
@@ -2030,7 +2030,7 @@ namespace SourceEngine.Demo.Stats
             return killsStats;
         }
 
-        public List<FeedbackMessage> GetFeedbackMessages(
+        public static List<FeedbackMessage> GetFeedbackMessages(
             ProcessedData processedData,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
@@ -2073,7 +2073,7 @@ namespace SourceEngine.Demo.Stats
             return feedbackMessages;
         }
 
-        public chickenStats GetChickenStats(ProcessedData processedData)
+        public static chickenStats GetChickenStats(ProcessedData processedData)
         {
             return new() { Killed = processedData.ChickenValues.Count() };
         }
@@ -2309,7 +2309,7 @@ namespace SourceEngine.Demo.Stats
             return teamStats;
         }
 
-        public List<firstDamageStats> GetFirstDamageStats(ProcessedData processedData)
+        public static List<firstDamageStats> GetFirstDamageStats(ProcessedData processedData)
         {
             List<firstDamageStats> firstDamageStats = new List<firstDamageStats>();
 
@@ -2366,7 +2366,7 @@ namespace SourceEngine.Demo.Stats
             return firstDamageStats;
         }
 
-        public PlayerPositionsStats GetPlayerPositionsStats(ProcessedData processedData, AllStats allStats)
+        public static PlayerPositionsStats GetPlayerPositionsStats(ProcessedData processedData, AllStats allStats)
         {
             PlayerPositionsStats playerPositionsStats;
 
@@ -2452,7 +2452,7 @@ namespace SourceEngine.Demo.Stats
             return playerPositionsStats;
         }
 
-        public string GetOutputJsonFilepath(
+        public static string GetOutputJsonFilepath(
             ProcessedData processedData,
             AllStats allStats,
             PlayerPositionsStats playerPositionsStats,
@@ -2499,7 +2499,7 @@ namespace SourceEngine.Demo.Stats
             return path;
         }
 
-        public void CreateJsonAllStats(
+        public static void CreateJsonAllStats(
             ProcessedData processedData,
             AllStats allStats,
             string mapNameString,
@@ -2528,7 +2528,7 @@ namespace SourceEngine.Demo.Stats
             }
         }
 
-        public void CreateJsonPlayerPositionsStats(
+        public static void CreateJsonPlayerPositionsStats(
             ProcessedData processedData,
             AllStats allStats,
             PlayerPositionsStats playerPositionsStats,
@@ -2564,7 +2564,7 @@ namespace SourceEngine.Demo.Stats
             }
         }
 
-        public long GetSteamIdByPlayerName(Dictionary<long, Dictionary<string, string>> playerNames, string name)
+        public static long GetSteamIdByPlayerName(Dictionary<long, Dictionary<string, string>> playerNames, string name)
         {
             if (name == "unconnected") return 0;
 
@@ -2590,7 +2590,7 @@ namespace SourceEngine.Demo.Stats
             return events.ContainsKey(t) ? events[t] : new List<object>();
         }
 
-        public List<Team> GetRoundsWonTeams(IEnumerable<Team> teamValues)
+        public static List<Team> GetRoundsWonTeams(IEnumerable<Team> teamValues)
         {
             var roundsWonTeams = teamValues.ToList();
             roundsWonTeams.RemoveAll(
@@ -2601,7 +2601,7 @@ namespace SourceEngine.Demo.Stats
             return roundsWonTeams;
         }
 
-        public List<RoundEndReason> GetRoundsWonReasons(IEnumerable<RoundEndReason> roundEndReasonValues)
+        public static List<RoundEndReason> GetRoundsWonReasons(IEnumerable<RoundEndReason> roundEndReasonValues)
         {
             var roundsWonReasons = roundEndReasonValues.ToList();
             roundsWonReasons.RemoveAll(
@@ -2727,7 +2727,7 @@ namespace SourceEngine.Demo.Stats
             };
         }
 
-        public HostagePickedUp GenerateNewHostagePickedUp(HostageRescued hostageRescued)
+        public static HostagePickedUp GenerateNewHostagePickedUp(HostageRescued hostageRescued)
         {
             return new()
             {
@@ -2739,7 +2739,7 @@ namespace SourceEngine.Demo.Stats
             };
         }
 
-        public bool GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(string half, int overtimeCount)
+        public static bool GetIfTeamSwapOrdersAreNormalOrderByHalfAndOvertimeCount(string half, int overtimeCount)
         {
             return half == "First" && overtimeCount % 2 == 0
                 || half == "Second"
