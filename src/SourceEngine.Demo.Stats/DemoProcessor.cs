@@ -1993,7 +1993,7 @@ namespace SourceEngine.Demo.Stats
                         }
 
                         bool firstKillOfTheRound =
-                            killsStats.Any(k => k.Round == round && k.FirstKillOfTheRound == true) ? false : true;
+                            !killsStats.Any(k => k.Round == round && k.FirstKillOfTheRound == true);
 
                         killsStats.Add(
                             new killsStats

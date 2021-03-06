@@ -203,19 +203,13 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 var bombsiteCenterA = parser.bombsiteACenter;
                 var bombsiteCenterB = parser.bombsiteBCenter;
 
-                bool hasBombsiteA =
-                    bombsiteCenterA.X == 0 && bombsiteCenterA.Y == 0 && bombsiteCenterA.Z == 0
-                    && bombsiteCenterA.Absolute == 0 && bombsiteCenterA.AbsoluteSquared == 0
-                    && bombsiteCenterA.Angle2D == 0
-                        ? false
-                        : true;
+                bool hasBombsiteA = bombsiteCenterA.X != 0 || bombsiteCenterA.Y != 0 || bombsiteCenterA.Z != 0
+                    || bombsiteCenterA.Absolute != 0 || bombsiteCenterA.AbsoluteSquared != 0
+                    || bombsiteCenterA.Angle2D != 0;
 
-                bool hasBombsiteB =
-                    bombsiteCenterB.X == 0 && bombsiteCenterB.Y == 0 && bombsiteCenterB.Z == 0
-                    && bombsiteCenterB.Absolute == 0 && bombsiteCenterB.AbsoluteSquared == 0
-                    && bombsiteCenterB.Angle2D == 0
-                        ? false
-                        : true;
+                bool hasBombsiteB = bombsiteCenterB.X != 0 || bombsiteCenterB.Y != 0 || bombsiteCenterB.Z != 0
+                    || bombsiteCenterB.Absolute != 0 || bombsiteCenterB.AbsoluteSquared != 0
+                    || bombsiteCenterB.Angle2D != 0;
 
                 matchStartedEventArgs.HasBombsites = hasBombsiteA || hasBombsiteB ? true : false;
 
