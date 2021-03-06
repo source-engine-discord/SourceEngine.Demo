@@ -113,10 +113,10 @@ namespace SourceEngine.Demo.Stats
                 if (!playerLookups.ContainsKey(p.UserID))
                 {
                     // check if player has been added twice with different UserIDs
-                    var duplicate = playerLookups.Where(x => x.Value == p.SteamID).FirstOrDefault();
+                    var duplicate = playerLookups.FirstOrDefault(x => x.Value == p.SteamID);
 
                     if (duplicate.Key == 0) // if the steam ID was 0
-                        duplicate = playerLookups.Where(x => x.Key == duplicateIdToRemoveTicks).FirstOrDefault();
+                        duplicate = playerLookups.FirstOrDefault(x => x.Key == duplicateIdToRemoveTicks);
 
                     if (p.SteamID != 0)
                         playerLookups.Add(p.UserID, p.SteamID);
@@ -332,7 +332,7 @@ namespace SourceEngine.Demo.Stats
                     Player player = null;
 
                     if (steamId != 0)
-                        player = dp.Participants.Where(p => p.SteamID == steamId).FirstOrDefault();
+                        player = dp.Participants.FirstOrDefault(p => p.SteamID == steamId);
                     else
                         player = null;
 
@@ -1290,18 +1290,17 @@ namespace SourceEngine.Demo.Stats
                             }
                         }
 
-                int numOfKillsAsBot = processedData.PlayerKilledEventsValues.Where(
-                    k => k.Killer != null && k.Killer.Name.ToString() == playerName.ToString() && k.KillerBotTakeover
-                ).Count();
+                int numOfKillsAsBot = processedData.PlayerKilledEventsValues.Count(
+                    k => k.Killer != null && k.Killer.Name.ToString() == playerName && k.KillerBotTakeover
+                );
 
-                int numOfDeathsAsBot = processedData.PlayerKilledEventsValues.Where(
-                    k => k.Victim != null && k.Victim.Name.ToString() == playerName.ToString() && k.VictimBotTakeover
-                ).Count();
+                int numOfDeathsAsBot = processedData.PlayerKilledEventsValues.Count(
+                    k => k.Victim != null && k.Victim.Name.ToString() == playerName && k.VictimBotTakeover
+                );
 
-                int numOfAssistsAsBot = processedData.PlayerKilledEventsValues.Where(
-                    k => k.Assister != null && k.Assister.Name.ToString() == playerName.ToString()
-                        && k.AssisterBotTakeover
-                ).Count();
+                int numOfAssistsAsBot = processedData.PlayerKilledEventsValues.Count(
+                    k => k.Assister != null && k.Assister.Name.ToString() == playerName && k.AssisterBotTakeover
+                );
 
                 playerStats.Add(
                     new playerStats
@@ -1414,7 +1413,7 @@ namespace SourceEngine.Demo.Stats
                     // team count values
                     int roundNum = i + 1;
                     var currentRoundTeams =
-                        processedData.TeamPlayersValues.Where(t => t.Round == roundNum).FirstOrDefault();
+                        processedData.TeamPlayersValues.FirstOrDefault(t => t.Round == roundNum);
 
                     foreach (var player in currentRoundTeams.Terrorists) // make sure steamID's aren't 0
                     {
@@ -1486,8 +1485,7 @@ namespace SourceEngine.Demo.Stats
 
                     if (processedData.BombsitePlantValues.Any(p => p.Round == roundNum))
                     {
-                        bombPlanted = processedData.BombsitePlantValues.Where(p => p.Round == roundNum)
-                            .FirstOrDefault();
+                        bombPlanted = processedData.BombsitePlantValues.FirstOrDefault(p => p.Round == roundNum);
 
                         bombsite = bombPlanted.Bombsite.ToString();
 
@@ -1500,18 +1498,16 @@ namespace SourceEngine.Demo.Stats
                             );
 
                             //update data to ensure that future references to it are also updated
-                            processedData.BombsitePlantValues.Where(p => p.Round == roundNum).FirstOrDefault().Bombsite
-                                = bombPlantedError.Bombsite;
+                            processedData.BombsitePlantValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
+                                bombPlantedError.Bombsite;
 
-                            if (processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum).FirstOrDefault()
-                                != null)
-                                processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum).FirstOrDefault()
-                                    .Bombsite = bombPlantedError.Bombsite;
+                            if (processedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum) != null)
+                                processedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
+                                    bombPlantedError.Bombsite;
 
-                            if (processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum).FirstOrDefault()
-                                != null)
-                                processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum).FirstOrDefault()
-                                    .Bombsite = bombPlantedError.Bombsite;
+                            if (processedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum) != null)
+                                processedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
+                                    bombPlantedError.Bombsite;
 
                             bombsite = bombPlantedError.Bombsite.ToString();
                         }
@@ -1525,8 +1521,7 @@ namespace SourceEngine.Demo.Stats
 
                     if (processedData.BombsiteExplodeValues.Any(p => p.Round == roundNum))
                     {
-                        bombExploded = processedData.BombsiteExplodeValues.Where(p => p.Round == roundNum)
-                            .FirstOrDefault();
+                        bombExploded = processedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum);
 
                         bombsite = bombsite != null ? bombsite :
                             bombExploded.Bombsite == null ? null : bombExploded.Bombsite.ToString();
@@ -1534,8 +1529,7 @@ namespace SourceEngine.Demo.Stats
 
                     if (processedData.BombsiteDefuseValues.Any(p => p.Round == roundNum))
                     {
-                        bombDefused = processedData.BombsiteDefuseValues.Where(p => p.Round == roundNum)
-                            .FirstOrDefault();
+                        bombDefused = processedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum);
 
                         bombsite = bombsite != null ? bombsite :
                             bombDefused.Bombsite == null ? null : bombDefused.Bombsite.ToString();
@@ -1553,17 +1547,21 @@ namespace SourceEngine.Demo.Stats
                     if (processedData.HostagePickedUpValues.Any(r => r.Round == roundNum)
                         || processedData.HostageRescueValues.Any(r => r.Round == roundNum))
                     {
-                        hostagePickedUpA = processedData.HostagePickedUpValues
-                            .Where(r => r.Round == roundNum && r.Hostage == 'A').FirstOrDefault();
+                        hostagePickedUpA = processedData.HostagePickedUpValues.FirstOrDefault(
+                            r => r.Round == roundNum && r.Hostage == 'A'
+                        );
 
-                        hostagePickedUpB = processedData.HostagePickedUpValues
-                            .Where(r => r.Round == roundNum && r.Hostage == 'B').FirstOrDefault();
+                        hostagePickedUpB = processedData.HostagePickedUpValues.FirstOrDefault(
+                            r => r.Round == roundNum && r.Hostage == 'B'
+                        );
 
-                        hostageRescuedA = processedData.HostageRescueValues
-                            .Where(r => r.Round == roundNum && r.Hostage == 'A').FirstOrDefault();
+                        hostageRescuedA = processedData.HostageRescueValues.FirstOrDefault(
+                            r => r.Round == roundNum && r.Hostage == 'A'
+                        );
 
-                        hostageRescuedB = processedData.HostageRescueValues
-                            .Where(r => r.Round == roundNum && r.Hostage == 'B').FirstOrDefault();
+                        hostageRescuedB = processedData.HostageRescueValues.FirstOrDefault(
+                            r => r.Round == roundNum && r.Hostage == 'B'
+                        );
 
                         if (hostagePickedUpA == null && hostageRescuedA != null)
                         {
@@ -1697,11 +1695,11 @@ namespace SourceEngine.Demo.Stats
             List<bombsiteStats> bombsiteStats = new List<bombsiteStats>();
 
             var bombsiteATrigger = dp?.triggers.Count > 0
-                ? dp.triggers.Where(x => x.Index == dp.bombsiteAIndex).FirstOrDefault()
+                ? dp.triggers.FirstOrDefault(x => x.Index == dp.bombsiteAIndex)
                 : null;
 
             var bombsiteBTrigger = dp?.triggers.Count > 0
-                ? dp.triggers.Where(x => x.Index == dp.bombsiteBIndex).FirstOrDefault()
+                ? dp.triggers.FirstOrDefault(x => x.Index == dp.bombsiteBIndex)
                 : null;
 
             List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => (char)x.Bombsite));
@@ -1711,13 +1709,13 @@ namespace SourceEngine.Demo.Stats
             List<char> bombsiteDefuses =
                 new List<char>(processedData.BombsiteDefuseValues.Select(x => (char)x.Bombsite));
 
-            int plantsA = bombsitePlants.Where(b => b.ToString().Equals("A")).Count();
-            int explosionsA = bombsiteExplosions.Where(b => b.ToString().Equals("A")).Count();
-            int defusesA = bombsiteDefuses.Where(b => b.ToString().Equals("A")).Count();
+            int plantsA = bombsitePlants.Count(b => b.ToString().Equals("A"));
+            int explosionsA = bombsiteExplosions.Count(b => b.ToString().Equals("A"));
+            int defusesA = bombsiteDefuses.Count(b => b.ToString().Equals("A"));
 
-            int plantsB = bombsitePlants.Where(b => b.ToString().Equals("B")).Count();
-            int explosionsB = bombsiteExplosions.Where(b => b.ToString().Equals("B")).Count();
-            int defusesB = bombsiteDefuses.Where(b => b.ToString().Equals("B")).Count();
+            int plantsB = bombsitePlants.Count(b => b.ToString().Equals("B"));
+            int explosionsB = bombsiteExplosions.Count(b => b.ToString().Equals("B"));
+            int defusesB = bombsiteDefuses.Count(b => b.ToString().Equals("B"));
 
             bombsiteStats.Add(
                 new bombsiteStats
@@ -1758,20 +1756,20 @@ namespace SourceEngine.Demo.Stats
         {
             List<hostageStats> hostageStats = new List<hostageStats>();
 
-            var hostageIndexA = processedData.HostageRescueValues.Where(r => r.Hostage == 'A').FirstOrDefault()
+            var hostageIndexA = processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'A')
                 ?.HostageIndex;
 
-            var hostageIndexB = processedData.HostageRescueValues.Where(r => r.Hostage == 'B').FirstOrDefault()
+            var hostageIndexB = processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'B')
                 ?.HostageIndex;
 
             List<char> hostagePickedUps = new List<char>(processedData.HostagePickedUpValues.Select(x => x.Hostage));
             List<char> hostageRescues = new List<char>(processedData.HostageRescueValues.Select(x => x.Hostage));
 
-            int pickedUpsA = hostagePickedUps.Where(b => b.ToString().Equals("A")).Count();
-            int pickedUpsB = hostagePickedUps.Where(b => b.ToString().Equals("B")).Count();
+            int pickedUpsA = hostagePickedUps.Count(b => b.ToString().Equals("A"));
+            int pickedUpsB = hostagePickedUps.Count(b => b.ToString().Equals("B"));
 
-            int rescuesA = hostageRescues.Where(b => b.ToString().Equals("A")).Count();
-            int rescuesB = hostageRescues.Where(b => b.ToString().Equals("B")).Count();
+            int rescuesA = hostageRescues.Count(b => b.ToString().Equals("A"));
+            int rescuesB = hostageRescues.Count(b => b.ToString().Equals("B"));
 
             hostageStats.Add(
                 new hostageStats
@@ -1985,7 +1983,7 @@ namespace SourceEngine.Demo.Stats
                         var weaponUsedType = weaponKillers.ElementAt(i).SubclassName;
                         var numOfPenetrations = penetrations.ElementAt(i);
 
-                        if (weaponUsed == null || weaponUsed == string.Empty)
+                        if (string.IsNullOrEmpty(weaponUsed))
                         {
                             weaponUsed = weaponKillers.ElementAt(i).OriginalString.ToString();
                             weaponUsedClass = "Unknown";
@@ -2038,8 +2036,8 @@ namespace SourceEngine.Demo.Stats
 
             foreach (var message in processedData.MessagesValues)
             {
-                var currentRoundTeams = processedData.TeamPlayersValues.Where(t => t.Round == message.Round)
-                    .FirstOrDefault();
+                var currentRoundTeams = processedData.TeamPlayersValues
+                    .FirstOrDefault(t => t.Round == message.Round);
 
                 if (currentRoundTeams != null && (message.SteamID == 0 || message.TeamName == null)
                 ) // excludes warmup round
@@ -2101,8 +2099,8 @@ namespace SourceEngine.Demo.Stats
 
                 bool firstHalf = swappedSidesCount % 2 == 0 ? true : false;
 
-                var currentRoundTeams = processedData.TeamPlayersValues.Where(t => t.Round == teamPlayers.Round)
-                    .FirstOrDefault();
+                var currentRoundTeams =
+                    processedData.TeamPlayersValues.FirstOrDefault(t => t.Round == teamPlayers.Round);
 
                 var alphaPlayers = currentRoundTeams != null
                     ? firstHalf ? currentRoundTeams.Terrorists : currentRoundTeams.CounterTerrorists
@@ -2141,26 +2139,26 @@ namespace SourceEngine.Demo.Stats
                 if (allStats.mapInfo.TestType.ToLower().Contains("comp") && alphaSteamIds.Count > 5)
                     foreach (var steamId in alphaSteamIds)
                     {
-                        if (!playerLookups.Any(l => l.Value == steamId))
+                        if (playerLookups.All(l => l.Value != steamId))
                             alphaSteamIdsToRemove.Add(steamId);
                     }
                 else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && alphaSteamIds.Count > 10)
                     foreach (var steamId in alphaSteamIds)
                     {
-                        if (!playerLookups.Any(l => l.Value == steamId))
+                        if (playerLookups.All(l => l.Value != steamId))
                             alphaSteamIdsToRemove.Add(steamId);
                     }
 
                 if (allStats.mapInfo.TestType.ToLower().Contains("comp") && bravoSteamIds.Count > 5)
                     foreach (var steamId in bravoSteamIds)
                     {
-                        if (!playerLookups.Any(l => l.Value == steamId))
+                        if (playerLookups.All(l => l.Value != steamId))
                             bravoSteamIdsToRemove.Add(steamId);
                     }
                 else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && bravoSteamIds.Count > 10)
                     foreach (var steamId in bravoSteamIds)
                     {
-                        if (!playerLookups.Any(l => l.Value == steamId))
+                        if (playerLookups.All(l => l.Value != steamId))
                             bravoSteamIdsToRemove.Add(steamId);
                     }
 
@@ -2175,74 +2173,74 @@ namespace SourceEngine.Demo.Stats
                 var deathsThisRound = processedData.PlayerKilledEventsValues.Where(k => k.Round == teamPlayers.Round);
 
                 // kills this round
-                int alphaKills = deathsThisRound
-                    .Where(d => d.Killer != null && alphaSteamIds.Contains(d.Killer.SteamID)).Count();
+                int alphaKills =
+                    deathsThisRound.Count(d => d.Killer != null && alphaSteamIds.Contains(d.Killer.SteamID));
 
-                int bravoKills = deathsThisRound
-                    .Where(d => d.Killer != null && bravoSteamIds.Contains(d.Killer.SteamID)).Count();
+                int bravoKills =
+                    deathsThisRound.Count(d => d.Killer != null && bravoSteamIds.Contains(d.Killer.SteamID));
 
                 // deaths this round
-                int alphaDeaths = deathsThisRound
-                    .Where(d => d.Victim != null && alphaSteamIds.Contains(d.Victim.SteamID)).Count();
+                int alphaDeaths =
+                    deathsThisRound.Count(d => d.Victim != null && alphaSteamIds.Contains(d.Victim.SteamID));
 
-                int bravoDeaths = deathsThisRound
-                    .Where(d => d.Victim != null && bravoSteamIds.Contains(d.Victim.SteamID)).Count();
+                int bravoDeaths =
+                    deathsThisRound.Count(d => d.Victim != null && bravoSteamIds.Contains(d.Victim.SteamID));
 
                 // assists this round
-                int alphaAssists = deathsThisRound
-                    .Where(d => d.Assister != null && alphaSteamIds.Contains(d.Assister.SteamID)).Count();
+                int alphaAssists =
+                    deathsThisRound.Count(d => d.Assister != null && alphaSteamIds.Contains(d.Assister.SteamID));
 
-                int bravoAssists = deathsThisRound
-                    .Where(d => d.Assister != null && bravoSteamIds.Contains(d.Assister.SteamID)).Count();
+                int bravoAssists =
+                    deathsThisRound.Count(d => d.Assister != null && bravoSteamIds.Contains(d.Assister.SteamID));
 
                 // flash assists this round
-                int alphaFlashAssists = deathsThisRound.Where(
+                int alphaFlashAssists = deathsThisRound.Count(
                     d => d.Assister != null && alphaSteamIds.Contains(d.Assister.SteamID) && d.AssistedFlash
-                ).Count();
+                );
 
-                int bravoFlashAssists = deathsThisRound.Where(
+                int bravoFlashAssists = deathsThisRound.Count(
                     d => d.Assister != null && bravoSteamIds.Contains(d.Assister.SteamID) && d.AssistedFlash
-                ).Count();
+                );
 
                 // headshots this round
-                int alphaHeadshots = deathsThisRound.Where(
+                int alphaHeadshots = deathsThisRound.Count(
                     d => d.Killer != null && alphaSteamIds.Contains(d.Killer.SteamID) && d.Headshot
-                ).Count();
+                );
 
-                int bravoHeadshots = deathsThisRound.Where(
+                int bravoHeadshots = deathsThisRound.Count(
                     d => d.Killer != null && bravoSteamIds.Contains(d.Killer.SteamID) && d.Headshot
-                ).Count();
+                );
 
                 // teamkills this round
-                int alphaTeamkills = deathsThisRound.Where(
+                int alphaTeamkills = deathsThisRound.Count(
                     d => d.Killer != null && d.Victim != null && alphaSteamIds.Contains(d.Killer.SteamID)
                         && alphaSteamIds.Contains(d.Victim.SteamID) && d.Killer.SteamID != d.Victim.SteamID
-                ).Count();
+                );
 
-                int bravoTeamkills = deathsThisRound.Where(
+                int bravoTeamkills = deathsThisRound.Count(
                     d => d.Killer != null && d.Victim != null && bravoSteamIds.Contains(d.Killer.SteamID)
                         && bravoSteamIds.Contains(d.Victim.SteamID) && d.Killer.SteamID != d.Victim.SteamID
-                ).Count();
+                );
 
                 // suicides this round
-                int alphaSuicides = deathsThisRound.Where(
+                int alphaSuicides = deathsThisRound.Count(
                     d => d.Killer != null && d.Victim != null && alphaSteamIds.Contains(d.Killer.SteamID)
                         && d.Killer.SteamID != 0 && d.Suicide
-                ).Count();
+                );
 
-                int bravoSuicides = deathsThisRound.Where(
+                int bravoSuicides = deathsThisRound.Count(
                     d => d.Killer != null && d.Victim != null && bravoSteamIds.Contains(d.Killer.SteamID)
                         && d.Killer.SteamID != 0 && d.Suicide
-                ).Count();
+                );
 
                 // wallbang kills this round
-                int alphaWallbangKills = deathsThisRound.Where(
+                int alphaWallbangKills = deathsThisRound.Count(
                     d => d.Killer != null && alphaSteamIds.Contains(d.Killer.SteamID) && d.PenetratedObjects > 0
-                ).Count();
+                );
 
-                int bravoWallbangKills = deathsThisRound.Where(
+                int bravoWallbangKills = deathsThisRound.Count(
                     d => d.Killer != null && bravoSteamIds.Contains(d.Killer.SteamID) && d.PenetratedObjects > 0
-                ).Count();
+                );
 
                 // total number of walls penetrated through for kills this round
                 int alphaWallbangsTotalForAllKills = deathsThisRound
@@ -2265,11 +2263,11 @@ namespace SourceEngine.Demo.Stats
                 // shots fired this round
                 var shotsFiredThisRound = processedData.ShotsFiredValues.Where(s => s.Round == teamPlayers.Round);
 
-                int alphaShotsFired = shotsFiredThisRound
-                    .Where(s => s.Shooter != null && alphaSteamIds.Contains(s.Shooter.SteamID)).Count();
+                int alphaShotsFired =
+                    shotsFiredThisRound.Count(s => s.Shooter != null && alphaSteamIds.Contains(s.Shooter.SteamID));
 
-                int bravoShotsFired = shotsFiredThisRound
-                    .Where(s => s.Shooter != null && bravoSteamIds.Contains(s.Shooter.SteamID)).Count();
+                int bravoShotsFired =
+                    shotsFiredThisRound.Count(s => s.Shooter != null && bravoSteamIds.Contains(s.Shooter.SteamID));
 
                 teamStats.Add(
                     new teamStats
@@ -2621,7 +2619,7 @@ namespace SourceEngine.Demo.Stats
 
             if (teamPlayersList.Count > 0 && teamPlayersList.Any(t => t.Round == 1))
             {
-                var teamPlayers = teamPlayersList.Where(t => t.Round == 1).First();
+                var teamPlayers = teamPlayersList.First(t => t.Round == 1);
 
                 if (teamPlayers.Terrorists.Count > 0 && teamPlayers.CounterTerrorists.Count > 0)
                     round = roundsCount + 1;

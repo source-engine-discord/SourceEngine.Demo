@@ -1328,7 +1328,7 @@ namespace SourceEngine.Demo.Parser
                 {
                     if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage or danger zone
                     {
-                        if (!rescueZoneIdsDoneAtLeastOnceMin.Any(x => x == trigger.Index))
+                        if (rescueZoneIdsDoneAtLeastOnceMin.All(x => x != trigger.Index))
                             rescueZoneIdsDoneAtLeastOnceMin.Add(trigger.Index);
 
                         trigger.Min = new Vector
@@ -1348,7 +1348,7 @@ namespace SourceEngine.Demo.Parser
                 {
                     if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage or danger zone
                     {
-                        if (!rescueZoneIdsDoneAtLeastOnceMax.Any(x => x == trigger.Index))
+                        if (rescueZoneIdsDoneAtLeastOnceMax.All(x => x != trigger.Index))
                             rescueZoneIdsDoneAtLeastOnceMax.Add(trigger.Index);
 
                         trigger.Max = new Vector

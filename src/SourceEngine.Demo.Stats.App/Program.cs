@@ -245,7 +245,7 @@ namespace SourceEngine.Demo.Stats.App
             if (!string.IsNullOrWhiteSpace(gamemodeoverride))
             {
                 //Make sure a valid gamemode has been given
-                if (gamemodeoverride != "notprovided" && !Gamemodes.GetAll().Any(x => x == gamemodeoverride))
+                if (gamemodeoverride != "notprovided" && Gamemodes.GetAll().All(x => x != gamemodeoverride))
                 {
                     Debug.Error(
                         "Invalid gamemode. Can be removed to have the parser attempt to figure it out itself. Accepted values are "
