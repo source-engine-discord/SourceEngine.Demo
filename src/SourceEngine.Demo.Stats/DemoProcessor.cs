@@ -27,11 +27,6 @@ namespace SourceEngine.Demo.Stats
         public long ticksPlaying;
     }
 
-    public class PlayerWeapon
-    {
-        public string name;
-    }
-
     public class MatchData
     {
         private const string winReasonTKills = "TerroristWin",
