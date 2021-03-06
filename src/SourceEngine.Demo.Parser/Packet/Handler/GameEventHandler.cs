@@ -191,9 +191,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 MatchStartedEventArgs matchStartedEventArgs = new MatchStartedEventArgs();
 
                 if (!string.IsNullOrEmpty(parser.Map))
-                    matchStartedEventArgs.Mapname = parser.Map.ToString();
+                    matchStartedEventArgs.Mapname = parser.Map;
                 else if (parser.Header != null && !string.IsNullOrEmpty(parser.Header.MapName))
-                    matchStartedEventArgs.Mapname = parser.Header.MapName.ToString();
+                    matchStartedEventArgs.Mapname = parser.Header.MapName;
                 else
                     matchStartedEventArgs.Mapname = "unknown";
 
@@ -212,7 +212,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     || bombsiteCenterB.Absolute != 0 || bombsiteCenterB.AbsoluteSquared != 0
                     || bombsiteCenterB.Angle2D != 0;
 
-                matchStartedEventArgs.HasBombsites = hasBombsiteA || hasBombsiteB ? true : false;
+                matchStartedEventArgs.HasBombsites = hasBombsiteA || hasBombsiteB;
 
                 parser.RaiseMatchStarted(matchStartedEventArgs);
             }
@@ -325,15 +325,15 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                         kill.AssisterBotTakeover = false;
 
                         if (kill.Killer != null
-                            && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name.ToString()))
+                            && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Killer.Name))
                             kill.KillerBotTakeover = true;
 
                         if (kill.Victim != null
-                            && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name.ToString()))
+                            && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Victim.Name))
                             kill.VictimBotTakeover = true;
 
                         if (kill.Assister != null
-                            && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name.ToString()))
+                            && currentRoundBotTakeovers.Any(p => p.Name.ToString() == kill.Assister.Name))
                             kill.AssisterBotTakeover = true;
 
                         if (data.ContainsKey("assistedflash"))
@@ -394,11 +394,10 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
                     hurt.TimeInRound = parser.CurrentTime - timestampFreezetimeEnded;
 
-                    hurt.PossiblyKilledByBombExplosion =
-                        hurt.Health == 0 && string.IsNullOrWhiteSpace(hurt.Weapon.OriginalString)
-                        && hurt.Weapon.Weapon == EquipmentElement.Unknown && hurt.Weapon.Class == EquipmentClass.Unknown
-                            ? true
-                            : false;
+                    hurt.PossiblyKilledByBombExplosion = hurt.Health == 0
+                        && string.IsNullOrWhiteSpace(hurt.Weapon.OriginalString)
+                        && hurt.Weapon.Weapon == EquipmentElement.Unknown
+                        && hurt.Weapon.Class == EquipmentClass.Unknown;
 
                     parser.RaisePlayerHurt(hurt);
                     break;

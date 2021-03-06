@@ -512,8 +512,8 @@ namespace SourceEngine.Demo.Stats.Tests
                         Y = 500,
                         Z = 500,
                     },
-                    FlashedPlayers = new Player[1] { TeamPlayersValues[0].CounterTerrorists[0] },
-                } as NadeEventArgs,
+                    FlashedPlayers = new[] { TeamPlayersValues[0].CounterTerrorists[0] },
+                },
                 new()
                 {
                     NadeType = EquipmentElement.Smoke,
@@ -573,7 +573,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var ChickenValues = new List<ChickenKilledEventArgs> { new() { } };
+            var ChickenValues = new List<ChickenKilledEventArgs> { new() };
 
             var ShotsFiredValues = new List<ShotFired>
             {

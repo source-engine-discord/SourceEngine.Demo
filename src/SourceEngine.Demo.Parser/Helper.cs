@@ -39,12 +39,12 @@ namespace SourceEngine.Demo.Parser
 
         public static string ReadCString(this BinaryReader reader, int length, Encoding encoding)
         {
-            return encoding.GetString(reader.ReadBytes(length)).Split(new char[] { '\0' }, 2)[0];
+            return encoding.GetString(reader.ReadBytes(length)).Split(new[] { '\0' }, 2)[0];
         }
 
         public static int ReadVarInt32(this BinaryReader reader)
         {
-            int b = 0, count = 0, result = 0;
+            int b, count = 0, result = 0;
 
             do
             {

@@ -41,6 +41,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     {
                         var val = bitstream.ReadProtobufVarInt();
 
+                        // Silently drop other cases.
                         switch (fieldnum)
                         {
                             case 1:
@@ -58,15 +59,13 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                             case 9:
                                 NumBits = val;
                                 break;
-                            default:
-                                // silently drop
-                                break;
                         }
                     }
                     else if (wireType == 5)
                     {
                         var val = bitstream.ReadFloat();
 
+                        // Silently drop other cases.
                         switch (fieldnum)
                         {
                             case 7:
@@ -74,9 +73,6 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                                 break;
                             case 8:
                                 HighValue = val;
-                                break;
-                            default:
-                                // silently drop
                                 break;
                         }
                     }
@@ -137,6 +133,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 {
                     var val = bitstream.ReadProtobufVarInt();
 
+                    // Silently drop other cases.
                     switch (fieldnum)
                     {
                         case 1:
@@ -144,9 +141,6 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                             break;
                         case 3:
                             _NeedsDecoder = val;
-                            break;
-                        default:
-                            // silently drop
                             break;
                     }
                 }

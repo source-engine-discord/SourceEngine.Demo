@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace SourceEngine.Demo.Stats
 {
@@ -45,7 +44,7 @@ namespace SourceEngine.Demo.Stats
             for (int i = 0; i < cwidth - (padWidth + textWidth); i++)
                 newt += " ";
 
-            int percentBuffer = (int)(percent * (float)cwidth);
+            int percentBuffer = (int)(percent * cwidth);
             percentBuffer = percentBuffer > cwidth ? cwidth : percentBuffer;
 
             for (int i = 0; i < newt.Length; i++)

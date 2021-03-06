@@ -195,7 +195,7 @@ namespace SourceEngine.Demo.Parser
 
         public static CommandInfo Parse(IBitStream reader)
         {
-            return new() { u = new Split[2] { Split.Parse(reader), Split.Parse(reader) } };
+            return new() { u = new[] { Split.Parse(reader), Split.Parse(reader) } };
         }
     }
 

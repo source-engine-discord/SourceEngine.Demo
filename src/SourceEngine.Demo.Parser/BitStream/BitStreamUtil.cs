@@ -120,7 +120,7 @@ namespace SourceEngine.Demo.Parser
 
         public static string ReadCString(this IBitStream reader, int length)
         {
-            return Encoding.Default.GetString(reader.ReadBytes(length)).Split(new char[] { '\0' }, 2)[0];
+            return Encoding.Default.GetString(reader.ReadBytes(length)).Split(new[] { '\0' }, 2)[0];
         }
 
         public static uint ReadVarInt(this IBitStream bs)

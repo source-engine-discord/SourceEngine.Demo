@@ -61,6 +61,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
                 var val = bitstream.ReadProtobufVarInt();
 
+                // Silently drop other cases.
                 switch (fieldnum)
                 {
                     case 2:
@@ -80,9 +81,6 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                         break;
                     case 7:
                         Flags = val;
-                        break;
-                    default:
-                        // silently drop
                         break;
                 }
             }

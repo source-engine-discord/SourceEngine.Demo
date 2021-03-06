@@ -231,13 +231,11 @@ namespace SourceEngine.Demo.Stats.App
                     catch (Exception e)
                     {
                         Debug.Error("CONFIG ERROR... INFO:: {0}\nSteam names will not be retrieved!!!", e.Message);
-                        steaminfo = false;
                     }
                 }
                 else
                 {
                     Debug.Error("Config unreadable... Steam names will not be retrieved!!!");
-                    steaminfo = false;
                 }
             }
 
@@ -374,35 +372,35 @@ namespace SourceEngine.Demo.Stats.App
                     lowOutputMode
                 );
 
-                IEnumerable<MatchStartedEventArgs> mse = new List<MatchStartedEventArgs>();
-                IEnumerable<SwitchSidesEventArgs> sse = new List<SwitchSidesEventArgs>();
-                IEnumerable<FeedbackMessage> fme = new List<FeedbackMessage>();
-                IEnumerable<TeamPlayers> tpe = new List<TeamPlayers>();
-                IEnumerable<PlayerHurt> ph = new List<PlayerHurt>();
-                IEnumerable<PlayerKilledEventArgs> pke = new List<PlayerKilledEventArgs>();
+                IEnumerable<MatchStartedEventArgs> mse;
+                IEnumerable<SwitchSidesEventArgs> sse;
+                IEnumerable<FeedbackMessage> fme;
+                IEnumerable<TeamPlayers> tpe;
+                IEnumerable<PlayerHurt> ph;
+                IEnumerable<PlayerKilledEventArgs> pke;
                 Dictionary<string, IEnumerable<Player>> pe = new Dictionary<string, IEnumerable<Player>>();
-                IEnumerable<Equipment> pwe = new List<Equipment>();
-                IEnumerable<int> poe = new List<int>();
-                IEnumerable<BombPlanted> bpe = new List<BombPlanted>();
-                IEnumerable<BombExploded> bee = new List<BombExploded>();
-                IEnumerable<BombDefused> bde = new List<BombDefused>();
-                IEnumerable<HostageRescued> hre = new List<HostageRescued>();
-                IEnumerable<HostagePickedUp> hpu = new List<HostagePickedUp>();
-                IEnumerable<DisconnectedPlayer> dpe = new List<DisconnectedPlayer>();
-                IEnumerable<Team> te = new List<Team>();
-                IEnumerable<RoundEndReason> re = new List<RoundEndReason>();
-                IEnumerable<double> le = new List<double>();
-                IEnumerable<TeamEquipment> tes = new List<TeamEquipment>();
-                IEnumerable<NadeEventArgs> ge = new List<NadeEventArgs>();
+                IEnumerable<Equipment> pwe;
+                IEnumerable<int> poe;
+                IEnumerable<BombPlanted> bpe;
+                IEnumerable<BombExploded> bee;
+                IEnumerable<BombDefused> bde;
+                IEnumerable<HostageRescued> hre;
+                IEnumerable<HostagePickedUp> hpu;
+                IEnumerable<DisconnectedPlayer> dpe;
+                IEnumerable<Team> te;
+                IEnumerable<RoundEndReason> re;
+                IEnumerable<double> le;
+                IEnumerable<TeamEquipment> tes;
+                IEnumerable<NadeEventArgs> ge;
 
-                //IEnumerable<SmokeEventArgs> gse = new List<SmokeEventArgs>();
-                //IEnumerable<FlashEventArgs> gfe = new List<FlashEventArgs>();
-                //IEnumerable<GrenadeEventArgs> gge = new List<GrenadeEventArgs>();
-                //IEnumerable<FireEventArgs> gie = new List<FireEventArgs>();
-                //IEnumerable<DecoyEventArgs> gde = new List<DecoyEventArgs>();
-                IEnumerable<ChickenKilledEventArgs> cke = new List<ChickenKilledEventArgs>();
-                IEnumerable<ShotFired> sfe = new List<ShotFired>();
-                IEnumerable<PlayerPositionsInstance> ppe = new List<PlayerPositionsInstance>();
+                //IEnumerable<SmokeEventArgs> gse;
+                //IEnumerable<FlashEventArgs> gfe;
+                //IEnumerable<GrenadeEventArgs> gge;
+                //IEnumerable<FireEventArgs> gie;
+                //IEnumerable<DecoyEventArgs> gde;
+                IEnumerable<ChickenKilledEventArgs> cke;
+                IEnumerable<ShotFired> sfe;
+                IEnumerable<PlayerPositionsInstance> ppe;
 
                 mse = from start in mdTest.GetEvents<MatchStartedEventArgs>() select start as MatchStartedEventArgs;
 
@@ -601,8 +599,8 @@ namespace SourceEngine.Demo.Stats.App
 
                 tanookiStats.RoundsLasted = playedRoundsT.Count() + playedRoundsCT.Count();
 
-                bool playedTSide = playedRoundsT.Any() ? true : false;
-                bool playedCTSide = playedRoundsCT.Any() ? true : false;
+                bool playedTSide = playedRoundsT.Any();
+                bool playedCTSide = playedRoundsCT.Any();
 
                 tanookiStats.RoundJoined = playedTSide ? playedCTSide ? playedRoundsT.First() < playedRoundsCT.First()
                         ?
@@ -624,7 +622,7 @@ namespace SourceEngine.Demo.Stats.App
                     ? finalDisconnectRound
                     : tanookiStats.RoundLeft;
 
-                tanookiStats.Left = tanookiStats.RoundLeft > -1 ? true : false;
+                tanookiStats.Left = tanookiStats.RoundLeft > -1;
             }
 
             return tanookiStats;
@@ -658,7 +656,7 @@ namespace SourceEngine.Demo.Stats.App
                     filenameSplit = demo.Split('_', '.', '-');
 
                 var secondToLastString = filenameSplit[^2];
-                bool isSEDiscordDemo = secondToLastString == "casual" || secondToLastString == "comp" ? true : false;
+                bool isSEDiscordDemo = secondToLastString == "casual" || secondToLastString == "comp";
                 bool isMapcoreDiscordDemo = filenameSplit.Any(x => x.Contains("MAPCORE"));
 
                 if (isSEDiscordDemo)

@@ -806,7 +806,7 @@ namespace SourceEngine.Demo.Parser
             {
                 string team = null;
                 string teamName = null;
-                string teamFlag = null;
+                string teamFlag;
                 int teamID = -1;
                 int score = 0;
 
@@ -958,7 +958,7 @@ namespace SourceEngine.Demo.Parser
 
         private void HandleNewPlayer(Entity playerEntity)
         {
-            Player p = null;
+            Player p;
 
             if (PlayerInformations[playerEntity.ID - 1] != null)
             {

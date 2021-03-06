@@ -330,8 +330,6 @@ namespace SourceEngine.Demo.Stats
 
                     if (steamId != 0)
                         player = dp.Participants.FirstOrDefault(p => p.SteamID == steamId);
-                    else
-                        player = null;
 
                     var teamName = player?.Team.ToString();
                     teamName = teamName == "Spectate" ? "Spectator" : teamName;
@@ -455,7 +453,8 @@ namespace SourceEngine.Demo.Stats
                     // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
                     if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
                         foreach (FeedbackMessage message in md.events
-                            .Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value)?.ElementAt(0))
+                            .Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value)
+                            .ElementAt(0))
                         {
                             if (message.Round == numOfFreezetimesEnded)
                                 message.TimeInRound = -1;
@@ -517,7 +516,8 @@ namespace SourceEngine.Demo.Stats
                     // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
                     if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
                         foreach (FeedbackMessage message in md.events
-                            .Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value)?.ElementAt(0))
+                            .Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value)
+                            .ElementAt(0))
                         {
                             if (message.Round == numOfFreezetimesEnded)
                                 message.TimeInRound = -1;
@@ -601,8 +601,6 @@ namespace SourceEngine.Demo.Stats
                             Length = roundEndedEvent.Length + 4, // guesses the round length
                         }
                     );
-
-                    numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count;
 
                     dp.stopParsingDemo =
                         true; // forcefully stops the demo from being parsed any further to avoid events
@@ -988,7 +986,7 @@ namespace SourceEngine.Demo.Stats
 
             var mapNameSplit = processedData.MatchStartValues.Any()
                 ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/')
-                : new string[] { processedData.DemoInformation.MapName };
+                : new[] { processedData.DemoInformation.MapName };
 
             var mapNameString = mapNameSplit.Length > 2 ? mapNameSplit[2] : mapNameSplit[0];
 
@@ -1858,10 +1856,7 @@ namespace SourceEngine.Demo.Stats
             {
                 if (nadeGroup.Any())
                 {
-                    bool flashGroup =
-                        nadeGroup.ElementAt(0).NadeType.ToString() == nadeTypes[0]
-                            ? true
-                            : false; //check if in flash group
+                    bool flashGroup = nadeGroup.ElementAt(0).NadeType.ToString() == nadeTypes[0];
 
                     foreach (var nade in nadeGroup)
                     {
@@ -1967,13 +1962,13 @@ namespace SourceEngine.Demo.Stats
 
                         if (string.IsNullOrEmpty(weaponUsed))
                         {
-                            weaponUsed = weaponKillers.ElementAt(i).OriginalString.ToString();
+                            weaponUsed = weaponKillers.ElementAt(i).OriginalString;
                             weaponUsedClass = "Unknown";
                             weaponUsedType = "Unknown";
                         }
 
                         bool firstKillOfTheRound =
-                            !killsStats.Any(k => k.Round == round && k.FirstKillOfTheRound == true);
+                            !killsStats.Any(k => k.Round == round && k.FirstKillOfTheRound);
 
                         killsStats.Add(
                             new killsStats
@@ -2079,7 +2074,7 @@ namespace SourceEngine.Demo.Stats
                         : swappedSidesCount
                     : swappedSidesCount;
 
-                bool firstHalf = swappedSidesCount % 2 == 0 ? true : false;
+                bool firstHalf = swappedSidesCount % 2 == 0;
 
                 var currentRoundTeams =
                     processedData.TeamPlayersValues.FirstOrDefault(t => t.Round == teamPlayers.Round);
@@ -2444,7 +2439,7 @@ namespace SourceEngine.Demo.Stats
                 foreach (var folder in processedData.FoldersToProcess)
                 {
                     string[] splitPath = Path.GetDirectoryName(processedData.DemoInformation.DemoName).Split(
-                        new string[] { string.Concat(folder, "\\") },
+                        new[] { string.Concat(folder, "\\") },
                         StringSplitOptions.None
                     );
 
@@ -2632,7 +2627,7 @@ namespace SourceEngine.Demo.Stats
         public static string[] SplitPositionString(string position)
         {
             var positionString = position.Split(
-                new string[] { "{X: ", ", Y: ", ", Z: ", " }" },
+                new[] { "{X: ", ", Y: ", ", Z: ", " }" },
                 StringSplitOptions.None
             );
 
@@ -2652,9 +2647,9 @@ namespace SourceEngine.Demo.Stats
                 " ",
                 currentPositions[2],
                 "; setang ",
-                Convert.ToString(viewDirectionX) ?? "0.0",
+                Convert.ToString(viewDirectionX),
                 " ",
-                Convert.ToString(viewDirectionY) ?? "0.0" // Z axis is optional
+                Convert.ToString(viewDirectionY) // Z axis is optional
             );
         }
 
@@ -2759,16 +2754,6 @@ namespace SourceEngine.Demo.Stats
                 case "hostagestats":
                 case "teamstats":
                     return gamemode != Gamemodes.DangerZone;
-                case "playerstats":
-                case "roundsstats":
-                case "rescuezonestats":
-                case "grenadestotalstats":
-                case "grenadesspecificstats":
-                case "killsstats":
-                case "feedbackmessage":
-                case "chickenstats":
-                case "firstdamagestats":
-                case "playerpositionsstats":
                 default:
                     return true;
             }

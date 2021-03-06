@@ -49,6 +49,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
                 var val = bitstream.ReadProtobufVarInt();
 
+                // Silently drop other cases.
                 switch (fieldnum)
                 {
                     case 1:
@@ -68,9 +69,6 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                         break;
                     case 6:
                         DeltaFrom = val;
-                        break;
-                    default:
-                        // silently drop
                         break;
                 }
             }

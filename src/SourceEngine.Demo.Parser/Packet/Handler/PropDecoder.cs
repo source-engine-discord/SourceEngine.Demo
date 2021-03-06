@@ -261,7 +261,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 if (fractVal == 1)
                     fractVal = (int)reader.ReadInt(COORD_FRACTIONAL_BITS);
 
-                value = intVal + (float)fractVal * COORD_RESOLUTION;
+                value = intVal + fractVal * COORD_RESOLUTION;
             }
 
             if (isNegative)
@@ -292,9 +292,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     // If there's an integer, read it in
                     // Adjust the integers from [0..MAX_COORD_VALUE-1] to [1..MAX_COORD_VALUE]
                     if (inBounds)
-                        value = (float)(reader.ReadInt(11) + 1);
+                        value = reader.ReadInt(11) + 1;
                     else
-                        value = (float)(reader.ReadInt(14) + 1);
+                        value = reader.ReadInt(14) + 1;
                 }
             }
             else
@@ -311,16 +311,16 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     // If there's an integer, read it in
                     // Adjust the integers from [0..MAX_COORD_VALUE-1] to [1..MAX_COORD_VALUE]
                     if (inBounds)
-                        value = (float)(reader.ReadInt(11) + 1);
+                        value = reader.ReadInt(11) + 1;
                     else
-                        value = (float)(reader.ReadInt(14) + 1);
+                        value = reader.ReadInt(14) + 1;
                 }
 
                 // If there's a fraction, read it in
                 var fractval = (int)reader.ReadInt(isLowPrecision ? 3 : 5);
 
                 // Calculate the correct floating point value
-                value = intval + (float)fractval * (isLowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION);
+                value = intval + fractval * (isLowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION);
             }
 
             if (isNegative)
@@ -335,7 +335,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
             if (integral)
             {
-                value = (float)reader.ReadInt(bits);
+                value = reader.ReadInt(bits);
             }
             else
             {
@@ -344,7 +344,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     lowPrecision ? COORD_FRACTIONAL_BITS_MP_LOWPRECISION : COORD_FRACTIONAL_BITS
                 );
 
-                value = intval + (float)fractval * (lowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION);
+                value = intval + fractval * (lowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION);
             }
 
             return value;
@@ -360,7 +360,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
 
             uint fractVal = reader.ReadInt(NORMAL_FRACTIONAL_BITS);
 
-            float value = (float)fractVal * NORMAL_RESOLUTION;
+            float value = fractVal * NORMAL_RESOLUTION;
 
             if (isNegative)
                 value *= -1;
