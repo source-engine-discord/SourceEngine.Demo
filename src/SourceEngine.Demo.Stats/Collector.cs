@@ -26,7 +26,7 @@ namespace SourceEngine.Demo.Stats
             //Iterate each matchkey
             foreach (int matchKey in collected.Keys)
             {
-                //Iterate each key in the collected keyss
+                //Iterate each key in the collected keys
                 foreach (string attribKey in collected[matchKey].Keys)
                 {
                     //If the key doesn't exist create it

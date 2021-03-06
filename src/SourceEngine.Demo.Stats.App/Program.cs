@@ -244,7 +244,7 @@ namespace SourceEngine.Demo.Stats.App
             //If the optional parameter -gamemodeoverride has been provided
             if (!string.IsNullOrWhiteSpace(gamemodeoverride))
             {
-                //Make sure a valid gamemode has been given
+                //Make sure a valid game mode has been given
                 if (gamemodeoverride != "notprovided" && Gamemodes.GetAll().All(x => x != gamemodeoverride))
                 {
                     Debug.Error(
@@ -604,7 +604,7 @@ namespace SourceEngine.Demo.Stats.App
                 || tpe.Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
             {
                 tanookiStats.Joined = true;
-                tanookiStats.RoundJoined = 0; // set incase he joined in warmup but does not play any rounds
+                tanookiStats.RoundJoined = 0; // set in case he joined in warmup but does not play any rounds
 
                 IEnumerable<int> playedRoundsT =
                     tpe.Where(t => t.Round > 0 && t.Terrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);

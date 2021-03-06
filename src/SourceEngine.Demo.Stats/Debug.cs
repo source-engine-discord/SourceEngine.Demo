@@ -62,7 +62,7 @@ namespace SourceEngine.Demo.Stats
             if (isProgressBar)
             {
                 Console.Write("\r");
-                for (int i = 0; i < 100; i++) //Clears everything so stuff doesnt hang around
+                for (int i = 0; i < 100; i++) //Clears everything so stuff doesn't hang around
                     Console.Write(" ");
 
                 Console.ForegroundColor = ConsoleColor.White;

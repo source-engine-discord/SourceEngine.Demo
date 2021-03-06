@@ -58,7 +58,7 @@ namespace SourceEngine.Demo.Stats
         {
             string r = null;
 
-            using (var wc = new WebClient()) //Downlaod the string
+            using (var wc = new WebClient()) //Download the string
             {
                 r = wc.DownloadString(url);
             }

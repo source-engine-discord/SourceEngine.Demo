@@ -239,7 +239,7 @@ namespace SourceEngine.Demo.Parser
         // local server user ID, unique while server is running
         public int UserID { get; set; }
 
-        // global unique player identifer
+        // global unique player identifier
         public string GUID { get; set; } //33bytes
 
         // friends identification number
@@ -293,7 +293,7 @@ namespace SourceEngine.Demo.Parser
         public Vector Max { get; set; }
 
         /// <summary>
-        /// Checks wheter a point lies within the BoundingBox.
+        /// Checks whether a point lies within the BoundingBox.
         /// </summary>
         /// <param name="point">The point to check</param>
         public bool Contains(Vector point)

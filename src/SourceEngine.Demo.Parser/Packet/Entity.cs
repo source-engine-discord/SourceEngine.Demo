@@ -42,7 +42,7 @@ namespace SourceEngine.Demo.Parser.Packet
             //First a list of the updated props is sent
             //And then the props itself are sent.
 
-            //Read the field-indicies in a "new" way?
+            //Read the field-indices in a "new" way?
             bool newWay = reader.ReadBit();
             int index = -1;
             var entries = new List<PropertyEntry>();

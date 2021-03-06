@@ -63,7 +63,7 @@ namespace SourceEngine.Demo.Stats
 
         private void addEvent(Type type, object ev)
         {
-            //Create if doesnt exist
+            //Create if doesn't exist
             if (!events.ContainsKey(type))
                 events.Add(type, new List<object>());
 
@@ -612,7 +612,7 @@ namespace SourceEngine.Demo.Stats
                     dp.stopParsingDemo =
                         true; // forcefully stops the demo from being parsed any further to avoid events
 
-                    // (such as player deaths to world) happening in a next round (a round that never actually occurrs)
+                    // (such as player deaths to world) happening in a next round (a round that never actually occurs)
 
                     return;
                 }
@@ -1104,11 +1104,11 @@ namespace SourceEngine.Demo.Stats
             {
                 foreach (Player p in processedData.PlayerValues[catagory])
                 {
-                    //Skip players not in this catagory
+                    //Skip players not in this category
                     if (p == null)
                         continue;
 
-                    // checks for an updated userID for the user, loops incase it has changed more than once
+                    // checks for an updated userID for the user, loops in case it has changed more than once
                     int userId = p.UserID;
 
                     while (CheckForUpdatedUserId(userId) != userId)
@@ -1117,14 +1117,14 @@ namespace SourceEngine.Demo.Stats
                     if (!playerLookups.ContainsKey(userId))
                         continue;
 
-                    //Add player to collections list if doesnt exist
+                    //Add player to collections list if doesn't exist
                     if (!playerNames.ContainsKey(playerLookups[userId]))
                         playerNames.Add(playerLookups[userId], new Dictionary<string, string>());
 
                     if (!data.ContainsKey(playerLookups[userId]))
                         data.Add(playerLookups[userId], new Dictionary<string, long>());
 
-                    //Add catagory to dictionary if doesnt exist
+                    //Add category to dictionary if doesn't exist
                     if (!playerNames[playerLookups[userId]].ContainsKey("Name"))
                         playerNames[playerLookups[userId]].Add("Name", p.Name);
 
@@ -1165,7 +1165,7 @@ namespace SourceEngine.Demo.Stats
             mapInfo.MapName =
                 mapNameSplit.Length > 2
                     ? mapNameSplit[2]
-                    : mapInfo.MapName; // use the mapname from inside the demo itself if possible, otherwise use the mapname from the demo file's name
+                    : mapInfo.MapName; // use the map name from inside the demo itself if possible, otherwise use the map name from the demo file's name
 
             mapInfo.WorkshopID = mapNameSplit.Length > 2 ? mapNameSplit[1] : "unknown";
             mapInfo.DemoName =
@@ -1173,12 +1173,12 @@ namespace SourceEngine.Demo.Stats
                     .Replace(
                         ".dem",
                         string.Empty
-                    ); // the filename of the demo, for faceit games this is also in the "demo_url" value
+                    ); // the filename of the demo, for Faceit games this is also in the "demo_url" value
 
-            // attempts to get the gamemode
+            // attempts to get the game mode
             var roundsWonReasons = GetRoundsWonReasons(processedData.RoundEndReasonValues);
 
-            // use the provided gamemode if given as a parameter
+            // use the provided game mode if given as a parameter
             if (!string.IsNullOrWhiteSpace(processedData.DemoInformation.GameMode)
                 && processedData.DemoInformation.GameMode.ToLower() != "notprovided")
             {
@@ -1187,7 +1187,7 @@ namespace SourceEngine.Demo.Stats
                 return mapInfo;
             }
 
-            // work out the gamemode if it wasn't provided as a parameter
+            // work out the game mode if it wasn't provided as a parameter
             if (processedData.TeamPlayersValues.Any(
                     t => t.Terrorists.Count > 10
                         && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count == 0)
@@ -1211,7 +1211,7 @@ namespace SourceEngine.Demo.Stats
                 else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
                     && !processedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = Gamemodes.Hostage;
-                else // what the hell is this gamemode ??
+                else // what the hell is this game mode ??
                     mapInfo.GameMode = Gamemodes.Unknown;
             }
             else
@@ -1222,7 +1222,7 @@ namespace SourceEngine.Demo.Stats
                 else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
                     && !processedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = Gamemodes.WingmanHostage;
-                else // what the hell is this gamemode ??
+                else // what the hell is this game mode ??
                     mapInfo.GameMode = Gamemodes.Unknown;
             }
 
@@ -1236,12 +1236,12 @@ namespace SourceEngine.Demo.Stats
         {
             List<playerStats> playerStats = new List<playerStats>();
 
-            // remove teamkills and suicides from kills (easy messy implementation)
+            // remove team kills and suicides from kills (easy messy implementation)
             foreach (var kill in processedData.PlayerKilledEventsValues)
             {
                 if (kill.Killer != null && kill.Killer.Name != "unconnected")
                 {
-                    // checks for an updated userID for the user, loops incase it has changed more than once
+                    // checks for an updated userID for the user, loops in case it has changed more than once
                     int userId = kill.Killer.UserID;
 
                     while (CheckForUpdatedUserId(userId) != userId)
@@ -2211,7 +2211,7 @@ namespace SourceEngine.Demo.Stats
                     d => d.Killer != null && bravoSteamIds.Contains(d.Killer.SteamID) && d.Headshot
                 );
 
-                // teamkills this round
+                // team kills this round
                 int alphaTeamkills = deathsThisRound.Count(
                     d => d.Killer != null && d.Victim != null && alphaSteamIds.Contains(d.Killer.SteamID)
                         && alphaSteamIds.Contains(d.Victim.SteamID) && d.Killer.SteamID != d.Victim.SteamID
@@ -2754,12 +2754,12 @@ namespace SourceEngine.Demo.Stats
                 case (Gamemodes.Defuse, "casual"):
                 case (Gamemodes.Hostage, "casual"):
                 case (Gamemodes.Unknown, "casual")
-                    : // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the gamemode
+                    : // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the game mode
                     return 11;
                 case (Gamemodes.Defuse, "competitive"):
                 case (Gamemodes.Hostage, "competitive"):
                 case (Gamemodes.Unknown, "competitive")
-                    : // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the gamemode
+                    : // assumes that it is a classic match. Would be better giving the -gamemodeoverride parameter to get around this as it cannot figure out the game mode
                     return 16;
                 case (Gamemodes.DangerZone, "casual"):
                 case (Gamemodes.DangerZone, "competitive"):

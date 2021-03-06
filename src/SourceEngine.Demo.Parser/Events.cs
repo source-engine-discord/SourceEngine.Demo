@@ -412,7 +412,7 @@ namespace SourceEngine.Demo.Parser
     /// <summary>
     /// Occurs when the server display a player rank
     /// It occurs only with Valve demos, at the end of a Matchmaking.
-    /// So for a 5v5 match there will be 10 events trigerred
+    /// So for a 5v5 match there will be 10 events triggered
     /// </summary>
     public class RankUpdateEventArgs : EventArgs
     {
@@ -437,7 +437,7 @@ namespace SourceEngine.Demo.Parser
         public int WinCount { get; set; }
 
         /// <summary>
-        /// Number of rank the player win / lost between the beggining and the end of the match
+        /// Number of rank the player win / lost between the beginning and the end of the match
         /// </summary>
         public float RankChange { get; set; }
     }
@@ -663,7 +663,7 @@ namespace SourceEngine.Demo.Parser
                 case "prop_exploding_barrel":
                     return EquipmentElement.ExplodingBarrel;
 
-                // These crash the game when given via give weapon_[mp5navy|...], and cannot be purchased ingame.
+                // These crash the game when given via give weapon_[mp5navy|...], and cannot be purchased in-game.
                 // yet the server-classes are networked, so I need to resolve them.
                 case "scar17":
                 case "sg550":

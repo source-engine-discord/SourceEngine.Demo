@@ -120,7 +120,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     Winner = t,
                     Message = (string)data["message"],
                     Length = roundLength
-                        + 4, //gets overwritten when round_officially_ended event occurs, but is here as a backup incase that event does not trigger, as a backup estimate
+                        + 4, //gets overwritten when round_officially_ended event occurs, but is here as a backup in case that event does not trigger, as a backup estimate
                 };
 
                 parser.RaiseRoundEnd(roundEnd);
@@ -199,7 +199,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 //makes sure that bombsite triggers' vector values have been set if they exist
                 parser.HandleBombSitesAndRescueZones();
 
-                //checks if the map contains bombsite triggers to figure out the gamemode
+                //checks if the map contains bombsite triggers to figure out the game mode
                 var bombsiteCenterA = parser.bombsiteACenter;
                 var bombsiteCenterB = parser.bombsiteBCenter;
 
@@ -308,7 +308,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                     kill.Headshot = (bool)data["headshot"];
                     kill.Weapon = new Equipment((string)data["weapon"], (string)data["weapon_itemid"]);
 
-                    // works out if the kill and death were teamkills or suicides
+                    // works out if the kill and death were team kills or suicides
                     kill.TeamKill = false;
                     kill.Suicide = false;
 

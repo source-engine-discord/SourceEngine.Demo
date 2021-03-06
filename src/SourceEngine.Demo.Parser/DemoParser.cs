@@ -65,7 +65,7 @@ namespace SourceEngine.Demo.Parser
 
         /// <summary>
         /// Occurs when round starts, on the round_start event of the demo. Usually the players haven't spawned yet, but have
-        /// recieved the money for the next round.
+        /// received the money for the next round.
         /// </summary>
         public event EventHandler<RoundStartedEventArgs> RoundStart;
 
@@ -115,7 +115,7 @@ namespace SourceEngine.Demo.Parser
         public event EventHandler<FreezetimeEndedEventArgs> FreezetimeEnded;
 
         /// <summary>
-        /// Occurs on the end of every tick, after the gameevents were processed and the packet-entities updated
+        /// Occurs on the end of every tick, after the game events were processed and the packet-entities updated
         /// </summary>
         public event EventHandler<TickDoneEventArgs> TickDone;
 
@@ -152,7 +152,7 @@ namespace SourceEngine.Demo.Parser
 
         /// <summary>
         /// Occurs when smoke nade ended.
-        /// Hint: When a round ends, this is *not* caĺled.
+        /// Hint: When a round ends, this is *not* called.
         /// Make sure to clear nades yourself at the end of rounds
         /// </summary>
         public event EventHandler<SmokeEventArgs> SmokeNadeEnded;
@@ -164,7 +164,7 @@ namespace SourceEngine.Demo.Parser
 
         /// <summary>
         /// Occurs when decoy nade ended.
-        /// Hint: When a round ends, this is *not* caĺled.
+        /// Hint: When a round ends, this is *not* called.
         /// Make sure to clear nades yourself at the end of rounds
         /// </summary>
         public event EventHandler<DecoyEventArgs> DecoyNadeEnded;
@@ -183,7 +183,7 @@ namespace SourceEngine.Demo.Parser
 
         /// <summary>
         /// Occurs when fire nade ended.
-        /// Hint: When a round ends, this is *not* caĺled.
+        /// Hint: When a round ends, this is *not* called.
         /// Make sure to clear nades yourself at the end of rounds
         /// </summary>
         public event EventHandler<FireEventArgs> FireNadeEnded;
@@ -289,7 +289,7 @@ namespace SourceEngine.Demo.Parser
         #endregion
 
         /// <summary>
-        /// The mapname of the Demo. Only avaible after the header is parsed.
+        /// The map name of the Demo. Only available after the header is parsed.
         /// Is a string like "de_dust2".
         /// </summary>
         /// <value>The map.</value>
@@ -355,8 +355,8 @@ namespace SourceEngine.Demo.Parser
         internal readonly Entity[] Entities = new Entity[MAX_ENTITIES]; //Max 2048 entities.
 
         /// <summary>
-        /// The modelprecache. With this we can tell which model an entity has.
-        /// Useful for finding out whetere a weapon is a P250 or a CZ
+        /// The model precache. With this we can tell which model an entity has.
+        /// Useful for finding out whether a weapon is a P250 or a CZ
         /// </summary>
         internal readonly List<string> modelprecache = new();
 
@@ -367,12 +367,12 @@ namespace SourceEngine.Demo.Parser
 
         /// <summary>
         /// An map entity <-> weapon. Used to remember whether a weapon is a p250,
-        /// how much ammonition it has, etc.
+        /// how much ammunition it has, etc.
         /// </summary>
         private readonly Equipment[] weapons = new Equipment[MAX_ENTITIES];
 
         /// <summary>
-        /// The indicies of the bombsites - useful to find out
+        /// The indices of the bombsites - useful to find out
         /// where the bomb is planted
         /// </summary>
         public int bombsiteAIndex { get; internal set; } = -1;
@@ -384,7 +384,7 @@ namespace SourceEngine.Demo.Parser
         public Vector bombsiteBCenter { get; internal set; }
 
         /// <summary>
-        /// The indicies of the hostages - useful to find out
+        /// The indices of the hostages - useful to find out
         /// which hostage has been rescued
         /// </summary>
         public int hostageAIndex { get; internal set; } = -1;
@@ -475,7 +475,7 @@ namespace SourceEngine.Demo.Parser
         internal readonly Dictionary<int, byte[]> instanceBaseline = new();
 
         /// <summary>
-        /// The tickrate *of the demo* (16 for normal GOTV-demos)
+        /// The tick rate *of the demo* (16 for normal GOTV-demos)
         /// </summary>
         /// <value>The tick rate.</value>
         public float TickRate => Header.PlaybackFrames / Header.PlaybackTime;
@@ -487,9 +487,9 @@ namespace SourceEngine.Demo.Parser
         public float TickTime => Header.PlaybackTime / Header.PlaybackFrames;
 
         /// <summary>
-        /// Gets the parsing progess. 0 = beginning, ~1 = finished (it can actually be > 1, so be careful!)
+        /// Gets the parsing progress. 0 = beginning, ~1 = finished (it can actually be > 1, so be careful!)
         /// </summary>
-        /// <value>The parsing progess.</value>
+        /// <value>The parsing progress.</value>
         public float ParsingProgess => CurrentTick / (float)Header.PlaybackFrames;
 
         /// <summary>
@@ -500,7 +500,7 @@ namespace SourceEngine.Demo.Parser
         public int CurrentTick { get; private set; }
 
         /// <summary>
-        /// The current ingame-tick as reported by the demo-file.
+        /// The current in-game-tick as reported by the demo-file.
         /// </summary>
         /// <value>The current tick.</value>
         public int IngameTick { get; internal set; }
@@ -512,15 +512,15 @@ namespace SourceEngine.Demo.Parser
         public float CurrentTime => CurrentTick * TickTime;
 
         /// <summary>
-        /// This contains additional informations about each player, such as Kills, Deaths, etc.
-        /// This is networked seperately from the player, so we need to cache it somewhere else.
+        /// This contains additional information about each player, such as Kills, Deaths, etc.
+        /// This is networked separately from the player, so we need to cache it somewhere else.
         /// </summary>
         private readonly AdditionalPlayerInformation[] additionalInformations =
             new AdditionalPlayerInformation[MAXPLAYERS];
 
         /// <summary>
         /// Initializes a new DemoParser. Right point if you want to start analyzing demos.
-        /// Hint: ParseHeader() is propably what you want to look into next.
+        /// Hint: ParseHeader() is probably what you want to look into next.
         /// </summary>
         /// <param name="input">An input-stream.</param>
         public DemoParser(
@@ -551,7 +551,7 @@ namespace SourceEngine.Demo.Parser
         }
 
         /// <summary>
-        /// Parses the header (first few hundret bytes) of the demo.
+        /// Parses the header (first few hundred bytes) of the demo.
         /// </summary>
         public void ParseHeader()
         {

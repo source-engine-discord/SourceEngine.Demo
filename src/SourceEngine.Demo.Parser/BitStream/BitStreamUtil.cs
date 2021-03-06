@@ -111,7 +111,7 @@ namespace SourceEngine.Demo.Parser
         {
             using (var memstream = new MemoryStream())
             {
-                // not particulary efficient, but probably fine
+                // not particularly efficient, but probably fine
                 for (byte b = bs.ReadByte(); b != 0; b = bs.ReadByte())
                     memstream.WriteByte(b);
 

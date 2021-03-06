@@ -94,7 +94,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (DecodeSpecialFloat(prop, reader, out fVal))
                 return fVal;
 
-            //Encoding: The range between lowVal and highVal is splitted into the same steps.
+            //Encoding: The range between lowVal and highVal is split into the same steps.
             //Read an int, fit it into the range.
             ulong dwInterp = reader.ReadInt(prop.NumberOfBits);
             fVal = (float)dwInterp / ((1 << prop.NumberOfBits) - 1);

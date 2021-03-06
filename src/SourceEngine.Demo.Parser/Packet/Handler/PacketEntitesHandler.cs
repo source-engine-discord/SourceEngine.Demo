@@ -9,7 +9,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
     public static class PacketEntitesHandler
     {
         /// <summary>
-        /// Decodes the bytes in the packet-entites message.
+        /// Decodes the bytes in the packet-entities message.
         /// </summary>
         /// <param name="packetEntities">Packet entities.</param>
         /// <param name="reader">Reader.</param>
@@ -65,7 +65,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
         }
 
         /// <summary>
-        /// Reads an update that occures when a new edict enters the PVS (potentially visible system)
+        /// Reads an update that occurs when a new edict enters the PVS (potentially visible system)
         /// </summary>
         /// <returns>The new Entity.</returns>
         private static Entity ReadEnterPVS(IBitStream reader, int id, DemoParser parser)
