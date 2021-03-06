@@ -273,7 +273,7 @@ namespace SourceEngine.Demo.Stats.App
                 {
                     DateTime.ParseExact(testdateoverride, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                 }
-                catch (FormatException e)
+                catch (FormatException)
                 {
                     Debug.Error(
                         "Invalid test date. Can be removed to be set to 'unknown' or have it automatically set if it is a SE Discord or Mapcore Discord playtest. Formatting should be dd/mm/yyyy"

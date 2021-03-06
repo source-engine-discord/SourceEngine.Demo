@@ -958,7 +958,7 @@ namespace SourceEngine.Demo.Stats
 
                     md.passed = true;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     pv.Error();
                 }
@@ -971,7 +971,7 @@ namespace SourceEngine.Demo.Stats
 
                     md.passed = true;
                 }
-                catch (Exception e) { }
+                catch (Exception) { }
             }
 
             dp.Dispose();
@@ -2520,7 +2520,7 @@ namespace SourceEngine.Demo.Stats
 
                 sw.Close();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Could not create json file.");
                 Console.WriteLine(string.Concat("Filename: ", outputFilepath));
@@ -2556,7 +2556,7 @@ namespace SourceEngine.Demo.Stats
 
                 sw.Close();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Could not create json file.");
                 Console.WriteLine(string.Concat("Filename: ", outputFilepath));
