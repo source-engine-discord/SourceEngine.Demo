@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
+using SourceEngine.Demo.Parser.Entities;
+
 namespace SourceEngine.Demo.Parser
 {
     public class PlayerPositionsEventArgs : EventArgs

@@ -1,6 +1,6 @@
-namespace SourceEngine.Demo.Parser
+namespace SourceEngine.Demo.Parser.Entities
 {
-    public class AdditionalPlayerInformation
+    public class PlayerResource
     {
         public int Kills { get; internal set; }
 

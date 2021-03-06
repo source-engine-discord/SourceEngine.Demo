@@ -7,6 +7,7 @@ using Shouldly;
 
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Parser.Constants;
+using SourceEngine.Demo.Parser.Entities;
 using SourceEngine.Demo.Stats.Models;
 
 using Xunit;

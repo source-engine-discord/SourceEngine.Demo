@@ -7,6 +7,7 @@ using System.Threading;
 using SourceEngine.Demo.Parser.BitStream;
 using SourceEngine.Demo.Parser.Constants;
 using SourceEngine.Demo.Parser.DataTable;
+using SourceEngine.Demo.Parser.Entities;
 using SourceEngine.Demo.Parser.Messages.Fast.Net;
 using SourceEngine.Demo.Parser.Packet;
 using SourceEngine.Demo.Parser.StringTable;
@@ -511,8 +512,8 @@ namespace SourceEngine.Demo.Parser
         /// This contains additional information about each player, such as Kills, Deaths, etc.
         /// This is networked separately from the player, so we need to cache it somewhere else.
         /// </summary>
-        private readonly AdditionalPlayerInformation[] additionalInformations =
-            new AdditionalPlayerInformation[MAXPLAYERS];
+        private readonly PlayerResource[] additionalInformations =
+            new PlayerResource[MAXPLAYERS];
 
         /// <summary>
         /// Initializes a new DemoParser. Right point if you want to start analyzing demos.
@@ -535,7 +536,7 @@ namespace SourceEngine.Demo.Parser
             BitStream = BitStreamUtil.Create(input);
 
             for (int i = 0; i < MAXPLAYERS; i++)
-                additionalInformations[i] = new AdditionalPlayerInformation();
+                additionalInformations[i] = new PlayerResource();
 
             this.parseChickens = parseChickens;
             this.parsePlayerPositions = parsePlayerPositions;
@@ -684,7 +685,7 @@ namespace SourceEngine.Demo.Parser
 
                     p.UserID = id;
 
-                    p.AdditionaInformations = additionalInformations[p.EntityID];
+                    p.PlayerResource = additionalInformations[p.EntityID];
 
                     if (p.IsAlive)
                         p.LastAlivePosition = p.Position.Copy();

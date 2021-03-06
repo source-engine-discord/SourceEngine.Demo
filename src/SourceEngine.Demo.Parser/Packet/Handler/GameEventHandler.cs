@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using SourceEngine.Demo.Parser.Entities;
 using SourceEngine.Demo.Parser.Messages.Fast.Net;
 
 namespace SourceEngine.Demo.Parser.Packet.Handler

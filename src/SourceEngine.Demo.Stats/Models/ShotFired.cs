@@ -1,4 +1,5 @@
 using SourceEngine.Demo.Parser;
+using SourceEngine.Demo.Parser.Entities;
 
 namespace SourceEngine.Demo.Stats.Models
 {

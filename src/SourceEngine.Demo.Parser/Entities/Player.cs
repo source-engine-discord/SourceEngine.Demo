@@ -2,7 +2,7 @@
 
 using SourceEngine.Demo.Parser.Packet;
 
-namespace SourceEngine.Demo.Parser
+namespace SourceEngine.Demo.Parser.Entities
 {
     public class Player
     {
@@ -53,7 +53,7 @@ namespace SourceEngine.Demo.Parser
             HasHelmet = player.HasHelmet;
             TeamID = player.TeamID;
             AmmoLeft = player.AmmoLeft;
-            AdditionaInformations = player.AdditionaInformations;
+            PlayerResource = player.PlayerResource;
         }
 
         public string Name { get; set; }
@@ -104,7 +104,7 @@ namespace SourceEngine.Demo.Parser
 
         public bool HasHelmet { get; set; }
 
-        public AdditionalPlayerInformation AdditionaInformations { get; internal set; }
+        public PlayerResource PlayerResource { get; internal set; }
 
         /// <summary>
         /// Copy this instance for multi-threading use.
