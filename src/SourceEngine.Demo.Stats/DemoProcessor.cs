@@ -1679,13 +1679,9 @@ namespace SourceEngine.Demo.Stats
         {
             List<bombsiteStats> bombsiteStats = new List<bombsiteStats>();
 
-            BoundingBoxInformation bombsiteATrigger = dp?.triggers.Count > 0
-                ? dp.triggers.FirstOrDefault(x => x.Index == dp.bombsiteAIndex)
-                : null;
+            BoundingBoxInformation bombsiteATrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteAIndex);
 
-            BoundingBoxInformation bombsiteBTrigger = dp?.triggers.Count > 0
-                ? dp.triggers.FirstOrDefault(x => x.Index == dp.bombsiteBIndex)
-                : null;
+            BoundingBoxInformation bombsiteBTrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteBIndex);
 
             List<char> bombsitePlants = new List<char>(processedData.BombsitePlantValues.Select(x => (char)x.Bombsite));
             List<char> bombsiteExplosions =
@@ -1783,23 +1779,26 @@ namespace SourceEngine.Demo.Stats
         {
             List<rescueZoneStats> rescueZoneStats = new List<rescueZoneStats>();
 
-            if (dp?.triggers?.Count > 0)
-                foreach (BoundingBoxInformation rescueZone in dp.triggers.Where(
-                    x => x.Index != dp.bombsiteAIndex && x.Index != dp.bombsiteBIndex
-                ))
-                {
-                    rescueZoneStats.Add(
-                        new rescueZoneStats
-                        {
-                            XPositionMin = rescueZone.Min.X,
-                            YPositionMin = rescueZone.Min.Y,
-                            ZPositionMin = rescueZone.Min.Z,
-                            XPositionMax = rescueZone.Max.X,
-                            YPositionMax = rescueZone.Max.Y,
-                            ZPositionMax = rescueZone.Max.Z,
-                        }
-                    );
-                }
+            if (dp is null)
+                return rescueZoneStats;
+
+            foreach ((int entityId, BoundingBoxInformation rescueZone) in dp.Triggers)
+            {
+                if (entityId == dp.bombsiteAIndex || entityId == dp.bombsiteBIndex)
+                    continue;
+
+                rescueZoneStats.Add(
+                    new rescueZoneStats
+                    {
+                        XPositionMin = rescueZone.Min.X,
+                        YPositionMin = rescueZone.Min.Y,
+                        ZPositionMin = rescueZone.Min.Z,
+                        XPositionMax = rescueZone.Max.X,
+                        YPositionMax = rescueZone.Max.Y,
+                        ZPositionMax = rescueZone.Max.Z,
+                    }
+                );
+            }
 
             return rescueZoneStats;
         }

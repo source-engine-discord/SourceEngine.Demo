@@ -583,7 +583,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                         }
                         else
                         {
-                            BoundingBoxInformation relevantTrigger = parser.triggers.Single(a => a.Index == site);
+                            BoundingBoxInformation relevantTrigger = parser.Triggers[site];
 
                             if (relevantTrigger.Contains(parser.bombsiteACenter))
                             {

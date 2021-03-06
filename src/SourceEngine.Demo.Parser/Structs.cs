@@ -283,13 +283,6 @@ namespace SourceEngine.Demo.Parser
     /// </summary>
     public class BoundingBoxInformation
     {
-        public BoundingBoxInformation(int index)
-        {
-            Index = index;
-        }
-
-        public int Index { get; private set; }
-
         public Vector Min { get; set; }
 
         public Vector Max { get; set; }

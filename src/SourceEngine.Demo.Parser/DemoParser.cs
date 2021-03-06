@@ -36,7 +36,7 @@ namespace SourceEngine.Demo.Parser
         private readonly int
             numOfHostageRescueZonesLookingFor; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
 
-        public readonly List<BoundingBoxInformation> triggers = new();
+        public readonly Dictionary<int, BoundingBoxInformation> Triggers = new();
         internal readonly Dictionary<int, Player> InfernoOwners = new();
 
         #region Events
@@ -1253,7 +1253,7 @@ namespace SourceEngine.Demo.Parser
 
         public void HandleBombSitesAndRescueZones()
         {
-            List<int> rescueZoneIdsDoneAtLeastOnceMin = new(), rescueZoneIdsDoneAtLeastOnceMax = new();
+            HashSet<int> rescueZoneIdsDoneAtLeastOnceMin = new(), rescueZoneIdsDoneAtLeastOnceMax = new();
 
             SendTableParser.FindByName("CCSPlayerResource").OnNewEntity += (_, newResource) =>
             {
@@ -1275,7 +1275,7 @@ namespace SourceEngine.Demo.Parser
                 {
                     newResource.Entity.FindProperty("m_hostageRescueX.00" + i).DataRecivedDontUse += (_, center) =>
                     {
-                        if (!rescueZoneCenters.Keys.Contains(numOfSortedRescueZonesX))
+                        if (!rescueZoneCenters.ContainsKey(numOfSortedRescueZonesX))
                             rescueZoneCenters.Add(numOfSortedRescueZonesX, new Vector());
 
                         // make sure that there are values before saying it is sorted, as it will often run through with 0 values first
@@ -1288,7 +1288,7 @@ namespace SourceEngine.Demo.Parser
 
                     newResource.Entity.FindProperty("m_hostageRescueY.00" + i).DataRecivedDontUse += (_, center) =>
                     {
-                        if (!rescueZoneCenters.Keys.Contains(numOfSortedZonesRescueY))
+                        if (!rescueZoneCenters.ContainsKey(numOfSortedZonesRescueY))
                             rescueZoneCenters.Add(numOfSortedZonesRescueY, new Vector());
 
                         // make sure that there are values before saying it is sorted, as it will often run through with 0 values first
@@ -1301,7 +1301,7 @@ namespace SourceEngine.Demo.Parser
 
                     newResource.Entity.FindProperty("m_hostageRescueZ.00" + i).DataRecivedDontUse += (_, center) =>
                     {
-                        if (!rescueZoneCenters.Keys.Contains(numOfSortedZonesRescueZ))
+                        if (!rescueZoneCenters.ContainsKey(numOfSortedZonesRescueZ))
                             rescueZoneCenters.Add(numOfSortedZonesRescueZ, new Vector());
 
                         // make sure that there are values before saying it is sorted, as it will often run through with 0 values first
@@ -1316,8 +1316,8 @@ namespace SourceEngine.Demo.Parser
 
             SendTableParser.FindByName("CBaseTrigger").OnNewEntity += (_, newResource) =>
             {
-                BoundingBoxInformation trigger = new BoundingBoxInformation(newResource.Entity.ID);
-                triggers.Add(trigger);
+                var trigger = new BoundingBoxInformation();
+                Triggers.Add(newResource.Entity.ID, trigger);
 
                 // if bombsites, it gets x,y,z values from the world origin (0,0,0)
                 // if hostage rescue zones, it gets x,y,z values relative to the entity's origin
@@ -1325,9 +1325,7 @@ namespace SourceEngine.Demo.Parser
                 {
                     if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage or danger zone
                     {
-                        if (rescueZoneIdsDoneAtLeastOnceMin.All(x => x != trigger.Index))
-                            rescueZoneIdsDoneAtLeastOnceMin.Add(trigger.Index);
-
+                        rescueZoneIdsDoneAtLeastOnceMin.Add(newResource.Entity.ID);
                         trigger.Min = new Vector
                         {
                             X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMin.Count - 1].X + vector.Value.X,
@@ -1345,9 +1343,7 @@ namespace SourceEngine.Demo.Parser
                 {
                     if (bombsiteACenter.Absolute == 0 && bombsiteBCenter.Absolute == 0) // is hostage or danger zone
                     {
-                        if (rescueZoneIdsDoneAtLeastOnceMax.All(x => x != trigger.Index))
-                            rescueZoneIdsDoneAtLeastOnceMax.Add(trigger.Index);
-
+                        rescueZoneIdsDoneAtLeastOnceMax.Add(newResource.Entity.ID);
                         trigger.Max = new Vector
                         {
                             X = rescueZoneCenters[rescueZoneIdsDoneAtLeastOnceMax.Count - 1].X + vector.Value.X,
