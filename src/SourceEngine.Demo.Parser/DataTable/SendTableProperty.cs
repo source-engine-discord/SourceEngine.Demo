@@ -37,7 +37,7 @@ namespace SourceEngine.Demo.Parser.DataTable
         Array = 5,
         DataTable = 6,
         Int64 = 7,
-    };
+    }
 
     [Flags]
     public enum SendPropertyFlags

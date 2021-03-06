@@ -67,7 +67,7 @@ namespace SourceEngine.Demo.Stats
 
             string idsList = "";
             foreach (long id in IDS)
-                idsList += id.ToString() + "_";
+                idsList += id + "_";
 
             STEAM_RootPlayerObject players = new STEAM_RootPlayerObject();
 

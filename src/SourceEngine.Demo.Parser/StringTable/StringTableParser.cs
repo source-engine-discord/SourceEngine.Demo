@@ -71,7 +71,6 @@ namespace SourceEngine.Demo.Parser.StringTable
 
                         reader.ReadBytes(userDataSize);
                     }
-                    else { }
                 }
             }
         }

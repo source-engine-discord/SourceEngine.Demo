@@ -359,7 +359,7 @@ namespace SourceEngine.Demo.Parser
         /// First Command
         /// </summary>
         FirstCommand = Signon,
-    };
+    }
 
     public enum RoundEndReason
     {
@@ -462,14 +462,14 @@ namespace SourceEngine.Demo.Parser
         /// Unknown
         /// </summary>
         Unknown, // Caused by an error where the round_end event was not triggered for a round
-    };
+    }
 
     public enum RoundMVPReason
     {
         MostEliminations = 1,
         BombPlanted,
         BombDefused,
-    };
+    }
 
     public enum Hitgroup
     {
@@ -482,5 +482,5 @@ namespace SourceEngine.Demo.Parser
         LeftLeg = 6,
         RightLeg = 7,
         Gear = 10,
-    };
+    }
 }

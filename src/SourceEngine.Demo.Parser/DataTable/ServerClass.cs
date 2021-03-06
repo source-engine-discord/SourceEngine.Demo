@@ -67,7 +67,7 @@ namespace SourceEngine.Demo.Parser.DataTable
                 PropertyName
             );
         }
-    };
+    }
 
     internal class ExcludeEntry
     {
