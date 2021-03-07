@@ -251,7 +251,7 @@ namespace SourceEngine.Demo.Stats.App
             {
                 Console.WriteLine($"Parsing demo {t.DemoName}");
 
-                MatchData mdTest = MatchData.FromDemoFile(
+                var matchData = new MatchData(
                     t,
                     !opts.NoChickens,
                     !opts.NoPlayerOptions,
@@ -259,185 +259,16 @@ namespace SourceEngine.Demo.Stats.App
                     opts.LowOutputMode
                 );
 
-                IEnumerable<MatchStartedEventArgs> mse;
-                IEnumerable<SwitchSidesEventArgs> sse;
-                IEnumerable<FeedbackMessage> fme;
-                IEnumerable<TeamPlayers> tpe;
-                IEnumerable<PlayerHurt> ph;
-                IEnumerable<PlayerKilledEventArgs> pke;
-                var pe = new Dictionary<string, IEnumerable<Player>>();
-                IEnumerable<Equipment> pwe;
-                IEnumerable<int> poe;
-                IEnumerable<BombPlanted> bpe;
-                IEnumerable<BombExploded> bee;
-                IEnumerable<BombDefused> bde;
-                IEnumerable<HostageRescued> hre;
-                IEnumerable<HostagePickedUp> hpu;
-                IEnumerable<DisconnectedPlayer> dpe;
-                IEnumerable<Team> te;
-                IEnumerable<RoundEndReason> re;
-                IEnumerable<double> le;
-                IEnumerable<TeamEquipment> tes;
-                IEnumerable<NadeEventArgs> ge;
-
-                //IEnumerable<SmokeEventArgs> gse;
-                //IEnumerable<FlashEventArgs> gfe;
-                //IEnumerable<GrenadeEventArgs> gge;
-                //IEnumerable<FireEventArgs> gie;
-                //IEnumerable<DecoyEventArgs> gde;
-                IEnumerable<ChickenKilledEventArgs> cke;
-                IEnumerable<ShotFired> sfe;
-                IEnumerable<PlayerPositionsInstance> ppe;
-
-                mse = from start in mdTest.GetEvents<MatchStartedEventArgs>() select start as MatchStartedEventArgs;
-
-                sse = from switchSide in mdTest.GetEvents<SwitchSidesEventArgs>()
-                    select switchSide as SwitchSidesEventArgs;
-
-                fme = from message in mdTest.GetEvents<FeedbackMessage>() select message as FeedbackMessage;
-
-                ph = from player in mdTest.GetEvents<PlayerHurt>() select player as PlayerHurt;
-
-                pke = from player in mdTest.GetEvents<PlayerKilledEventArgs>() select player as PlayerKilledEventArgs;
-
-                pe.Add(
-                    "Kills",
-                    from player in mdTest.GetEvents<PlayerKilledEventArgs>()
-                    select (player as PlayerKilledEventArgs).Killer
-                );
-
-                pe.Add(
-                    "Deaths",
-                    from player in mdTest.GetEvents<PlayerKilledEventArgs>()
-                    select (player as PlayerKilledEventArgs).Victim
-                );
-
-                pe.Add(
-                    "Headshots",
-                    from player in mdTest.GetEvents<PlayerKilledEventArgs>()
-                    where (player as PlayerKilledEventArgs).Headshot
-                    select (player as PlayerKilledEventArgs).Killer
-                );
-
-                pe.Add(
-                    "Assists",
-                    from player in mdTest.GetEvents<PlayerKilledEventArgs>()
-                    where (player as PlayerKilledEventArgs).Assister != null
-                    select (player as PlayerKilledEventArgs).Assister
-                );
-
-                pwe = from weapon in mdTest.GetEvents<PlayerKilledEventArgs>()
-                    select (weapon as PlayerKilledEventArgs).Weapon;
-
-                poe = from penetration in mdTest.GetEvents<PlayerKilledEventArgs>()
-                    select (penetration as PlayerKilledEventArgs).PenetratedObjects;
-
-                pe.Add(
-                    "MVPs",
-                    from player in mdTest.GetEvents<RoundMVPEventArgs>() select (player as RoundMVPEventArgs).Player
-                );
-
-                pe.Add(
-                    "Shots",
-                    from player in mdTest.GetEvents<WeaponFiredEventArgs>()
-                    select (player as WeaponFiredEventArgs).Shooter
-                );
-
-                pe.Add("Plants", from player in mdTest.GetEvents<BombPlanted>() select (player as BombPlanted).Player);
-
-                pe.Add("Defuses", from player in mdTest.GetEvents<BombDefused>() select (player as BombDefused).Player);
-
-                pe.Add(
-                    "Rescues",
-                    from player in mdTest.GetEvents<HostageRescued>() select (player as HostageRescued).Player
-                );
-
-                bpe = (from plant in mdTest.GetEvents<BombPlanted>() select plant as BombPlanted).GroupBy(p => p.Round)
-                    .Select(p => p.FirstOrDefault());
-
-                bee = (from explode in mdTest.GetEvents<BombExploded>() select explode as BombExploded)
-                    .GroupBy(p => p.Round).Select(p => p.FirstOrDefault());
-
-                bde = (from defuse in mdTest.GetEvents<BombDefused>() select defuse as BombDefused)
-                    .GroupBy(p => p.Round).Select(p => p.FirstOrDefault());
-
-                hre = from hostage in mdTest.GetEvents<HostageRescued>() select hostage as HostageRescued;
-
-                hpu = from hostage in mdTest.GetEvents<HostagePickedUp>() select hostage as HostagePickedUp;
-
-                dpe = from disconnection in mdTest.GetEvents<DisconnectedPlayer>()
-                    select disconnection as DisconnectedPlayer;
-
-                te = from team in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
-                    select (team as RoundOfficiallyEndedEventArgs).Winner;
-
-                re = from reason in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
-                    select (reason as RoundOfficiallyEndedEventArgs).Reason;
-
-                le = from length in mdTest.GetEvents<RoundOfficiallyEndedEventArgs>()
-                    select (length as RoundOfficiallyEndedEventArgs).Length;
-
-                tpe = from teamPlayers in mdTest.GetEvents<TeamPlayers>()
-                    where (teamPlayers as TeamPlayers).Round
-                        <= te.Count() // removes extra TeamPlayers if freezetime_end event triggers once a playtest is finished
-                    select teamPlayers as TeamPlayers;
-
-                tes = from round in mdTest.GetEvents<TeamEquipment>() select round as TeamEquipment;
-
-                ge = from nade in mdTest.GetEvents<NadeEventArgs>() select nade as NadeEventArgs;
-
-                cke = from chickenKill in mdTest.GetEvents<ChickenKilledEventArgs>()
-                    select chickenKill as ChickenKilledEventArgs;
-
-                sfe = from shot in mdTest.GetEvents<ShotFired>() select shot as ShotFired;
-
-                ppe = from playerPos in mdTest.GetEvents<PlayerPositionsInstance>()
-                    select playerPos as PlayerPositionsInstance;
-
-                tanookiStats tanookiStats = tanookiStatsCreator(tpe, dpe);
-
-                if (mdTest.passed)
+                if (matchData.passed)
                 {
-                    // create the json output files using the data gathered
-                    var processedData = new ProcessedData
-                    {
-                        DemoInformation = t,
-                        SameFilename = opts.SameFileName,
-                        SameFolderStructure = opts.SameFolderStructure,
-                        ParseChickens = !opts.NoChickens,
-                        ParsePlayerPositions = !opts.NoPlayerOptions,
-                        FoldersToProcess = opts.Folders.ToList(),
-                        OutputRootFolder = opts.Output,
-                        tanookiStats = tanookiStats,
-                        MatchStartValues = mse,
-                        SwitchSidesValues = sse,
-                        MessagesValues = fme,
-                        TeamPlayersValues = tpe,
-                        PlayerHurtValues = ph,
-                        PlayerKilledEventsValues = pke,
-                        PlayerValues = pe,
-                        WeaponValues = pwe,
-                        PenetrationValues = poe,
-                        BombsitePlantValues = bpe,
-                        BombsiteExplodeValues = bee,
-                        BombsiteDefuseValues = bde,
-                        HostageRescueValues = hre,
-                        HostagePickedUpValues = hpu,
-                        TeamValues = te,
-                        RoundEndReasonValues = re,
-                        RoundLengthValues = le,
-                        TeamEquipmentValues = tes,
-                        GrenadeValues = ge,
-                        ChickenValues = cke,
-                        ShotsFiredValues = sfe,
-                        PlayerPositionsValues = ppe,
-                        WriteTicks = true,
-                    };
-
-                    mdTest.CreateFiles(processedData);
+                    matchData.CreateFiles(
+                        opts.Output,
+                        opts.Folders.ToList(),
+                        opts.SameFileName,
+                        opts.SameFolderStructure
+                    );
 
                     passCount++;
-
                     Console.WriteLine($"Finished parsing demo {t.DemoName}.\n");
                 }
                 else
@@ -471,65 +302,6 @@ namespace SourceEngine.Demo.Stats.App
             parserResult
                 .WithParsed(ProcessOptions)
                 .WithNotParsed(errs => DisplayHelp(parserResult, errs));
-        }
-
-        private static tanookiStats tanookiStatsCreator(
-            IEnumerable<TeamPlayers> tpe,
-            IEnumerable<DisconnectedPlayer> dpe)
-        {
-            var tanookiStats = new tanookiStats
-            {
-                Joined = false,
-                Left = false,
-                RoundJoined = -1,
-                RoundLeft = -1,
-                RoundsLasted = -1,
-            };
-
-            const long tanookiId = 76561198123165941;
-
-            if (tpe.Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId))
-                || tpe.Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
-            {
-                tanookiStats.Joined = true;
-                tanookiStats.RoundJoined = 0; // set in case he joined in warmup but does not play any rounds
-
-                IEnumerable<int> playedRoundsT =
-                    tpe.Where(t => t.Round > 0 && t.Terrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
-
-                IEnumerable<int> playedRoundsCT =
-                    tpe.Where(t => t.Round > 0 && t.CounterTerrorists.Any(p => p.SteamID == tanookiId))
-                        .Select(r => r.Round);
-
-                tanookiStats.RoundsLasted = playedRoundsT.Count() + playedRoundsCT.Count();
-
-                bool playedTSide = playedRoundsT.Any();
-                bool playedCTSide = playedRoundsCT.Any();
-
-                tanookiStats.RoundJoined = playedTSide ? playedCTSide ? playedRoundsT.First() < playedRoundsCT.First()
-                        ?
-                        playedRoundsT.First()
-                        : playedRoundsCT.First() : playedRoundsT.First() :
-                    playedCTSide ? playedRoundsCT.First() : tanookiStats.RoundJoined;
-            }
-
-            if (dpe.Any(
-                d => d.PlayerDisconnectEventArgs.Player != null
-                    && d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId
-            ))
-            {
-                // checks if he played a round later on than his last disconnect (he left and joined back)
-                int finalDisconnectRound = dpe.Where(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId)
-                    .Reverse().Select(r => r.Round).First();
-
-                tanookiStats.RoundLeft = finalDisconnectRound > tanookiStats.RoundsLasted
-                    ? finalDisconnectRound
-                    : tanookiStats.RoundLeft;
-
-                tanookiStats.Left = tanookiStats.RoundLeft > -1;
-            }
-
-            return tanookiStats;
         }
     }
 }

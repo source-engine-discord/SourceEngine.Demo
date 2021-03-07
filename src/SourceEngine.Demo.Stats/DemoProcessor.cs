@@ -36,6 +36,8 @@ namespace SourceEngine.Demo.Stats
 
         private readonly Dictionary<int, TickCounter> playerTicks = new();
 
+        private readonly DemoInformation demoInfo;
+
         // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
         public bool changingPlantedRoundsToA, changingPlantedRoundsToB;
 
@@ -169,23 +171,22 @@ namespace SourceEngine.Demo.Stats
             }
         }
 
-        public static MatchData FromDemoFile(
-            DemoInformation demoInformation,
+        public MatchData(
+            DemoInformation demoInfo,
             bool parseChickens,
             bool parsePlayerPositions,
             uint? hostagerescuezonecountoverride,
             bool lowOutputMode)
         {
-            string file = demoInformation.DemoName;
-
-            var md = new MatchData();
+            string file = demoInfo.DemoName;
+            this.demoInfo = demoInfo;
 
             // automatically decides rescue zone amounts unless overridden with a provided parameter
             if (hostagerescuezonecountoverride is not { } hostageRescueZones)
             {
-                if (demoInformation.GameMode is GameMode.DangerZone)
+                if (demoInfo.GameMode is GameMode.DangerZone)
                     hostageRescueZones = 2;
-                else if (demoInformation.GameMode is GameMode.Hostage)
+                else if (demoInfo.GameMode is GameMode.Hostage)
                     hostageRescueZones = 1;
                 else
                     hostageRescueZones = 0;
@@ -201,20 +202,20 @@ namespace SourceEngine.Demo.Stats
 
             dp.ParseHeader();
 
-            dp.PlayerBind += (_, e) => { md.BindPlayer(e.Player); };
+            dp.PlayerBind += (_, e) => { BindPlayer(e.Player); };
 
             dp.PlayerPositions += (_, e) =>
             {
                 foreach (PlayerPositionEventArgs playerPosition in e.PlayerPositions)
                 {
-                    if (md.events.Count > 0 && md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs"))
+                    if (events.Count > 0 && events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs"))
                     {
-                        int round = GetCurrentRoundNum(md, demoInformation.GameMode);
+                        int round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
                         if (round > 0 && playerPosition.Player.SteamID > 0)
                         {
-                            bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(md, playerPosition.Player, round);
-                            List<object> freezetimeEndedEvents = md.events
+                            bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(this, playerPosition.Player, round);
+                            List<object> freezetimeEndedEvents = events
                                 .Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value)
                                 .ElementAt(0);
 
@@ -236,7 +237,7 @@ namespace SourceEngine.Demo.Stats
                                     ZPosition = playerPosition.Player.Position.Z,
                                 };
 
-                                md.addEvent(typeof(PlayerPositionsInstance), playerPositionsInstance);
+                                addEvent(typeof(PlayerPositionsInstance), playerPositionsInstance);
                             }
                         }
                     }
@@ -249,8 +250,8 @@ namespace SourceEngine.Demo.Stats
                 var currentfeedbackMessages = new List<FeedbackMessage>();
 
                 //stores all fb messages so that they aren't lost when stats are reset
-                if (md.events.Count > 0 && md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
-                    foreach (FeedbackMessage message in md.events.Where(k => k.Key.Name.ToString() == "FeedbackMessage")
+                if (events.Count > 0 && events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
+                    foreach (FeedbackMessage message in events.Where(k => k.Key.Name.ToString() == "FeedbackMessage")
                         .Select(v => v.Value).ElementAt(0))
                     {
                         var text = message.Message;
@@ -280,13 +281,13 @@ namespace SourceEngine.Demo.Stats
                             );
                     }
 
-                md.events = new Dictionary<Type, List<object>>(); //resets all stats stored
+                events = new Dictionary<Type, List<object>>(); //resets all stats stored
 
-                md.addEvent(typeof(MatchStartedEventArgs), e);
+                addEvent(typeof(MatchStartedEventArgs), e);
 
                 //adds all stored fb messages back
                 foreach (FeedbackMessage feedbackMessage in currentfeedbackMessages)
-                    md.addEvent(typeof(FeedbackMessage), feedbackMessage);
+                    addEvent(typeof(FeedbackMessage), feedbackMessage);
 
                 //print rounds complete out to console
                 if (!lowOutputMode)
@@ -296,17 +297,17 @@ namespace SourceEngine.Demo.Stats
                 }
             };
 
-            dp.ChickenKilled += (_, e) => { md.addEvent(typeof(ChickenKilledEventArgs), e); };
+            dp.ChickenKilled += (_, e) => { addEvent(typeof(ChickenKilledEventArgs), e); };
 
             dp.SayText2 += (_, e) =>
             {
-                md.addEvent(typeof(SayText2EventArgs), e);
+                addEvent(typeof(SayText2EventArgs), e);
 
                 var text = e.Text.ToString();
 
                 if (IsMessageFeedback(text))
                 {
-                    int round = GetCurrentRoundNum(md, demoInformation.GameMode);
+                    int round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
                     long steamId = e.Sender?.SteamID ?? 0;
 
@@ -318,17 +319,17 @@ namespace SourceEngine.Demo.Stats
                     var teamName = player?.Team.ToString();
                     teamName = teamName == "Spectate" ? "Spectator" : teamName;
 
-                    bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(md, player, round);
+                    bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(this, player, round);
 
                     List<object> roundsOfficiallyEndedEvents =
-                        md.events.Any(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
-                            ? md.events.Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
+                        events.Any(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
+                            ? events.Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
                                 .Select(v => v.Value).ElementAt(0)
                             : null;
 
                     List<object> freezetimesEndedEvents =
-                        md.events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
-                            ? md.events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
+                        events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
+                            ? events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
                                 .Select(v => v.Value).ElementAt(0)
                             : null;
 
@@ -367,19 +368,19 @@ namespace SourceEngine.Demo.Stats
                         TimeInRound = timeInRound,
                     };
 
-                    md.addEvent(typeof(FeedbackMessage), feedbackMessage);
+                    addEvent(typeof(FeedbackMessage), feedbackMessage);
                 }
             };
 
             dp.RoundEnd += (_, e) =>
             {
                 IEnumerable<List<object>> roundsEndedEvents =
-                    md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
+                    events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
 
-                IEnumerable<List<object>> roundsOfficiallyEndedEvents = md.events
+                IEnumerable<List<object>> roundsOfficiallyEndedEvents = events
                     .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
-                IEnumerable<List<object>> freezetimesEndedEvents = md.events
+                IEnumerable<List<object>> freezetimesEndedEvents = events
                     .Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
 
                 int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
@@ -424,8 +425,8 @@ namespace SourceEngine.Demo.Stats
                     numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count;
 
                     // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
-                    if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
-                        foreach (FeedbackMessage message in md.events
+                    if (events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
+                        foreach (FeedbackMessage message in events
                             .Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value).ElementAt(0))
                         {
                             if (message.Round == numOfFreezetimesEnded)
@@ -433,18 +434,18 @@ namespace SourceEngine.Demo.Stats
                         }
                 }
 
-                md.addEvent(typeof(RoundEndedEventArgs), e);
+                addEvent(typeof(RoundEndedEventArgs), e);
             };
 
             dp.RoundOfficiallyEnded += (_, e) =>
             {
                 IEnumerable<List<object>> roundsEndedEvents =
-                    md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
+                    events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
 
-                IEnumerable<List<object>> roundsOfficiallyEndedEvents = md.events
+                IEnumerable<List<object>> roundsOfficiallyEndedEvents = events
                     .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
-                IEnumerable<List<object>> freezetimesEndedEvents = md.events
+                IEnumerable<List<object>> freezetimesEndedEvents = events
                     .Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
 
                 int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
@@ -486,8 +487,8 @@ namespace SourceEngine.Demo.Stats
                     numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count;
 
                     // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
-                    if (md.events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
-                        foreach (FeedbackMessage message in md.events
+                    if (events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
+                        foreach (FeedbackMessage message in events
                             .Where(k => k.Key.Name.ToString() == "FeedbackMessage").Select(v => v.Value).ElementAt(0))
                         {
                             if (message.Round == numOfFreezetimesEnded)
@@ -501,12 +502,12 @@ namespace SourceEngine.Demo.Stats
                 e.Reason = roundEndedEvent.Reason;
                 e.Winner = roundEndedEvent.Winner;
 
-                md.addEvent(typeof(RoundOfficiallyEndedEventArgs), e);
+                addEvent(typeof(RoundOfficiallyEndedEventArgs), e);
 
                 //print rounds complete out to console
                 if (!lowOutputMode)
                 {
-                    int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
+                    int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                     //stops the progress bar getting in the way of the first row
                     if (roundsCount == 1)
@@ -518,25 +519,25 @@ namespace SourceEngine.Demo.Stats
 
             dp.SwitchSides += (_, _) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
+                int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 var switchSidesEventArgs = new SwitchSidesEventArgs
                 {
                     RoundBeforeSwitch = roundsCount + 1,
                 }; // announce_phase_end event occurs before round_officially_ended event
 
-                md.addEvent(typeof(SwitchSidesEventArgs), switchSidesEventArgs);
+                addEvent(typeof(SwitchSidesEventArgs), switchSidesEventArgs);
             };
 
             dp.FreezetimeEnded += (_, e) =>
             {
-                IEnumerable<List<object>> freezetimesEndedEvents = md.events
+                IEnumerable<List<object>> freezetimesEndedEvents = events
                     .Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
 
                 IEnumerable<List<object>> roundsEndedEvents =
-                    md.events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
+                    events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
 
-                IEnumerable<List<object>> roundsOfficiallyEndedEvents = md.events
+                IEnumerable<List<object>> roundsOfficiallyEndedEvents = events
                     .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
 
                 int numOfFreezetimesEnded =
@@ -552,7 +553,7 @@ namespace SourceEngine.Demo.Stats
                 /*	The final round in a match does not throw a round_officially_ended event, but a round_freeze_end event is thrown after the game ends,
                     so assume that a game has ended if a second round_freeze_end event is found in the same round as a round_end_event and NO round_officially_ended event.
                     This does mean that if a round_officially_ended event is not triggered due to demo error, the parse will mess up. */
-                var minRoundsForWin = GetMinRoundsForWin(demoInformation.GameMode, demoInformation.TestType);
+                var minRoundsForWin = GetMinRoundsForWin(demoInfo.GameMode, demoInfo.TestType);
 
                 if (numOfFreezetimesEnded == numOfRoundsOfficiallyEnded + 1 && numOfFreezetimesEnded == numOfRoundsEnded
                     && numOfRoundsEnded >= minRoundsForWin)
@@ -615,10 +616,10 @@ namespace SourceEngine.Demo.Stats
                     numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count;
                 }
 
-                md.addEvent(typeof(FreezetimeEndedEventArgs), e);
+                addEvent(typeof(FreezetimeEndedEventArgs), e);
 
                 //work out teams at current round
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
+                int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
                 IEnumerable<Player> players = dp.PlayingParticipants;
 
                 var teams = new TeamPlayers
@@ -628,7 +629,7 @@ namespace SourceEngine.Demo.Stats
                     Round = roundsCount + 1,
                 };
 
-                md.addEvent(typeof(TeamPlayers), teams);
+                addEvent(typeof(TeamPlayers), teams);
 
                 int tEquipValue = 0, ctEquipValue = 0;
                 int tExpenditure = 0, ctExpenditure = 0;
@@ -656,20 +657,20 @@ namespace SourceEngine.Demo.Stats
                     CTExpenditure = ctExpenditure,
                 };
 
-                md.addEvent(typeof(TeamEquipment), teamEquipmentStats);
+                addEvent(typeof(TeamEquipment), teamEquipmentStats);
             };
 
             // PLAYER EVENTS ===================================================
             dp.PlayerKilled += (_, e) =>
             {
-                e.Round = GetCurrentRoundNum(md, demoInformation.GameMode);
+                e.Round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
-                md.addEvent(typeof(PlayerKilledEventArgs), e);
+                addEvent(typeof(PlayerKilledEventArgs), e);
             };
 
             dp.PlayerHurt += (_, e) =>
             {
-                var round = GetCurrentRoundNum(md, demoInformation.GameMode);
+                var round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
                 if (e.PossiblyKilledByBombExplosion
                 ) // a player_death event is not triggered due to death by bomb explosion
@@ -691,7 +692,7 @@ namespace SourceEngine.Demo.Stats
                         AssistedFlash = false,
                     };
 
-                    md.addEvent(typeof(PlayerKilledEventArgs), playerKilledEventArgs);
+                    addEvent(typeof(PlayerKilledEventArgs), playerKilledEventArgs);
                 }
 
                 var player = new Player(e.Player);
@@ -718,16 +719,16 @@ namespace SourceEngine.Demo.Stats
                     PossiblyKilledByBombExplosion = e.PossiblyKilledByBombExplosion,
                 };
 
-                md.addEvent(typeof(PlayerHurt), playerHurt);
+                addEvent(typeof(PlayerHurt), playerHurt);
             };
 
-            dp.RoundMVP += (_, e) => { md.addEvent(typeof(RoundMVPEventArgs), e); };
+            dp.RoundMVP += (_, e) => { addEvent(typeof(RoundMVPEventArgs), e); };
 
             dp.PlayerDisconnect += (_, e) =>
             {
                 if (e.Player != null && e.Player.Name != "unconnected" && e.Player.Name != "GOTV")
                 {
-                    int round = GetCurrentRoundNum(md, demoInformation.GameMode);
+                    int round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
                     var disconnectedPlayer = new DisconnectedPlayer
                     {
@@ -735,14 +736,14 @@ namespace SourceEngine.Demo.Stats
                         Round = round - 1,
                     };
 
-                    md.addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
+                    addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
                 }
             };
 
             // BOMB EVENTS =====================================================
             dp.BombPlanted += (_, e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
+                int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 var bombPlanted = new BombPlanted
                 {
@@ -752,12 +753,12 @@ namespace SourceEngine.Demo.Stats
                     Bombsite = e.Site,
                 };
 
-                md.addEvent(typeof(BombPlanted), bombPlanted);
+                addEvent(typeof(BombPlanted), bombPlanted);
             };
 
             dp.BombExploded += (_, e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
+                int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 var bombExploded = new BombExploded
                 {
@@ -767,12 +768,12 @@ namespace SourceEngine.Demo.Stats
                     Bombsite = e.Site,
                 };
 
-                md.addEvent(typeof(BombExploded), bombExploded);
+                addEvent(typeof(BombExploded), bombExploded);
             };
 
             dp.BombDefused += (_, e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
+                int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 var bombDefused = new BombDefused
                 {
@@ -783,13 +784,13 @@ namespace SourceEngine.Demo.Stats
                     HasKit = e.Player.HasDefuseKit,
                 };
 
-                md.addEvent(typeof(BombDefused), bombDefused);
+                addEvent(typeof(BombDefused), bombDefused);
             };
 
             // HOSTAGE EVENTS =====================================================
             dp.HostageRescued += (_, e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
+                int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 var hostageRescued = new HostageRescued
                 {
@@ -801,13 +802,13 @@ namespace SourceEngine.Demo.Stats
                     RescueZone = e.RescueZone,
                 };
 
-                md.addEvent(typeof(HostageRescued), hostageRescued);
+                addEvent(typeof(HostageRescued), hostageRescued);
             };
 
             // HOSTAGE EVENTS =====================================================
             dp.HostagePickedUp += (_, e) =>
             {
-                int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
+                int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
 
                 var hostagePickedUp = new HostagePickedUp
                 {
@@ -818,15 +819,15 @@ namespace SourceEngine.Demo.Stats
                     HostageIndex = e.HostageIndex,
                 };
 
-                md.addEvent(typeof(HostagePickedUp), hostagePickedUp);
+                addEvent(typeof(HostagePickedUp), hostagePickedUp);
             };
 
             // WEAPON EVENTS ===================================================
             dp.WeaponFired += (_, e) =>
             {
-                md.addEvent(typeof(WeaponFiredEventArgs), e);
+                addEvent(typeof(WeaponFiredEventArgs), e);
 
-                var round = GetCurrentRoundNum(md, demoInformation.GameMode);
+                var round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
                 var shotFired = new ShotFired
                 {
@@ -837,38 +838,38 @@ namespace SourceEngine.Demo.Stats
                     Weapon = new Equipment(e.Weapon),
                 };
 
-                md.addEvent(typeof(ShotFired), shotFired);
+                addEvent(typeof(ShotFired), shotFired);
             };
 
             // GRENADE EVENTS ==================================================
             dp.ExplosiveNadeExploded += (_, e) =>
             {
-                md.addEvent(typeof(GrenadeEventArgs), e);
-                md.addEvent(typeof(NadeEventArgs), e);
+                addEvent(typeof(GrenadeEventArgs), e);
+                addEvent(typeof(NadeEventArgs), e);
             };
 
             dp.FireNadeStarted += (_, e) =>
             {
-                md.addEvent(typeof(FireEventArgs), e);
-                md.addEvent(typeof(NadeEventArgs), e);
+                addEvent(typeof(FireEventArgs), e);
+                addEvent(typeof(NadeEventArgs), e);
             };
 
             dp.SmokeNadeStarted += (_, e) =>
             {
-                md.addEvent(typeof(SmokeEventArgs), e);
-                md.addEvent(typeof(NadeEventArgs), e);
+                addEvent(typeof(SmokeEventArgs), e);
+                addEvent(typeof(NadeEventArgs), e);
             };
 
             dp.FlashNadeExploded += (_, e) =>
             {
-                md.addEvent(typeof(FlashEventArgs), e);
-                md.addEvent(typeof(NadeEventArgs), e);
+                addEvent(typeof(FlashEventArgs), e);
+                addEvent(typeof(NadeEventArgs), e);
             };
 
             dp.DecoyNadeStarted += (_, e) =>
             {
-                md.addEvent(typeof(DecoyEventArgs), e);
-                md.addEvent(typeof(NadeEventArgs), e);
+                addEvent(typeof(DecoyEventArgs), e);
+                addEvent(typeof(NadeEventArgs), e);
             };
 
             // PLAYER TICK HANDLER ============================================
@@ -876,16 +877,16 @@ namespace SourceEngine.Demo.Stats
             {
                 foreach (Player p in dp.PlayingParticipants)
                 {
-                    md.addTick(p, PSTATUS.PLAYING);
+                    addTick(p, PSTATUS.PLAYING);
 
                     if (p.IsAlive)
-                        md.addTick(p, PSTATUS.ALIVE);
+                        addTick(p, PSTATUS.ALIVE);
                 }
 
                 foreach (Player p in dp.Participants)
                 {
                     if (!p.Disconnected)
-                        md.addTick(p, PSTATUS.ONSERVER);
+                        addTick(p, PSTATUS.ONSERVER);
                 }
             };
 
@@ -915,7 +916,7 @@ namespace SourceEngine.Demo.Stats
                     dp.ParseToEnd();
                     pv.End();
 
-                    md.passed = true;
+                    passed = true;
                 }
                 catch (Exception)
                 {
@@ -928,31 +929,235 @@ namespace SourceEngine.Demo.Stats
                 {
                     dp.ParseToEnd();
 
-                    md.passed = true;
+                    passed = true;
                 }
                 catch (Exception) { }
             }
 
             dp.Dispose();
-
-            return md;
         }
 
-        public AllOutputData CreateFiles(ProcessedData processedData, bool createJsonFile = true)
+        public ProcessedData GetProcessedData()
         {
-            string mapDateString = processedData.DemoInformation.TestDate is null
-                ? string.Empty
-                : processedData.DemoInformation.TestDate.Replace('/', '_');
+            IEnumerable<MatchStartedEventArgs> mse;
+            IEnumerable<SwitchSidesEventArgs> sse;
+            IEnumerable<FeedbackMessage> fme;
+            IEnumerable<TeamPlayers> tpe;
+            IEnumerable<PlayerHurt> ph;
+            IEnumerable<PlayerKilledEventArgs> pke;
+            var pe = new Dictionary<string, IEnumerable<Player>>();
+            IEnumerable<Equipment> pwe;
+            IEnumerable<int> poe;
+            IEnumerable<BombPlanted> bpe;
+            IEnumerable<BombExploded> bee;
+            IEnumerable<BombDefused> bde;
+            IEnumerable<HostageRescued> hre;
+            IEnumerable<HostagePickedUp> hpu;
+            IEnumerable<DisconnectedPlayer> dpe;
+            IEnumerable<Team> te;
+            IEnumerable<RoundEndReason> re;
+            IEnumerable<double> le;
+            IEnumerable<TeamEquipment> tes;
+            IEnumerable<NadeEventArgs> ge;
 
+            //IEnumerable<SmokeEventArgs> gse;
+            //IEnumerable<FlashEventArgs> gfe;
+            //IEnumerable<GrenadeEventArgs> gge;
+            //IEnumerable<FireEventArgs> gie;
+            //IEnumerable<DecoyEventArgs> gde;
+            IEnumerable<ChickenKilledEventArgs> cke;
+            IEnumerable<ShotFired> sfe;
+            IEnumerable<PlayerPositionsInstance> ppe;
+
+            mse = from start in GetEvents<MatchStartedEventArgs>() select start as MatchStartedEventArgs;
+
+            sse = from switchSide in GetEvents<SwitchSidesEventArgs>() select switchSide as SwitchSidesEventArgs;
+
+            fme = from message in GetEvents<FeedbackMessage>() select message as FeedbackMessage;
+
+            ph = from player in GetEvents<PlayerHurt>() select player as PlayerHurt;
+
+            pke = from player in GetEvents<PlayerKilledEventArgs>() select player as PlayerKilledEventArgs;
+
+            pe.Add(
+                "Kills",
+                from player in GetEvents<PlayerKilledEventArgs>() select (player as PlayerKilledEventArgs).Killer
+            );
+
+            pe.Add(
+                "Deaths",
+                from player in GetEvents<PlayerKilledEventArgs>() select (player as PlayerKilledEventArgs).Victim
+            );
+
+            pe.Add(
+                "Headshots",
+                from player in GetEvents<PlayerKilledEventArgs>()
+                where (player as PlayerKilledEventArgs).Headshot
+                select (player as PlayerKilledEventArgs).Killer
+            );
+
+            pe.Add(
+                "Assists",
+                from player in GetEvents<PlayerKilledEventArgs>()
+                where (player as PlayerKilledEventArgs).Assister != null
+                select (player as PlayerKilledEventArgs).Assister
+            );
+
+            pwe = from weapon in GetEvents<PlayerKilledEventArgs>() select (weapon as PlayerKilledEventArgs).Weapon;
+
+            poe = from penetration in GetEvents<PlayerKilledEventArgs>()
+                select (penetration as PlayerKilledEventArgs).PenetratedObjects;
+
+            pe.Add("MVPs", from player in GetEvents<RoundMVPEventArgs>() select (player as RoundMVPEventArgs).Player);
+
+            pe.Add(
+                "Shots",
+                from player in GetEvents<WeaponFiredEventArgs>() select (player as WeaponFiredEventArgs).Shooter
+            );
+
+            pe.Add("Plants", from player in GetEvents<BombPlanted>() select (player as BombPlanted).Player);
+
+            pe.Add("Defuses", from player in GetEvents<BombDefused>() select (player as BombDefused).Player);
+
+            pe.Add("Rescues", from player in GetEvents<HostageRescued>() select (player as HostageRescued).Player);
+
+            bpe = (from plant in GetEvents<BombPlanted>() select plant as BombPlanted).GroupBy(p => p.Round)
+                .Select(p => p.FirstOrDefault());
+
+            bee = (from explode in GetEvents<BombExploded>() select explode as BombExploded).GroupBy(p => p.Round)
+                .Select(p => p.FirstOrDefault());
+
+            bde = (from defuse in GetEvents<BombDefused>() select defuse as BombDefused).GroupBy(p => p.Round)
+                .Select(p => p.FirstOrDefault());
+
+            hre = from hostage in GetEvents<HostageRescued>() select hostage as HostageRescued;
+
+            hpu = from hostage in GetEvents<HostagePickedUp>() select hostage as HostagePickedUp;
+
+            dpe = from disconnection in GetEvents<DisconnectedPlayer>() select disconnection as DisconnectedPlayer;
+
+            te = from team in GetEvents<RoundOfficiallyEndedEventArgs>()
+                select (team as RoundOfficiallyEndedEventArgs).Winner;
+
+            re = from reason in GetEvents<RoundOfficiallyEndedEventArgs>()
+                select (reason as RoundOfficiallyEndedEventArgs).Reason;
+
+            le = from length in GetEvents<RoundOfficiallyEndedEventArgs>()
+                select (length as RoundOfficiallyEndedEventArgs).Length;
+
+            // removes extra TeamPlayers if freezetime_end event triggers once a playtest is finished
+            tpe = from teamPlayers in GetEvents<TeamPlayers>()
+                where (teamPlayers as TeamPlayers).Round <= te.Count()
+                select teamPlayers as TeamPlayers;
+
+            tes = from round in GetEvents<TeamEquipment>() select round as TeamEquipment;
+
+            ge = from nade in GetEvents<NadeEventArgs>() select nade as NadeEventArgs;
+
+            cke = from chickenKill in GetEvents<ChickenKilledEventArgs>() select chickenKill as ChickenKilledEventArgs;
+
+            sfe = from shot in GetEvents<ShotFired>() select shot as ShotFired;
+
+            ppe = from playerPos in GetEvents<PlayerPositionsInstance>() select playerPos as PlayerPositionsInstance;
+
+            tanookiStats tanookiStats = TanookiStatsCreator(tpe, dpe);
+
+            return new ProcessedData
+            {
+                tanookiStats = tanookiStats,
+                MatchStartValues = mse,
+                SwitchSidesValues = sse,
+                MessagesValues = fme,
+                TeamPlayersValues = tpe,
+                PlayerHurtValues = ph,
+                PlayerKilledEventsValues = pke,
+                PlayerValues = pe,
+                WeaponValues = pwe,
+                PenetrationValues = poe,
+                BombsitePlantValues = bpe,
+                BombsiteExplodeValues = bee,
+                BombsiteDefuseValues = bde,
+                HostageRescueValues = hre,
+                HostagePickedUpValues = hpu,
+                TeamValues = te,
+                RoundEndReasonValues = re,
+                RoundLengthValues = le,
+                TeamEquipmentValues = tes,
+                GrenadeValues = ge,
+                ChickenValues = cke,
+                ShotsFiredValues = sfe,
+                PlayerPositionsValues = ppe,
+                WriteTicks = true,
+            };
+
+        }
+
+        private static tanookiStats TanookiStatsCreator(
+            IEnumerable<TeamPlayers> tpe,
+            IEnumerable<DisconnectedPlayer> dpe)
+        {
+            var tanookiStats = new tanookiStats
+            {
+                Joined = false,
+                Left = false,
+                RoundJoined = -1,
+                RoundLeft = -1,
+                RoundsLasted = -1,
+            };
+
+            const long tanookiId = 76561198123165941;
+
+            if (tpe.Any(t => t.Terrorists.Any(p => p.SteamID == tanookiId))
+                || tpe.Any(t => t.CounterTerrorists.Any(p => p.SteamID == tanookiId)))
+            {
+                tanookiStats.Joined = true;
+                tanookiStats.RoundJoined = 0; // set in case he joined in warmup but does not play any rounds
+
+                IEnumerable<int> playedRoundsT =
+                    tpe.Where(t => t.Round > 0 && t.Terrorists.Any(p => p.SteamID == tanookiId)).Select(r => r.Round);
+
+                IEnumerable<int> playedRoundsCT =
+                    tpe.Where(t => t.Round > 0 && t.CounterTerrorists.Any(p => p.SteamID == tanookiId))
+                        .Select(r => r.Round);
+
+                tanookiStats.RoundsLasted = playedRoundsT.Count() + playedRoundsCT.Count();
+
+                bool playedTSide = playedRoundsT.Any();
+                bool playedCTSide = playedRoundsCT.Any();
+
+                tanookiStats.RoundJoined = playedTSide ? playedCTSide ? playedRoundsT.First() < playedRoundsCT.First()
+                        ?
+                        playedRoundsT.First()
+                        : playedRoundsCT.First() : playedRoundsT.First() :
+                    playedCTSide ? playedRoundsCT.First() : tanookiStats.RoundJoined;
+            }
+
+            if (dpe.Any(
+                d => d.PlayerDisconnectEventArgs.Player != null
+                    && d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId
+            ))
+            {
+                // checks if he played a round later on than his last disconnect (he left and joined back)
+                int finalDisconnectRound = dpe.Where(d => d.PlayerDisconnectEventArgs.Player.SteamID == tanookiId)
+                    .Reverse().Select(r => r.Round).First();
+
+                tanookiStats.RoundLeft = finalDisconnectRound > tanookiStats.RoundsLasted
+                    ? finalDisconnectRound
+                    : tanookiStats.RoundLeft;
+
+                tanookiStats.Left = tanookiStats.RoundLeft > -1;
+            }
+
+            return tanookiStats;
+        }
+
+        public AllStats GetAllStats(ProcessedData processedData)
+        {
             var mapNameSplit = processedData.MatchStartValues.Any()
                 ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/')
-                : new[] { processedData.DemoInformation.MapName };
-
-            var mapNameString = mapNameSplit.Length > 2 ? mapNameSplit[2] : mapNameSplit[0];
+                : new[] { demoInfo.MapName };
 
             DataAndPlayerNames dataAndPlayerNames = GetDataAndPlayerNames(processedData);
-
-            PlayerPositionsStats playerPositionsStats = null;
 
             var allStats = new AllStats
             {
@@ -962,7 +1167,7 @@ namespace SourceEngine.Demo.Stats
                 tanookiStats = processedData.tanookiStats,
             };
 
-            if (CheckIfStatsShouldBeCreated("playerStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("playerStats", demoInfo.GameMode))
                 allStats.playerStats = GetPlayerStats(
                     processedData,
                     dataAndPlayerNames.Data,
@@ -974,44 +1179,44 @@ namespace SourceEngine.Demo.Stats
                 dataAndPlayerNames.PlayerNames
             );
 
-            if (CheckIfStatsShouldBeCreated("winnersStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("winnersStats", demoInfo.GameMode))
                 allStats.winnersStats = generalroundsStats.winnersStats;
 
-            if (CheckIfStatsShouldBeCreated("roundsStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("roundsStats", demoInfo.GameMode))
                 allStats.roundsStats = generalroundsStats.roundsStats;
 
-            if (CheckIfStatsShouldBeCreated("bombsiteStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("bombsiteStats", demoInfo.GameMode))
                 allStats.bombsiteStats = GetBombsiteStats(processedData);
 
-            if (CheckIfStatsShouldBeCreated("hostageStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("hostageStats", demoInfo.GameMode))
                 allStats.hostageStats = GetHostageStats(processedData);
 
-            if (CheckIfStatsShouldBeCreated("rescueZoneStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("rescueZoneStats", demoInfo.GameMode))
                 allStats.rescueZoneStats = GetRescueZoneStats();
 
             Dictionary<EquipmentElement, List<NadeEventArgs>> nadeGroups = processedData.GrenadeValues
                 .Where(e => e.NadeType >= EquipmentElement.Decoy && e.NadeType <= EquipmentElement.HE)
                 .GroupBy(e => e.NadeType).ToDictionary(g => g.Key, g => g.ToList());
 
-            if (CheckIfStatsShouldBeCreated("grenadesTotalStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("grenadesTotalStats", demoInfo.GameMode))
                 allStats.grenadesTotalStats = GetGrenadesTotalStats(nadeGroups);
 
-            if (CheckIfStatsShouldBeCreated("grenadesSpecificStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("grenadesSpecificStats", demoInfo.GameMode))
                 allStats.grenadesSpecificStats = GetGrenadesSpecificStats(nadeGroups, dataAndPlayerNames.PlayerNames);
 
-            if (CheckIfStatsShouldBeCreated("killsStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("killsStats", demoInfo.GameMode))
                 allStats.killsStats = GetKillsStats(processedData, dataAndPlayerNames.PlayerNames);
 
-            if (CheckIfStatsShouldBeCreated("feedbackMessages", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("feedbackMessages", demoInfo.GameMode))
                 allStats.feedbackMessages = GetFeedbackMessages(processedData, dataAndPlayerNames.PlayerNames);
 
-            if (processedData.ParseChickens && CheckIfStatsShouldBeCreated(
+            if (dp.ParseChickens && CheckIfStatsShouldBeCreated(
                 "chickenStats",
-                processedData.DemoInformation.GameMode
+                demoInfo.GameMode
             ))
                 allStats.chickenStats = GetChickenStats(processedData);
 
-            if (CheckIfStatsShouldBeCreated("teamStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("teamStats", demoInfo.GameMode))
                 allStats.teamStats = GetTeamStats(
                     processedData,
                     allStats,
@@ -1019,26 +1224,45 @@ namespace SourceEngine.Demo.Stats
                     generalroundsStats.SwitchSides
                 );
 
-            if (CheckIfStatsShouldBeCreated("firstDamageStats", processedData.DemoInformation.GameMode))
+            if (CheckIfStatsShouldBeCreated("firstDamageStats", demoInfo.GameMode))
                 allStats.firstDamageStats = GetFirstDamageStats(processedData);
 
-            // JSON creation
-            if (createJsonFile)
-                CreateJsonAllStats(processedData, allStats, mapNameString, mapDateString);
+            return allStats;
+        }
 
-            if (processedData.ParsePlayerPositions && CheckIfStatsShouldBeCreated(
+        public AllOutputData CreateFiles(string outputRoot,
+            List<string> foldersToProcess,
+            bool sameFileName,
+            bool sameFolderStructure,
+            bool createJsonFile = true)
+        {
+            ProcessedData processedData = GetProcessedData();
+            AllStats allStats = GetAllStats(processedData);
+            PlayerPositionsStats playerPositionsStats = null;
+
+            if (dp.ParsePlayerPositions && CheckIfStatsShouldBeCreated(
                 "playerPositionsStats",
-                processedData.DemoInformation.GameMode
+                demoInfo.GameMode
             ))
             {
                 playerPositionsStats = GetPlayerPositionsStats(processedData, allStats);
-                CreateJsonPlayerPositionsStats(
-                    processedData,
-                    allStats,
-                    playerPositionsStats,
-                    mapNameString,
-                    mapDateString
+            }
+
+            if (createJsonFile)
+            {
+                string path = GetOutputPathWithoutExtension(
+                    outputRoot,
+                    foldersToProcess,
+                    demoInfo,
+                    allStats.mapInfo.MapName,
+                    sameFileName,
+                    sameFolderStructure
                 );
+
+                WriteJson(allStats, path + ".json");
+
+                if (playerPositionsStats is not null)
+                    WriteJson(playerPositionsStats, path + "_playerpositions.json");
             }
 
             // return for testing purposes
@@ -1102,13 +1326,13 @@ namespace SourceEngine.Demo.Stats
             return new() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3) };
         }
 
-        public static mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
+        public mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
         {
             var mapInfo = new mapInfo
             {
-                MapName = processedData.DemoInformation.MapName,
-                TestType = processedData.DemoInformation.TestType.ToString().ToLower(),
-                TestDate = processedData.DemoInformation.TestDate,
+                MapName = demoInfo.MapName,
+                TestType = demoInfo.TestType.ToString().ToLower(),
+                TestDate = demoInfo.TestDate,
             };
 
             mapInfo.MapName =
@@ -1118,7 +1342,7 @@ namespace SourceEngine.Demo.Stats
 
             mapInfo.WorkshopID = mapNameSplit.Length > 2 ? mapNameSplit[1] : "unknown";
             mapInfo.DemoName =
-                processedData.DemoInformation.DemoName.Split('\\').Last()
+                demoInfo.DemoName.Split('\\').Last()
                     .Replace(
                         ".dem",
                         string.Empty
@@ -1128,9 +1352,9 @@ namespace SourceEngine.Demo.Stats
             GetRoundsWonReasons(processedData.RoundEndReasonValues);
 
             // use the provided game mode if given as a parameter
-            if (processedData.DemoInformation.GameMode is not GameMode.Unknown)
+            if (demoInfo.GameMode is not GameMode.Unknown)
             {
-                mapInfo.GameMode = processedData.DemoInformation.GameMode.ToString().ToLower();
+                mapInfo.GameMode = demoInfo.GameMode.ToString().ToLower();
 
                 return mapInfo;
             }
@@ -2291,28 +2515,35 @@ namespace SourceEngine.Demo.Stats
             return playerPositionsStats;
         }
 
-        public static string GetOutputJsonFilepath(
-            ProcessedData processedData,
-            AllStats allStats,
-            PlayerPositionsStats playerPositionsStats,
-            string mapNameString,
-            string mapDateString)
+        public static string GetOutputPathWithoutExtension(
+            string outputRoot,
+            List<string> foldersToProcess,
+            DemoInformation demoInfo,
+            string mapName,
+            bool sameFileName,
+            bool sameFolderStructure)
         {
-            string filename = processedData.SameFilename ? allStats.mapInfo.DemoName : Guid.NewGuid().ToString();
+            string filename = sameFileName
+                ? Path.GetFileNameWithoutExtension(demoInfo.DemoName)
+                : Guid.NewGuid().ToString();
+
+            string mapDateString = demoInfo.TestDate is null
+                ? string.Empty
+                : demoInfo.TestDate.Replace('/', '_');
 
             string path = string.Empty;
 
-            if (processedData.FoldersToProcess.Count > 0 && processedData.SameFolderStructure)
-                foreach (var folder in processedData.FoldersToProcess)
+            if (foldersToProcess.Count > 0 && sameFolderStructure)
+                foreach (var folder in foldersToProcess)
                 {
-                    string[] splitPath = Path.GetDirectoryName(processedData.DemoInformation.DemoName).Split(
+                    string[] splitPath = Path.GetDirectoryName(demoInfo.DemoName).Split(
                         new[] { string.Concat(folder, "\\") },
                         StringSplitOptions.None
                     );
 
                     path = splitPath.Length > 1
-                        ? string.Concat(processedData.OutputRootFolder, "\\", splitPath.LastOrDefault(), "\\")
-                        : string.Concat(processedData.OutputRootFolder, "\\");
+                        ? string.Concat(outputRoot, "\\", splitPath.LastOrDefault(), "\\")
+                        : string.Concat(outputRoot, "\\");
 
                     if (!string.IsNullOrWhiteSpace(path))
                     {
@@ -2323,83 +2554,28 @@ namespace SourceEngine.Demo.Stats
                     }
                 }
             else
-                path = string.Concat(processedData.OutputRootFolder, "\\");
+                path = string.Concat(outputRoot, "\\");
 
             if (mapDateString != string.Empty)
                 path += mapDateString + "_";
 
-            path += mapNameString + "_" + filename;
-
-            if (playerPositionsStats != null)
-                path += "_playerpositions";
-
-            path += ".json";
+            path += mapName + "_" + filename;
 
             return path;
         }
 
-        public static void CreateJsonAllStats(
-            ProcessedData processedData,
-            AllStats allStats,
-            string mapNameString,
-            string mapDateString)
+        public static void WriteJson(object stats, string path)
         {
-            var outputFilepath = string.Empty;
-
             try
             {
-                outputFilepath = GetOutputJsonFilepath(processedData, allStats, null, mapNameString, mapDateString);
-
-                var sw = new StreamWriter(outputFilepath, false);
-
-                string json = JsonConvert.SerializeObject(allStats, Formatting.Indented);
-
+                using var sw = new StreamWriter(path, false);
+                string json = JsonConvert.SerializeObject(stats, Formatting.Indented);
                 sw.WriteLine(json);
-                /* JSON creation end*/
-
-                sw.Close();
             }
             catch (Exception)
             {
                 Console.WriteLine("Could not create json file.");
-                Console.WriteLine(string.Concat("Filename: ", outputFilepath));
-                Console.WriteLine(string.Concat("Demoname: ", allStats.mapInfo.DemoName));
-            }
-        }
-
-        public static void CreateJsonPlayerPositionsStats(
-            ProcessedData processedData,
-            AllStats allStats,
-            PlayerPositionsStats playerPositionsStats,
-            string mapNameString,
-            string mapDateString)
-        {
-            var outputFilepath = string.Empty;
-
-            try
-            {
-                outputFilepath = GetOutputJsonFilepath(
-                    processedData,
-                    allStats,
-                    playerPositionsStats,
-                    mapNameString,
-                    mapDateString
-                );
-
-                var sw = new StreamWriter(outputFilepath, false);
-
-                string json = JsonConvert.SerializeObject(playerPositionsStats, Formatting.Indented);
-
-                sw.WriteLine(json);
-                /* JSON creation end*/
-
-                sw.Close();
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Could not create json file.");
-                Console.WriteLine(string.Concat("Filename: ", outputFilepath));
-                Console.WriteLine(string.Concat("Demoname: ", allStats.mapInfo.DemoName));
+                Console.WriteLine(string.Concat("Filename: ", path));
             }
         }
 

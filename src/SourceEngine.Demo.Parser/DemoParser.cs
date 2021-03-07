@@ -34,8 +34,8 @@ namespace SourceEngine.Demo.Parser
         private const int MAXWEAPONS = 64;
 
         public bool stopParsingDemo = false;
-        private readonly bool parseChickens;
-        private readonly bool parsePlayerPositions;
+        public readonly bool ParseChickens;
+        public readonly bool ParsePlayerPositions;
         private string gamemode;
 
         // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
@@ -539,8 +539,8 @@ namespace SourceEngine.Demo.Parser
             for (int i = 0; i < MAXPLAYERS; i++)
                 additionalInformations[i] = new PlayerResource();
 
-            this.parseChickens = parseChickens;
-            this.parsePlayerPositions = parsePlayerPositions;
+            this.ParseChickens = parseChickens;
+            this.ParsePlayerPositions = parsePlayerPositions;
             numOfHostageRescueZonesLookingFor = hostagerescuezonecountoverride;
         }
 
@@ -580,7 +580,7 @@ namespace SourceEngine.Demo.Parser
         /// <param name="token"></param>
         public void ParseToEnd(CancellationToken token)
         {
-            if (parsePlayerPositions)
+            if (ParsePlayerPositions)
             {
                 int secondsPassed = 0;
 
@@ -769,7 +769,7 @@ namespace SourceEngine.Demo.Parser
             BitStream.ReadInt(32); // SeqNrOut
 
             BitStream.BeginChunk(BitStream.ReadSignedInt(32) * 8);
-            DemoPacketParser.ParsePacket(BitStream, this, parseChickens);
+            DemoPacketParser.ParsePacket(BitStream, this, ParseChickens);
             BitStream.EndChunk();
         }
 

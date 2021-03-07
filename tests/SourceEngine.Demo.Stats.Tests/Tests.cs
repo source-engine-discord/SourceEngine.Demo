@@ -22,7 +22,6 @@ namespace SourceEngine.Demo.Stats.Tests
 
         public TopStatsWaffleTests()
         {
-            MatchData = new MatchData();
             MockData();
 
             foreach (TeamPlayers teamPlayers in ProcessedData.TeamPlayersValues)
@@ -45,6 +44,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 TestType = TestType.Casual,
                 TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
             };
+
+            var matchData = new MatchData(null, true, true, null, false);
 
             var tanookiStats = new tanookiStats
             {
@@ -646,12 +647,6 @@ namespace SourceEngine.Demo.Stats.Tests
             ProcessedData = new ProcessedData
             {
                 DemoInformation = DemoInformation,
-                SameFilename = true,
-                SameFolderStructure = true,
-                ParseChickens = true,
-                ParsePlayerPositions = true,
-                FoldersToProcess = new List<string> { "someFolder" },
-                OutputRootFolder = "outputFolder",
                 tanookiStats = tanookiStats,
                 MatchStartValues = MatchStartValues,
                 SwitchSidesValues = SwitchSidesValues,

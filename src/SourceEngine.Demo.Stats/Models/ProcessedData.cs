@@ -7,20 +7,6 @@ namespace SourceEngine.Demo.Stats.Models
 {
     public class ProcessedData
     {
-        public DemoInformation DemoInformation { get; set; }
-
-        public bool SameFilename { get; set; }
-
-        public bool SameFolderStructure { get; set; }
-
-        public bool ParseChickens { get; set; }
-
-        public bool ParsePlayerPositions { get; set; }
-
-        public List<string> FoldersToProcess { get; set; }
-
-        public string OutputRootFolder { get; set; }
-
         public tanookiStats tanookiStats { get; set; }
 
         public IEnumerable<MatchStartedEventArgs> MatchStartValues { get; set; }
