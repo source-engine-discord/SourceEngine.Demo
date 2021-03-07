@@ -7,19 +7,14 @@ using System.Linq;
 using CommandLine;
 using CommandLine.Text;
 
-using SourceEngine.Demo.Parser;
-using SourceEngine.Demo.Parser.Entities;
 using SourceEngine.Demo.Stats.Models;
 
 namespace SourceEngine.Demo.Stats.App
 {
-    public class Options
+    internal class Options
     {
         private string testDateOverride;
         private uint? hostageRescueZoneCountOverride;
-
-        [Option("config", Default = "config.cfg", HelpText = "Path to config file.")]
-        public string Config { get; set; }
 
         [Option(
             "folders",
@@ -89,9 +84,6 @@ namespace SourceEngine.Demo.Stats.App
         [Option("recursive", Default = false, HelpText = "Recursively search for demos.")]
         public bool Recursive { get; set; }
 
-        [Option("steaminfo", Default = false, HelpText = "Retrieve player names from Steam.")]
-        public bool SteamInfo { get; set; }
-
         [Option("clear", Default = false, HelpText = "Clear the data folder.")]
         public bool Clear { get; set; }
 
@@ -117,39 +109,6 @@ namespace SourceEngine.Demo.Stats.App
             HelpText = "Don't output the progress bar and 'round completed' messages to the console."
         )]
         public bool LowOutputMode { get; set; }
-    }
-
-    //Config class, currently only holds api key
-
-    //Todo: add some other settings that can be written in a text file
-    //Todo: add a formal config parser
-    internal class Config
-    {
-        internal readonly Dictionary<string, string> keyVals = new();
-
-        internal Config(string path)
-        {
-            var sr = new StreamReader(path);
-
-            Debug.Info("Reading config from {0}", path);
-
-            string ln;
-
-            while ((ln = sr.ReadLine()) != null)
-            {
-                string[] elements = ln.Split('=');
-                if (elements.Length == 2)
-                    keyVals.Add(elements[0], elements[1]);
-            }
-
-            if (!keyVals.ContainsKey("apikey"))
-                throw new Exception("CFG::STEAM_API_KEY::NOT_FOUND");
-
-            if (keyVals["apikey"] == "" || keyVals["apikey"] == null)
-                throw new Exception("CFG:STEAM_API_KEY::INVALID");
-
-            sr.Close();
-        }
     }
 
     internal static class Program
@@ -191,25 +150,6 @@ namespace SourceEngine.Demo.Stats.App
             {
                 Debug.Error("A test type must be given when the game mode is defuse or hostage.");
                 return;
-            }
-
-            if (opts.SteamInfo)
-            {
-                if (File.Exists(opts.Config))
-                    try
-                    {
-                        var cfg = new Config(opts.Config);
-                        Steam.setAPIKey(cfg.keyVals["apikey"]);
-
-                        if (Steam.getSteamUserNamesLookupTable(new List<long> { 76561198072130043 }) == null)
-                            throw new Exception("CONFIG::STEAM_API_KEY::INVALID");
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.Error("CONFIG ERROR... INFO:: {0}\nSteam names will not be retrieved!!!", e.Message);
-                    }
-                else
-                    Debug.Error("Config unreadable... Steam names will not be retrieved!!!");
             }
 
             // Ensure all folders to get demos from are created to avoid exceptions.
