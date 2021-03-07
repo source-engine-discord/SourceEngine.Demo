@@ -2,6 +2,8 @@
 {
     public class mapInfo
     {
+        private string testDate;
+
         public string MapName { get; set; }
 
         public string WorkshopID { get; set; }
@@ -10,7 +12,11 @@
 
         public string TestType { get; set; }
 
-        public string TestDate { get; set; }
+        public string TestDate
+        {
+            get => testDate;
+            set => testDate = value ?? "unknown";
+        }
 
         public string DemoName { get; set; }
     }

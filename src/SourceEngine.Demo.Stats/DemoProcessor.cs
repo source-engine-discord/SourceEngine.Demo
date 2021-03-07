@@ -940,15 +940,9 @@ namespace SourceEngine.Demo.Stats
 
         public AllOutputData CreateFiles(ProcessedData processedData, bool createJsonFile = true)
         {
-            var mapDateSplit =
-                !string.IsNullOrWhiteSpace(processedData.DemoInformation.TestDate)
-                && processedData.DemoInformation.TestDate != "unknown"
-                    ? processedData.DemoInformation.TestDate.Split('/')
-                    : null;
-
-            var mapDateString = mapDateSplit != null && mapDateSplit.Length >= 3
-                ? mapDateSplit[2] + "_" + mapDateSplit[0] + "_" + mapDateSplit[1]
-                : string.Empty;
+            string mapDateString = processedData.DemoInformation.TestDate is null
+                ? string.Empty
+                : processedData.DemoInformation.TestDate.Replace('/', '_');
 
             var mapNameSplit = processedData.MatchStartValues.Any()
                 ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/')

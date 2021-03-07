@@ -226,38 +226,16 @@ namespace SourceEngine.Demo.Stats.App
 
                 foreach (string demo in subDemos)
                 {
-                    string[] pathSplit = demo.Split('\\');
-
-                    string[] filenameSplit = pathSplit[^1].Split('.');
-                    bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid _);
-
-                    AddDemoInformation(
-                        demosInformation,
-                        demo,
-                        opts.GameModeOverride,
-                        opts.TestType,
-                        opts.TestDateOverride,
-                        isFaceitDemo,
-                        filenameSplit,
-                        pathSplit
+                    demosInformation.Add(
+                        new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride)
                     );
                 }
             }
 
             foreach (string demo in opts.Demos)
             {
-                string[] filenameSplit = demo.Split('.');
-                bool isFaceitDemo = Guid.TryParse(filenameSplit[0], out Guid _);
-
-                AddDemoInformation(
-                    demosInformation,
-                    demo,
-                    opts.GameModeOverride,
-                    opts.TestType,
-                    opts.TestDateOverride,
-                    isFaceitDemo,
-                    filenameSplit,
-                    Array.Empty<string>()
+                demosInformation.Add(
+                    new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride)
                 );
             }
 
@@ -552,86 +530,6 @@ namespace SourceEngine.Demo.Stats.App
             }
 
             return tanookiStats;
-        }
-
-        private static void AddDemoInformation(
-            ICollection<DemoInformation> demosInformation,
-            string demo,
-            GameMode gamemode,
-            TestType testType,
-            string testdateoverride,
-            bool isFaceitDemo,
-            string[] filenameSplit,
-            IReadOnlyList<string> pathSplit)
-        {
-            string testDate, mapname;
-
-            if (isFaceitDemo)
-            {
-                testDate = !string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown"
-                    ? testdateoverride
-                    : "unknown";
-
-                mapname = "unknown";
-            }
-            else
-            {
-                if (pathSplit.Count > 0) // searching by folder
-                    filenameSplit = pathSplit[^1].Split('_', '.', '-');
-                else // searching by demo
-                    filenameSplit = demo.Split('_', '.', '-');
-
-                var secondToLastString = filenameSplit[^2];
-                bool isSEDiscordDemo = secondToLastString == "casual" || secondToLastString == "comp";
-                bool isMapcoreDiscordDemo = filenameSplit.Any(x => x.Contains("MAPCORE"));
-
-                if (isSEDiscordDemo)
-                {
-                    testDate = !string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown"
-                        ? testdateoverride
-                        : $"{filenameSplit[1]}/{filenameSplit[0]}/{filenameSplit[2]}";
-
-                    mapname = $"{filenameSplit[3]}";
-
-                    for (int i = 4; i < filenameSplit.Length - 2; i++)
-                        mapname += $"_{filenameSplit[i]}";
-                }
-                else if (isMapcoreDiscordDemo)
-                {
-                    testDate = !string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown"
-                        ? testdateoverride
-                        : $"{filenameSplit[1].Substring(6, 2)}/{filenameSplit[1].Substring(4, 2)}/{filenameSplit[1].Substring(0, 4)}";
-
-                    var index = filenameSplit.Length - 1 - Array.IndexOf(
-                        filenameSplit.Reverse().ToArray(),
-                        "MAPCORE"
-                    ); // gets the last index where the value was "MAPCORE"
-
-                    mapname = $"{filenameSplit[6]}";
-
-                    for (int i = 7; i < index; i++)
-                        mapname += $"_{filenameSplit[i]}";
-                }
-                else //cannot determine demo name format
-                {
-                    testDate = !string.IsNullOrWhiteSpace(testdateoverride) && testdateoverride != "unknown"
-                        ? testdateoverride
-                        : "unknown";
-
-                    mapname = "unknown";
-                }
-            }
-
-            demosInformation.Add(
-                new DemoInformation
-                {
-                    DemoName = demo,
-                    MapName = mapname,
-                    GameMode = gamemode,
-                    TestType = testType,
-                    TestDate = testDate,
-                }
-            );
         }
     }
 }
