@@ -154,6 +154,22 @@ namespace SourceEngine.Demo.Stats.App
 
     internal static class Program
     {
+        private static void Main(string[] args)
+        {
+            var parser = new CommandLine.Parser(
+                with =>
+                {
+                    with.CaseInsensitiveEnumValues = true;
+                    with.HelpWriter = null;
+                }
+            );
+            ParserResult<Options> parserResult = parser.ParseArguments<Options>(args);
+
+            parserResult
+                .WithParsed(ProcessOptions)
+                .WithNotParsed(errs => DisplayHelp(parserResult, errs));
+        }
+
         private static void DisplayHelp<T>(ParserResult<T> result, IEnumerable<Error> errs)
         {
             var helpText = HelpText.AutoBuild(result, h =>
@@ -214,45 +230,21 @@ namespace SourceEngine.Demo.Stats.App
                 Directory.CreateDirectory(opts.Output);
             }
 
-            var demosInformation = new List<DemoInformation>();
-
-            foreach (string folder in opts.Folders)
-            {
-                string[] subDemos = Directory.GetFiles(
-                    Path.GetFullPath(folder),
-                    "*.dem",
-                    opts.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
-                );
-
-                foreach (string demo in subDemos)
-                {
-                    demosInformation.Add(
-                        new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride)
-                    );
-                }
-            }
-
-            foreach (string demo in opts.Demos)
-            {
-                demosInformation.Add(
-                    new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride)
-                );
-            }
-
-            Debug.Info("Starting processing of {0} demos.\n", demosInformation.Count);
+            Debug.Info("Starting processing of demos.\n");
             DateTime startTime = DateTime.Now;
 
-            int passCount = 0;
+            uint total = 0;
+            uint passCount = 0;
 
             Console.CursorVisible = false;
 
             //Process all the found demos
-            foreach (DemoInformation t in demosInformation)
+            foreach (DemoInformation demoInfo in GetDemoInfo(opts))
             {
-                Console.WriteLine($"Parsing demo {t.DemoName}");
+                Console.WriteLine($"Parsing demo {demoInfo.DemoName}");
 
                 var matchData = new MatchData(
-                    t,
+                    demoInfo,
                     !opts.NoChickens,
                     !opts.NoPlayerOptions,
                     opts.HostageRescueZoneCountOverride,
@@ -269,12 +261,14 @@ namespace SourceEngine.Demo.Stats.App
                     );
 
                     passCount++;
-                    Console.WriteLine($"Finished parsing demo {t.DemoName}.\n");
+                    Console.WriteLine($"Finished parsing demo {demoInfo.DemoName}.\n");
                 }
                 else
                 {
-                    Console.WriteLine($"Failed parsing demo {t.DemoName}.\n");
+                    Console.WriteLine($"Failed parsing demo {demoInfo.DemoName}.\n");
                 }
+
+                total++;
             }
 
             Console.CursorVisible = true;
@@ -284,24 +278,25 @@ namespace SourceEngine.Demo.Stats.App
 
             Debug.White("Processing took {0} minutes\n", (end - startTime).TotalMinutes);
             Debug.White("Passed: {0}\n", passCount);
-            Debug.White("Failed: {0}\n", demosInformation.Count - passCount);
+            Debug.White("Failed: {0}\n", total - passCount);
         }
 
-        //Program entry point
-        private static void Main(string[] args)
+        private static IEnumerable<DemoInformation> GetDemoInfo(Options opts)
         {
-            var parser = new CommandLine.Parser(
-                with =>
-                {
-                    with.CaseInsensitiveEnumValues = true;
-                    with.HelpWriter = null;
-                }
-            );
-            ParserResult<Options> parserResult = parser.ParseArguments<Options>(args);
+            foreach (string folder in opts.Folders)
+            {
+                string[] subDemos = Directory.GetFiles(
+                    Path.GetFullPath(folder),
+                    "*.dem",
+                    opts.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
+                );
 
-            parserResult
-                .WithParsed(ProcessOptions)
-                .WithNotParsed(errs => DisplayHelp(parserResult, errs));
+                foreach (string demo in subDemos)
+                    yield return new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride);
+            }
+
+            foreach (string demo in opts.Demos)
+                yield return new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride);
         }
     }
 }
