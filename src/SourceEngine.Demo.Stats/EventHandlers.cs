@@ -10,6 +10,11 @@ namespace SourceEngine.Demo.Stats
 {
     public partial class MatchData
     {
+        private readonly List<RoundEndedEventArgs> roundEndedEvents = new();
+        private int freezetimeEndedCount;
+        private float lastFreezetimeEnd = -1;
+        private int roundOfficiallyEndedCount;
+
         private void TickDoneEventHandler(object sender, TickDoneEventArgs e)
         {
             foreach (Player p in dp.PlayingParticipants)
@@ -31,171 +36,103 @@ namespace SourceEngine.Demo.Stats
 
         private void MatchStartedEventHandler(object sender, MatchStartedEventArgs e)
         {
-            var currentfeedbackMessages = new List<FeedbackMessage>();
+            // Reset all stats stored except for the feedback messages.
+            processedData = new ProcessedData { MessagesValues = processedData.MessagesValues };
+            roundEndedEvents.Clear();
+            roundOfficiallyEndedCount = 0;
+            freezetimeEndedCount = 0;
+            lastFreezetimeEnd = -1;
 
-            //stores all fb messages so that they aren't lost when stats are reset
-            if (events.Count > 0 && events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
-                foreach (FeedbackMessage message in events.Where(k => k.Key.Name.ToString() == "FeedbackMessage")
-                    .Select(v => v.Value).ElementAt(0))
-                {
-                    var text = message.Message;
+            // Modify some properties of the saved feedback messages.
+            foreach (FeedbackMessage feedbackMessage in processedData.MessagesValues)
+            {
+                feedbackMessage.Round = 0;
 
-                    if (IsMessageFeedback(text))
+                // Overwrite whatever the TimeInRound value was before.
+                // 0 is generally used for messages sent in Warmup.
+                feedbackMessage.TimeInRound = 0;
+            }
 
-                        //Sets round to 0 as anything before a match start event should always be classed as warmup
-                        currentfeedbackMessages.Add(
-                            new FeedbackMessage
-                            {
-                                Round = 0,
-                                SteamID = message.SteamID,
-                                TeamName = message.TeamName,
-                                XCurrentPosition = message.XCurrentPosition,
-                                YCurrentPosition = message.YCurrentPosition,
-                                ZCurrentPosition = message.ZCurrentPosition,
-                                XLastAlivePosition = message.XLastAlivePosition,
-                                YLastAlivePosition = message.YLastAlivePosition,
-                                ZLastAlivePosition = message.ZLastAlivePosition,
-                                XCurrentViewAngle = message.XCurrentViewAngle,
-                                YCurrentViewAngle = message.YCurrentViewAngle,
-                                SetPosCommandCurrentPosition = message.SetPosCommandCurrentPosition,
-                                Message = message.Message,
-
-                                // overwrites whatever the TimeInRound value was before, 0 is generally used for
-                                // messages sent in Warmup
-                                TimeInRound = 0,
-                            }
-                        );
-                }
-
-            events = new Dictionary<Type, List<object>>(); //resets all stats stored
-
-            addEvent(typeof(MatchStartedEventArgs), e);
-
-            //adds all stored fb messages back
-            foreach (FeedbackMessage feedbackMessage in currentfeedbackMessages)
-                addEvent(typeof(FeedbackMessage), feedbackMessage);
+            processedData.MatchStartValues.Add(e);
         }
 
         private void ChickenKilledEventHandler(object sender, ChickenKilledEventArgs e)
         {
-            addEvent(typeof(ChickenKilledEventArgs), e);
+            processedData.ChickenValues.Add(e);
         }
 
         private void SayText2EventHandler(object sender, SayText2EventArgs e)
         {
-            addEvent(typeof(SayText2EventArgs), e);
+            if (!IsMessageFeedback(e.Text))
+                return;
 
-            var text = e.Text.ToString();
+            int round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
-            if (IsMessageFeedback(text))
+            long steamId = e.Sender?.SteamID ?? 0;
+            Player player = null;
+            if (steamId != 0)
+                player = dp.Participants.FirstOrDefault(p => p.SteamID == steamId);
+
+            var teamName = player?.Team.ToString();
+            teamName = teamName == "Spectate" ? "Spectator" : teamName;
+
+            bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(this, player, round);
+
+            float timeInRound = 0; // Stays as '0' if sent during freezetime
+            if (freezetimeEndedCount > roundOfficiallyEndedCount)
+                timeInRound = dp.CurrentTime - lastFreezetimeEnd;
+
+            var feedbackMessage = new FeedbackMessage
             {
-                int round = GetCurrentRoundNum(this, demoInfo.GameMode);
+                Round = round,
+                SteamID = steamId,
+                TeamName = teamName, // works out TeamName in GetFeedbackMessages() if it is null
+                XCurrentPosition = player?.Position.X,
+                YCurrentPosition = player?.Position.Y,
+                ZCurrentPosition = player?.Position.Z,
+                XLastAlivePosition = playerAlive ? player?.LastAlivePosition.X : null,
+                YLastAlivePosition = playerAlive ? player?.LastAlivePosition.Y : null,
+                ZLastAlivePosition = playerAlive ? player?.LastAlivePosition.Z : null,
+                XCurrentViewAngle = player?.ViewDirectionX,
+                YCurrentViewAngle = player?.ViewDirectionY,
+                SetPosCommandCurrentPosition = GenerateSetPosCommand(player),
+                Message = e.Text,
 
-                long steamId = e.Sender?.SteamID ?? 0;
+                // counts messages sent after the round_end event fires as the next round, set to '0' as if it
+                // was the next round's warmup (done this way instead of using round starts to avoid potential
+                // issues when restarting rounds)
+                TimeInRound = timeInRound,
+            };
 
-                Player player = null;
-
-                if (steamId != 0)
-                    player = dp.Participants.FirstOrDefault(p => p.SteamID == steamId);
-
-                var teamName = player?.Team.ToString();
-                teamName = teamName == "Spectate" ? "Spectator" : teamName;
-
-                bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(this, player, round);
-
-                List<object> roundsOfficiallyEndedEvents =
-                    events.Any(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
-                        ? events.Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs")
-                            .Select(v => v.Value).ElementAt(0)
-                        : null;
-
-                List<object> freezetimesEndedEvents =
-                    events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs")
-                        ? events.Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value)
-                            .ElementAt(0)
-                        : null;
-
-                int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents?.Count > 0
-                    ? roundsOfficiallyEndedEvents.Count
-                    : 0;
-
-                int numOfFreezetimesEnded = freezetimesEndedEvents?.Count > 0 ? freezetimesEndedEvents.Count : 0;
-                float timeInRound = 0; // Stays as '0' if sent during freezetime
-
-                if (numOfFreezetimesEnded > numOfRoundsOfficiallyEnded)
-                {
-                    // would it be better to use '.OrderByDescending(f => f.TimeEnd).FirstOrDefault()' ?
-                    var freezetimeEnded = (FreezetimeEndedEventArgs)freezetimesEndedEvents.LastOrDefault();
-                    timeInRound = dp.CurrentTime - freezetimeEnded.TimeEnd;
-                }
-
-                var feedbackMessage = new FeedbackMessage
-                {
-                    Round = round,
-                    SteamID = steamId,
-                    TeamName = teamName, // works out TeamName in GetFeedbackMessages() if it is null
-                    XCurrentPosition = player?.Position.X,
-                    YCurrentPosition = player?.Position.Y,
-                    ZCurrentPosition = player?.Position.Z,
-                    XLastAlivePosition = playerAlive ? player?.LastAlivePosition.X : null,
-                    YLastAlivePosition = playerAlive ? player?.LastAlivePosition.Y : null,
-                    ZLastAlivePosition = playerAlive ? player?.LastAlivePosition.Z : null,
-                    XCurrentViewAngle = player?.ViewDirectionX,
-                    YCurrentViewAngle = player?.ViewDirectionY,
-                    SetPosCommandCurrentPosition = GenerateSetPosCommand(player),
-                    Message = text,
-
-                    // counts messages sent after the round_end event fires as the next round, set to '0' as if it
-                    // was the next round's warmup (done this way instead of using round starts to avoid potential
-                    // issues when restarting rounds)
-                    TimeInRound = timeInRound,
-                };
-
-                addEvent(typeof(FeedbackMessage), feedbackMessage);
-            }
+            processedData.MessagesValues.Add(feedbackMessage);
         }
 
         private void RoundEndEventHandler(object sender, RoundEndedEventArgs e)
         {
-            IEnumerable<List<object>> roundsEndedEvents =
-                events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
-
-            IEnumerable<List<object>> roundsOfficiallyEndedEvents = events
-                .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
-
-            IEnumerable<List<object>> freezetimesEndedEvents = events
-                .Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
-
-            int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
-            int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Any()
-                ? roundsOfficiallyEndedEvents.ElementAt(0).Count
-                : 0;
-
-            int numOfFreezetimesEnded = freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count : 0;
-
-            //Console.WriteLine("dp.RoundEnd -- " + numOfRoundsEnded + " - " + numOfRoundsOfficiallyEnded + " - " + numOfFreezetimesEnded);
-
-            // if round_officially_ended event did not get fired in this round due to error
-            while (numOfRoundsEnded > numOfRoundsOfficiallyEnded)
+            // Raise a round_officially_ended event if one did not get fired in the previous round due to an error.
+            // Since raising an event is synchronous in this case,
+            // the handler will have incremented roundOfficiallyEndedCount by the next iteration.
+            while (roundEndedEvents.Count > roundOfficiallyEndedCount)
             {
-                var roundEndedEvent =
-                    (RoundEndedEventArgs)roundsEndedEvents.ElementAt(0).ElementAt(numOfRoundsOfficiallyEnded);
+                // The round_officially_ended event doesn't provide any data.
+                // Therefore, the data for the round must be retrieved from the corresponding round_end event.
+                RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(roundOfficiallyEndedCount);
 
                 dp.RaiseRoundOfficiallyEnded(
-                    new RoundOfficiallyEndedEventArgs // adds the missing RoundOfficiallyEndedEvent
+                    new RoundOfficiallyEndedEventArgs
                     {
-                        Message = roundEndedEvent.Message,
-                        Reason = roundEndedEvent.Reason,
-                        Winner = roundEndedEvent.Winner,
-                        Length = roundEndedEvent.Length + 4, // guesses the round length
+                        Message = roundEndedEvent?.Message ?? "Unknown",
+                        Reason = roundEndedEvent?.Reason ?? RoundEndReason.Unknown,
+                        Winner = roundEndedEvent?.Winner ?? Team.Unknown,
+                        Length = (roundEndedEvent?.Length ?? -4) + 4, // Guess the round length. Use -4 to make it 0.
                     }
                 );
-
-                numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count;
             }
 
-            // if round_freeze_end event did not get fired in this round due to error
-            while (numOfRoundsEnded >= numOfFreezetimesEnded)
+            // Raise a round_freeze_end event if one did not get fired in the previous round due to an error.
+            // Since raising an event is synchronous in this case,
+            // the handler will have incremented freezetimeEndedCount by the next iteration.
+            while (roundEndedEvents.Count >= freezetimeEndedCount)
             {
                 dp.RaiseFreezetimeEnded(
                     new FreezetimeEndedEventArgs
@@ -204,43 +141,23 @@ namespace SourceEngine.Demo.Stats
                     }
                 );
 
-                numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count;
-
-                // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
-                if (events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
-                    foreach (FeedbackMessage message in events.Where(k => k.Key.Name.ToString() == "FeedbackMessage")
-                        .Select(v => v.Value).ElementAt(0))
-                    {
-                        if (message.Round == numOfFreezetimesEnded)
-                            message.TimeInRound = -1;
-                    }
+                // Set TimeInRound to '-1' for all feedback messages sent this round, as it will be wrong.
+                foreach (FeedbackMessage message in processedData.MessagesValues)
+                {
+                    if (message.Round == freezetimeEndedCount)
+                        message.TimeInRound = -1;
+                }
             }
 
-            addEvent(typeof(RoundEndedEventArgs), e);
+            roundEndedEvents.Add(e);
         }
 
         private void RoundOfficiallyEndedEventHandler(object sender, RoundOfficiallyEndedEventArgs e)
         {
-            IEnumerable<List<object>> roundsEndedEvents =
-                events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
-
-            IEnumerable<List<object>> roundsOfficiallyEndedEvents = events
-                .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
-
-            IEnumerable<List<object>> freezetimesEndedEvents = events
-                .Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
-
-            int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
-            int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Any()
-                ? roundsOfficiallyEndedEvents.ElementAt(0).Count
-                : 0;
-
-            int numOfFreezetimesEnded = freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count : 0;
-
-            //Console.WriteLine("dp.RoundOfficiallyEnded -- " + numOfRoundsEnded + " - " + numOfRoundsOfficiallyEnded + " - " + numOfFreezetimesEnded);
-
-            // if round_end event did not get fired in this round due to error
-            while (numOfRoundsOfficiallyEnded >= numOfRoundsEnded)
+            // Raise a round_end event if one did not get fired in the previous round due to an error.
+            // Since raising an event is synchronous in this case,
+            // the handler will have incremented roundEndedEvents.Count by the next iteration.
+            while (roundOfficiallyEndedCount >= roundEndedEvents.Count)
             {
                 dp.RaiseRoundEnd(
                     new RoundEndedEventArgs
@@ -251,105 +168,80 @@ namespace SourceEngine.Demo.Stats
                         Length = 0,
                     }
                 );
-
-                numOfRoundsEnded = roundsEndedEvents.ElementAt(0).Count;
             }
 
-            // if round_freeze_end event did not get fired in this round due to error
-            while (numOfRoundsOfficiallyEnded >= numOfFreezetimesEnded)
+            // Raise a round_freeze_end event if one did not get fired in the previous round due to an error.
+            // Since raising an event is synchronous in this case,
+            // the handler will have incremented freezetimeEndedCount by the next iteration.
+            while (roundOfficiallyEndedCount >= freezetimeEndedCount)
             {
-                dp.RaiseFreezetimeEnded(
-                    new FreezetimeEndedEventArgs
-                    {
-                        TimeEnd = -1, // no idea when this actually ended without guessing
-                    }
-                );
+                // No idea when this actually ended without guessing.
+                dp.RaiseFreezetimeEnded(new FreezetimeEndedEventArgs { TimeEnd = -1 });
 
-                numOfFreezetimesEnded = freezetimesEndedEvents.ElementAt(0).Count;
-
-                // set the TimeInRound value to '-1' for any feedback messages sent this round, as it will be wrong
-                if (events.Any(k => k.Key.Name.ToString() == "FeedbackMessage"))
-                    foreach (FeedbackMessage message in events.Where(k => k.Key.Name.ToString() == "FeedbackMessage")
-                        .Select(v => v.Value).ElementAt(0))
-                    {
-                        if (message.Round == numOfFreezetimesEnded)
-                            message.TimeInRound = -1;
-                    }
+                // Set TimeInRound to '-1' for all feedback messages sent this round, as it will be wrong.
+                foreach (FeedbackMessage message in processedData.MessagesValues)
+                {
+                    if (message.Round == freezetimeEndedCount)
+                        message.TimeInRound = -1;
+                }
             }
 
-            // update round length round_end event for this round
-            var roundEndedEvent = (RoundEndedEventArgs)roundsEndedEvents.ElementAt(0).LastOrDefault();
-            e.Message = roundEndedEvent.Message;
-            e.Reason = roundEndedEvent.Reason;
-            e.Winner = roundEndedEvent.Winner;
+            // The round_officially_ended event doesn't provide data.
+            // Therefore, the data for the round must be retrieved from the corresponding round_end event.
+            // The exception is the length, which is determined by the GameEventHandler before raising the event.
+            RoundEndedEventArgs roundEndedEvent = roundEndedEvents.LastOrDefault();
 
-            addEvent(typeof(RoundOfficiallyEndedEventArgs), e);
+            processedData.RoundLengthValues.Add(e.Length);
+            processedData.RoundEndReasonValues.Add(roundEndedEvent?.Reason ?? RoundEndReason.Unknown);
+            processedData.TeamValues.Add(roundEndedEvent?.Winner ?? Team.Unknown);
+            roundOfficiallyEndedCount++;
         }
 
         private void SwitchSidesEventHandler(object sender, SwitchSidesEventArgs e)
         {
-            int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-
-            var switchSidesEventArgs = new SwitchSidesEventArgs
-            {
-                RoundBeforeSwitch = roundsCount + 1,
-            }; // announce_phase_end event occurs before round_officially_ended event
-
-            addEvent(typeof(SwitchSidesEventArgs), switchSidesEventArgs);
+            // announce_phase_end event occurs before round_officially_ended event
+            processedData.SwitchSidesValues.Add(
+                new SwitchSidesEventArgs
+                {
+                    RoundBeforeSwitch = roundOfficiallyEndedCount + 1,
+                }
+            );
         }
 
         private void FreezetimeEndedEventHandler(object sender, FreezetimeEndedEventArgs e)
         {
-            IEnumerable<List<object>> freezetimesEndedEvents = events
-                .Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value);
-
-            IEnumerable<List<object>> roundsEndedEvents =
-                events.Where(k => k.Key.Name.ToString() == "RoundEndedEventArgs").Select(v => v.Value);
-
-            IEnumerable<List<object>> roundsOfficiallyEndedEvents = events
-                .Where(k => k.Key.Name.ToString() == "RoundOfficiallyEndedEventArgs").Select(v => v.Value);
-
-            int numOfFreezetimesEnded = freezetimesEndedEvents.Any() ? freezetimesEndedEvents.ElementAt(0).Count : 0;
-
-            int numOfRoundsEnded = roundsEndedEvents.Any() ? roundsEndedEvents.ElementAt(0).Count : 0;
-            int numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.Any()
-                ? roundsOfficiallyEndedEvents.ElementAt(0).Count
-                : 0;
-
-            //Console.WriteLine("dp.FreezetimeEnded -- Ended: " + numOfRoundsEnded + " - " + numOfRoundsOfficiallyEnded + " - " + numOfFreezetimesEnded);
-
-            /*	The final round in a match does not throw a round_officially_ended event, but a round_freeze_end event is thrown after the game ends,
-                so assume that a game has ended if a second round_freeze_end event is found in the same round as a round_end_event and NO round_officially_ended event.
-                This does mean that if a round_officially_ended event is not triggered due to demo error, the parse will mess up. */
+            // The final round in a match does not throw a round_officially_ended event, but a round_freeze_end event is
+            // thrown after the game ends. Therefore, assume that a game has ended if a second round_freeze_end event is
+            // found in the same round as a round_end_event and NO round_officially_ended event. This does mean that if
+            // a round_officially_ended event is not triggered due to demo error, the parse will mess up.
             var minRoundsForWin = GetMinRoundsForWin(demoInfo.GameMode, demoInfo.TestType);
 
-            if (numOfFreezetimesEnded == numOfRoundsOfficiallyEnded + 1 && numOfFreezetimesEnded == numOfRoundsEnded
-                && numOfRoundsEnded >= minRoundsForWin)
+            if (freezetimeEndedCount == roundOfficiallyEndedCount + 1 && freezetimeEndedCount == roundEndedEvents.Count
+                && roundEndedEvents.Count >= minRoundsForWin)
             {
                 Console.WriteLine("Assuming the parse has finished.");
-
-                var roundEndedEvent =
-                    (RoundEndedEventArgs)roundsEndedEvents.ElementAt(0).ElementAt(numOfRoundsOfficiallyEnded);
+                RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(roundOfficiallyEndedCount);
 
                 dp.RaiseRoundOfficiallyEnded(
-                    new RoundOfficiallyEndedEventArgs // adds the missing RoundOfficiallyEndedEvent
+                    new RoundOfficiallyEndedEventArgs
                     {
-                        Reason = roundEndedEvent.Reason,
-                        Message = roundEndedEvent.Message,
-                        Winner = roundEndedEvent.Winner,
-                        Length = roundEndedEvent.Length + 4, // guesses the round length
+                        Reason = roundEndedEvent?.Reason ?? RoundEndReason.Unknown,
+                        Message = roundEndedEvent?.Message ?? "Unknown",
+                        Winner = roundEndedEvent?.Winner ?? Team.Unknown,
+                        Length = (roundEndedEvent?.Length ?? -4) + 4, // Guess the round length. Use -4 to make it 0.
                     }
                 );
 
-                dp.stopParsingDemo = true; // forcefully stops the demo from being parsed any further to avoid events
-
-                // (such as player deaths to world) happening in a next round (a round that never actually occurs)
-
+                // Forcefully stops the demo from being parsed any further to avoid events (such as player deaths to
+                // world) happening in a next round (a round that never actually occurs).
+                dp.stopParsingDemo = true;
                 return;
             }
 
-            // if round_end event did not get fired in the previous round due to error
-            while (numOfFreezetimesEnded > numOfRoundsEnded)
+            // Raise a round_end event if one did not get fired in the previous round due to an error.
+            // Since raising an event is synchronous in this case,
+            // the handler will have incremented roundEndedEvents.Count by the next iteration.
+            while (freezetimeEndedCount > roundEndedEvents.Count)
             {
                 dp.RaiseRoundEnd(
                     new RoundEndedEventArgs
@@ -360,44 +252,49 @@ namespace SourceEngine.Demo.Stats
                         Length = 0,
                     }
                 );
-
-                numOfRoundsEnded = roundsEndedEvents.ElementAt(0).Count;
             }
 
-            // if round_officially_ended event did not get fired in the previous round due to error
-            while (numOfFreezetimesEnded > numOfRoundsOfficiallyEnded)
+            // Raise a round_officially_ended event if one did not get fired in the previous round due to an error.
+            // Since raising an event is synchronous in this case,
+            // the handler will have incremented roundOfficiallyEndedCount by the next iteration.
+            while (freezetimeEndedCount > roundOfficiallyEndedCount)
             {
-                var roundEndedEvent =
-                    (RoundEndedEventArgs)roundsEndedEvents.ElementAt(0).ElementAt(numOfRoundsOfficiallyEnded);
+                RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(roundOfficiallyEndedCount);
 
                 dp.RaiseRoundOfficiallyEnded(
-                    new RoundOfficiallyEndedEventArgs // adds the missing RoundOfficiallyEndedEvent
+                    new RoundOfficiallyEndedEventArgs
                     {
-                        Reason = roundEndedEvent.Reason,
-                        Message = roundEndedEvent.Message,
-                        Winner = roundEndedEvent.Winner,
-                        Length = roundEndedEvent.Length + 4, // guesses the round length
+                        Reason = roundEndedEvent?.Reason ?? RoundEndReason.Unknown,
+                        Message = roundEndedEvent?.Message ?? "Unknown",
+                        Winner = roundEndedEvent?.Winner ?? Team.Unknown,
+                        Length = (roundEndedEvent?.Length ?? -4) + 4, // Guess the round length. Use -4 to make it 0.
                     }
                 );
-
-                numOfRoundsOfficiallyEnded = roundsOfficiallyEndedEvents.ElementAt(0).Count;
             }
 
-            addEvent(typeof(FreezetimeEndedEventArgs), e);
+            freezetimeEndedCount++;
+            lastFreezetimeEnd = e.TimeEnd;
 
+            TeamPlayers teams = GetTeams();
+            processedData.TeamPlayersValues.Add(teams);
+            processedData.TeamEquipmentValues.Add(GetTeamEquipment(teams));
+        }
+
+        private TeamPlayers GetTeams()
+        {
             //work out teams at current round
-            int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
             IEnumerable<Player> players = dp.PlayingParticipants;
 
-            var teams = new TeamPlayers
+            return new TeamPlayers
             {
                 Terrorists = players.Where(p => p.Team is Team.Terrorist).ToList(),
                 CounterTerrorists = players.Where(p => p.Team is Team.CounterTerrorist).ToList(),
-                Round = roundsCount + 1,
+                Round = roundOfficiallyEndedCount + 1,
             };
+        }
 
-            addEvent(typeof(TeamPlayers), teams);
-
+        private TeamEquipment GetTeamEquipment(TeamPlayers teams)
+        {
             int tEquipValue = 0, ctEquipValue = 0;
             int tExpenditure = 0, ctExpenditure = 0;
 
@@ -417,16 +314,14 @@ namespace SourceEngine.Demo.Stats
                 ctExpenditure += player.CurrentEquipmentValue - player.RoundStartEquipmentValue;
             }
 
-            var teamEquipmentStats = new TeamEquipment
+            return new TeamEquipment
             {
-                Round = roundsCount + 1,
+                Round = roundOfficiallyEndedCount + 1,
                 TEquipValue = tEquipValue,
                 CTEquipValue = ctEquipValue,
                 TExpenditure = tExpenditure,
                 CTExpenditure = ctExpenditure,
             };
-
-            addEvent(typeof(TeamEquipment), teamEquipmentStats);
         }
 
         #endregion
@@ -437,14 +332,25 @@ namespace SourceEngine.Demo.Stats
         {
             e.Round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
-            addEvent(typeof(PlayerKilledEventArgs), e);
+            processedData.PlayerKilledEventsValues.Add(e);
+            processedData.WeaponValues.Add(e.Weapon);
+            processedData.PenetrationValues.Add(e.PenetratedObjects);
+            processedData.PlayerValues["Kills"].Add(e.Killer);
+            processedData.PlayerValues["Deaths"].Add(e.Victim);
+
+            if (e.Headshot)
+                processedData.PlayerValues["Headshots"].Add(e.Killer);
+
+            if (e.Assister is not null)
+                processedData.PlayerValues["Assists"].Add(e.Assister);
         }
 
         private void PlayerHurtEventHandler(object sender, PlayerHurtEventArgs e)
         {
             var round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
-            if (e.PossiblyKilledByBombExplosion) // a player_death event is not triggered due to death by bomb explosion
+            // a player_death event is not triggered due to death by bomb explosion
+            if (e.PossiblyKilledByBombExplosion)
             {
                 var playerKilledEventArgs = new PlayerKilledEventArgs
                 {
@@ -463,7 +369,7 @@ namespace SourceEngine.Demo.Stats
                     AssistedFlash = false,
                 };
 
-                addEvent(typeof(PlayerKilledEventArgs), playerKilledEventArgs);
+                processedData.PlayerKilledEventsValues.Add(playerKilledEventArgs);
             }
 
             var player = new Player(e.Player);
@@ -490,28 +396,24 @@ namespace SourceEngine.Demo.Stats
                 PossiblyKilledByBombExplosion = e.PossiblyKilledByBombExplosion,
             };
 
-            addEvent(typeof(PlayerHurt), playerHurt);
+            processedData.PlayerHurtValues.Add(playerHurt);
         }
 
         private void RoundMVPEventHandler(object sender, RoundMVPEventArgs e)
         {
-            addEvent(typeof(RoundMVPEventArgs), e);
+            processedData.PlayerValues["MVPs"].Add(e.Player);
         }
 
         private void PlayerDisconnectEventHandler(object sender, PlayerDisconnectEventArgs e)
         {
             if (e.Player != null && e.Player.Name != "unconnected" && e.Player.Name != "GOTV")
-            {
-                int round = GetCurrentRoundNum(this, demoInfo.GameMode);
-
-                var disconnectedPlayer = new DisconnectedPlayer
-                {
-                    PlayerDisconnectEventArgs = e,
-                    Round = round - 1,
-                };
-
-                addEvent(typeof(DisconnectedPlayer), disconnectedPlayer);
-            }
+                processedData.DisconnectedPlayerValues.Add(
+                    new DisconnectedPlayer
+                    {
+                        PlayerDisconnectEventArgs = e,
+                        Round = GetCurrentRoundNum(this, demoInfo.GameMode) - 1,
+                    }
+                );
         }
 
         private void PlayerBindEventHandler(object sender, PlayerBindEventArgs e)
@@ -523,38 +425,30 @@ namespace SourceEngine.Demo.Stats
         {
             foreach (PlayerPositionEventArgs playerPosition in e.PlayerPositions)
             {
-                if (events.Count > 0 && events.Any(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs"))
-                {
-                    int round = GetCurrentRoundNum(this, demoInfo.GameMode);
+                if (freezetimeEndedCount == 0)
+                    continue;
 
-                    if (round > 0 && playerPosition.Player.SteamID > 0)
+                int round = GetCurrentRoundNum(this, demoInfo.GameMode);
+                if (round <= 0 || playerPosition.Player.SteamID <= 0)
+                    continue;
+
+                bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(this, playerPosition.Player, round);
+                var freezetimeEndedThisRound = freezetimeEndedCount >= round;
+                if (!playerAlive || !freezetimeEndedThisRound)
+                    continue;
+
+                processedData.PlayerPositionsValues.Add(
+                    new PlayerPositionsInstance
                     {
-                        bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(this, playerPosition.Player, round);
-                        List<object> freezetimeEndedEvents = events
-                            .Where(k => k.Key.Name.ToString() == "FreezetimeEndedEventArgs").Select(v => v.Value)
-                            .ElementAt(0);
-
-                        var freezetimeEndedEventLast = (FreezetimeEndedEventArgs)freezetimeEndedEvents.LastOrDefault();
-
-                        var freezetimeEndedThisRound = freezetimeEndedEvents.Count >= round;
-
-                        if (playerAlive && freezetimeEndedThisRound)
-                        {
-                            var playerPositionsInstance = new PlayerPositionsInstance
-                            {
-                                Round = round,
-                                TimeInRound = (int)e.CurrentTime - (int)freezetimeEndedEventLast.TimeEnd,
-                                SteamID = playerPosition.Player.SteamID,
-                                TeamSide = playerPosition.Player.Team is Team.Terrorist ? "T" : "CT",
-                                XPosition = playerPosition.Player.Position.X,
-                                YPosition = playerPosition.Player.Position.Y,
-                                ZPosition = playerPosition.Player.Position.Z,
-                            };
-
-                            addEvent(typeof(PlayerPositionsInstance), playerPositionsInstance);
-                        }
+                        Round = round,
+                        TimeInRound = (int)e.CurrentTime - (int)lastFreezetimeEnd,
+                        SteamID = playerPosition.Player.SteamID,
+                        TeamSide = playerPosition.Player.Team is Team.Terrorist ? "T" : "CT",
+                        XPosition = playerPosition.Player.Position.X,
+                        YPosition = playerPosition.Player.Position.Y,
+                        ZPosition = playerPosition.Player.Position.Z,
                     }
-                }
+                );
             }
         }
 
@@ -564,48 +458,44 @@ namespace SourceEngine.Demo.Stats
 
         private void BombPlantedEventHandler(object sender, BombEventArgs e)
         {
-            int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-
-            var bombPlanted = new BombPlanted
-            {
-                Round = roundsCount + 1,
-                TimeInRound = e.TimeInRound,
-                Player = e.Player,
-                Bombsite = e.Site,
-            };
-
-            addEvent(typeof(BombPlanted), bombPlanted);
+            processedData.PlayerValues["Plants"].Add(e.Player);
+            processedData.BombsitePlantValues.Add(
+                new BombPlanted
+                {
+                    Round = roundOfficiallyEndedCount + 1,
+                    TimeInRound = e.TimeInRound,
+                    Player = e.Player,
+                    Bombsite = e.Site,
+                }
+            );
         }
 
         private void BombExplodedEventHandler(object sender, BombEventArgs e)
         {
-            int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-
-            var bombExploded = new BombExploded
-            {
-                Round = roundsCount + 1,
-                TimeInRound = e.TimeInRound,
-                Player = e.Player,
-                Bombsite = e.Site,
-            };
-
-            addEvent(typeof(BombExploded), bombExploded);
+            processedData.BombsiteExplodeValues.Add(
+                new BombExploded
+                {
+                    Round = roundOfficiallyEndedCount + 1,
+                    TimeInRound = e.TimeInRound,
+                    Player = e.Player,
+                    Bombsite = e.Site,
+                }
+            );
         }
 
         private void BombDefusedEventHandler(object sender, BombEventArgs e)
         {
-            int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-
-            var bombDefused = new BombDefused
-            {
-                Round = roundsCount + 1,
-                TimeInRound = e.TimeInRound,
-                Player = e.Player,
-                Bombsite = e.Site,
-                HasKit = e.Player.HasDefuseKit,
-            };
-
-            addEvent(typeof(BombDefused), bombDefused);
+            processedData.PlayerValues["Defuses"].Add(e.Player);
+            processedData.BombsiteDefuseValues.Add(
+                new BombDefused
+                {
+                    Round = roundOfficiallyEndedCount + 1,
+                    TimeInRound = e.TimeInRound,
+                    Player = e.Player,
+                    Bombsite = e.Site,
+                    HasKit = e.Player.HasDefuseKit,
+                }
+            );
         }
 
         #endregion
@@ -614,35 +504,32 @@ namespace SourceEngine.Demo.Stats
 
         private void HostageRescuedEventHandler(object sender, HostageRescuedEventArgs e)
         {
-            int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-
-            var hostageRescued = new HostageRescued
-            {
-                Round = roundsCount + 1,
-                TimeInRound = e.TimeInRound,
-                Player = e.Player,
-                Hostage = e.Hostage,
-                HostageIndex = e.HostageIndex,
-                RescueZone = e.RescueZone,
-            };
-
-            addEvent(typeof(HostageRescued), hostageRescued);
+            processedData.PlayerValues["Rescues"].Add(e.Player);
+            processedData.HostageRescueValues.Add(
+                new HostageRescued
+                {
+                    Round = roundOfficiallyEndedCount + 1,
+                    TimeInRound = e.TimeInRound,
+                    Player = e.Player,
+                    Hostage = e.Hostage,
+                    HostageIndex = e.HostageIndex,
+                    RescueZone = e.RescueZone,
+                }
+            );
         }
 
         private void HostagePickedUpEventHandler(object sender, HostagePickedUpEventArgs e)
         {
-            int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-
-            var hostagePickedUp = new HostagePickedUp
-            {
-                Round = roundsCount + 1,
-                TimeInRound = e.TimeInRound,
-                Player = e.Player,
-                Hostage = e.Hostage,
-                HostageIndex = e.HostageIndex,
-            };
-
-            addEvent(typeof(HostagePickedUp), hostagePickedUp);
+            processedData.HostagePickedUpValues.Add(
+                new HostagePickedUp
+                {
+                    Round = roundOfficiallyEndedCount + 1,
+                    TimeInRound = e.TimeInRound,
+                    Player = e.Player,
+                    Hostage = e.Hostage,
+                    HostageIndex = e.HostageIndex,
+                }
+            );
         }
 
         #endregion
@@ -651,54 +538,22 @@ namespace SourceEngine.Demo.Stats
 
         private void WeaponFiredEventHandler(object sender, WeaponFiredEventArgs e)
         {
-            addEvent(typeof(WeaponFiredEventArgs), e);
-
-            var round = GetCurrentRoundNum(this, demoInfo.GameMode);
-
-            var shotFired = new ShotFired
-            {
-                Round = round,
-                TimeInRound = e.TimeInRound,
-                Shooter = e.Shooter,
-                TeamSide = e.Shooter.Team.ToString(),
-                Weapon = new Equipment(e.Weapon),
-            };
-
-            addEvent(typeof(ShotFired), shotFired);
+            processedData.PlayerValues["Shots"].Add(e.Shooter);
+            processedData.ShotsFiredValues.Add(
+                new ShotFired
+                {
+                    Round = GetCurrentRoundNum(this, demoInfo.GameMode),
+                    TimeInRound = e.TimeInRound,
+                    Shooter = e.Shooter,
+                    TeamSide = e.Shooter.Team.ToString(),
+                    Weapon = new Equipment(e.Weapon),
+                }
+            );
         }
 
-        #endregion
-
-        #region Grenade Events
-
-        private void ExplosiveNadeExplodedEventHandler(object sender, GrenadeEventArgs e)
+        private void GrenadeEventHandler(object sender, NadeEventArgs e)
         {
-            addEvent(typeof(GrenadeEventArgs), e);
-            addEvent(typeof(NadeEventArgs), e);
-        }
-
-        private void FireNadeStartedEventHandler(object sender, FireEventArgs e)
-        {
-            addEvent(typeof(FireEventArgs), e);
-            addEvent(typeof(NadeEventArgs), e);
-        }
-
-        private void SmokeNadeStartedEventHandler(object sender, SmokeEventArgs e)
-        {
-            addEvent(typeof(SmokeEventArgs), e);
-            addEvent(typeof(NadeEventArgs), e);
-        }
-
-        private void FlashNadeExplodedEventHandler(object sender, FlashEventArgs e)
-        {
-            addEvent(typeof(FlashEventArgs), e);
-            addEvent(typeof(NadeEventArgs), e);
-        }
-
-        private void DecoyNadeStartedEventHandler(object sender, DecoyEventArgs e)
-        {
-            addEvent(typeof(DecoyEventArgs), e);
-            addEvent(typeof(NadeEventArgs), e);
+            processedData.GrenadeValues.Add(e);
         }
 
         #endregion

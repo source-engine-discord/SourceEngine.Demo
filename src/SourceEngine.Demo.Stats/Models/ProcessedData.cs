@@ -9,49 +9,62 @@ namespace SourceEngine.Demo.Stats.Models
     {
         public tanookiStats tanookiStats { get; set; }
 
-        public IEnumerable<MatchStartedEventArgs> MatchStartValues { get; set; }
+        public List<MatchStartedEventArgs> MatchStartValues { get; set; } = new();
 
-        public IEnumerable<SwitchSidesEventArgs> SwitchSidesValues { get; set; }
+        public List<SwitchSidesEventArgs> SwitchSidesValues { get; set; } = new();
 
-        public IEnumerable<FeedbackMessage> MessagesValues { get; set; }
+        public List<FeedbackMessage> MessagesValues { get; set; } = new();
 
-        public IEnumerable<TeamPlayers> TeamPlayersValues { get; set; }
+        public List<TeamPlayers> TeamPlayersValues { get; set; } = new();
 
-        public IEnumerable<PlayerHurt> PlayerHurtValues { get; set; }
+        public List<PlayerHurt> PlayerHurtValues { get; set; } = new();
 
-        public IEnumerable<PlayerKilledEventArgs> PlayerKilledEventsValues { get; set; }
+        public List<PlayerKilledEventArgs> PlayerKilledEventsValues { get; set; } = new();
 
-        public Dictionary<string, IEnumerable<Player>> PlayerValues { get; set; }
+        public List<DisconnectedPlayer> DisconnectedPlayerValues { get; set; } = new();
 
-        public IEnumerable<Equipment> WeaponValues { get; set; }
+        public Dictionary<string, List<Player>> PlayerValues { get; set; } = new()
+        {
+            { "Kills", new List<Player>() },
+            { "Deaths", new List<Player>() },
+            { "Headshots", new List<Player>() },
+            { "Assists", new List<Player>() },
+            { "MVPs", new List<Player>() },
+            { "Shots", new List<Player>() },
+            { "Plants", new List<Player>() },
+            { "Defuses", new List<Player>() },
+            { "Rescues", new List<Player>() },
+        };
 
-        public IEnumerable<int> PenetrationValues { get; set; }
+        public List<Equipment> WeaponValues { get; set; } = new();
 
-        public IEnumerable<BombPlanted> BombsitePlantValues { get; set; }
+        public List<int> PenetrationValues { get; set; } = new();
 
-        public IEnumerable<BombExploded> BombsiteExplodeValues { get; set; }
+        public List<BombPlanted> BombsitePlantValues { get; set; } = new();
 
-        public IEnumerable<BombDefused> BombsiteDefuseValues { get; set; }
+        public List<BombExploded> BombsiteExplodeValues { get; set; } = new();
 
-        public IEnumerable<HostageRescued> HostageRescueValues { get; set; }
+        public List<BombDefused> BombsiteDefuseValues { get; set; } = new();
 
-        public IEnumerable<HostagePickedUp> HostagePickedUpValues { get; set; }
+        public List<HostageRescued> HostageRescueValues { get; set; } = new();
 
-        public IEnumerable<Team> TeamValues { get; set; }
+        public List<HostagePickedUp> HostagePickedUpValues { get; set; } = new();
 
-        public IEnumerable<RoundEndReason> RoundEndReasonValues { get; set; }
+        public List<Team> TeamValues { get; set; } = new();
 
-        public IEnumerable<double> RoundLengthValues { get; set; }
+        public List<RoundEndReason> RoundEndReasonValues { get; set; } = new();
 
-        public IEnumerable<TeamEquipment> TeamEquipmentValues { get; set; }
+        public List<double> RoundLengthValues { get; set; } = new();
 
-        public IEnumerable<NadeEventArgs> GrenadeValues { get; set; }
+        public List<TeamEquipment> TeamEquipmentValues { get; set; } = new();
 
-        public IEnumerable<ChickenKilledEventArgs> ChickenValues { get; set; }
+        public List<NadeEventArgs> GrenadeValues { get; set; } = new();
 
-        public IEnumerable<ShotFired> ShotsFiredValues { get; set; }
+        public List<ChickenKilledEventArgs> ChickenValues { get; set; } = new();
 
-        public IEnumerable<PlayerPositionsInstance> PlayerPositionsValues { get; set; }
+        public List<ShotFired> ShotsFiredValues { get; set; } = new();
+
+        public List<PlayerPositionsInstance> PlayerPositionsValues { get; set; } = new();
 
         public bool WriteTicks { get; set; }
     }

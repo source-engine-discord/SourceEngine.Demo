@@ -31,6 +31,7 @@ namespace SourceEngine.Demo.Stats
     public partial class MatchData
     {
         private static DemoParser dp;
+        private ProcessedData processedData = new();
         public readonly Dictionary<int, long> playerLookups = new();
         public readonly Dictionary<int, int> playerReplacements = new();
 
@@ -41,18 +42,7 @@ namespace SourceEngine.Demo.Stats
         // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
         public bool changingPlantedRoundsToA, changingPlantedRoundsToB;
 
-        public Dictionary<Type, List<object>> events = new();
-
         public bool passed;
-
-        private void addEvent(Type type, object ev)
-        {
-            //Create if doesn't exist
-            if (!events.ContainsKey(type))
-                events.Add(type, new List<object>());
-
-            events[type].Add(ev);
-        }
 
         /// <summary>
         /// Adds new player lookups and tick values
@@ -232,11 +222,11 @@ namespace SourceEngine.Demo.Stats
             dp.WeaponFired += WeaponFiredEventHandler;
 
             // GRENADE EVENTS ==================================================
-            dp.ExplosiveNadeExploded += ExplosiveNadeExplodedEventHandler;
-            dp.FireNadeStarted += FireNadeStartedEventHandler;
-            dp.SmokeNadeStarted += SmokeNadeStartedEventHandler;
-            dp.FlashNadeExploded += FlashNadeExplodedEventHandler;
-            dp.DecoyNadeStarted += DecoyNadeStartedEventHandler;
+            dp.ExplosiveNadeExploded += GrenadeEventHandler;
+            dp.FireNadeStarted += GrenadeEventHandler;
+            dp.SmokeNadeStarted += GrenadeEventHandler;
+            dp.FlashNadeExploded += GrenadeEventHandler;
+            dp.DecoyNadeStarted += GrenadeEventHandler;
 
             // PLAYER TICK HANDLER ============================================
             dp.TickDone += TickDoneEventHandler;
@@ -248,6 +238,7 @@ namespace SourceEngine.Demo.Stats
             try
             {
                 dp.ParseToEnd();
+                FinishProcessedData();
                 pv?.End();
                 passed = true;
             }
@@ -288,171 +279,46 @@ namespace SourceEngine.Demo.Stats
 
             dp.RoundOfficiallyEnded += (_, _) =>
             {
-                int roundsCount = GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-
-                //stops the progress bar getting in the way of the first row
-                if (roundsCount == 1)
+                // Stop the progress bar getting in the way of the first row.
+                if (roundOfficiallyEndedCount == 1)
                     Console.WriteLine("\n");
 
-                Console.WriteLine("Round " + roundsCount + " complete.");
+                Console.WriteLine("Round " + roundOfficiallyEndedCount + " complete.");
             };
 
             return pv;
         }
 
-        public ProcessedData GetProcessedData()
+        private void FinishProcessedData()
         {
-            IEnumerable<MatchStartedEventArgs> mse;
-            IEnumerable<SwitchSidesEventArgs> sse;
-            IEnumerable<FeedbackMessage> fme;
-            IEnumerable<TeamPlayers> tpe;
-            IEnumerable<PlayerHurt> ph;
-            IEnumerable<PlayerKilledEventArgs> pke;
-            var pe = new Dictionary<string, IEnumerable<Player>>();
-            IEnumerable<Equipment> pwe;
-            IEnumerable<int> poe;
-            IEnumerable<BombPlanted> bpe;
-            IEnumerable<BombExploded> bee;
-            IEnumerable<BombDefused> bde;
-            IEnumerable<HostageRescued> hre;
-            IEnumerable<HostagePickedUp> hpu;
-            IEnumerable<DisconnectedPlayer> dpe;
-            IEnumerable<Team> te;
-            IEnumerable<RoundEndReason> re;
-            IEnumerable<double> le;
-            IEnumerable<TeamEquipment> tes;
-            IEnumerable<NadeEventArgs> ge;
+            // Only keep the first event for each round.
+            // TODO: is this still necessary?
+            processedData.BombsitePlantValues = processedData.BombsitePlantValues
+                .GroupBy(e => e.Round)
+                .Select(group => group.FirstOrDefault())
+                .ToList();
 
-            //IEnumerable<SmokeEventArgs> gse;
-            //IEnumerable<FlashEventArgs> gfe;
-            //IEnumerable<GrenadeEventArgs> gge;
-            //IEnumerable<FireEventArgs> gie;
-            //IEnumerable<DecoyEventArgs> gde;
-            IEnumerable<ChickenKilledEventArgs> cke;
-            IEnumerable<ShotFired> sfe;
-            IEnumerable<PlayerPositionsInstance> ppe;
+            processedData.BombsiteDefuseValues = processedData.BombsiteDefuseValues
+                .GroupBy(e => e.Round)
+                .Select(group => group.FirstOrDefault())
+                .ToList();
 
-            mse = from start in GetEvents<MatchStartedEventArgs>() select start as MatchStartedEventArgs;
+            processedData.BombsiteExplodeValues = processedData.BombsiteExplodeValues
+                .GroupBy(e => e.Round)
+                .Select(group => group.FirstOrDefault())
+                .ToList();
 
-            sse = from switchSide in GetEvents<SwitchSidesEventArgs>() select switchSide as SwitchSidesEventArgs;
+            // Remove extra TeamPlayers if freezetime_end event triggers once a playtest is finished.
+            processedData.TeamPlayersValues = processedData.TeamPlayersValues
+                .Where(tp => tp.Round <= processedData.TeamValues.Count)
+                .ToList();
 
-            fme = from message in GetEvents<FeedbackMessage>() select message as FeedbackMessage;
-
-            ph = from player in GetEvents<PlayerHurt>() select player as PlayerHurt;
-
-            pke = from player in GetEvents<PlayerKilledEventArgs>() select player as PlayerKilledEventArgs;
-
-            pe.Add(
-                "Kills",
-                from player in GetEvents<PlayerKilledEventArgs>() select (player as PlayerKilledEventArgs).Killer
+            processedData.tanookiStats = TanookiStatsCreator(
+                processedData.TeamPlayersValues,
+                processedData.DisconnectedPlayerValues
             );
 
-            pe.Add(
-                "Deaths",
-                from player in GetEvents<PlayerKilledEventArgs>() select (player as PlayerKilledEventArgs).Victim
-            );
-
-            pe.Add(
-                "Headshots",
-                from player in GetEvents<PlayerKilledEventArgs>()
-                where (player as PlayerKilledEventArgs).Headshot
-                select (player as PlayerKilledEventArgs).Killer
-            );
-
-            pe.Add(
-                "Assists",
-                from player in GetEvents<PlayerKilledEventArgs>()
-                where (player as PlayerKilledEventArgs).Assister != null
-                select (player as PlayerKilledEventArgs).Assister
-            );
-
-            pwe = from weapon in GetEvents<PlayerKilledEventArgs>() select (weapon as PlayerKilledEventArgs).Weapon;
-
-            poe = from penetration in GetEvents<PlayerKilledEventArgs>()
-                select (penetration as PlayerKilledEventArgs).PenetratedObjects;
-
-            pe.Add("MVPs", from player in GetEvents<RoundMVPEventArgs>() select (player as RoundMVPEventArgs).Player);
-
-            pe.Add(
-                "Shots",
-                from player in GetEvents<WeaponFiredEventArgs>() select (player as WeaponFiredEventArgs).Shooter
-            );
-
-            pe.Add("Plants", from player in GetEvents<BombPlanted>() select (player as BombPlanted).Player);
-
-            pe.Add("Defuses", from player in GetEvents<BombDefused>() select (player as BombDefused).Player);
-
-            pe.Add("Rescues", from player in GetEvents<HostageRescued>() select (player as HostageRescued).Player);
-
-            bpe = (from plant in GetEvents<BombPlanted>() select plant as BombPlanted).GroupBy(p => p.Round)
-                .Select(p => p.FirstOrDefault());
-
-            bee = (from explode in GetEvents<BombExploded>() select explode as BombExploded).GroupBy(p => p.Round)
-                .Select(p => p.FirstOrDefault());
-
-            bde = (from defuse in GetEvents<BombDefused>() select defuse as BombDefused).GroupBy(p => p.Round)
-                .Select(p => p.FirstOrDefault());
-
-            hre = from hostage in GetEvents<HostageRescued>() select hostage as HostageRescued;
-
-            hpu = from hostage in GetEvents<HostagePickedUp>() select hostage as HostagePickedUp;
-
-            dpe = from disconnection in GetEvents<DisconnectedPlayer>() select disconnection as DisconnectedPlayer;
-
-            te = from team in GetEvents<RoundOfficiallyEndedEventArgs>()
-                select (team as RoundOfficiallyEndedEventArgs).Winner;
-
-            re = from reason in GetEvents<RoundOfficiallyEndedEventArgs>()
-                select (reason as RoundOfficiallyEndedEventArgs).Reason;
-
-            le = from length in GetEvents<RoundOfficiallyEndedEventArgs>()
-                select (length as RoundOfficiallyEndedEventArgs).Length;
-
-            // removes extra TeamPlayers if freezetime_end event triggers once a playtest is finished
-            tpe = from teamPlayers in GetEvents<TeamPlayers>()
-                where (teamPlayers as TeamPlayers).Round <= te.Count()
-                select teamPlayers as TeamPlayers;
-
-            tes = from round in GetEvents<TeamEquipment>() select round as TeamEquipment;
-
-            ge = from nade in GetEvents<NadeEventArgs>() select nade as NadeEventArgs;
-
-            cke = from chickenKill in GetEvents<ChickenKilledEventArgs>() select chickenKill as ChickenKilledEventArgs;
-
-            sfe = from shot in GetEvents<ShotFired>() select shot as ShotFired;
-
-            ppe = from playerPos in GetEvents<PlayerPositionsInstance>() select playerPos as PlayerPositionsInstance;
-
-            tanookiStats tanookiStats = TanookiStatsCreator(tpe, dpe);
-
-            return new ProcessedData
-            {
-                tanookiStats = tanookiStats,
-                MatchStartValues = mse,
-                SwitchSidesValues = sse,
-                MessagesValues = fme,
-                TeamPlayersValues = tpe,
-                PlayerHurtValues = ph,
-                PlayerKilledEventsValues = pke,
-                PlayerValues = pe,
-                WeaponValues = pwe,
-                PenetrationValues = poe,
-                BombsitePlantValues = bpe,
-                BombsiteExplodeValues = bee,
-                BombsiteDefuseValues = bde,
-                HostageRescueValues = hre,
-                HostagePickedUpValues = hpu,
-                TeamValues = te,
-                RoundEndReasonValues = re,
-                RoundLengthValues = le,
-                TeamEquipmentValues = tes,
-                GrenadeValues = ge,
-                ChickenValues = cke,
-                ShotsFiredValues = sfe,
-                PlayerPositionsValues = ppe,
-                WriteTicks = true,
-            };
-
+            processedData.WriteTicks = true;
         }
 
         private static tanookiStats TanookiStatsCreator(
@@ -514,7 +380,7 @@ namespace SourceEngine.Demo.Stats
             return tanookiStats;
         }
 
-        public AllStats GetAllStats(ProcessedData processedData)
+        public AllStats GetAllStats()
         {
             var mapNameSplit = processedData.MatchStartValues.Any()
                 ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/')
@@ -599,8 +465,7 @@ namespace SourceEngine.Demo.Stats
             bool sameFolderStructure,
             bool createJsonFile = true)
         {
-            ProcessedData processedData = GetProcessedData();
-            AllStats allStats = GetAllStats(processedData);
+            AllStats allStats = GetAllStats();
             PlayerPositionsStats playerPositionsStats = null;
 
             if (dp.ParsePlayerPositions && CheckIfStatsShouldBeCreated(
@@ -1952,13 +1817,6 @@ namespace SourceEngine.Demo.Stats
             return steamId;
         }
 
-        public List<object> GetEvents<T>()
-        {
-            Type t = typeof(T);
-
-            return events.ContainsKey(t) ? events[t] : new List<object>();
-        }
-
         public static List<Team> GetRoundsWonTeams(IEnumerable<Team> teamValues)
         {
             List<Team> roundsWonTeams = teamValues.ToList();
@@ -1985,9 +1843,7 @@ namespace SourceEngine.Demo.Stats
 
         public static int GetCurrentRoundNum(MatchData md, GameMode gameMode)
         {
-            int roundsCount = md.GetEvents<RoundOfficiallyEndedEventArgs>().Count;
-            List<TeamPlayers> teamPlayersList = md.GetEvents<TeamPlayers>().Cast<TeamPlayers>().ToList();
-
+            List<TeamPlayers> teamPlayersList = md.processedData.TeamPlayersValues;
             int round = 0;
 
             if (teamPlayersList.Count > 0 && teamPlayersList.Any(t => t.Round == 1))
@@ -1995,7 +1851,7 @@ namespace SourceEngine.Demo.Stats
                 TeamPlayers teamPlayers = teamPlayersList.First(t => t.Round == 1);
 
                 if (teamPlayers.Terrorists.Count > 0 && teamPlayers.CounterTerrorists.Count > 0)
-                    round = roundsCount + 1;
+                    round = md.roundOfficiallyEndedCount + 1;
             }
 
             // add 1 for roundsCount when in danger zone
@@ -2007,11 +1863,9 @@ namespace SourceEngine.Demo.Stats
 
         public static bool CheckIfPlayerAliveAtThisPointInRound(MatchData md, Player player, int round)
         {
-            IEnumerable<PlayerKilledEventArgs> kills = md.events
-                .Where(k => k.Key.Name.ToString() == "PlayerKilledEventArgs")
-                .Select(v => (PlayerKilledEventArgs)v.Value.ElementAt(0));
-
-            return !kills.Any(x => x.Round == round && x.Victim?.SteamID != 0 && x.Victim.SteamID == player?.SteamID);
+            return !md.processedData.PlayerKilledEventsValues.Any(
+                e => e.Round == round && e.Victim?.SteamID != 0 && e.Victim.SteamID == player?.SteamID
+            );
         }
 
         public int CheckForUpdatedUserId(int userId)
