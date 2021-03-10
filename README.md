@@ -31,8 +31,6 @@ Latest release:
 ### Usage
 
 ```
-  --config                            (Default: config.cfg) Path to config file.
-
   --folders                           Space-delimited list of directories in
                                       which to search for demos to parse.
 
@@ -69,9 +67,6 @@ Latest release:
   --recursive                         (Default: false) Recursively search for
                                       demos.
 
-  --steaminfo                         (Default: false) Retrieve player names
-                                      from Steam.
-
   --clear                             (Default: false) Clear the data folder.
 
   --nochickens                        (Default: false) Disable counting of
@@ -94,7 +89,6 @@ Latest release:
   --help                              Display this help screen.
 
   --version                           Display version information.
-
 ```
 
 Example:
