@@ -7,6 +7,9 @@ using System.Linq;
 using CommandLine;
 using CommandLine.Text;
 
+using ShellProgressBar;
+
+using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Stats.Models;
 
 namespace SourceEngine.Demo.Stats.App
@@ -126,6 +129,7 @@ namespace SourceEngine.Demo.Stats.App
 
             parserResult
                 .WithParsed(ProcessOptions)
+                .WithParsed(ParseStats)
                 .WithNotParsed(errs => DisplayHelp(parserResult, errs));
         }
 
@@ -169,60 +173,87 @@ namespace SourceEngine.Demo.Stats.App
             {
                 Directory.CreateDirectory(opts.Output);
             }
-
-            Debug.Info("Starting processing of demos.\n");
-            DateTime startTime = DateTime.Now;
-
-            uint total = 0;
-            uint passCount = 0;
-
-            Console.CursorVisible = false;
-
-            //Process all the found demos
-            foreach (DemoInformation demoInfo in GetDemoInfo(opts))
-            {
-                Console.WriteLine($"Parsing demo {demoInfo.DemoName}");
-
-                var matchData = new MatchData(
-                    demoInfo,
-                    !opts.NoChickens,
-                    !opts.NoPlayerOptions,
-                    opts.HostageRescueZoneCountOverride,
-                    opts.LowOutputMode
-                );
-
-                if (matchData.passed)
-                {
-                    matchData.CreateFiles(
-                        opts.Output,
-                        opts.Folders.ToList(),
-                        opts.SameFileName,
-                        opts.SameFolderStructure
-                    );
-
-                    passCount++;
-                    Console.WriteLine($"Finished parsing demo {demoInfo.DemoName}.\n");
-                }
-                else
-                {
-                    Console.WriteLine($"Failed parsing demo {demoInfo.DemoName}.\n");
-                }
-
-                total++;
-            }
-
-            Console.CursorVisible = true;
-
-            Debug.Blue("========== PROCESSING COMPLETE =========\n");
-            DateTime end = DateTime.Now;
-
-            Debug.White("Processing took {0} minutes\n", (end - startTime).TotalMinutes);
-            Debug.White("Passed: {0}\n", passCount);
-            Debug.White("Failed: {0}\n", total - passCount);
         }
 
-        private static IEnumerable<DemoInformation> GetDemoInfo(Options opts)
+        private static void ParseStats(Options opts)
         {
+            uint passCount = 0;
+            uint failCount = 0;
+
+            List<DemoInformation> info = GetDemoInfo(opts);
+            using var pBar = new ProgressBar(info.Count, "Processing demos");
+            var barOptions = new ProgressBarOptions { ForegroundColor = ConsoleColor.Blue };
+
+            // Process all the found demos.
+            foreach (DemoInformation demoInfo in info)
+            {
+                using ChildProgressBar childBar = pBar.Spawn(int.MaxValue, demoInfo.DemoName, barOptions);
+
+                try
+                {
+                    ParseSingle(opts, demoInfo, childBar);
+
+                    childBar.Message = $"{demoInfo.DemoName}: Finished";
+                    childBar.AsProgress<float>().Report(1); // Force to 100%.
+
+                    passCount++;
+                    pBar.ForegroundColor = failCount == 0 ? ConsoleColor.Green : ConsoleColor.Yellow;
+                }
+                catch (Exception e)
+                {
+                    childBar.ForegroundColor = ConsoleColor.Red;
+                    childBar.Message = $"{demoInfo.DemoName}: Failed";
+                    childBar.WriteErrorLine(e.ToString());
+
+                    failCount++;
+                    pBar.ForegroundColor = passCount == 0 ? ConsoleColor.Red : ConsoleColor.Yellow;
+                }
+
+                pBar.Tick();
+            }
+
+            pBar.Message = $"Finished with {passCount} passes and {failCount} fails";
+        }
+
+        private static void ParseSingle(Options opts, DemoInformation demoInfo, ChildProgressBar pBar)
+        {
+            // This is here until a better place for it is found or a way to dynamically deduce the count is found.
+            if (opts.HostageRescueZoneCountOverride is not { } hostageRescueZones)
+            {
+                if (demoInfo.GameMode is GameMode.DangerZone)
+                    hostageRescueZones = 2;
+                else if (demoInfo.GameMode is GameMode.Hostage)
+                    hostageRescueZones = 1;
+                else
+                    hostageRescueZones = 0;
+            }
+
+            // Create the demo and stats parsers.
+            using FileStream file = File.OpenRead(demoInfo.DemoName);
+            using var parser = new DemoParser(file, !opts.NoChickens, !opts.NoPlayerOptions, hostageRescueZones);
+            var matchData = new MatchData(parser, demoInfo);
+
+            // Set up events to report progress.
+            IProgress<float> progress = pBar.AsProgress<float>();
+            parser.TickDone += (_, _) => progress.Report(parser.ParsingProgess);
+            parser.MatchStarted += (_, _) => pBar.Message = $"{demoInfo.DemoName}: Match started";
+            parser.RoundOfficiallyEnded += (_, _) => pBar.Message = $"{demoInfo.DemoName}: Round ended";
+
+            // Start parsing.
+            parser.ParseHeader();
+            parser.ParseToEnd();
+            matchData.CreateFiles(
+                opts.Output,
+                opts.Folders.ToList(),
+                opts.SameFileName,
+                opts.SameFolderStructure
+            );
+        }
+
+        private static List<DemoInformation> GetDemoInfo(Options opts)
+        {
+            var info = new List<DemoInformation>();
+
             foreach (string folder in opts.Folders)
             {
                 string[] subDemos = Directory.GetFiles(
@@ -232,11 +263,13 @@ namespace SourceEngine.Demo.Stats.App
                 );
 
                 foreach (string demo in subDemos)
-                    yield return new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride);
+                    info.Add(new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride));
             }
 
             foreach (string demo in opts.Demos)
-                yield return new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride);
+                info.Add(new DemoInformation(demo, opts.GameModeOverride, opts.TestType, opts.TestDateOverride));
+
+            return info;
         }
     }
 }

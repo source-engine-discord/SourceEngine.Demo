@@ -42,8 +42,6 @@ namespace SourceEngine.Demo.Stats
         // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
         public bool changingPlantedRoundsToA, changingPlantedRoundsToB;
 
-        public bool passed;
-
         /// <summary>
         /// Adds new player lookups and tick values
         /// </summary>
@@ -161,36 +159,10 @@ namespace SourceEngine.Demo.Stats
             }
         }
 
-        public MatchData(
-            DemoInformation demoInfo,
-            bool parseChickens,
-            bool parsePlayerPositions,
-            uint? hostagerescuezonecountoverride,
-            bool lowOutputMode)
+        public MatchData(DemoParser parser, DemoInformation demoInfo)
         {
-            string file = demoInfo.DemoName;
             this.demoInfo = demoInfo;
-
-            // automatically decides rescue zone amounts unless overridden with a provided parameter
-            if (hostagerescuezonecountoverride is not { } hostageRescueZones)
-            {
-                if (demoInfo.GameMode is GameMode.DangerZone)
-                    hostageRescueZones = 2;
-                else if (demoInfo.GameMode is GameMode.Hostage)
-                    hostageRescueZones = 1;
-                else
-                    hostageRescueZones = 0;
-            }
-
-            //Create demo parser instance
-            dp = new DemoParser(
-                File.OpenRead(file),
-                parseChickens,
-                parsePlayerPositions,
-                hostageRescueZones
-            );
-
-            dp.ParseHeader();
+            dp = parser;
 
             // SERVER EVENTS ===================================================
             dp.MatchStarted += MatchStartedEventHandler;
@@ -230,63 +202,6 @@ namespace SourceEngine.Demo.Stats
 
             // PLAYER TICK HANDLER ============================================
             dp.TickDone += TickDoneEventHandler;
-
-            ProgressViewer pv = null;
-            if (!lowOutputMode)
-                pv = SetUpProgressBar();
-
-            try
-            {
-                dp.ParseToEnd();
-                FinishProcessedData();
-                pv?.End();
-                passed = true;
-            }
-            catch (Exception)
-            {
-                pv?.Error();
-            }
-
-            dp.Dispose();
-        }
-
-        private ProgressViewer SetUpProgressBar()
-        {
-            const int interval = 2500;
-            int progMod = interval;
-            var pv = new ProgressViewer(Path.GetFileName(demoInfo.DemoName));
-
-            // PROGRESS BAR ==================================================
-            dp.TickDone += (_, _) =>
-            {
-                progMod++;
-
-                if (progMod >= interval)
-                {
-                    progMod = 0;
-
-                    pv.percent = dp.ParsingProgess;
-                    pv.Draw();
-                }
-            };
-
-            // Print rounds complete out to console.
-            dp.MatchStarted += (_, _) =>
-            {
-                Console.WriteLine("\n");
-                Console.WriteLine("Match restarted.");
-            };
-
-            dp.RoundOfficiallyEnded += (_, _) =>
-            {
-                // Stop the progress bar getting in the way of the first row.
-                if (roundOfficiallyEndedCount == 1)
-                    Console.WriteLine("\n");
-
-                Console.WriteLine("Round " + roundOfficiallyEndedCount + " complete.");
-            };
-
-            return pv;
         }
 
         private void FinishProcessedData()
@@ -465,6 +380,7 @@ namespace SourceEngine.Demo.Stats
             bool sameFolderStructure,
             bool createJsonFile = true)
         {
+            FinishProcessedData();
             AllStats allStats = GetAllStats();
             PlayerPositionsStats playerPositionsStats = null;
 
