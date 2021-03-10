@@ -237,7 +237,8 @@ namespace SourceEngine.Demo.Stats.App
             IProgress<float> progress = pBar.AsProgress<float>();
             parser.TickDone += (_, _) => progress.Report(parser.ParsingProgess);
             parser.MatchStarted += (_, _) => pBar.Message = $"{demoInfo.DemoName}: Match started";
-            parser.RoundOfficiallyEnded += (_, _) => pBar.Message = $"{demoInfo.DemoName}: Round ended";
+            parser.RoundOfficiallyEnded += (_, _) =>
+                pBar.Message = $"{demoInfo.DemoName}: Round {matchData.RoundOfficiallyEndedCount} ended";
 
             // Start parsing.
             parser.ParseHeader();

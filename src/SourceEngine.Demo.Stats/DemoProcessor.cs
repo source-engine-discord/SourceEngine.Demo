@@ -1767,7 +1767,7 @@ namespace SourceEngine.Demo.Stats
                 TeamPlayers teamPlayers = teamPlayersList.First(t => t.Round == 1);
 
                 if (teamPlayers.Terrorists.Count > 0 && teamPlayers.CounterTerrorists.Count > 0)
-                    round = md.roundOfficiallyEndedCount + 1;
+                    round = md.RoundOfficiallyEndedCount + 1;
             }
 
             // add 1 for roundsCount when in danger zone

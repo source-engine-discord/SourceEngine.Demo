@@ -13,7 +13,8 @@ namespace SourceEngine.Demo.Stats
         private readonly List<RoundEndedEventArgs> roundEndedEvents = new();
         private int freezetimeEndedCount;
         private float lastFreezetimeEnd = -1;
-        private int roundOfficiallyEndedCount;
+
+        public int RoundOfficiallyEndedCount { get; private set; }
 
         private void TickDoneEventHandler(object sender, TickDoneEventArgs e)
         {
@@ -39,7 +40,7 @@ namespace SourceEngine.Demo.Stats
             // Reset all stats stored except for the feedback messages.
             processedData = new ProcessedData { MessagesValues = processedData.MessagesValues };
             roundEndedEvents.Clear();
-            roundOfficiallyEndedCount = 0;
+            RoundOfficiallyEndedCount = 0;
             freezetimeEndedCount = 0;
             lastFreezetimeEnd = -1;
 
@@ -79,7 +80,7 @@ namespace SourceEngine.Demo.Stats
             bool playerAlive = CheckIfPlayerAliveAtThisPointInRound(this, player, round);
 
             float timeInRound = 0; // Stays as '0' if sent during freezetime
-            if (freezetimeEndedCount > roundOfficiallyEndedCount)
+            if (freezetimeEndedCount > RoundOfficiallyEndedCount)
                 timeInRound = dp.CurrentTime - lastFreezetimeEnd;
 
             var feedbackMessage = new FeedbackMessage
@@ -112,11 +113,11 @@ namespace SourceEngine.Demo.Stats
             // Raise a round_officially_ended event if one did not get fired in the previous round due to an error.
             // Since raising an event is synchronous in this case,
             // the handler will have incremented roundOfficiallyEndedCount by the next iteration.
-            while (roundEndedEvents.Count > roundOfficiallyEndedCount)
+            while (roundEndedEvents.Count > RoundOfficiallyEndedCount)
             {
                 // The round_officially_ended event doesn't provide any data.
                 // Therefore, the data for the round must be retrieved from the corresponding round_end event.
-                RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(roundOfficiallyEndedCount);
+                RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(RoundOfficiallyEndedCount);
 
                 dp.RaiseRoundOfficiallyEnded(
                     new RoundOfficiallyEndedEventArgs
@@ -157,7 +158,7 @@ namespace SourceEngine.Demo.Stats
             // Raise a round_end event if one did not get fired in the previous round due to an error.
             // Since raising an event is synchronous in this case,
             // the handler will have incremented roundEndedEvents.Count by the next iteration.
-            while (roundOfficiallyEndedCount >= roundEndedEvents.Count)
+            while (RoundOfficiallyEndedCount >= roundEndedEvents.Count)
             {
                 dp.RaiseRoundEnd(
                     new RoundEndedEventArgs
@@ -173,7 +174,7 @@ namespace SourceEngine.Demo.Stats
             // Raise a round_freeze_end event if one did not get fired in the previous round due to an error.
             // Since raising an event is synchronous in this case,
             // the handler will have incremented freezetimeEndedCount by the next iteration.
-            while (roundOfficiallyEndedCount >= freezetimeEndedCount)
+            while (RoundOfficiallyEndedCount >= freezetimeEndedCount)
             {
                 // No idea when this actually ended without guessing.
                 dp.RaiseFreezetimeEnded(new FreezetimeEndedEventArgs { TimeEnd = -1 });
@@ -194,7 +195,7 @@ namespace SourceEngine.Demo.Stats
             processedData.RoundLengthValues.Add(e.Length);
             processedData.RoundEndReasonValues.Add(roundEndedEvent?.Reason ?? RoundEndReason.Unknown);
             processedData.TeamValues.Add(roundEndedEvent?.Winner ?? Team.Unknown);
-            roundOfficiallyEndedCount++;
+            RoundOfficiallyEndedCount++;
         }
 
         private void SwitchSidesEventHandler(object sender, SwitchSidesEventArgs e)
@@ -203,7 +204,7 @@ namespace SourceEngine.Demo.Stats
             processedData.SwitchSidesValues.Add(
                 new SwitchSidesEventArgs
                 {
-                    RoundBeforeSwitch = roundOfficiallyEndedCount + 1,
+                    RoundBeforeSwitch = RoundOfficiallyEndedCount + 1,
                 }
             );
         }
@@ -216,11 +217,11 @@ namespace SourceEngine.Demo.Stats
             // a round_officially_ended event is not triggered due to demo error, the parse will mess up.
             var minRoundsForWin = GetMinRoundsForWin(demoInfo.GameMode, demoInfo.TestType);
 
-            if (freezetimeEndedCount == roundOfficiallyEndedCount + 1 && freezetimeEndedCount == roundEndedEvents.Count
+            if (freezetimeEndedCount == RoundOfficiallyEndedCount + 1 && freezetimeEndedCount == roundEndedEvents.Count
                 && roundEndedEvents.Count >= minRoundsForWin)
             {
                 Console.WriteLine("Assuming the parse has finished.");
-                RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(roundOfficiallyEndedCount);
+                RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(RoundOfficiallyEndedCount);
 
                 dp.RaiseRoundOfficiallyEnded(
                     new RoundOfficiallyEndedEventArgs
@@ -257,9 +258,9 @@ namespace SourceEngine.Demo.Stats
             // Raise a round_officially_ended event if one did not get fired in the previous round due to an error.
             // Since raising an event is synchronous in this case,
             // the handler will have incremented roundOfficiallyEndedCount by the next iteration.
-            while (freezetimeEndedCount > roundOfficiallyEndedCount)
+            while (freezetimeEndedCount > RoundOfficiallyEndedCount)
             {
-                RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(roundOfficiallyEndedCount);
+                RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(RoundOfficiallyEndedCount);
 
                 dp.RaiseRoundOfficiallyEnded(
                     new RoundOfficiallyEndedEventArgs
@@ -289,7 +290,7 @@ namespace SourceEngine.Demo.Stats
             {
                 Terrorists = players.Where(p => p.Team is Team.Terrorist).ToList(),
                 CounterTerrorists = players.Where(p => p.Team is Team.CounterTerrorist).ToList(),
-                Round = roundOfficiallyEndedCount + 1,
+                Round = RoundOfficiallyEndedCount + 1,
             };
         }
 
@@ -316,7 +317,7 @@ namespace SourceEngine.Demo.Stats
 
             return new TeamEquipment
             {
-                Round = roundOfficiallyEndedCount + 1,
+                Round = RoundOfficiallyEndedCount + 1,
                 TEquipValue = tEquipValue,
                 CTEquipValue = ctEquipValue,
                 TExpenditure = tExpenditure,
@@ -462,7 +463,7 @@ namespace SourceEngine.Demo.Stats
             processedData.BombsitePlantValues.Add(
                 new BombPlanted
                 {
-                    Round = roundOfficiallyEndedCount + 1,
+                    Round = RoundOfficiallyEndedCount + 1,
                     TimeInRound = e.TimeInRound,
                     Player = e.Player,
                     Bombsite = e.Site,
@@ -475,7 +476,7 @@ namespace SourceEngine.Demo.Stats
             processedData.BombsiteExplodeValues.Add(
                 new BombExploded
                 {
-                    Round = roundOfficiallyEndedCount + 1,
+                    Round = RoundOfficiallyEndedCount + 1,
                     TimeInRound = e.TimeInRound,
                     Player = e.Player,
                     Bombsite = e.Site,
@@ -489,7 +490,7 @@ namespace SourceEngine.Demo.Stats
             processedData.BombsiteDefuseValues.Add(
                 new BombDefused
                 {
-                    Round = roundOfficiallyEndedCount + 1,
+                    Round = RoundOfficiallyEndedCount + 1,
                     TimeInRound = e.TimeInRound,
                     Player = e.Player,
                     Bombsite = e.Site,
@@ -508,7 +509,7 @@ namespace SourceEngine.Demo.Stats
             processedData.HostageRescueValues.Add(
                 new HostageRescued
                 {
-                    Round = roundOfficiallyEndedCount + 1,
+                    Round = RoundOfficiallyEndedCount + 1,
                     TimeInRound = e.TimeInRound,
                     Player = e.Player,
                     Hostage = e.Hostage,
@@ -523,7 +524,7 @@ namespace SourceEngine.Demo.Stats
             processedData.HostagePickedUpValues.Add(
                 new HostagePickedUp
                 {
-                    Round = roundOfficiallyEndedCount + 1,
+                    Round = RoundOfficiallyEndedCount + 1,
                     TimeInRound = e.TimeInRound,
                     Player = e.Player,
                     Hostage = e.Hostage,
