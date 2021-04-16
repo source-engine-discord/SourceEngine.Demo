@@ -30,7 +30,7 @@ namespace SourceEngine.Demo.Parser
 		bool parseChickens = true;
 		bool parsePlayerPositions = true;
 		string gamemode = string.Empty;
-		int numOfHostageRescueZonesLookingFor = 0; // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
+		int numOfHostageRescueZonesLookingForOverride = -1;
 
 		public List<BoundingBoxInformation> triggers = new List<BoundingBoxInformation>();
 		internal Dictionary<int, Player> InfernoOwners = new Dictionary<int, Player>();
@@ -562,19 +562,7 @@ namespace SourceEngine.Demo.Parser
 			// automatically decides rescue zone amounts unless overridden with a provided parameter
 			if (hostagerescuezonecountoverride > 0)
 			{
-				this.numOfHostageRescueZonesLookingFor = hostagerescuezonecountoverride;
-			}
-			else if (gamemode == Gamemodes.DangerZone)
-			{
-				this.numOfHostageRescueZonesLookingFor = 2;
-			}
-			else if (gamemode == Gamemodes.Hostage)
-			{
-				this.numOfHostageRescueZonesLookingFor = 1;
-			}
-			else
-			{
-				this.numOfHostageRescueZonesLookingFor = 0;
+				this.numOfHostageRescueZonesLookingForOverride = hostagerescuezonecountoverride;
 			}
 		}
 
@@ -1270,9 +1258,10 @@ namespace SourceEngine.Demo.Parser
 				};
 
 
-				// hostage (for multiple hostage rescue zones it uses 000, 001, 002 & 003 (how many of them depends on value of numOfHostageRescueZones))
+				// hostage (for multiple hostage rescue zones it uses 000, 001, 002 & 003 (which means that it MAY work for up to 4 zones))
 				int numOfSortedRescueZonesX = 0, numOfSortedZonesRescueY = 0, numOfSortedZonesRescueZ = 0;
-				for (int i = 0; i < numOfHostageRescueZonesLookingFor; i++)
+				var numOfTimeToLoop = numOfHostageRescueZonesLookingForOverride != -1 ? numOfHostageRescueZonesLookingForOverride : 4;
+				for (int i = 0; i < numOfTimeToLoop; i++)
 				{
 					newResource.Entity.FindProperty("m_hostageRescueX.00" + i).DataRecivedDontUse += (s4, center) =>
 					{
