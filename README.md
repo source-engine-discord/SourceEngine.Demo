@@ -8,7 +8,7 @@ Outputs game statistics from CS:GO demos as JSON. The solution has three project
 
 **SourceEngine.Demo.Stats.App** - A .NET Core app which provides a command line interface for SourceEngine.Demo.Stats. Also known as _IDemO_.
 
-![Program output](https://i.imgur.com/RALmTAR.png)
+![Program output](https://user-images.githubusercontent.com/1515135/115470721-9985c780-a1eb-11eb-8bb9-f2351c019c3c.png)
 
 #### Supported Gamemodes
 
