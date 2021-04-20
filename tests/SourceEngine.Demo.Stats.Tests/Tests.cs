@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -14,23 +15,26 @@ using Xunit;
 
 namespace SourceEngine.Demo.Stats.Tests
 {
-    public class TopStatsWaffleTests
+    public class TopStatsWaffleTests : IDisposable
     {
-        protected readonly MatchData MatchData;
+        protected Stream Stream;
+        protected Processor Processor;
         protected DemoParser DemoParser;
-        protected ProcessedData ProcessedData;
+        protected CollectedData CollectedData;
 
         public TopStatsWaffleTests()
         {
             MockData();
 
-            foreach (TeamPlayers teamPlayers in ProcessedData.TeamPlayersValues)
+            // Simulate BindPlayer(), but without any of the complicated duplicate logic
+            // (since there are no duplicates in the mock data)
+            foreach (TeamPlayers teamPlayers in CollectedData.TeamPlayersValues)
             {
-                foreach (Player player in teamPlayers.Terrorists)
-                    MatchData.BindPlayer(player);
-
-                foreach (Player player in teamPlayers.CounterTerrorists)
-                    MatchData.BindPlayer(player);
+                foreach (Player player in teamPlayers.Terrorists.Concat(teamPlayers.CounterTerrorists))
+                {
+                    CollectedData.PlayerTicks[player.UserID] = new TickCounter { detectedName = player.Name };
+                    CollectedData.PlayerLookups[player.UserID] = player.SteamID;
+                }
             }
         }
 
@@ -45,7 +49,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
             };
 
-            var matchData = new MatchData(null, true, true, null, false);
+            Stream = new MemoryStream();
+            DemoParser = new DemoParser(Stream);
 
             var tanookiStats = new tanookiStats
             {
@@ -272,7 +277,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            var PlayerValues = new Dictionary<string, IEnumerable<Player>>
+            var PlayerValues = new Dictionary<string, List<Player>>
             {
                 {
                     "Kills", new List<Player>
@@ -540,9 +545,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
                 new()
                 {
-                    NadeType =
-                        EquipmentElement
-                            .Molotov, // all molotovs are down as incendiaries, specified why in DemoParser.cs, search for "FireNadeStarted".
+                    NadeType = EquipmentElement.Molotov,
                     ThrownBy = TeamPlayersValues[0].Terrorists[0],
                     Position = new Vector
                     {
@@ -644,9 +647,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 },
             };
 
-            ProcessedData = new ProcessedData
+            CollectedData = new CollectedData
             {
-                DemoInformation = DemoInformation,
                 tanookiStats = tanookiStats,
                 MatchStartValues = MatchStartValues,
                 SwitchSidesValues = SwitchSidesValues,
@@ -654,6 +656,7 @@ namespace SourceEngine.Demo.Stats.Tests
                 TeamPlayersValues = TeamPlayersValues,
                 PlayerHurtValues = PlayerHurtValues,
                 PlayerKilledEventsValues = PlayerKilledEventsValues,
+                //DisconnectedPlayerValues
                 PlayerValues = PlayerValues,
                 WeaponValues = WeaponValues,
                 PenetrationValues = PenetrationValues,
@@ -672,6 +675,8 @@ namespace SourceEngine.Demo.Stats.Tests
                 PlayerPositionsValues = playerPositionsStats,
                 WriteTicks = true,
             };
+
+            Processor = new Processor(DemoParser, DemoInformation, CollectedData);
         }
 
         public class DataValidationTests : TopStatsWaffleTests
@@ -682,16 +687,16 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.bombsiteStats.Count.ShouldBe(2);
-                allOutputData.AllStats.bombsiteStats[0].Plants.ShouldBe(1);
-                allOutputData.AllStats.bombsiteStats[0].Explosions.ShouldBe(1);
-                allOutputData.AllStats.bombsiteStats[0].Defuses.ShouldBe(0);
-                allOutputData.AllStats.bombsiteStats[1].Plants.ShouldBe(1);
-                allOutputData.AllStats.bombsiteStats[1].Explosions.ShouldBe(0);
-                allOutputData.AllStats.bombsiteStats[1].Defuses.ShouldBe(1);
+                stats.bombsiteStats.Count.ShouldBe(2);
+                stats.bombsiteStats[0].Plants.ShouldBe(1);
+                stats.bombsiteStats[0].Explosions.ShouldBe(1);
+                stats.bombsiteStats[0].Defuses.ShouldBe(0);
+                stats.bombsiteStats[1].Plants.ShouldBe(1);
+                stats.bombsiteStats[1].Explosions.ShouldBe(0);
+                stats.bombsiteStats[1].Defuses.ShouldBe(1);
             }
 
             [Fact]
@@ -700,10 +705,10 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.chickenStats.Killed.ShouldBe(1);
+                stats.chickenStats.Killed.ShouldBe(1);
             }
 
             [Fact]
@@ -712,12 +717,12 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.feedbackMessages.Count.ShouldBe(1);
-                allOutputData.AllStats.feedbackMessages[0].Round.ShouldBe(1);
-                allOutputData.AllStats.feedbackMessages[0].Message.ShouldBe("bad map");
+                stats.feedbackMessages.Count.ShouldBe(1);
+                stats.feedbackMessages[0].Round.ShouldBe(1);
+                stats.feedbackMessages[0].Message.ShouldBe("bad map");
             }
 
             [Fact]
@@ -726,51 +731,51 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.firstDamageStats.Count.ShouldBe(2);
-                allOutputData.AllStats.firstDamageStats[0].Round.ShouldBe(1);
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TimeInRound
+                stats.firstDamageStats.Count.ShouldBe(2);
+                stats.firstDamageStats[0].Round.ShouldBe(1);
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TimeInRound
                     .ShouldBe(40);
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideShooter
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideShooter
                     .ShouldBe("Terrorist");
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDShooter
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDShooter
                     .ShouldBe(32443298432);
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionShooter
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionShooter
                     .ShouldBe(0);
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionShooter
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionShooter
                     .ShouldBe(0);
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionShooter
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionShooter
                     .ShouldBe(0);
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideVictim
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().TeamSideVictim
                     .ShouldBe("CounterTerrorist");
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDVictim
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().SteamIDVictim
                     .ShouldBe(12321313213);
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionVictim
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().XPositionVictim
                     .ShouldBe(0);
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionVictim
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().YPositionVictim
                     .ShouldBe(0);
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionVictim
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().ZPositionVictim
                     .ShouldBe(0);
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().Weapon
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().Weapon
                     .ShouldBe("AK47");
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponClass
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponClass
                     .ShouldBe("Rifle");
 
-                allOutputData.AllStats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponType
+                stats.firstDamageStats[0].FirstDamageToEnemyByPlayers.FirstOrDefault().WeaponType
                     .ShouldBe("AssaultRifle");
             }
 
@@ -780,18 +785,16 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.grenadesSpecificStats.Count.ShouldBe(6);
-                allOutputData.AllStats.grenadesSpecificStats[0].NadeType.ShouldBe(EquipmentElement.Flash.ToString());
-                allOutputData.AllStats.grenadesSpecificStats[1].NadeType.ShouldBe(EquipmentElement.Smoke.ToString());
-                allOutputData.AllStats.grenadesSpecificStats[2].NadeType.ShouldBe(EquipmentElement.HE.ToString());
-                allOutputData.AllStats.grenadesSpecificStats[3].NadeType.ShouldBe(EquipmentElement.Molotov.ToString());
-                allOutputData.AllStats.grenadesSpecificStats[4].NadeType
-                    .ShouldBe(EquipmentElement.Incendiary.ToString());
-
-                allOutputData.AllStats.grenadesSpecificStats[5].NadeType.ShouldBe(EquipmentElement.Decoy.ToString());
+                stats.grenadesSpecificStats.Count.ShouldBe(6);
+                stats.grenadesSpecificStats[0].NadeType.ShouldBe(EquipmentElement.Flash.ToString());
+                stats.grenadesSpecificStats[1].NadeType.ShouldBe(EquipmentElement.Smoke.ToString());
+                stats.grenadesSpecificStats[2].NadeType.ShouldBe(EquipmentElement.HE.ToString());
+                stats.grenadesSpecificStats[3].NadeType.ShouldBe(EquipmentElement.Molotov.ToString());
+                stats.grenadesSpecificStats[4].NadeType.ShouldBe(EquipmentElement.Incendiary.ToString());
+                stats.grenadesSpecificStats[5].NadeType.ShouldBe(EquipmentElement.Decoy.ToString());
             }
 
             [Fact]
@@ -800,20 +803,28 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.grenadesTotalStats.Count.ShouldBe(5);
-                allOutputData.AllStats.grenadesTotalStats[0].NadeType.ShouldBe(EquipmentElement.Flash.ToString());
-                allOutputData.AllStats.grenadesTotalStats[0].AmountUsed.ShouldBe(1);
-                allOutputData.AllStats.grenadesTotalStats[1].NadeType.ShouldBe(EquipmentElement.Smoke.ToString());
-                allOutputData.AllStats.grenadesTotalStats[1].AmountUsed.ShouldBe(1);
-                allOutputData.AllStats.grenadesTotalStats[2].NadeType.ShouldBe(EquipmentElement.HE.ToString());
-                allOutputData.AllStats.grenadesTotalStats[2].AmountUsed.ShouldBe(1);
-                allOutputData.AllStats.grenadesTotalStats[3].NadeType.ShouldBe(EquipmentElement.Incendiary.ToString());
-                allOutputData.AllStats.grenadesTotalStats[3].AmountUsed.ShouldBe(2);
-                allOutputData.AllStats.grenadesTotalStats[4].NadeType.ShouldBe(EquipmentElement.Decoy.ToString());
-                allOutputData.AllStats.grenadesTotalStats[4].AmountUsed.ShouldBe(1);
+                stats.grenadesTotalStats.Count.ShouldBe(6);
+                stats.grenadesTotalStats[0].NadeType.ShouldBe(EquipmentElement.Flash.ToString());
+                stats.grenadesTotalStats[0].AmountUsed.ShouldBe(1);
+                stats.grenadesTotalStats[1].NadeType.ShouldBe(EquipmentElement.Smoke.ToString());
+                stats.grenadesTotalStats[1].AmountUsed.ShouldBe(1);
+                stats.grenadesTotalStats[2].NadeType.ShouldBe(EquipmentElement.HE.ToString());
+                stats.grenadesTotalStats[2].AmountUsed.ShouldBe(1);
+
+                // In practice, all fire grenade events returned by the parser use Incendiary only because there's no
+                // way to distinguish the grenade type from the game event.
+                // However, the processor shouldn't care about this detail - if it somehow gets a Molotov, then it
+                // should count it as normal rather than forcing it to count towards Incendiary.
+                stats.grenadesTotalStats[3].NadeType.ShouldBe(EquipmentElement.Molotov.ToString());
+                stats.grenadesTotalStats[3].AmountUsed.ShouldBe(1);
+
+                stats.grenadesTotalStats[4].NadeType.ShouldBe(EquipmentElement.Incendiary.ToString());
+                stats.grenadesTotalStats[4].AmountUsed.ShouldBe(1);
+                stats.grenadesTotalStats[5].NadeType.ShouldBe(EquipmentElement.Decoy.ToString());
+                stats.grenadesTotalStats[5].AmountUsed.ShouldBe(1);
             }
 
             [Fact]
@@ -822,18 +833,18 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.hostageStats.Count.ShouldBe(2);
-                allOutputData.AllStats.hostageStats[0].Hostage.ShouldBe('A');
-                allOutputData.AllStats.hostageStats[0].HostageIndex.ShouldBe(250);
-                allOutputData.AllStats.hostageStats[0].PickedUps.ShouldBe(2);
-                allOutputData.AllStats.hostageStats[0].Rescues.ShouldBe(1);
-                allOutputData.AllStats.hostageStats[1].Hostage.ShouldBe('B');
-                allOutputData.AllStats.hostageStats[1].HostageIndex.ShouldBe(251);
-                allOutputData.AllStats.hostageStats[1].PickedUps.ShouldBe(1);
-                allOutputData.AllStats.hostageStats[1].Rescues.ShouldBe(1);
+                stats.hostageStats.Count.ShouldBe(2);
+                stats.hostageStats[0].Hostage.ShouldBe('A');
+                stats.hostageStats[0].HostageIndex.ShouldBe(250);
+                stats.hostageStats[0].PickedUps.ShouldBe(2);
+                stats.hostageStats[0].Rescues.ShouldBe(1);
+                stats.hostageStats[1].Hostage.ShouldBe('B');
+                stats.hostageStats[1].HostageIndex.ShouldBe(251);
+                stats.hostageStats[1].PickedUps.ShouldBe(1);
+                stats.hostageStats[1].Rescues.ShouldBe(1);
             }
 
             /*[Fact]
@@ -842,10 +853,10 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.rescueZoneStats.Count.ShouldBe(1); // cannot test positions as is currently, as DemoParser is not implemented
+                stats.rescueZoneStats.Count.ShouldBe(1); // cannot test positions as is currently, as DemoParser is not implemented
             }*/
 
             [Fact]
@@ -854,14 +865,14 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.killsStats.Count.ShouldBe(2);
-                allOutputData.AllStats.killsStats[0].Round.ShouldBe(1);
-                allOutputData.AllStats.killsStats[0].TimeInRound.ShouldBe(40);
-                allOutputData.AllStats.killsStats[1].Round.ShouldBe(2);
-                allOutputData.AllStats.killsStats[1].TimeInRound.ShouldBe(90);
+                stats.killsStats.Count.ShouldBe(2);
+                stats.killsStats[0].Round.ShouldBe(1);
+                stats.killsStats[0].TimeInRound.ShouldBe(40);
+                stats.killsStats[1].Round.ShouldBe(2);
+                stats.killsStats[1].TimeInRound.ShouldBe(90);
             }
 
             [Fact]
@@ -870,21 +881,21 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo1");
-                allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.Defuse).ToLower());
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
-                allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+                stats.mapInfo.DemoName.ShouldBe("demo1");
+                stats.mapInfo.MapName.ShouldBe("de_testmap");
+                stats.mapInfo.GameMode.ShouldBe(nameof(GameMode.Defuse).ToLower());
+                stats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
+                stats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
             [Fact]
             public void Should_return_map_info_correctly_for_hostage_maps()
             {
                 // Arrange
-                ProcessedData.DemoInformation = new DemoInformation
+                var demoInfo = new DemoInformation
                 {
                     DemoName = "demo2",
                     MapName = "de_testmap2",
@@ -893,7 +904,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
-                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>
+                CollectedData.MatchStartValues = new List<MatchStartedEventArgs>
                 {
                     new()
                     {
@@ -902,22 +913,24 @@ namespace SourceEngine.Demo.Stats.Tests
                     },
                 };
 
+                var processor = new Processor(DemoParser, demoInfo, CollectedData);
+
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo2");
-                allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap2");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.Hostage).ToLower());
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
-                allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+                stats.mapInfo.DemoName.ShouldBe("demo2");
+                stats.mapInfo.MapName.ShouldBe("de_testmap2");
+                stats.mapInfo.GameMode.ShouldBe(nameof(GameMode.Hostage).ToLower());
+                stats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
+                stats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
             [Fact]
             public void Should_return_map_info_correctly_for_wingman_defuse_maps()
             {
                 // Arrange
-                ProcessedData.DemoInformation = new DemoInformation
+                var demoInfo = new DemoInformation
                 {
                     DemoName = "demo3",
                     MapName = "de_testmap3",
@@ -926,7 +939,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
-                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>
+                CollectedData.MatchStartValues = new List<MatchStartedEventArgs>
                 {
                     new()
                     {
@@ -935,22 +948,24 @@ namespace SourceEngine.Demo.Stats.Tests
                     },
                 };
 
+                var processor = new Processor(DemoParser, demoInfo, CollectedData);
+
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo3");
-                allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap3");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.WingmanDefuse).ToLower());
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
-                allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+                stats.mapInfo.DemoName.ShouldBe("demo3");
+                stats.mapInfo.MapName.ShouldBe("de_testmap3");
+                stats.mapInfo.GameMode.ShouldBe(nameof(GameMode.WingmanDefuse).ToLower());
+                stats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
+                stats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
             [Fact]
             public void Should_return_map_info_correctly_for_wingman_hostage_maps()
             {
                 // Arrange
-                ProcessedData.DemoInformation = new DemoInformation
+                var demoInfo = new DemoInformation
                 {
                     DemoName = "demo4",
                     MapName = "de_testmap4",
@@ -959,7 +974,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
-                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>
+                CollectedData.MatchStartValues = new List<MatchStartedEventArgs>
                 {
                     new()
                     {
@@ -968,22 +983,24 @@ namespace SourceEngine.Demo.Stats.Tests
                     },
                 };
 
+                var processor = new Processor(DemoParser, demoInfo, CollectedData);
+
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo4");
-                allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap4");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.WingmanHostage).ToLower());
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
-                allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+                stats.mapInfo.DemoName.ShouldBe("demo4");
+                stats.mapInfo.MapName.ShouldBe("de_testmap4");
+                stats.mapInfo.GameMode.ShouldBe(nameof(GameMode.WingmanHostage).ToLower());
+                stats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
+                stats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
             [Fact]
             public void Should_return_map_info_correctly_for_danger_zone_maps()
             {
                 // Arrange
-                ProcessedData.DemoInformation = new DemoInformation
+                var demoInfo = new DemoInformation
                 {
                     DemoName = "demo5",
                     MapName = "de_testmap5",
@@ -992,7 +1009,7 @@ namespace SourceEngine.Demo.Stats.Tests
                     TestDate = new DateTime(2020, 1, 1, 0, 0, 0).ToString(),
                 };
 
-                ProcessedData.MatchStartValues = new List<MatchStartedEventArgs>
+                CollectedData.MatchStartValues = new List<MatchStartedEventArgs>
                 {
                     new()
                     {
@@ -1001,15 +1018,17 @@ namespace SourceEngine.Demo.Stats.Tests
                     },
                 };
 
+                var processor = new Processor(DemoParser, demoInfo, CollectedData);
+
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.mapInfo.DemoName.ShouldBe("demo5");
-                allOutputData.AllStats.mapInfo.MapName.ShouldBe("de_testmap5");
-                allOutputData.AllStats.mapInfo.GameMode.ShouldBe(nameof(GameMode.DangerZone).ToLower());
-                allOutputData.AllStats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
-                allOutputData.AllStats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
+                stats.mapInfo.DemoName.ShouldBe("demo5");
+                stats.mapInfo.MapName.ShouldBe("de_testmap5");
+                stats.mapInfo.GameMode.ShouldBe(nameof(GameMode.DangerZone).ToLower());
+                stats.mapInfo.TestType.ShouldBe(nameof(TestType.Casual).ToLower());
+                stats.mapInfo.TestDate.ShouldBe(new DateTime(2020, 1, 1, 0, 0, 0).ToString());
             }
 
             [Fact]
@@ -1018,27 +1037,28 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats allStats = Processor.GetAllStats();
+                PlayerPositionsStats stats = Processor.GetPlayerPositionsStats(CollectedData, allStats);
 
                 // Assess
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.Count.ShouldBe(1);
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().Round.ShouldBe(1);
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                stats.PlayerPositionByRound.Count.ShouldBe(1);
+                stats.PlayerPositionByRound.FirstOrDefault().Round.ShouldBe(1);
+                stats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
                     .FirstOrDefault().TimeInRound.ShouldBe(1);
 
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                stats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
                     .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().SteamID.ShouldBe(32443298432);
 
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                stats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
                     .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().TeamSide.ShouldBe("Terrorist");
 
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                stats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
                     .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().XPosition.ShouldBe(20);
 
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                stats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
                     .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().YPosition.ShouldBe(200);
 
-                allOutputData.PlayerPositionsStats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
+                stats.PlayerPositionByRound.FirstOrDefault().PlayerPositionByTimeInRound
                     .FirstOrDefault().PlayerPositionBySteamID.FirstOrDefault().ZPosition.ShouldBe(2000);
             }
 
@@ -1048,40 +1068,40 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.playerStats.Count.ShouldBe(2);
+                stats.playerStats.Count.ShouldBe(2);
 
-                allOutputData.AllStats.playerStats[0].Assists.ShouldBe(0);
-                allOutputData.AllStats.playerStats[0].AssistsIncludingBots.ShouldBe(0);
-                allOutputData.AllStats.playerStats[0].Deaths.ShouldBe(0);
-                allOutputData.AllStats.playerStats[0].DeathsIncludingBots.ShouldBe(0);
-                allOutputData.AllStats.playerStats[0].Defuses.ShouldBe(1);
-                allOutputData.AllStats.playerStats[0].Headshots.ShouldBe(1); // took over a bot for one of them
-                allOutputData.AllStats.playerStats[0].Kills.ShouldBe(1); // took over a bot for one of them
-                allOutputData.AllStats.playerStats[0].KillsIncludingBots.ShouldBe(2);
-                allOutputData.AllStats.playerStats[0].MVPs.ShouldBe(2);
-                allOutputData.AllStats.playerStats[0].Plants.ShouldBe(1);
-                allOutputData.AllStats.playerStats[0].PlayerName.ShouldBe("JimWood");
-                allOutputData.AllStats.playerStats[0].Rescues.ShouldBe(0);
-                allOutputData.AllStats.playerStats[0].Shots.ShouldBe(6);
-                allOutputData.AllStats.playerStats[0].SteamID.ShouldBe(32443298432);
+                stats.playerStats[0].Assists.ShouldBe(0);
+                stats.playerStats[0].AssistsIncludingBots.ShouldBe(0);
+                stats.playerStats[0].Deaths.ShouldBe(0);
+                stats.playerStats[0].DeathsIncludingBots.ShouldBe(0);
+                stats.playerStats[0].Defuses.ShouldBe(1);
+                stats.playerStats[0].Headshots.ShouldBe(1); // took over a bot for one of them
+                stats.playerStats[0].Kills.ShouldBe(1); // took over a bot for one of them
+                stats.playerStats[0].KillsIncludingBots.ShouldBe(2);
+                stats.playerStats[0].MVPs.ShouldBe(2);
+                stats.playerStats[0].Plants.ShouldBe(1);
+                stats.playerStats[0].PlayerName.ShouldBe("JimWood");
+                stats.playerStats[0].Rescues.ShouldBe(0);
+                stats.playerStats[0].Shots.ShouldBe(6);
+                stats.playerStats[0].SteamID.ShouldBe(32443298432);
 
-                allOutputData.AllStats.playerStats[1].Assists.ShouldBe(1);
-                allOutputData.AllStats.playerStats[1].AssistsIncludingBots.ShouldBe(1);
-                allOutputData.AllStats.playerStats[1].Deaths.ShouldBe(1); // took over a bot for one of them
-                allOutputData.AllStats.playerStats[1].DeathsIncludingBots.ShouldBe(2);
-                allOutputData.AllStats.playerStats[1].Defuses.ShouldBe(0);
-                allOutputData.AllStats.playerStats[1].Headshots.ShouldBe(0);
-                allOutputData.AllStats.playerStats[1].Kills.ShouldBe(0);
-                allOutputData.AllStats.playerStats[1].KillsIncludingBots.ShouldBe(0);
-                allOutputData.AllStats.playerStats[1].MVPs.ShouldBe(0);
-                allOutputData.AllStats.playerStats[1].Plants.ShouldBe(1);
-                allOutputData.AllStats.playerStats[1].PlayerName.ShouldBe("TheWhaleMan");
-                allOutputData.AllStats.playerStats[1].Rescues.ShouldBe(2);
-                allOutputData.AllStats.playerStats[1].Shots.ShouldBe(1);
-                allOutputData.AllStats.playerStats[1].SteamID.ShouldBe(12321313213);
+                stats.playerStats[1].Assists.ShouldBe(1);
+                stats.playerStats[1].AssistsIncludingBots.ShouldBe(1);
+                stats.playerStats[1].Deaths.ShouldBe(1); // took over a bot for one of them
+                stats.playerStats[1].DeathsIncludingBots.ShouldBe(2);
+                stats.playerStats[1].Defuses.ShouldBe(0);
+                stats.playerStats[1].Headshots.ShouldBe(0);
+                stats.playerStats[1].Kills.ShouldBe(0);
+                stats.playerStats[1].KillsIncludingBots.ShouldBe(0);
+                stats.playerStats[1].MVPs.ShouldBe(0);
+                stats.playerStats[1].Plants.ShouldBe(1);
+                stats.playerStats[1].PlayerName.ShouldBe("TheWhaleMan");
+                stats.playerStats[1].Rescues.ShouldBe(2);
+                stats.playerStats[1].Shots.ShouldBe(1);
+                stats.playerStats[1].SteamID.ShouldBe(12321313213);
             }
 
             [Fact]
@@ -1090,60 +1110,60 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.roundsStats.Count.ShouldBe(2);
+                stats.roundsStats.Count.ShouldBe(2);
 
-                allOutputData.AllStats.roundsStats[0].BombPlantPositionX.ShouldBe(100);
-                allOutputData.AllStats.roundsStats[0].BombPlantPositionY.ShouldBe(100);
-                allOutputData.AllStats.roundsStats[0].BombPlantPositionZ.ShouldBe(100);
-                allOutputData.AllStats.roundsStats[0].BombsiteErrorMessage.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[0].BombsitePlantedAt.ShouldBe("A");
-                allOutputData.AllStats.roundsStats[0].Half.ShouldBe("First");
-                allOutputData.AllStats.roundsStats[0].HostageAPickedUpErrorMessage.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[0].HostageBPickedUpErrorMessage.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[0].Length.ShouldBe(80);
-                allOutputData.AllStats.roundsStats[0].Overtime.ShouldBe(0);
-                allOutputData.AllStats.roundsStats[0].PickedUpAllHostages.ShouldBe(true);
-                allOutputData.AllStats.roundsStats[0].PickedUpHostageA.ShouldBe(true);
-                allOutputData.AllStats.roundsStats[0].PickedUpHostageB.ShouldBe(true);
-                allOutputData.AllStats.roundsStats[0].RescuedAllHostages.ShouldBe(true);
-                allOutputData.AllStats.roundsStats[0].RescuedHostageA.ShouldBe(true);
-                allOutputData.AllStats.roundsStats[0].RescuedHostageB.ShouldBe(true);
-                allOutputData.AllStats.roundsStats[0].Round.ShouldBe(1);
-                allOutputData.AllStats.roundsStats[0].TimeInRoundPlanted.ShouldBe(35);
-                allOutputData.AllStats.roundsStats[0].TimeInRoundExploded.ShouldBe(75);
-                allOutputData.AllStats.roundsStats[0].TimeInRoundDefused.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[0].TimeInRoundRescuedHostageA.ShouldBe(50);
-                allOutputData.AllStats.roundsStats[0].TimeInRoundRescuedHostageB.ShouldBe(51);
-                allOutputData.AllStats.roundsStats[0].WinMethod.ShouldBe("Bombed");
-                allOutputData.AllStats.roundsStats[0].Winners.ShouldBe("Terrorist");
+                stats.roundsStats[0].BombPlantPositionX.ShouldBe(100);
+                stats.roundsStats[0].BombPlantPositionY.ShouldBe(100);
+                stats.roundsStats[0].BombPlantPositionZ.ShouldBe(100);
+                stats.roundsStats[0].BombsiteErrorMessage.ShouldBeNull();
+                stats.roundsStats[0].BombsitePlantedAt.ShouldBe("A");
+                stats.roundsStats[0].Half.ShouldBe("First");
+                stats.roundsStats[0].HostageAPickedUpErrorMessage.ShouldBeNull();
+                stats.roundsStats[0].HostageBPickedUpErrorMessage.ShouldBeNull();
+                stats.roundsStats[0].Length.ShouldBe(80);
+                stats.roundsStats[0].Overtime.ShouldBe(0);
+                stats.roundsStats[0].PickedUpAllHostages.ShouldBe(true);
+                stats.roundsStats[0].PickedUpHostageA.ShouldBe(true);
+                stats.roundsStats[0].PickedUpHostageB.ShouldBe(true);
+                stats.roundsStats[0].RescuedAllHostages.ShouldBe(true);
+                stats.roundsStats[0].RescuedHostageA.ShouldBe(true);
+                stats.roundsStats[0].RescuedHostageB.ShouldBe(true);
+                stats.roundsStats[0].Round.ShouldBe(1);
+                stats.roundsStats[0].TimeInRoundPlanted.ShouldBe(35);
+                stats.roundsStats[0].TimeInRoundExploded.ShouldBe(75);
+                stats.roundsStats[0].TimeInRoundDefused.ShouldBeNull();
+                stats.roundsStats[0].TimeInRoundRescuedHostageA.ShouldBe(50);
+                stats.roundsStats[0].TimeInRoundRescuedHostageB.ShouldBe(51);
+                stats.roundsStats[0].WinMethod.ShouldBe("Bombed");
+                stats.roundsStats[0].Winners.ShouldBe("Terrorist");
 
-                allOutputData.AllStats.roundsStats[1].BombPlantPositionX.ShouldBe(400);
-                allOutputData.AllStats.roundsStats[1].BombPlantPositionY.ShouldBe(400);
-                allOutputData.AllStats.roundsStats[1].BombPlantPositionZ.ShouldBe(400);
-                allOutputData.AllStats.roundsStats[1].BombsiteErrorMessage.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[1].BombsitePlantedAt.ShouldBe("B");
-                allOutputData.AllStats.roundsStats[1].Half.ShouldBe("Second");
-                allOutputData.AllStats.roundsStats[1].HostageAPickedUpErrorMessage.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[1].HostageBPickedUpErrorMessage.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[1].Length.ShouldBe(105);
-                allOutputData.AllStats.roundsStats[1].Overtime.ShouldBe(0);
-                allOutputData.AllStats.roundsStats[1].PickedUpAllHostages.ShouldBe(false);
-                allOutputData.AllStats.roundsStats[1].PickedUpHostageA.ShouldBe(true);
-                allOutputData.AllStats.roundsStats[1].PickedUpHostageB.ShouldBe(false);
-                allOutputData.AllStats.roundsStats[1].RescuedAllHostages.ShouldBe(false);
-                allOutputData.AllStats.roundsStats[1].RescuedHostageA.ShouldBe(false);
-                allOutputData.AllStats.roundsStats[1].RescuedHostageB.ShouldBe(false);
-                allOutputData.AllStats.roundsStats[1].Round.ShouldBe(2);
-                allOutputData.AllStats.roundsStats[1].TimeInRoundPlanted.ShouldBe(60);
-                allOutputData.AllStats.roundsStats[1].TimeInRoundExploded.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[1].TimeInRoundDefused.ShouldBe(100);
-                allOutputData.AllStats.roundsStats[1].TimeInRoundRescuedHostageA.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[1].TimeInRoundRescuedHostageB.ShouldBeNull();
-                allOutputData.AllStats.roundsStats[1].WinMethod.ShouldBe("Defused");
-                allOutputData.AllStats.roundsStats[1].Winners.ShouldBe("CounterTerrorist");
+                stats.roundsStats[1].BombPlantPositionX.ShouldBe(400);
+                stats.roundsStats[1].BombPlantPositionY.ShouldBe(400);
+                stats.roundsStats[1].BombPlantPositionZ.ShouldBe(400);
+                stats.roundsStats[1].BombsiteErrorMessage.ShouldBeNull();
+                stats.roundsStats[1].BombsitePlantedAt.ShouldBe("B");
+                stats.roundsStats[1].Half.ShouldBe("Second");
+                stats.roundsStats[1].HostageAPickedUpErrorMessage.ShouldBeNull();
+                stats.roundsStats[1].HostageBPickedUpErrorMessage.ShouldBeNull();
+                stats.roundsStats[1].Length.ShouldBe(105);
+                stats.roundsStats[1].Overtime.ShouldBe(0);
+                stats.roundsStats[1].PickedUpAllHostages.ShouldBe(false);
+                stats.roundsStats[1].PickedUpHostageA.ShouldBe(true);
+                stats.roundsStats[1].PickedUpHostageB.ShouldBe(false);
+                stats.roundsStats[1].RescuedAllHostages.ShouldBe(false);
+                stats.roundsStats[1].RescuedHostageA.ShouldBe(false);
+                stats.roundsStats[1].RescuedHostageB.ShouldBe(false);
+                stats.roundsStats[1].Round.ShouldBe(2);
+                stats.roundsStats[1].TimeInRoundPlanted.ShouldBe(60);
+                stats.roundsStats[1].TimeInRoundExploded.ShouldBeNull();
+                stats.roundsStats[1].TimeInRoundDefused.ShouldBe(100);
+                stats.roundsStats[1].TimeInRoundRescuedHostageA.ShouldBeNull();
+                stats.roundsStats[1].TimeInRoundRescuedHostageB.ShouldBeNull();
+                stats.roundsStats[1].WinMethod.ShouldBe("Defused");
+                stats.roundsStats[1].Winners.ShouldBe("CounterTerrorist");
             }
 
             [Fact]
@@ -1152,16 +1172,16 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.supportedGamemodes.Count.ShouldBe(6);
-                allOutputData.AllStats.supportedGamemodes[0].ShouldBe(nameof(GameMode.DangerZone).ToLower());
-                allOutputData.AllStats.supportedGamemodes[1].ShouldBe(nameof(GameMode.Defuse).ToLower());
-                allOutputData.AllStats.supportedGamemodes[2].ShouldBe(nameof(GameMode.Hostage).ToLower());
-                allOutputData.AllStats.supportedGamemodes[3].ShouldBe(nameof(GameMode.WingmanDefuse).ToLower());
-                allOutputData.AllStats.supportedGamemodes[4].ShouldBe(nameof(GameMode.WingmanHostage).ToLower());
-                allOutputData.AllStats.supportedGamemodes[5].ShouldBe(nameof(GameMode.Unknown).ToLower());
+                stats.supportedGamemodes.Count.ShouldBe(6);
+                stats.supportedGamemodes[0].ShouldBe(nameof(GameMode.DangerZone).ToLower());
+                stats.supportedGamemodes[1].ShouldBe(nameof(GameMode.Defuse).ToLower());
+                stats.supportedGamemodes[2].ShouldBe(nameof(GameMode.Hostage).ToLower());
+                stats.supportedGamemodes[3].ShouldBe(nameof(GameMode.WingmanDefuse).ToLower());
+                stats.supportedGamemodes[4].ShouldBe(nameof(GameMode.WingmanHostage).ToLower());
+                stats.supportedGamemodes[5].ShouldBe(nameof(GameMode.Unknown).ToLower());
             }
 
             [Fact]
@@ -1170,14 +1190,14 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.tanookiStats.Joined.ShouldBe(true);
-                allOutputData.AllStats.tanookiStats.Left.ShouldBe(true);
-                allOutputData.AllStats.tanookiStats.RoundJoined.ShouldBe(1);
-                allOutputData.AllStats.tanookiStats.RoundLeft.ShouldBe(2);
-                allOutputData.AllStats.tanookiStats.RoundsLasted.ShouldBe(1);
+                stats.tanookiStats.Joined.ShouldBe(true);
+                stats.tanookiStats.Left.ShouldBe(true);
+                stats.tanookiStats.RoundJoined.ShouldBe(1);
+                stats.tanookiStats.RoundLeft.ShouldBe(2);
+                stats.tanookiStats.RoundsLasted.ShouldBe(1);
             }
 
             [Fact]
@@ -1186,30 +1206,30 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.teamStats.Count.ShouldBe(2);
+                stats.teamStats.Count.ShouldBe(2);
 
-                allOutputData.AllStats.teamStats[0].Round.ShouldBe(1);
-                allOutputData.AllStats.teamStats[0].TeamAlphaKills.ShouldBe(1);
-                allOutputData.AllStats.teamStats[0].TeamAlphaDeaths.ShouldBe(0);
-                allOutputData.AllStats.teamStats[0].TeamAlphaHeadshots.ShouldBe(1);
-                allOutputData.AllStats.teamStats[0].TeamBravoKills.ShouldBe(0);
-                allOutputData.AllStats.teamStats[0].TeamBravoDeaths.ShouldBe(1);
-                allOutputData.AllStats.teamStats[0].TeamBravoHeadshots.ShouldBe(0);
-                allOutputData.AllStats.teamStats[0].TeamAlphaShotsFired.ShouldBe(3);
-                allOutputData.AllStats.teamStats[0].TeamBravoShotsFired.ShouldBe(0);
+                stats.teamStats[0].Round.ShouldBe(1);
+                stats.teamStats[0].TeamAlphaKills.ShouldBe(1);
+                stats.teamStats[0].TeamAlphaDeaths.ShouldBe(0);
+                stats.teamStats[0].TeamAlphaHeadshots.ShouldBe(1);
+                stats.teamStats[0].TeamBravoKills.ShouldBe(0);
+                stats.teamStats[0].TeamBravoDeaths.ShouldBe(1);
+                stats.teamStats[0].TeamBravoHeadshots.ShouldBe(0);
+                stats.teamStats[0].TeamAlphaShotsFired.ShouldBe(3);
+                stats.teamStats[0].TeamBravoShotsFired.ShouldBe(0);
 
-                allOutputData.AllStats.teamStats[1].Round.ShouldBe(2);
-                allOutputData.AllStats.teamStats[1].TeamAlphaKills.ShouldBe(1);
-                allOutputData.AllStats.teamStats[1].TeamAlphaDeaths.ShouldBe(0);
-                allOutputData.AllStats.teamStats[1].TeamAlphaHeadshots.ShouldBe(1);
-                allOutputData.AllStats.teamStats[1].TeamBravoKills.ShouldBe(0);
-                allOutputData.AllStats.teamStats[1].TeamBravoDeaths.ShouldBe(1);
-                allOutputData.AllStats.teamStats[1].TeamBravoHeadshots.ShouldBe(0);
-                allOutputData.AllStats.teamStats[1].TeamAlphaShotsFired.ShouldBe(3);
-                allOutputData.AllStats.teamStats[1].TeamBravoShotsFired.ShouldBe(1);
+                stats.teamStats[1].Round.ShouldBe(2);
+                stats.teamStats[1].TeamAlphaKills.ShouldBe(1);
+                stats.teamStats[1].TeamAlphaDeaths.ShouldBe(0);
+                stats.teamStats[1].TeamAlphaHeadshots.ShouldBe(1);
+                stats.teamStats[1].TeamBravoKills.ShouldBe(0);
+                stats.teamStats[1].TeamBravoDeaths.ShouldBe(1);
+                stats.teamStats[1].TeamBravoHeadshots.ShouldBe(0);
+                stats.teamStats[1].TeamAlphaShotsFired.ShouldBe(3);
+                stats.teamStats[1].TeamBravoShotsFired.ShouldBe(1);
             }
 
             [Fact]
@@ -1218,10 +1238,10 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.versionNumber.Version.ShouldBe(
+                stats.versionNumber.Version.ShouldBe(
                     Assembly.GetExecutingAssembly().GetName().Version.ToString(3)
                 );
             }
@@ -1232,13 +1252,20 @@ namespace SourceEngine.Demo.Stats.Tests
                 // Arrange
 
                 // Act
-                AllOutputData allOutputData = MatchData.CreateFiles(ProcessedData, false);
+                AllStats stats = Processor.GetAllStats();
 
                 // Assess
-                allOutputData.AllStats.winnersStats.TeamAlphaRounds.ShouldBe(2);
-                allOutputData.AllStats.winnersStats.TeamBetaRounds.ShouldBe(0);
-                allOutputData.AllStats.winnersStats.WinningTeam.ShouldBe("Team Alpha");
+                stats.winnersStats.TeamAlphaRounds.ShouldBe(2);
+                stats.winnersStats.TeamBetaRounds.ShouldBe(0);
+                stats.winnersStats.WinningTeam.ShouldBe("Team Alpha");
             }
+        }
+
+        public void Dispose()
+        {
+            Stream?.Dispose();
+            DemoParser?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
