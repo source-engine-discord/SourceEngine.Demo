@@ -114,96 +114,96 @@ namespace SourceEngine.Demo.Stats
             int duplicateIdToRemoveTicks = 0;
             int duplicateIdToRemoveLookup = 0;
 
-            if (p.Name != "unconnected" && p.Name != "GOTV")
+            if (p.Name is "unconnected" or "GOTV")
+                return false;
+
+            // Add the player to PlayerTicks if they aren't already in there.
+            if (!data.PlayerTicks.ContainsKey(p.UserID))
             {
-                if (!data.PlayerTicks.ContainsKey(p.UserID))
+                // Check if player has been added twice with different user IDs by comparing player names.
+                (int userId, TickCounter counter) =
+                    data.PlayerTicks.FirstOrDefault(x => x.Value.detectedName == p.Name);
+
+                // A player with the same name was found in PlayerTicks.
+                if (userId != 0)
                 {
-                    // check if player has been added twice with different UserIDs
-                    (int userId, TickCounter counter) =
-                        data.PlayerTicks.FirstOrDefault(x => x.Value.detectedName == p.Name);
+                    // Copy duplicate's information across.
+                    data.PlayerTicks.Add(
+                        p.UserID,
+                        new TickCounter
+                        {
+                            detectedName = counter.detectedName,
+                            ticksAlive = counter.ticksAlive,
+                            ticksOnServer = counter.ticksOnServer,
+                            ticksPlaying = counter.ticksPlaying,
+                        }
+                    );
 
-                    if (userId != 0)
-                    {
-                        // copy duplicate's information across
-                        data.PlayerTicks.Add(
-                            p.UserID,
-                            new TickCounter
-                            {
-                                detectedName = counter.detectedName,
-                                ticksAlive = counter.ticksAlive,
-                                ticksOnServer = counter.ticksOnServer,
-                                ticksPlaying = counter.ticksPlaying,
-                            }
-                        );
-
-                        duplicateIdToRemoveTicks = userId;
-                    }
-                    else
-                    {
-                        var detectedName = string.IsNullOrWhiteSpace(p.Name) ? "NOT FOUND" : p.Name;
-                        data.PlayerTicks.Add(p.UserID, new TickCounter { detectedName = detectedName });
-                    }
+                    duplicateIdToRemoveTicks = userId; // Mark the previous ID for removal.
                 }
-
-                if (!data.PlayerLookups.ContainsKey(p.UserID))
+                else
                 {
-                    // check if player has been added twice with different UserIDs
-                    KeyValuePair<int, long> duplicate =
-                        data.PlayerLookups.FirstOrDefault(x => x.Value == p.SteamID);
-
-                    if (duplicate.Key == 0) // if the steam ID was 0
-                        duplicate = data.PlayerLookups.FirstOrDefault(x => x.Key == duplicateIdToRemoveTicks);
-
-                    if (p.SteamID != 0)
-                        data.PlayerLookups.Add(p.UserID, p.SteamID);
-                    else if (p.SteamID == 0 && duplicate.Key != 0)
-                        data.PlayerLookups.Add(p.UserID, duplicate.Value);
-
-                    duplicateIdToRemoveLookup = duplicate.Key;
+                    var detectedName = string.IsNullOrWhiteSpace(p.Name) ? "NOT FOUND" : p.Name;
+                    data.PlayerTicks.Add(p.UserID, new TickCounter { detectedName = detectedName });
                 }
-
-                // remove duplicates
-                if (duplicateIdToRemoveTicks != 0 || duplicateIdToRemoveLookup != 0)
-                {
-                    if (duplicateIdToRemoveTicks != 0)
-                        data.PlayerTicks.Remove(duplicateIdToRemoveTicks);
-
-                    if (duplicateIdToRemoveLookup != 0)
-                        data.PlayerLookups.Remove(duplicateIdToRemoveLookup);
-
-                    /* store duplicate userIDs for replacing in events later on */
-                    var idRemoved = duplicateIdToRemoveLookup != 0
-                        ? duplicateIdToRemoveLookup
-                        : duplicateIdToRemoveTicks;
-
-                    // removes any instance of the old userID pointing to a different userID
-                    if (data.PlayerReplacements.Any(r => r.Key == idRemoved))
-                        data.PlayerReplacements.Remove(idRemoved);
-
-                    // tries to avoid infinite loops by removing the old entry
-                    if (data.PlayerReplacements.Any(r => r.Key == p.UserID && r.Value == idRemoved))
-                        data.PlayerReplacements.Remove(p.UserID);
-
-                    // replace current mappings between an ancient userID & the old userID, to use the new userID as the value instead
-                    if (data.PlayerReplacements.Any(r => r.Value == idRemoved))
-                    {
-                        IEnumerable<int> keysToReplaceValue = data.PlayerReplacements
-                            .Where(r => r.Value == idRemoved).Select(r => r.Key);
-
-                        foreach (var userId in keysToReplaceValue.ToList())
-                            data.PlayerReplacements[userId] = p.UserID;
-                    }
-
-                    data.PlayerReplacements.Add(
-                        idRemoved,
-                        p.UserID
-                    ); // Creates a new entry that maps the player's old user ID to their new user ID
-                }
-
-                return true;
             }
 
-            return false;
+            // Add the player to PlayerLookups if they aren't already in there.
+            if (!data.PlayerLookups.ContainsKey(p.UserID))
+            {
+                // Check if player has been added twice with different user IDs by comparing Steam IDs.
+                KeyValuePair<int, long> duplicate =
+                    data.PlayerLookups.FirstOrDefault(x => x.Value == p.SteamID);
+
+                // A duplicate was not found. Try again by using the duplicate PlayerTicks user ID.
+                if (duplicate.Key == 0)
+                    duplicate = data.PlayerLookups.FirstOrDefault(x => x.Key == duplicateIdToRemoveTicks);
+
+                if (p.SteamID != 0)
+                    // Given player has a valid Steam ID; map their user ID to their Steam ID.
+                    data.PlayerLookups.Add(p.UserID, p.SteamID);
+                else if (duplicate.Key != 0)
+                    // Map user ID to the duplicate Steam ID when the given player's Steam ID is 0.
+                    data.PlayerLookups.Add(p.UserID, duplicate.Value);
+
+                // Mark the previous ID for removal. Will remain 0 if no duplicate was found.
+                duplicateIdToRemoveLookup = duplicate.Key;
+            }
+
+            // Remove duplicates.
+            if (duplicateIdToRemoveTicks != 0 || duplicateIdToRemoveLookup != 0)
+            {
+                if (duplicateIdToRemoveTicks != 0)
+                    data.PlayerTicks.Remove(duplicateIdToRemoveTicks);
+
+                if (duplicateIdToRemoveLookup != 0)
+                    data.PlayerLookups.Remove(duplicateIdToRemoveLookup);
+
+                // Store duplicate user IDs for replacing in events later on.
+                var idRemoved = duplicateIdToRemoveLookup != 0
+                    ? duplicateIdToRemoveLookup
+                    : duplicateIdToRemoveTicks;
+
+                // Remove any instance of the old ID pointing to a different user ID.
+                // This probably isn't necessary, but it's left to avoid the risk of breaking anything.
+                data.PlayerReplacements.Remove(idRemoved);
+
+                // Remove the old entry to try to avoid infinite loops.
+                if (data.PlayerReplacements.TryGetValue(p.UserID, out int storedOldId) && storedOldId == idRemoved)
+                    data.PlayerReplacements.Remove(p.UserID);
+
+                // Replace all occurrences of mappings *to* the old ID with the new ID.
+                foreach ((int key, int value) in data.PlayerReplacements)
+                {
+                    if (value == idRemoved)
+                        data.PlayerReplacements[key] = p.UserID;
+                }
+
+                // Create a new entry that maps the player's old user ID to their new user ID.
+                data.PlayerReplacements.Add(idRemoved, p.UserID);
+            }
+
+            return true;
         }
 
         private static bool CheckIfPlayerAliveAtThisPointInRound(Collector collector, Player player, int round)
