@@ -43,7 +43,7 @@ namespace SourceEngine.Demo.Stats.App
             "testtype",
             Default = TestType.Unknown,
             HelpText = "The playtest type of the recorded match. "
-                + "If unset, attempt to parse it from the file name instead assuming the format date_mapname_testtype."
+                + "If unset, attempt to parse it from the file name instead assuming the format date_mapname_testtype. "
                 + "Only relevant for defuse and hostage game modes."
         )]
         public TestType TestType { get; set; }

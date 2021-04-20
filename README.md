@@ -50,7 +50,7 @@ Latest release:
                                       the recorded match. If unset, attempt to
                                       parse it from the file name instead
                                       assuming the format
-                                      date_mapname_testtype.Only relevant for
+                                      date_mapname_testtype. Only relevant for
                                       defuse and hostage game modes. Valid
                                       values: Casual, Competitive, Unknown
 
