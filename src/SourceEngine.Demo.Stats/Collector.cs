@@ -25,12 +25,12 @@ namespace SourceEngine.Demo.Stats
     public partial class Collector
     {
         private CollectedData data = new();
-        private readonly DemoParser dp;
+        private readonly DemoParser parser;
         private readonly DemoInformation demoInfo;
 
         public Collector(DemoParser parser, DemoInformation info)
         {
-            dp = parser;
+            this.parser = parser;
             demoInfo = info;
 
             BindEventHandlers();
@@ -38,8 +38,8 @@ namespace SourceEngine.Demo.Stats
 
         public CollectedData Collect()
         {
-            dp.ParseHeader();
-            dp.ParseToEnd();
+            parser.ParseHeader();
+            parser.ParseToEnd();
             FinaliseData();
 
             return data;
@@ -65,43 +65,43 @@ namespace SourceEngine.Demo.Stats
         private void BindEventHandlers()
         {
             // SERVER EVENTS ===================================================
-            dp.MatchStarted += MatchStartedEventHandler;
-            dp.ChickenKilled += ChickenKilledEventHandler;
-            dp.SayText2 += SayText2EventHandler;
-            dp.RoundEnd += RoundEndEventHandler;
-            dp.RoundOfficiallyEnded += RoundOfficiallyEndedEventHandler;
-            dp.SwitchSides += SwitchSidesEventHandler;
-            dp.FreezetimeEnded += FreezetimeEndedEventHandler;
+            parser.MatchStarted += MatchStartedEventHandler;
+            parser.ChickenKilled += ChickenKilledEventHandler;
+            parser.SayText2 += SayText2EventHandler;
+            parser.RoundEnd += RoundEndEventHandler;
+            parser.RoundOfficiallyEnded += RoundOfficiallyEndedEventHandler;
+            parser.SwitchSides += SwitchSidesEventHandler;
+            parser.FreezetimeEnded += FreezetimeEndedEventHandler;
 
             // PLAYER EVENTS ===================================================
-            dp.PlayerKilled += PlayerKilledEventHandler;
-            dp.PlayerHurt += PlayerHurtEventHandler;
-            dp.RoundMVP += RoundMVPEventHandler;
-            dp.PlayerDisconnect += PlayerDisconnectEventHandler;
-            dp.PlayerBind += PlayerBindEventHandler;
-            dp.PlayerPositions += PlayerPositionsEventHandler;
+            parser.PlayerKilled += PlayerKilledEventHandler;
+            parser.PlayerHurt += PlayerHurtEventHandler;
+            parser.RoundMVP += RoundMVPEventHandler;
+            parser.PlayerDisconnect += PlayerDisconnectEventHandler;
+            parser.PlayerBind += PlayerBindEventHandler;
+            parser.PlayerPositions += PlayerPositionsEventHandler;
 
             // BOMB EVENTS =====================================================
-            dp.BombPlanted += BombPlantedEventHandler;
-            dp.BombExploded += BombExplodedEventHandler;
-            dp.BombDefused += BombDefusedEventHandler;
+            parser.BombPlanted += BombPlantedEventHandler;
+            parser.BombExploded += BombExplodedEventHandler;
+            parser.BombDefused += BombDefusedEventHandler;
 
             // HOSTAGE EVENTS ==================================================
-            dp.HostageRescued += HostageRescuedEventHandler;
-            dp.HostagePickedUp += HostagePickedUpEventHandler;
+            parser.HostageRescued += HostageRescuedEventHandler;
+            parser.HostagePickedUp += HostagePickedUpEventHandler;
 
             // WEAPON EVENTS ===================================================
-            dp.WeaponFired += WeaponFiredEventHandler;
+            parser.WeaponFired += WeaponFiredEventHandler;
 
             // GRENADE EVENTS ==================================================
-            dp.ExplosiveNadeExploded += GrenadeEventHandler;
-            dp.FireNadeStarted += GrenadeEventHandler;
-            dp.SmokeNadeStarted += GrenadeEventHandler;
-            dp.FlashNadeExploded += GrenadeEventHandler;
-            dp.DecoyNadeStarted += GrenadeEventHandler;
+            parser.ExplosiveNadeExploded += GrenadeEventHandler;
+            parser.FireNadeStarted += GrenadeEventHandler;
+            parser.SmokeNadeStarted += GrenadeEventHandler;
+            parser.FlashNadeExploded += GrenadeEventHandler;
+            parser.DecoyNadeStarted += GrenadeEventHandler;
 
             // PLAYER TICK HANDLER =============================================
-            dp.TickDone += TickDoneEventHandler;
+            parser.TickDone += TickDoneEventHandler;
         }
 
         /// <summary>

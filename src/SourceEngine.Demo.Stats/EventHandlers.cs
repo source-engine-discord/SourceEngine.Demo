@@ -18,7 +18,7 @@ namespace SourceEngine.Demo.Stats
 
         private void TickDoneEventHandler(object sender, TickDoneEventArgs e)
         {
-            foreach (Player p in dp.PlayingParticipants)
+            foreach (Player p in parser.PlayingParticipants)
             {
                 AddTick(p, PSTATUS.PLAYING);
 
@@ -26,7 +26,7 @@ namespace SourceEngine.Demo.Stats
                     AddTick(p, PSTATUS.ALIVE);
             }
 
-            foreach (Player p in dp.Participants)
+            foreach (Player p in parser.Participants)
             {
                 if (!p.Disconnected)
                     AddTick(p, PSTATUS.ONSERVER);
@@ -72,7 +72,7 @@ namespace SourceEngine.Demo.Stats
             long steamId = e.Sender?.SteamID ?? 0;
             Player player = null;
             if (steamId != 0)
-                player = dp.Participants.FirstOrDefault(p => p.SteamID == steamId);
+                player = parser.Participants.FirstOrDefault(p => p.SteamID == steamId);
 
             var teamName = player?.Team.ToString();
             teamName = teamName == "Spectate" ? "Spectator" : teamName;
@@ -81,7 +81,7 @@ namespace SourceEngine.Demo.Stats
 
             float timeInRound = 0; // Stays as '0' if sent during freezetime
             if (freezetimeEndedCount > RoundOfficiallyEndedCount)
-                timeInRound = dp.CurrentTime - lastFreezetimeEnd;
+                timeInRound = parser.CurrentTime - lastFreezetimeEnd;
 
             var feedbackMessage = new FeedbackMessage
             {
@@ -119,7 +119,7 @@ namespace SourceEngine.Demo.Stats
                 // Therefore, the data for the round must be retrieved from the corresponding round_end event.
                 RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(RoundOfficiallyEndedCount);
 
-                dp.RaiseRoundOfficiallyEnded(
+                parser.RaiseRoundOfficiallyEnded(
                     new RoundOfficiallyEndedEventArgs
                     {
                         Message = roundEndedEvent?.Message ?? "Unknown",
@@ -135,7 +135,7 @@ namespace SourceEngine.Demo.Stats
             // the handler will have incremented freezetimeEndedCount by the next iteration.
             while (roundEndedEvents.Count >= freezetimeEndedCount)
             {
-                dp.RaiseFreezetimeEnded(
+                parser.RaiseFreezetimeEnded(
                     new FreezetimeEndedEventArgs
                     {
                         TimeEnd = -1, // no idea when this actually ended without guessing
@@ -160,7 +160,7 @@ namespace SourceEngine.Demo.Stats
             // the handler will have incremented roundEndedEvents.Count by the next iteration.
             while (RoundOfficiallyEndedCount >= roundEndedEvents.Count)
             {
-                dp.RaiseRoundEnd(
+                parser.RaiseRoundEnd(
                     new RoundEndedEventArgs
                     {
                         Winner = Team.Unknown,
@@ -177,7 +177,7 @@ namespace SourceEngine.Demo.Stats
             while (RoundOfficiallyEndedCount >= freezetimeEndedCount)
             {
                 // No idea when this actually ended without guessing.
-                dp.RaiseFreezetimeEnded(new FreezetimeEndedEventArgs { TimeEnd = -1 });
+                parser.RaiseFreezetimeEnded(new FreezetimeEndedEventArgs { TimeEnd = -1 });
 
                 // Set TimeInRound to '-1' for all feedback messages sent this round, as it will be wrong.
                 foreach (FeedbackMessage message in data.MessagesValues)
@@ -223,7 +223,7 @@ namespace SourceEngine.Demo.Stats
                 Console.WriteLine("Assuming the parse has finished.");
                 RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(RoundOfficiallyEndedCount);
 
-                dp.RaiseRoundOfficiallyEnded(
+                parser.RaiseRoundOfficiallyEnded(
                     new RoundOfficiallyEndedEventArgs
                     {
                         Reason = roundEndedEvent?.Reason ?? RoundEndReason.Unknown,
@@ -235,7 +235,7 @@ namespace SourceEngine.Demo.Stats
 
                 // Forcefully stops the demo from being parsed any further to avoid events (such as player deaths to
                 // world) happening in a next round (a round that never actually occurs).
-                dp.stopParsingDemo = true;
+                parser.stopParsingDemo = true;
                 return;
             }
 
@@ -244,7 +244,7 @@ namespace SourceEngine.Demo.Stats
             // the handler will have incremented roundEndedEvents.Count by the next iteration.
             while (freezetimeEndedCount > roundEndedEvents.Count)
             {
-                dp.RaiseRoundEnd(
+                parser.RaiseRoundEnd(
                     new RoundEndedEventArgs
                     {
                         Winner = Team.Unknown,
@@ -262,7 +262,7 @@ namespace SourceEngine.Demo.Stats
             {
                 RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(RoundOfficiallyEndedCount);
 
-                dp.RaiseRoundOfficiallyEnded(
+                parser.RaiseRoundOfficiallyEnded(
                     new RoundOfficiallyEndedEventArgs
                     {
                         Reason = roundEndedEvent?.Reason ?? RoundEndReason.Unknown,
@@ -284,7 +284,7 @@ namespace SourceEngine.Demo.Stats
         private TeamPlayers GetTeams()
         {
             //work out teams at current round
-            IEnumerable<Player> players = dp.PlayingParticipants;
+            IEnumerable<Player> players = parser.PlayingParticipants;
 
             return new TeamPlayers
             {

@@ -15,7 +15,7 @@ namespace SourceEngine.Demo.Stats
 {
     public class MatchData
     {
-        private static DemoParser dp;
+        private static DemoParser parser;
         private readonly CollectedData data;
         private readonly DemoInformation demoInfo;
 
@@ -25,7 +25,7 @@ namespace SourceEngine.Demo.Stats
         public MatchData(DemoParser parser, DemoInformation demoInfo, CollectedData data)
         {
             this.demoInfo = demoInfo;
-            dp = parser;
+            MatchData.parser = parser;
             this.data = data;
         }
 
@@ -88,7 +88,7 @@ namespace SourceEngine.Demo.Stats
             if (CheckIfStatsShouldBeCreated("feedbackMessages", demoInfo.GameMode))
                 allStats.feedbackMessages = GetFeedbackMessages(data, dataAndPlayerNames.PlayerNames);
 
-            if (dp.ParseChickens && CheckIfStatsShouldBeCreated(
+            if (parser.ParseChickens && CheckIfStatsShouldBeCreated(
                 "chickenStats",
                 demoInfo.GameMode
             ))
@@ -117,7 +117,7 @@ namespace SourceEngine.Demo.Stats
             AllStats allStats = GetAllStats();
             PlayerPositionsStats playerPositionsStats = null;
 
-            if (dp.ParsePlayerPositions && CheckIfStatsShouldBeCreated(
+            if (parser.ParsePlayerPositions && CheckIfStatsShouldBeCreated(
                 "playerPositionsStats",
                 demoInfo.GameMode
             ))
@@ -241,7 +241,7 @@ namespace SourceEngine.Demo.Stats
                     t => t.Terrorists.Count > 10
                         && collectedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count == 0)
                 ) || // assume danger zone if more than 10 Terrorists and 0 CounterTerrorists
-                dp.hostageAIndex > -1 && dp.hostageBIndex > -1
+                parser.hostageAIndex > -1 && parser.hostageBIndex > -1
                 && !collectedData.MatchStartValues.Any(
                     m => m.HasBombsites
                 ) // assume danger zone if more than one hostage rescue zone
@@ -253,10 +253,10 @@ namespace SourceEngine.Demo.Stats
                 t => t.Terrorists.Count > 2 && collectedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count > 2)
             ))
             {
-                if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1
+                if (parser.bombsiteAIndex > -1 || parser.bombsiteBIndex > -1
                     || collectedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = nameof(GameMode.Defuse).ToLower();
-                else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
+                else if ((parser.hostageAIndex > -1 || parser.hostageBIndex > -1)
                     && !collectedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = nameof(GameMode.Hostage).ToLower();
                 else // what the hell is this game mode ??
@@ -264,10 +264,10 @@ namespace SourceEngine.Demo.Stats
             }
             else
             {
-                if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1
+                if (parser.bombsiteAIndex > -1 || parser.bombsiteBIndex > -1
                     || collectedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = nameof(GameMode.WingmanDefuse).ToLower();
-                else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
+                else if ((parser.hostageAIndex > -1 || parser.hostageBIndex > -1)
                     && !collectedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = nameof(GameMode.WingmanHostage).ToLower();
                 else // what the hell is this game mode ??
@@ -729,8 +729,8 @@ namespace SourceEngine.Demo.Stats
 
         public static List<bombsiteStats> GetBombsiteStats(CollectedData collectedData)
         {
-            BoundingBox bombsiteATrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteAIndex);
-            BoundingBox bombsiteBTrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteBIndex);
+            BoundingBox bombsiteATrigger = parser?.Triggers.GetValueOrDefault(parser.bombsiteAIndex);
+            BoundingBox bombsiteBTrigger = parser?.Triggers.GetValueOrDefault(parser.bombsiteBIndex);
 
             return new()
             {
@@ -790,12 +790,12 @@ namespace SourceEngine.Demo.Stats
         {
             var rescueZoneStats = new List<rescueZoneStats>();
 
-            if (dp is null)
+            if (parser is null)
                 return rescueZoneStats;
 
-            foreach ((int entityId, BoundingBox rescueZone) in dp.Triggers)
+            foreach ((int entityId, BoundingBox rescueZone) in parser.Triggers)
             {
-                if (entityId == dp.bombsiteAIndex || entityId == dp.bombsiteBIndex)
+                if (entityId == parser.bombsiteAIndex || entityId == parser.bombsiteBIndex)
                     continue;
 
                 rescueZoneStats.Add(
