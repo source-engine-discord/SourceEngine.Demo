@@ -37,8 +37,15 @@ namespace SourceEngine.Demo.Stats
 
         private void MatchStartedEventHandler(object sender, MatchStartedEventArgs e)
         {
-            // Reset all stats stored except for the feedback messages.
-            data = new CollectedData { MessagesValues = data.MessagesValues };
+            // Reset all stats stored except for the feedback messages and some player data.
+            data = new CollectedData
+            {
+                MessagesValues = data.MessagesValues,
+                PlayerLookups = data.PlayerLookups,
+                PlayerReplacements = data.PlayerReplacements,
+                PlayerTicks = data.PlayerTicks,
+            };
+
             roundEndedEvents.Clear();
             RoundOfficiallyEndedCount = 0;
             freezetimeEndedCount = 0;
