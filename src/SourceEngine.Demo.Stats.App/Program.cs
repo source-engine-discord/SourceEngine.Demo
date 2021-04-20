@@ -17,7 +17,7 @@ namespace SourceEngine.Demo.Stats.App
     internal class Options
     {
         private string testDateOverride;
-        private uint? hostageRescueZoneCountOverride;
+        private uint hostageRescueZoneCountOverride;
 
         [Option(
             "folders",
@@ -68,17 +68,16 @@ namespace SourceEngine.Demo.Stats.App
 
         [Option(
             "hostagerescuezonecountoverride",
-            HelpText ="Number of hostage rescue zones in the map. "
-                + "If unset, a total of 1 is assumed for the hostage game mode and 2 for Danger Zone. "
-                + "Valid values: 0-2"
+            Default = 4u,
+            HelpText = "Number of hostage rescue zones in the map. Valid values: 0-4"
         )]
-        public uint? HostageRescueZoneCountOverride
+        public uint HostageRescueZoneCountOverride
         {
             get => hostageRescueZoneCountOverride;
             set
             {
-                if (value is { } count && count > 2)
-                    throw new Exception("Value must be between 0 and 2, inclusive.");
+                if (value > 4)
+                    throw new Exception("Value must be between 0 and 4, inclusive.");
 
                 hostageRescueZoneCountOverride = value;
             }
@@ -217,20 +216,14 @@ namespace SourceEngine.Demo.Stats.App
 
         private static void ParseSingle(Options opts, DemoInformation demoInfo, ChildProgressBar pBar)
         {
-            // This is here until a better place for it is found or a way to dynamically deduce the count is found.
-            if (opts.HostageRescueZoneCountOverride is not { } hostageRescueZones)
-            {
-                if (demoInfo.GameMode is GameMode.DangerZone)
-                    hostageRescueZones = 2;
-                else if (demoInfo.GameMode is GameMode.Hostage)
-                    hostageRescueZones = 1;
-                else
-                    hostageRescueZones = 0;
-            }
-
             // Create the demo and stats parsers.
             using FileStream file = File.OpenRead(demoInfo.DemoName);
-            using var parser = new DemoParser(file, !opts.NoChickens, !opts.NoPlayerOptions, hostageRescueZones);
+            using var parser = new DemoParser(
+                file,
+                !opts.NoChickens,
+                !opts.NoPlayerOptions,
+                opts.HostageRescueZoneCountOverride
+            );
             var collector = new Collector(parser, demoInfo);
 
             // Set up events to report progress.
