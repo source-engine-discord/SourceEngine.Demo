@@ -231,18 +231,17 @@ namespace SourceEngine.Demo.Stats.App
             // Create the demo and stats parsers.
             using FileStream file = File.OpenRead(demoInfo.DemoName);
             using var parser = new DemoParser(file, !opts.NoChickens, !opts.NoPlayerOptions, hostageRescueZones);
-            var matchData = new MatchData(parser, demoInfo);
+            var collector = new Collector(parser, demoInfo);
 
             // Set up events to report progress.
             IProgress<float> progress = pBar.AsProgress<float>();
             parser.TickDone += (_, _) => progress.Report(parser.ParsingProgess);
             parser.MatchStarted += (_, _) => pBar.Message = $"{demoInfo.DemoName}: Match started";
             parser.RoundOfficiallyEnded += (_, _) =>
-                pBar.Message = $"{demoInfo.DemoName}: Round {matchData.RoundOfficiallyEndedCount} ended";
+                pBar.Message = $"{demoInfo.DemoName}: Round {collector.RoundOfficiallyEndedCount} ended";
 
             // Start parsing.
-            parser.ParseHeader();
-            parser.ParseToEnd();
+            var matchData = new MatchData(parser, demoInfo, collector.Collect());
             matchData.CreateFiles(
                 opts.Output,
                 opts.Folders.ToList(),

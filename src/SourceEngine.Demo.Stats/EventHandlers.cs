@@ -8,7 +8,7 @@ using SourceEngine.Demo.Stats.Models;
 
 namespace SourceEngine.Demo.Stats
 {
-    public partial class MatchData
+    public partial class Collector
     {
         private readonly List<RoundEndedEventArgs> roundEndedEvents = new();
         private int freezetimeEndedCount;
@@ -20,16 +20,16 @@ namespace SourceEngine.Demo.Stats
         {
             foreach (Player p in dp.PlayingParticipants)
             {
-                addTick(p, PSTATUS.PLAYING);
+                AddTick(p, PSTATUS.PLAYING);
 
                 if (p.IsAlive)
-                    addTick(p, PSTATUS.ALIVE);
+                    AddTick(p, PSTATUS.ALIVE);
             }
 
             foreach (Player p in dp.Participants)
             {
                 if (!p.Disconnected)
-                    addTick(p, PSTATUS.ONSERVER);
+                    AddTick(p, PSTATUS.ONSERVER);
             }
         }
 

@@ -66,6 +66,12 @@ namespace SourceEngine.Demo.Stats.Models
 
         public List<PlayerPositionsInstance> PlayerPositionsValues { get; set; } = new();
 
+        public Dictionary<int, long> PlayerLookups { get; set; } = new();
+
+        public Dictionary<int, int> PlayerReplacements { get; set; } = new();
+
+        public Dictionary<int, TickCounter> PlayerTicks { get; set; } = new();
+
         public bool WriteTicks { get; set; }
     }
 }
