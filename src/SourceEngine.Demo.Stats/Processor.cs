@@ -13,7 +13,7 @@ using SourceEngine.Demo.Stats.Models;
 
 namespace SourceEngine.Demo.Stats
 {
-    public class MatchData
+    public class Processor
     {
         private static DemoParser parser;
         private readonly CollectedData data;
@@ -22,10 +22,10 @@ namespace SourceEngine.Demo.Stats
         // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
         public bool changingPlantedRoundsToA, changingPlantedRoundsToB;
 
-        public MatchData(DemoParser parser, DemoInformation demoInfo, CollectedData data)
+        public Processor(DemoParser parser, DemoInformation demoInfo, CollectedData data)
         {
             this.demoInfo = demoInfo;
-            MatchData.parser = parser;
+            Processor.parser = parser;
             this.data = data;
         }
 

@@ -241,8 +241,8 @@ namespace SourceEngine.Demo.Stats.App
                 pBar.Message = $"{demoInfo.DemoName}: Round {collector.RoundOfficiallyEndedCount} ended";
 
             // Start parsing.
-            var matchData = new MatchData(parser, demoInfo, collector.Collect());
-            matchData.CreateFiles(
+            var processor = new Processor(parser, demoInfo, collector.Collect());
+            processor.CreateFiles(
                 opts.Output,
                 opts.Folders.ToList(),
                 opts.SameFileName,
