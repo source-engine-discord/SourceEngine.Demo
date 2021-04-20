@@ -38,14 +38,14 @@ namespace SourceEngine.Demo.Stats
         private void MatchStartedEventHandler(object sender, MatchStartedEventArgs e)
         {
             // Reset all stats stored except for the feedback messages.
-            processedData = new ProcessedData { MessagesValues = processedData.MessagesValues };
+            data = new CollectedData { MessagesValues = data.MessagesValues };
             roundEndedEvents.Clear();
             RoundOfficiallyEndedCount = 0;
             freezetimeEndedCount = 0;
             lastFreezetimeEnd = -1;
 
             // Modify some properties of the saved feedback messages.
-            foreach (FeedbackMessage feedbackMessage in processedData.MessagesValues)
+            foreach (FeedbackMessage feedbackMessage in data.MessagesValues)
             {
                 feedbackMessage.Round = 0;
 
@@ -54,12 +54,12 @@ namespace SourceEngine.Demo.Stats
                 feedbackMessage.TimeInRound = 0;
             }
 
-            processedData.MatchStartValues.Add(e);
+            data.MatchStartValues.Add(e);
         }
 
         private void ChickenKilledEventHandler(object sender, ChickenKilledEventArgs e)
         {
-            processedData.ChickenValues.Add(e);
+            data.ChickenValues.Add(e);
         }
 
         private void SayText2EventHandler(object sender, SayText2EventArgs e)
@@ -105,7 +105,7 @@ namespace SourceEngine.Demo.Stats
                 TimeInRound = timeInRound,
             };
 
-            processedData.MessagesValues.Add(feedbackMessage);
+            data.MessagesValues.Add(feedbackMessage);
         }
 
         private void RoundEndEventHandler(object sender, RoundEndedEventArgs e)
@@ -143,7 +143,7 @@ namespace SourceEngine.Demo.Stats
                 );
 
                 // Set TimeInRound to '-1' for all feedback messages sent this round, as it will be wrong.
-                foreach (FeedbackMessage message in processedData.MessagesValues)
+                foreach (FeedbackMessage message in data.MessagesValues)
                 {
                     if (message.Round == freezetimeEndedCount)
                         message.TimeInRound = -1;
@@ -180,7 +180,7 @@ namespace SourceEngine.Demo.Stats
                 dp.RaiseFreezetimeEnded(new FreezetimeEndedEventArgs { TimeEnd = -1 });
 
                 // Set TimeInRound to '-1' for all feedback messages sent this round, as it will be wrong.
-                foreach (FeedbackMessage message in processedData.MessagesValues)
+                foreach (FeedbackMessage message in data.MessagesValues)
                 {
                     if (message.Round == freezetimeEndedCount)
                         message.TimeInRound = -1;
@@ -192,16 +192,16 @@ namespace SourceEngine.Demo.Stats
             // The exception is the length, which is determined by the GameEventHandler before raising the event.
             RoundEndedEventArgs roundEndedEvent = roundEndedEvents.LastOrDefault();
 
-            processedData.RoundLengthValues.Add(e.Length);
-            processedData.RoundEndReasonValues.Add(roundEndedEvent?.Reason ?? RoundEndReason.Unknown);
-            processedData.TeamValues.Add(roundEndedEvent?.Winner ?? Team.Unknown);
+            data.RoundLengthValues.Add(e.Length);
+            data.RoundEndReasonValues.Add(roundEndedEvent?.Reason ?? RoundEndReason.Unknown);
+            data.TeamValues.Add(roundEndedEvent?.Winner ?? Team.Unknown);
             RoundOfficiallyEndedCount++;
         }
 
         private void SwitchSidesEventHandler(object sender, SwitchSidesEventArgs e)
         {
             // announce_phase_end event occurs before round_officially_ended event
-            processedData.SwitchSidesValues.Add(
+            data.SwitchSidesValues.Add(
                 new SwitchSidesEventArgs
                 {
                     RoundBeforeSwitch = RoundOfficiallyEndedCount + 1,
@@ -277,8 +277,8 @@ namespace SourceEngine.Demo.Stats
             lastFreezetimeEnd = e.TimeEnd;
 
             TeamPlayers teams = GetTeams();
-            processedData.TeamPlayersValues.Add(teams);
-            processedData.TeamEquipmentValues.Add(GetTeamEquipment(teams));
+            data.TeamPlayersValues.Add(teams);
+            data.TeamEquipmentValues.Add(GetTeamEquipment(teams));
         }
 
         private TeamPlayers GetTeams()
@@ -333,17 +333,17 @@ namespace SourceEngine.Demo.Stats
         {
             e.Round = GetCurrentRoundNum(this, demoInfo.GameMode);
 
-            processedData.PlayerKilledEventsValues.Add(e);
-            processedData.WeaponValues.Add(e.Weapon);
-            processedData.PenetrationValues.Add(e.PenetratedObjects);
-            processedData.PlayerValues["Kills"].Add(e.Killer);
-            processedData.PlayerValues["Deaths"].Add(e.Victim);
+            data.PlayerKilledEventsValues.Add(e);
+            data.WeaponValues.Add(e.Weapon);
+            data.PenetrationValues.Add(e.PenetratedObjects);
+            data.PlayerValues["Kills"].Add(e.Killer);
+            data.PlayerValues["Deaths"].Add(e.Victim);
 
             if (e.Headshot)
-                processedData.PlayerValues["Headshots"].Add(e.Killer);
+                data.PlayerValues["Headshots"].Add(e.Killer);
 
             if (e.Assister is not null)
-                processedData.PlayerValues["Assists"].Add(e.Assister);
+                data.PlayerValues["Assists"].Add(e.Assister);
         }
 
         private void PlayerHurtEventHandler(object sender, PlayerHurtEventArgs e)
@@ -370,7 +370,7 @@ namespace SourceEngine.Demo.Stats
                     AssistedFlash = false,
                 };
 
-                processedData.PlayerKilledEventsValues.Add(playerKilledEventArgs);
+                data.PlayerKilledEventsValues.Add(playerKilledEventArgs);
             }
 
             var player = new Player(e.Player);
@@ -397,18 +397,18 @@ namespace SourceEngine.Demo.Stats
                 PossiblyKilledByBombExplosion = e.PossiblyKilledByBombExplosion,
             };
 
-            processedData.PlayerHurtValues.Add(playerHurt);
+            data.PlayerHurtValues.Add(playerHurt);
         }
 
         private void RoundMVPEventHandler(object sender, RoundMVPEventArgs e)
         {
-            processedData.PlayerValues["MVPs"].Add(e.Player);
+            data.PlayerValues["MVPs"].Add(e.Player);
         }
 
         private void PlayerDisconnectEventHandler(object sender, PlayerDisconnectEventArgs e)
         {
             if (e.Player != null && e.Player.Name != "unconnected" && e.Player.Name != "GOTV")
-                processedData.DisconnectedPlayerValues.Add(
+                data.DisconnectedPlayerValues.Add(
                     new DisconnectedPlayer
                     {
                         PlayerDisconnectEventArgs = e,
@@ -438,7 +438,7 @@ namespace SourceEngine.Demo.Stats
                 if (!playerAlive || !freezetimeEndedThisRound)
                     continue;
 
-                processedData.PlayerPositionsValues.Add(
+                data.PlayerPositionsValues.Add(
                     new PlayerPositionsInstance
                     {
                         Round = round,
@@ -459,8 +459,8 @@ namespace SourceEngine.Demo.Stats
 
         private void BombPlantedEventHandler(object sender, BombEventArgs e)
         {
-            processedData.PlayerValues["Plants"].Add(e.Player);
-            processedData.BombsitePlantValues.Add(
+            data.PlayerValues["Plants"].Add(e.Player);
+            data.BombsitePlantValues.Add(
                 new BombPlanted
                 {
                     Round = RoundOfficiallyEndedCount + 1,
@@ -473,7 +473,7 @@ namespace SourceEngine.Demo.Stats
 
         private void BombExplodedEventHandler(object sender, BombEventArgs e)
         {
-            processedData.BombsiteExplodeValues.Add(
+            data.BombsiteExplodeValues.Add(
                 new BombExploded
                 {
                     Round = RoundOfficiallyEndedCount + 1,
@@ -486,8 +486,8 @@ namespace SourceEngine.Demo.Stats
 
         private void BombDefusedEventHandler(object sender, BombEventArgs e)
         {
-            processedData.PlayerValues["Defuses"].Add(e.Player);
-            processedData.BombsiteDefuseValues.Add(
+            data.PlayerValues["Defuses"].Add(e.Player);
+            data.BombsiteDefuseValues.Add(
                 new BombDefused
                 {
                     Round = RoundOfficiallyEndedCount + 1,
@@ -505,8 +505,8 @@ namespace SourceEngine.Demo.Stats
 
         private void HostageRescuedEventHandler(object sender, HostageRescuedEventArgs e)
         {
-            processedData.PlayerValues["Rescues"].Add(e.Player);
-            processedData.HostageRescueValues.Add(
+            data.PlayerValues["Rescues"].Add(e.Player);
+            data.HostageRescueValues.Add(
                 new HostageRescued
                 {
                     Round = RoundOfficiallyEndedCount + 1,
@@ -521,7 +521,7 @@ namespace SourceEngine.Demo.Stats
 
         private void HostagePickedUpEventHandler(object sender, HostagePickedUpEventArgs e)
         {
-            processedData.HostagePickedUpValues.Add(
+            data.HostagePickedUpValues.Add(
                 new HostagePickedUp
                 {
                     Round = RoundOfficiallyEndedCount + 1,
@@ -539,8 +539,8 @@ namespace SourceEngine.Demo.Stats
 
         private void WeaponFiredEventHandler(object sender, WeaponFiredEventArgs e)
         {
-            processedData.PlayerValues["Shots"].Add(e.Shooter);
-            processedData.ShotsFiredValues.Add(
+            data.PlayerValues["Shots"].Add(e.Shooter);
+            data.ShotsFiredValues.Add(
                 new ShotFired
                 {
                     Round = GetCurrentRoundNum(this, demoInfo.GameMode),
@@ -554,7 +554,7 @@ namespace SourceEngine.Demo.Stats
 
         private void GrenadeEventHandler(object sender, NadeEventArgs e)
         {
-            processedData.GrenadeValues.Add(e);
+            data.GrenadeValues.Add(e);
         }
 
         #endregion

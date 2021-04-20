@@ -16,44 +16,44 @@ namespace SourceEngine.Demo.Stats
     public class MatchData
     {
         private static DemoParser dp;
-        private readonly ProcessedData processedData;
+        private readonly CollectedData data;
         private readonly DemoInformation demoInfo;
 
         // Used in ValidateBombsite() for knowing when a bombsite plant site has been changed from '?' to an actual bombsite letter
         public bool changingPlantedRoundsToA, changingPlantedRoundsToB;
 
-        public MatchData(DemoParser parser, DemoInformation demoInfo, ProcessedData data)
+        public MatchData(DemoParser parser, DemoInformation demoInfo, CollectedData data)
         {
             this.demoInfo = demoInfo;
             dp = parser;
-            processedData = data;
+            this.data = data;
         }
 
         public AllStats GetAllStats()
         {
-            var mapNameSplit = processedData.MatchStartValues.Any()
-                ? processedData.MatchStartValues.ElementAt(0).Mapname.Split('/')
+            var mapNameSplit = data.MatchStartValues.Any()
+                ? data.MatchStartValues.ElementAt(0).Mapname.Split('/')
                 : new[] { demoInfo.MapName };
 
-            DataAndPlayerNames dataAndPlayerNames = GetDataAndPlayerNames(processedData);
+            DataAndPlayerNames dataAndPlayerNames = GetDataAndPlayerNames(data);
 
             var allStats = new AllStats
             {
                 versionNumber = GetVersionNumber(),
                 supportedGamemodes = Enum.GetNames(typeof(GameMode)).Select(gm => gm.ToLower()).ToList(),
-                mapInfo = GetMapInfo(processedData, mapNameSplit),
-                tanookiStats = processedData.tanookiStats,
+                mapInfo = GetMapInfo(data, mapNameSplit),
+                tanookiStats = data.tanookiStats,
             };
 
             if (CheckIfStatsShouldBeCreated("playerStats", demoInfo.GameMode))
                 allStats.playerStats = GetPlayerStats(
-                    processedData,
+                    data,
                     dataAndPlayerNames.Data,
                     dataAndPlayerNames.PlayerNames
                 );
 
             GeneralroundsStats generalroundsStats = GetGeneralRoundsStats(
-                processedData,
+                data,
                 dataAndPlayerNames.PlayerNames
             );
 
@@ -64,15 +64,15 @@ namespace SourceEngine.Demo.Stats
                 allStats.roundsStats = generalroundsStats.roundsStats;
 
             if (CheckIfStatsShouldBeCreated("bombsiteStats", demoInfo.GameMode))
-                allStats.bombsiteStats = GetBombsiteStats(processedData);
+                allStats.bombsiteStats = GetBombsiteStats(data);
 
             if (CheckIfStatsShouldBeCreated("hostageStats", demoInfo.GameMode))
-                allStats.hostageStats = GetHostageStats(processedData);
+                allStats.hostageStats = GetHostageStats(data);
 
             if (CheckIfStatsShouldBeCreated("rescueZoneStats", demoInfo.GameMode))
                 allStats.rescueZoneStats = GetRescueZoneStats();
 
-            Dictionary<EquipmentElement, List<NadeEventArgs>> nadeGroups = processedData.GrenadeValues
+            Dictionary<EquipmentElement, List<NadeEventArgs>> nadeGroups = data.GrenadeValues
                 .Where(e => e.NadeType >= EquipmentElement.Decoy && e.NadeType <= EquipmentElement.HE)
                 .GroupBy(e => e.NadeType).ToDictionary(g => g.Key, g => g.ToList());
 
@@ -83,27 +83,27 @@ namespace SourceEngine.Demo.Stats
                 allStats.grenadesSpecificStats = GetGrenadesSpecificStats(nadeGroups, dataAndPlayerNames.PlayerNames);
 
             if (CheckIfStatsShouldBeCreated("killsStats", demoInfo.GameMode))
-                allStats.killsStats = GetKillsStats(processedData, dataAndPlayerNames.PlayerNames);
+                allStats.killsStats = GetKillsStats(data, dataAndPlayerNames.PlayerNames);
 
             if (CheckIfStatsShouldBeCreated("feedbackMessages", demoInfo.GameMode))
-                allStats.feedbackMessages = GetFeedbackMessages(processedData, dataAndPlayerNames.PlayerNames);
+                allStats.feedbackMessages = GetFeedbackMessages(data, dataAndPlayerNames.PlayerNames);
 
             if (dp.ParseChickens && CheckIfStatsShouldBeCreated(
                 "chickenStats",
                 demoInfo.GameMode
             ))
-                allStats.chickenStats = GetChickenStats(processedData);
+                allStats.chickenStats = GetChickenStats(data);
 
             if (CheckIfStatsShouldBeCreated("teamStats", demoInfo.GameMode))
                 allStats.teamStats = GetTeamStats(
-                    processedData,
+                    data,
                     allStats,
                     dataAndPlayerNames.PlayerNames,
                     generalroundsStats.SwitchSides
                 );
 
             if (CheckIfStatsShouldBeCreated("firstDamageStats", demoInfo.GameMode))
-                allStats.firstDamageStats = GetFirstDamageStats(processedData);
+                allStats.firstDamageStats = GetFirstDamageStats(data);
 
             return allStats;
         }
@@ -122,7 +122,7 @@ namespace SourceEngine.Demo.Stats
                 demoInfo.GameMode
             ))
             {
-                playerPositionsStats = GetPlayerPositionsStats(processedData, allStats);
+                playerPositionsStats = GetPlayerPositionsStats(data, allStats);
             }
 
             if (createJsonFile)
@@ -150,14 +150,14 @@ namespace SourceEngine.Demo.Stats
             };
         }
 
-        public DataAndPlayerNames GetDataAndPlayerNames(ProcessedData processedData)
+        public DataAndPlayerNames GetDataAndPlayerNames(CollectedData collectedData)
         {
             var data = new Dictionary<long, Dictionary<string, long>>();
             var playerNames = new Dictionary<long, Dictionary<string, string>>();
 
-            foreach (string catagory in processedData.PlayerValues.Keys)
+            foreach (string catagory in collectedData.PlayerValues.Keys)
             {
-                foreach (Player p in processedData.PlayerValues[catagory])
+                foreach (Player p in collectedData.PlayerValues[catagory])
                 {
                     //Skip players not in this category
                     if (p == null)
@@ -169,25 +169,25 @@ namespace SourceEngine.Demo.Stats
                     while (CheckForUpdatedUserId(userId) != userId)
                         userId = CheckForUpdatedUserId(userId);
 
-                    if (!processedData.PlayerLookups.ContainsKey(userId))
+                    if (!collectedData.PlayerLookups.ContainsKey(userId))
                         continue;
 
                     //Add player to collections list if doesn't exist
-                    if (!playerNames.ContainsKey(processedData.PlayerLookups[userId]))
-                        playerNames.Add(processedData.PlayerLookups[userId], new Dictionary<string, string>());
+                    if (!playerNames.ContainsKey(collectedData.PlayerLookups[userId]))
+                        playerNames.Add(collectedData.PlayerLookups[userId], new Dictionary<string, string>());
 
-                    if (!data.ContainsKey(processedData.PlayerLookups[userId]))
-                        data.Add(processedData.PlayerLookups[userId], new Dictionary<string, long>());
+                    if (!data.ContainsKey(collectedData.PlayerLookups[userId]))
+                        data.Add(collectedData.PlayerLookups[userId], new Dictionary<string, long>());
 
                     //Add category to dictionary if doesn't exist
-                    if (!playerNames[processedData.PlayerLookups[userId]].ContainsKey("Name"))
-                        playerNames[processedData.PlayerLookups[userId]].Add("Name", p.Name);
+                    if (!playerNames[collectedData.PlayerLookups[userId]].ContainsKey("Name"))
+                        playerNames[collectedData.PlayerLookups[userId]].Add("Name", p.Name);
 
-                    if (!data[processedData.PlayerLookups[userId]].ContainsKey(catagory))
-                        data[processedData.PlayerLookups[userId]].Add(catagory, 0);
+                    if (!data[collectedData.PlayerLookups[userId]].ContainsKey(catagory))
+                        data[collectedData.PlayerLookups[userId]].Add(catagory, 0);
 
                     //Increment it
-                    data[processedData.PlayerLookups[userId]][catagory]++;
+                    data[collectedData.PlayerLookups[userId]][catagory]++;
                 }
             }
 
@@ -203,7 +203,7 @@ namespace SourceEngine.Demo.Stats
             return new() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3) };
         }
 
-        public mapInfo GetMapInfo(ProcessedData processedData, string[] mapNameSplit)
+        public mapInfo GetMapInfo(CollectedData collectedData, string[] mapNameSplit)
         {
             var mapInfo = new mapInfo
             {
@@ -226,7 +226,7 @@ namespace SourceEngine.Demo.Stats
                     ); // the filename of the demo, for Faceit games this is also in the "demo_url" value
 
             // attempts to get the game mode
-            GetRoundsWonReasons(processedData.RoundEndReasonValues);
+            GetRoundsWonReasons(collectedData.RoundEndReasonValues);
 
             // use the provided game mode if given as a parameter
             if (demoInfo.GameMode is not GameMode.Unknown)
@@ -237,27 +237,27 @@ namespace SourceEngine.Demo.Stats
             }
 
             // work out the game mode if it wasn't provided as a parameter
-            if (processedData.TeamPlayersValues.Any(
+            if (collectedData.TeamPlayersValues.Any(
                     t => t.Terrorists.Count > 10
-                        && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count == 0)
+                        && collectedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count == 0)
                 ) || // assume danger zone if more than 10 Terrorists and 0 CounterTerrorists
                 dp.hostageAIndex > -1 && dp.hostageBIndex > -1
-                && !processedData.MatchStartValues.Any(
+                && !collectedData.MatchStartValues.Any(
                     m => m.HasBombsites
                 ) // assume danger zone if more than one hostage rescue zone
             )
             {
                 mapInfo.GameMode = nameof(GameMode.DangerZone).ToLower();
             }
-            else if (processedData.TeamPlayersValues.Any(
-                t => t.Terrorists.Count > 2 && processedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count > 2)
+            else if (collectedData.TeamPlayersValues.Any(
+                t => t.Terrorists.Count > 2 && collectedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count > 2)
             ))
             {
                 if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1
-                    || processedData.MatchStartValues.Any(m => m.HasBombsites))
+                    || collectedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = nameof(GameMode.Defuse).ToLower();
                 else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
-                    && !processedData.MatchStartValues.Any(m => m.HasBombsites))
+                    && !collectedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = nameof(GameMode.Hostage).ToLower();
                 else // what the hell is this game mode ??
                     mapInfo.GameMode = nameof(GameMode.Unknown).ToLower();
@@ -265,10 +265,10 @@ namespace SourceEngine.Demo.Stats
             else
             {
                 if (dp.bombsiteAIndex > -1 || dp.bombsiteBIndex > -1
-                    || processedData.MatchStartValues.Any(m => m.HasBombsites))
+                    || collectedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = nameof(GameMode.WingmanDefuse).ToLower();
                 else if ((dp.hostageAIndex > -1 || dp.hostageBIndex > -1)
-                    && !processedData.MatchStartValues.Any(m => m.HasBombsites))
+                    && !collectedData.MatchStartValues.Any(m => m.HasBombsites))
                     mapInfo.GameMode = nameof(GameMode.WingmanHostage).ToLower();
                 else // what the hell is this game mode ??
                     mapInfo.GameMode = nameof(GameMode.Unknown).ToLower();
@@ -278,14 +278,14 @@ namespace SourceEngine.Demo.Stats
         }
 
         public List<playerStats> GetPlayerStats(
-            ProcessedData processedData,
+            CollectedData collectedData,
             Dictionary<long, Dictionary<string, long>> data,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
             var playerStats = new List<playerStats>();
 
             // remove team kills and suicides from kills (easy messy implementation)
-            foreach (PlayerKilledEventArgs kill in processedData.PlayerKilledEventsValues)
+            foreach (PlayerKilledEventArgs kill in collectedData.PlayerKilledEventsValues)
             {
                 if (kill.Killer != null && kill.Killer.Name != "unconnected")
                 {
@@ -296,9 +296,9 @@ namespace SourceEngine.Demo.Stats
                         userId = CheckForUpdatedUserId(userId);
 
                     if (kill.Suicide)
-                        data[processedData.PlayerLookups[userId]]["Kills"] -= 1;
+                        data[collectedData.PlayerLookups[userId]]["Kills"] -= 1;
                     else if (kill.TeamKill)
-                        data[processedData.PlayerLookups[userId]]["Kills"] -= 2;
+                        data[collectedData.PlayerLookups[userId]]["Kills"] -= 2;
                 }
             }
 
@@ -312,7 +312,7 @@ namespace SourceEngine.Demo.Stats
 
                 var statsList1 = new List<int>();
 
-                foreach (string catagory in processedData.PlayerValues.Keys)
+                foreach (string catagory in collectedData.PlayerValues.Keys)
                 {
                     if (data[player].ContainsKey(catagory))
                         statsList1.Add((int)data[player][catagory]);
@@ -322,31 +322,31 @@ namespace SourceEngine.Demo.Stats
 
                 var statsList2 = new List<long>();
 
-                if (processedData.WriteTicks)
-                    if (processedData.PlayerLookups.Any(p => p.Value == player))
-                        foreach (int userid in processedData.PlayerLookups.Keys)
+                if (collectedData.WriteTicks)
+                    if (collectedData.PlayerLookups.Any(p => p.Value == player))
+                        foreach (int userid in collectedData.PlayerLookups.Keys)
                         {
-                            if (processedData.PlayerLookups[userid] == player)
+                            if (collectedData.PlayerLookups[userid] == player)
                             {
-                                statsList2.Add(processedData.PlayerTicks[userid].ticksAlive);
+                                statsList2.Add(collectedData.PlayerTicks[userid].ticksAlive);
 
-                                statsList2.Add(processedData.PlayerTicks[userid].ticksOnServer);
+                                statsList2.Add(collectedData.PlayerTicks[userid].ticksOnServer);
 
-                                statsList2.Add(processedData.PlayerTicks[userid].ticksPlaying);
+                                statsList2.Add(collectedData.PlayerTicks[userid].ticksPlaying);
 
                                 break;
                             }
                         }
 
-                int numOfKillsAsBot = processedData.PlayerKilledEventsValues.Count(
+                int numOfKillsAsBot = collectedData.PlayerKilledEventsValues.Count(
                     k => k.Killer != null && k.Killer.Name.ToString() == playerName && k.KillerBotTakeover
                 );
 
-                int numOfDeathsAsBot = processedData.PlayerKilledEventsValues.Count(
+                int numOfDeathsAsBot = collectedData.PlayerKilledEventsValues.Count(
                     k => k.Victim != null && k.Victim.Name.ToString() == playerName && k.VictimBotTakeover
                 );
 
-                int numOfAssistsAsBot = processedData.PlayerKilledEventsValues.Count(
+                int numOfAssistsAsBot = collectedData.PlayerKilledEventsValues.Count(
                     k => k.Assister != null && k.Assister.Name.ToString() == playerName && k.AssisterBotTakeover
                 );
 
@@ -378,15 +378,15 @@ namespace SourceEngine.Demo.Stats
         }
 
         public GeneralroundsStats GetGeneralRoundsStats(
-            ProcessedData processedData,
+            CollectedData collectedData,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
             var roundsStats = new List<roundsStats>();
 
             // winning team & total rounds stats
-            IEnumerable<SwitchSidesEventArgs> switchSides = processedData.SwitchSidesValues;
-            List<Team> roundsWonTeams = GetRoundsWonTeams(processedData.TeamValues);
-            List<RoundEndReason> roundsWonReasons = GetRoundsWonReasons(processedData.RoundEndReasonValues);
+            IEnumerable<SwitchSidesEventArgs> switchSides = collectedData.SwitchSidesValues;
+            List<Team> roundsWonTeams = GetRoundsWonTeams(collectedData.TeamValues);
+            List<RoundEndReason> roundsWonReasons = GetRoundsWonReasons(collectedData.RoundEndReasonValues);
             int totalRoundsWonTeamAlpha = 0, totalRoundsWonTeamBeta = 0;
 
             for (int i = 0; i < roundsWonTeams.Count; i++)
@@ -398,7 +398,7 @@ namespace SourceEngine.Demo.Stats
                     bool isOvertime = switchSides.Count() >= 2 && i >= switchSides.ElementAt(1).RoundBeforeSwitch;
 
                     int overtimeCount = 0;
-                    double roundLength = processedData.RoundLengthValues.ElementAt(i);
+                    double roundLength = collectedData.RoundLengthValues.ElementAt(i);
 
                     // determines which half / side it is
                     if (isOvertime)
@@ -457,7 +457,7 @@ namespace SourceEngine.Demo.Stats
                     // team count values
                     int roundNum = i + 1;
                     TeamPlayers currentRoundTeams =
-                        processedData.TeamPlayersValues.FirstOrDefault(t => t.Round == roundNum);
+                        collectedData.TeamPlayersValues.FirstOrDefault(t => t.Round == roundNum);
 
                     foreach (Player player in currentRoundTeams.Terrorists) // make sure steamID's aren't 0
                     {
@@ -488,8 +488,8 @@ namespace SourceEngine.Demo.Stats
                         : 0;
 
                     // equip values
-                    TeamEquipment teamEquipValues = processedData.TeamEquipmentValues.Count() >= i
-                        ? processedData.TeamEquipmentValues.ElementAt(i)
+                    TeamEquipment teamEquipValues = collectedData.TeamEquipmentValues.Count() >= i
+                        ? collectedData.TeamEquipmentValues.ElementAt(i)
                         : null;
 
                     int equipValueTeamA = teamEquipValues != null
@@ -525,13 +525,13 @@ namespace SourceEngine.Demo.Stats
                     BombPlantedError bombPlantedError = null;
 
                     BombPlanted bombPlanted =
-                        processedData.BombsitePlantValues.FirstOrDefault(p => p.Round == roundNum);
+                        collectedData.BombsitePlantValues.FirstOrDefault(p => p.Round == roundNum);
 
                     BombExploded bombExploded =
-                        processedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum);
+                        collectedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum);
 
                     BombDefused bombDefused =
-                        processedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum);
+                        collectedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum);
 
                     if (bombDefused is not null)
                     {
@@ -549,20 +549,20 @@ namespace SourceEngine.Demo.Stats
                         if (bombsite == "?")
                         {
                             bombPlantedError = ValidateBombsite(
-                                processedData.BombsitePlantValues,
+                                collectedData.BombsitePlantValues,
                                 (char)bombPlanted.Bombsite
                             );
 
                             //update data to ensure that future references to it are also updated
-                            processedData.BombsitePlantValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
+                            collectedData.BombsitePlantValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
                                 bombPlantedError.Bombsite;
 
-                            if (processedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum) != null)
-                                processedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
+                            if (collectedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum) != null)
+                                collectedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
                                     bombPlantedError.Bombsite;
 
-                            if (processedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum) != null)
-                                processedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
+                            if (collectedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum) != null)
+                                collectedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
                                     bombPlantedError.Bombsite;
 
                             bombsite = bombPlantedError.Bombsite.ToString();
@@ -583,22 +583,22 @@ namespace SourceEngine.Demo.Stats
                     HostageRescued hostageRescuedA = null, hostageRescuedB = null;
                     HostagePickedUpError hostageAPickedUpError = null, hostageBPickedUpError = null;
 
-                    if (processedData.HostagePickedUpValues.Any(r => r.Round == roundNum)
-                        || processedData.HostageRescueValues.Any(r => r.Round == roundNum))
+                    if (collectedData.HostagePickedUpValues.Any(r => r.Round == roundNum)
+                        || collectedData.HostageRescueValues.Any(r => r.Round == roundNum))
                     {
-                        hostagePickedUpA = processedData.HostagePickedUpValues.FirstOrDefault(
+                        hostagePickedUpA = collectedData.HostagePickedUpValues.FirstOrDefault(
                             r => r.Round == roundNum && r.Hostage == 'A'
                         );
 
-                        hostagePickedUpB = processedData.HostagePickedUpValues.FirstOrDefault(
+                        hostagePickedUpB = collectedData.HostagePickedUpValues.FirstOrDefault(
                             r => r.Round == roundNum && r.Hostage == 'B'
                         );
 
-                        hostageRescuedA = processedData.HostageRescueValues.FirstOrDefault(
+                        hostageRescuedA = collectedData.HostageRescueValues.FirstOrDefault(
                             r => r.Round == roundNum && r.Hostage == 'A'
                         );
 
-                        hostageRescuedB = processedData.HostageRescueValues.FirstOrDefault(
+                        hostageRescuedB = collectedData.HostageRescueValues.FirstOrDefault(
                             r => r.Round == roundNum && r.Hostage == 'B'
                         );
 
@@ -615,10 +615,10 @@ namespace SourceEngine.Demo.Stats
 
                             //update data to ensure that future references to it are also updated
                             List<HostagePickedUp> newHostagePickedUpValues =
-                                processedData.HostagePickedUpValues.ToList();
+                                collectedData.HostagePickedUpValues.ToList();
 
                             newHostagePickedUpValues.Add(hostagePickedUpA);
-                            processedData.HostagePickedUpValues = newHostagePickedUpValues;
+                            collectedData.HostagePickedUpValues = newHostagePickedUpValues;
                         }
 
                         if (hostagePickedUpB == null && hostageRescuedB != null)
@@ -634,10 +634,10 @@ namespace SourceEngine.Demo.Stats
 
                             //update data to ensure that future references to it are also updated
                             List<HostagePickedUp> newHostagePickedUpValues =
-                                processedData.HostagePickedUpValues.ToList();
+                                collectedData.HostagePickedUpValues.ToList();
 
                             newHostagePickedUpValues.Add(hostagePickedUpB);
-                            processedData.HostagePickedUpValues = newHostagePickedUpValues;
+                            collectedData.HostagePickedUpValues = newHostagePickedUpValues;
                         }
 
                         //rescue position
@@ -727,7 +727,7 @@ namespace SourceEngine.Demo.Stats
             };
         }
 
-        public static List<bombsiteStats> GetBombsiteStats(ProcessedData processedData)
+        public static List<bombsiteStats> GetBombsiteStats(CollectedData collectedData)
         {
             BoundingBox bombsiteATrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteAIndex);
             BoundingBox bombsiteBTrigger = dp?.Triggers.GetValueOrDefault(dp.bombsiteBIndex);
@@ -737,9 +737,9 @@ namespace SourceEngine.Demo.Stats
                 new()
                 {
                     Bombsite = 'A',
-                    Plants = processedData.BombsitePlantValues.Count(plant => plant.Bombsite == 'A'),
-                    Explosions = processedData.BombsiteExplodeValues.Count(explosion => explosion.Bombsite == 'A'),
-                    Defuses = processedData.BombsiteDefuseValues.Count(defuse => defuse.Bombsite == 'A'),
+                    Plants = collectedData.BombsitePlantValues.Count(plant => plant.Bombsite == 'A'),
+                    Explosions = collectedData.BombsiteExplodeValues.Count(explosion => explosion.Bombsite == 'A'),
+                    Defuses = collectedData.BombsiteDefuseValues.Count(defuse => defuse.Bombsite == 'A'),
                     XPositionMin = bombsiteATrigger?.Min.X,
                     YPositionMin = bombsiteATrigger?.Min.Y,
                     ZPositionMin = bombsiteATrigger?.Min.Z,
@@ -750,9 +750,9 @@ namespace SourceEngine.Demo.Stats
                 new()
                 {
                     Bombsite = 'B',
-                    Plants = processedData.BombsitePlantValues.Count(plant => plant.Bombsite == 'B'),
-                    Explosions = processedData.BombsiteExplodeValues.Count(explosion => explosion.Bombsite == 'B'),
-                    Defuses = processedData.BombsiteDefuseValues.Count(defuse => defuse.Bombsite == 'B'),
+                    Plants = collectedData.BombsitePlantValues.Count(plant => plant.Bombsite == 'B'),
+                    Explosions = collectedData.BombsiteExplodeValues.Count(explosion => explosion.Bombsite == 'B'),
+                    Defuses = collectedData.BombsiteDefuseValues.Count(defuse => defuse.Bombsite == 'B'),
                     XPositionMin = bombsiteBTrigger?.Min.X,
                     YPositionMin = bombsiteBTrigger?.Min.Y,
                     ZPositionMin = bombsiteBTrigger?.Min.Z,
@@ -763,7 +763,7 @@ namespace SourceEngine.Demo.Stats
             };
         }
 
-        public static List<hostageStats> GetHostageStats(ProcessedData processedData)
+        public static List<hostageStats> GetHostageStats(CollectedData collectedData)
         {
             return new()
             {
@@ -771,17 +771,17 @@ namespace SourceEngine.Demo.Stats
                 {
                     Hostage = 'A',
                     HostageIndex =
-                        processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'A')?.HostageIndex,
-                    PickedUps = processedData.HostagePickedUpValues.Count(pickup => pickup.Hostage == 'A'),
-                    Rescues = processedData.HostageRescueValues.Count(rescue => rescue.Hostage == 'A'),
+                        collectedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'A')?.HostageIndex,
+                    PickedUps = collectedData.HostagePickedUpValues.Count(pickup => pickup.Hostage == 'A'),
+                    Rescues = collectedData.HostageRescueValues.Count(rescue => rescue.Hostage == 'A'),
                 },
                 new()
                 {
                     Hostage = 'B',
                     HostageIndex =
-                        processedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'B')?.HostageIndex,
-                    PickedUps = processedData.HostagePickedUpValues.Count(pickup => pickup.Hostage == 'B'),
-                    Rescues = processedData.HostageRescueValues.Count(rescue => rescue.Hostage == 'B'),
+                        collectedData.HostageRescueValues.FirstOrDefault(r => r.Hostage == 'B')?.HostageIndex,
+                    PickedUps = collectedData.HostagePickedUpValues.Count(pickup => pickup.Hostage == 'B'),
+                    Rescues = collectedData.HostageRescueValues.Count(rescue => rescue.Hostage == 'B'),
                 },
             };
         }
@@ -871,23 +871,23 @@ namespace SourceEngine.Demo.Stats
         }
 
         public static List<killsStats> GetKillsStats(
-            ProcessedData processedData,
+            CollectedData collectedData,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
             var killsStats = new List<killsStats>();
 
-            var kills = new List<Player>(processedData.PlayerValues["Kills"].ToList());
-            var deaths = new List<Player>(processedData.PlayerValues["Deaths"].ToList());
+            var kills = new List<Player>(collectedData.PlayerValues["Kills"].ToList());
+            var deaths = new List<Player>(collectedData.PlayerValues["Deaths"].ToList());
 
-            var weaponKillers = new List<Equipment>(processedData.WeaponValues.ToList());
-            var penetrations = new List<int>(processedData.PenetrationValues.ToList());
+            var weaponKillers = new List<Equipment>(collectedData.WeaponValues.ToList());
+            var penetrations = new List<int>(collectedData.PenetrationValues.ToList());
 
             for (int i = 0; i < deaths.Count; i++)
             {
                 if (kills.ElementAt(i) != null && kills.ElementAt(i).LastAlivePosition != null
                     && deaths.ElementAt(i) != null && deaths.ElementAt(i).LastAlivePosition != null)
                 {
-                    PlayerKilledEventArgs playerKilledEvent = processedData.PlayerKilledEventsValues.ElementAt(i);
+                    PlayerKilledEventArgs playerKilledEvent = collectedData.PlayerKilledEventsValues.ElementAt(i);
 
                     if (playerKilledEvent != null)
                     {
@@ -968,15 +968,15 @@ namespace SourceEngine.Demo.Stats
         }
 
         public static List<FeedbackMessage> GetFeedbackMessages(
-            ProcessedData processedData,
+            CollectedData collectedData,
             Dictionary<long, Dictionary<string, string>> playerNames)
         {
             var feedbackMessages = new List<FeedbackMessage>();
 
-            foreach (FeedbackMessage message in processedData.MessagesValues)
+            foreach (FeedbackMessage message in collectedData.MessagesValues)
             {
                 TeamPlayers currentRoundTeams =
-                    processedData.TeamPlayersValues.FirstOrDefault(t => t.Round == message.Round);
+                    collectedData.TeamPlayersValues.FirstOrDefault(t => t.Round == message.Round);
 
                 if (currentRoundTeams != null && (message.SteamID == 0 || message.TeamName == null)
                 ) // excludes warmup round
@@ -1010,13 +1010,13 @@ namespace SourceEngine.Demo.Stats
             return feedbackMessages;
         }
 
-        public static chickenStats GetChickenStats(ProcessedData processedData)
+        public static chickenStats GetChickenStats(CollectedData collectedData)
         {
-            return new() { Killed = processedData.ChickenValues.Count() };
+            return new() { Killed = collectedData.ChickenValues.Count() };
         }
 
         public List<teamStats> GetTeamStats(
-            ProcessedData processedData,
+            CollectedData collectedData,
             AllStats allStats,
             Dictionary<long, Dictionary<string, string>> playerNames,
             IEnumerable<SwitchSidesEventArgs> switchSides)
@@ -1026,7 +1026,7 @@ namespace SourceEngine.Demo.Stats
             int swappedSidesCount = 0;
             int currentRoundChecking = 1;
 
-            foreach (TeamPlayers teamPlayers in processedData.TeamPlayersValues)
+            foreach (TeamPlayers teamPlayers in collectedData.TeamPlayersValues)
             {
                 // players in each team per round
                 swappedSidesCount = switchSides.Count() > swappedSidesCount
@@ -1039,7 +1039,7 @@ namespace SourceEngine.Demo.Stats
                 bool firstHalf = swappedSidesCount % 2 == 0;
 
                 TeamPlayers currentRoundTeams =
-                    processedData.TeamPlayersValues.FirstOrDefault(t => t.Round == teamPlayers.Round);
+                    collectedData.TeamPlayersValues.FirstOrDefault(t => t.Round == teamPlayers.Round);
 
                 List<Player> alphaPlayers = currentRoundTeams != null
                     ? firstHalf ? currentRoundTeams.Terrorists : currentRoundTeams.CounterTerrorists
@@ -1078,26 +1078,26 @@ namespace SourceEngine.Demo.Stats
                 if (allStats.mapInfo.TestType.ToLower().Contains("comp") && alphaSteamIds.Count > 5)
                     foreach (var steamId in alphaSteamIds)
                     {
-                        if (processedData.PlayerLookups.All(l => l.Value != steamId))
+                        if (collectedData.PlayerLookups.All(l => l.Value != steamId))
                             alphaSteamIdsToRemove.Add(steamId);
                     }
                 else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && alphaSteamIds.Count > 10)
                     foreach (var steamId in alphaSteamIds)
                     {
-                        if (processedData.PlayerLookups.All(l => l.Value != steamId))
+                        if (collectedData.PlayerLookups.All(l => l.Value != steamId))
                             alphaSteamIdsToRemove.Add(steamId);
                     }
 
                 if (allStats.mapInfo.TestType.ToLower().Contains("comp") && bravoSteamIds.Count > 5)
                     foreach (var steamId in bravoSteamIds)
                     {
-                        if (processedData.PlayerLookups.All(l => l.Value != steamId))
+                        if (collectedData.PlayerLookups.All(l => l.Value != steamId))
                             bravoSteamIdsToRemove.Add(steamId);
                     }
                 else if (allStats.mapInfo.TestType.ToLower().Contains("casual") && bravoSteamIds.Count > 10)
                     foreach (var steamId in bravoSteamIds)
                     {
-                        if (processedData.PlayerLookups.All(l => l.Value != steamId))
+                        if (collectedData.PlayerLookups.All(l => l.Value != steamId))
                             bravoSteamIdsToRemove.Add(steamId);
                     }
 
@@ -1110,7 +1110,7 @@ namespace SourceEngine.Demo.Stats
 
                 // kills/death stats this round
                 IEnumerable<PlayerKilledEventArgs> deathsThisRound =
-                    processedData.PlayerKilledEventsValues.Where(k => k.Round == teamPlayers.Round);
+                    collectedData.PlayerKilledEventsValues.Where(k => k.Round == teamPlayers.Round);
 
                 // kills this round
                 int alphaKills =
@@ -1202,7 +1202,7 @@ namespace SourceEngine.Demo.Stats
 
                 // shots fired this round
                 IEnumerable<ShotFired> shotsFiredThisRound =
-                    processedData.ShotsFiredValues.Where(s => s.Round == teamPlayers.Round);
+                    collectedData.ShotsFiredValues.Where(s => s.Round == teamPlayers.Round);
 
                 int alphaShotsFired =
                     shotsFiredThisRound.Count(s => s.Shooter != null && alphaSteamIds.Contains(s.Shooter.SteamID));
@@ -1247,11 +1247,11 @@ namespace SourceEngine.Demo.Stats
             return teamStats;
         }
 
-        public static List<firstDamageStats> GetFirstDamageStats(ProcessedData processedData)
+        public static List<firstDamageStats> GetFirstDamageStats(CollectedData collectedData)
         {
             var firstDamageStats = new List<firstDamageStats>();
 
-            foreach (var round in processedData.PlayerHurtValues.Select(x => x.Round).Distinct())
+            foreach (var round in collectedData.PlayerHurtValues.Select(x => x.Round).Distinct())
             {
                 firstDamageStats.Add(
                     new firstDamageStats
@@ -1262,9 +1262,9 @@ namespace SourceEngine.Demo.Stats
                 );
             }
 
-            foreach (IGrouping<int, PlayerHurt> roundsGroup in processedData.PlayerHurtValues.GroupBy(x => x.Round))
+            foreach (IGrouping<int, PlayerHurt> roundsGroup in collectedData.PlayerHurtValues.GroupBy(x => x.Round))
             {
-                int lastRound = processedData.RoundEndReasonValues.Count();
+                int lastRound = collectedData.RoundEndReasonValues.Count();
 
                 foreach (var round in roundsGroup.Where(x => x.Round > 0 && x.Round <= lastRound).Select(x => x.Round)
                     .Distinct())
@@ -1304,16 +1304,16 @@ namespace SourceEngine.Demo.Stats
             return firstDamageStats;
         }
 
-        public static PlayerPositionsStats GetPlayerPositionsStats(ProcessedData processedData, AllStats allStats)
+        public static PlayerPositionsStats GetPlayerPositionsStats(CollectedData collectedData, AllStats allStats)
         {
             var playerPositionByRound = new List<PlayerPositionByRound>();
 
             // create playerPositionByRound with empty PlayerPositionByTimeInRound
-            foreach (IGrouping<int, PlayerPositionsInstance> roundsGroup in processedData.PlayerPositionsValues.GroupBy(
+            foreach (IGrouping<int, PlayerPositionsInstance> roundsGroup in collectedData.PlayerPositionsValues.GroupBy(
                 x => x.Round
             ))
             {
-                int lastRound = processedData.RoundEndReasonValues.Count();
+                int lastRound = collectedData.RoundEndReasonValues.Count();
 
                 foreach (var round in roundsGroup.Where(x => x.Round > 0 && x.Round <= lastRound).Select(x => x.Round)
                     .Distinct())
@@ -1331,7 +1331,7 @@ namespace SourceEngine.Demo.Stats
             //create PlayerPositionByTimeInRound with empty PlayerPositionBySteamId
             foreach (PlayerPositionByRound playerPositionsStat in playerPositionByRound)
             {
-                foreach (IGrouping<int, PlayerPositionsInstance> timeInRoundsGroup in processedData
+                foreach (IGrouping<int, PlayerPositionsInstance> timeInRoundsGroup in collectedData
                     .PlayerPositionsValues.Where(x => x.Round == playerPositionsStat.Round).GroupBy(x => x.TimeInRound))
                 {
                     foreach (var timeInRound in timeInRoundsGroup.Select(x => x.TimeInRound).Distinct())
@@ -1353,7 +1353,7 @@ namespace SourceEngine.Demo.Stats
                 foreach (PlayerPositionByTimeInRound playerPositionByTimeInRound in playerPositionsStat
                     .PlayerPositionByTimeInRound)
                 {
-                    foreach (IGrouping<long, PlayerPositionsInstance> steamIdsGroup in processedData
+                    foreach (IGrouping<long, PlayerPositionsInstance> steamIdsGroup in collectedData
                         .PlayerPositionsValues
                         .Where(
                             x => x.Round == playerPositionsStat.Round
@@ -1363,7 +1363,7 @@ namespace SourceEngine.Demo.Stats
                         foreach (PlayerPositionsInstance playerPositionsInstance in steamIdsGroup)
                         {
                             // skip players who have died this round
-                            if (!processedData.PlayerKilledEventsValues.Any(
+                            if (!collectedData.PlayerKilledEventsValues.Any(
                                 x => x.Round == playerPositionsStat.Round && x.Victim?.SteamID != 0
                                     && x.Victim.SteamID == playerPositionsInstance.SteamID
                                     && x.TimeInRound <= playerPositionByTimeInRound.TimeInRound
@@ -1492,7 +1492,7 @@ namespace SourceEngine.Demo.Stats
 
         public int CheckForUpdatedUserId(int userId)
         {
-            int newUserId = processedData.PlayerReplacements.Where(u => u.Key == userId).Select(u => u.Value).FirstOrDefault();
+            int newUserId = data.PlayerReplacements.Where(u => u.Key == userId).Select(u => u.Value).FirstOrDefault();
 
             return newUserId == 0 ? userId : newUserId;
         }

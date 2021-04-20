@@ -5,7 +5,7 @@ using SourceEngine.Demo.Parser.Entities;
 
 namespace SourceEngine.Demo.Stats.Models
 {
-    public class ProcessedData
+    public class CollectedData
     {
         public tanookiStats tanookiStats { get; set; }
 

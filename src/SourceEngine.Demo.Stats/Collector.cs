@@ -24,7 +24,7 @@ namespace SourceEngine.Demo.Stats
 
     public partial class Collector
     {
-        private ProcessedData processedData = new();
+        private CollectedData data = new();
         private readonly DemoParser dp;
         private readonly DemoInformation demoInfo;
 
@@ -36,13 +36,13 @@ namespace SourceEngine.Demo.Stats
             BindEventHandlers();
         }
 
-        public ProcessedData Collect()
+        public CollectedData Collect()
         {
             dp.ParseHeader();
             dp.ParseToEnd();
             FinaliseData();
 
-            return processedData;
+            return data;
         }
 
         private void AddTick(Player p, PSTATUS status)
@@ -52,13 +52,13 @@ namespace SourceEngine.Demo.Stats
             if (userIdStored)
             {
                 if (status == PSTATUS.ONSERVER)
-                    processedData.PlayerTicks[p.UserID].ticksOnServer++;
+                    data.PlayerTicks[p.UserID].ticksOnServer++;
 
                 if (status == PSTATUS.ALIVE)
-                    processedData.PlayerTicks[p.UserID].ticksAlive++;
+                    data.PlayerTicks[p.UserID].ticksAlive++;
 
                 if (status == PSTATUS.PLAYING)
-                    processedData.PlayerTicks[p.UserID].ticksPlaying++;
+                    data.PlayerTicks[p.UserID].ticksPlaying++;
             }
         }
 
@@ -116,16 +116,16 @@ namespace SourceEngine.Demo.Stats
 
             if (p.Name != "unconnected" && p.Name != "GOTV")
             {
-                if (!processedData.PlayerTicks.ContainsKey(p.UserID))
+                if (!data.PlayerTicks.ContainsKey(p.UserID))
                 {
                     // check if player has been added twice with different UserIDs
                     (int userId, TickCounter counter) =
-                        processedData.PlayerTicks.FirstOrDefault(x => x.Value.detectedName == p.Name);
+                        data.PlayerTicks.FirstOrDefault(x => x.Value.detectedName == p.Name);
 
                     if (userId != 0)
                     {
                         // copy duplicate's information across
-                        processedData.PlayerTicks.Add(
+                        data.PlayerTicks.Add(
                             p.UserID,
                             new TickCounter
                             {
@@ -141,23 +141,23 @@ namespace SourceEngine.Demo.Stats
                     else
                     {
                         var detectedName = string.IsNullOrWhiteSpace(p.Name) ? "NOT FOUND" : p.Name;
-                        processedData.PlayerTicks.Add(p.UserID, new TickCounter { detectedName = detectedName });
+                        data.PlayerTicks.Add(p.UserID, new TickCounter { detectedName = detectedName });
                     }
                 }
 
-                if (!processedData.PlayerLookups.ContainsKey(p.UserID))
+                if (!data.PlayerLookups.ContainsKey(p.UserID))
                 {
                     // check if player has been added twice with different UserIDs
                     KeyValuePair<int, long> duplicate =
-                        processedData.PlayerLookups.FirstOrDefault(x => x.Value == p.SteamID);
+                        data.PlayerLookups.FirstOrDefault(x => x.Value == p.SteamID);
 
                     if (duplicate.Key == 0) // if the steam ID was 0
-                        duplicate = processedData.PlayerLookups.FirstOrDefault(x => x.Key == duplicateIdToRemoveTicks);
+                        duplicate = data.PlayerLookups.FirstOrDefault(x => x.Key == duplicateIdToRemoveTicks);
 
                     if (p.SteamID != 0)
-                        processedData.PlayerLookups.Add(p.UserID, p.SteamID);
+                        data.PlayerLookups.Add(p.UserID, p.SteamID);
                     else if (p.SteamID == 0 && duplicate.Key != 0)
-                        processedData.PlayerLookups.Add(p.UserID, duplicate.Value);
+                        data.PlayerLookups.Add(p.UserID, duplicate.Value);
 
                     duplicateIdToRemoveLookup = duplicate.Key;
                 }
@@ -166,10 +166,10 @@ namespace SourceEngine.Demo.Stats
                 if (duplicateIdToRemoveTicks != 0 || duplicateIdToRemoveLookup != 0)
                 {
                     if (duplicateIdToRemoveTicks != 0)
-                        processedData.PlayerTicks.Remove(duplicateIdToRemoveTicks);
+                        data.PlayerTicks.Remove(duplicateIdToRemoveTicks);
 
                     if (duplicateIdToRemoveLookup != 0)
-                        processedData.PlayerLookups.Remove(duplicateIdToRemoveLookup);
+                        data.PlayerLookups.Remove(duplicateIdToRemoveLookup);
 
                     /* store duplicate userIDs for replacing in events later on */
                     var idRemoved = duplicateIdToRemoveLookup != 0
@@ -177,24 +177,24 @@ namespace SourceEngine.Demo.Stats
                         : duplicateIdToRemoveTicks;
 
                     // removes any instance of the old userID pointing to a different userID
-                    if (processedData.PlayerReplacements.Any(r => r.Key == idRemoved))
-                        processedData.PlayerReplacements.Remove(idRemoved);
+                    if (data.PlayerReplacements.Any(r => r.Key == idRemoved))
+                        data.PlayerReplacements.Remove(idRemoved);
 
                     // tries to avoid infinite loops by removing the old entry
-                    if (processedData.PlayerReplacements.Any(r => r.Key == p.UserID && r.Value == idRemoved))
-                        processedData.PlayerReplacements.Remove(p.UserID);
+                    if (data.PlayerReplacements.Any(r => r.Key == p.UserID && r.Value == idRemoved))
+                        data.PlayerReplacements.Remove(p.UserID);
 
                     // replace current mappings between an ancient userID & the old userID, to use the new userID as the value instead
-                    if (processedData.PlayerReplacements.Any(r => r.Value == idRemoved))
+                    if (data.PlayerReplacements.Any(r => r.Value == idRemoved))
                     {
-                        IEnumerable<int> keysToReplaceValue = processedData.PlayerReplacements
+                        IEnumerable<int> keysToReplaceValue = data.PlayerReplacements
                             .Where(r => r.Value == idRemoved).Select(r => r.Key);
 
                         foreach (var userId in keysToReplaceValue.ToList())
-                            processedData.PlayerReplacements[userId] = p.UserID;
+                            data.PlayerReplacements[userId] = p.UserID;
                     }
 
-                    processedData.PlayerReplacements.Add(
+                    data.PlayerReplacements.Add(
                         idRemoved,
                         p.UserID
                     ); // Creates a new entry that maps the player's old user ID to their new user ID
@@ -208,7 +208,7 @@ namespace SourceEngine.Demo.Stats
 
         private static bool CheckIfPlayerAliveAtThisPointInRound(Collector collector, Player player, int round)
         {
-            return !collector.processedData.PlayerKilledEventsValues.Any(
+            return !collector.data.PlayerKilledEventsValues.Any(
                 e => e.Round == round && e.Victim?.SteamID != 0 && e.Victim.SteamID == player?.SteamID
             );
         }
@@ -276,25 +276,25 @@ namespace SourceEngine.Demo.Stats
         {
             // Only keep the first event for each round.
             // TODO: is this still necessary?
-            processedData.BombsitePlantValues = processedData.BombsitePlantValues.GroupBy(e => e.Round)
+            data.BombsitePlantValues = data.BombsitePlantValues.GroupBy(e => e.Round)
                 .Select(group => group.FirstOrDefault()).ToList();
 
-            processedData.BombsiteDefuseValues = processedData.BombsiteDefuseValues.GroupBy(e => e.Round)
+            data.BombsiteDefuseValues = data.BombsiteDefuseValues.GroupBy(e => e.Round)
                 .Select(group => group.FirstOrDefault()).ToList();
 
-            processedData.BombsiteExplodeValues = processedData.BombsiteExplodeValues.GroupBy(e => e.Round)
+            data.BombsiteExplodeValues = data.BombsiteExplodeValues.GroupBy(e => e.Round)
                 .Select(group => group.FirstOrDefault()).ToList();
 
             // Remove extra TeamPlayers if freezetime_end event triggers once a playtest is finished.
-            processedData.TeamPlayersValues = processedData.TeamPlayersValues
-                .Where(tp => tp.Round <= processedData.TeamValues.Count).ToList();
+            data.TeamPlayersValues = data.TeamPlayersValues
+                .Where(tp => tp.Round <= data.TeamValues.Count).ToList();
 
-            processedData.tanookiStats = CreateTanookiStats(
-                processedData.TeamPlayersValues,
-                processedData.DisconnectedPlayerValues
+            data.tanookiStats = CreateTanookiStats(
+                data.TeamPlayersValues,
+                data.DisconnectedPlayerValues
             );
 
-            processedData.WriteTicks = true;
+            data.WriteTicks = true;
         }
 
         private static string GenerateSetPosCommand(Player player)
@@ -309,7 +309,7 @@ namespace SourceEngine.Demo.Stats
 
         private static int GetCurrentRoundNum(Collector collector, GameMode gameMode)
         {
-            List<TeamPlayers> teamPlayersList = collector.processedData.TeamPlayersValues;
+            List<TeamPlayers> teamPlayersList = collector.data.TeamPlayersValues;
             int round = 0;
 
             if (teamPlayersList.Count > 0 && teamPlayersList.Any(t => t.Round == 1))
