@@ -328,11 +328,11 @@ namespace SourceEngine.Demo.Stats
                         {
                             if (collectedData.PlayerLookups[userid] == player)
                             {
-                                statsList2.Add(collectedData.PlayerTicks[userid].ticksAlive);
+                                statsList2.Add(collectedData.PlayerTicks[userid].TicksAlive);
 
-                                statsList2.Add(collectedData.PlayerTicks[userid].ticksOnServer);
+                                statsList2.Add(collectedData.PlayerTicks[userid].TicksOnServer);
 
-                                statsList2.Add(collectedData.PlayerTicks[userid].ticksPlaying);
+                                statsList2.Add(collectedData.PlayerTicks[userid].TicksPlaying);
 
                                 break;
                             }

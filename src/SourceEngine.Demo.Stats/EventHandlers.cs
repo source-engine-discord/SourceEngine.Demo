@@ -20,16 +20,16 @@ namespace SourceEngine.Demo.Stats
         {
             foreach (Player p in parser.PlayingParticipants)
             {
-                AddTick(p, PSTATUS.PLAYING);
+                AddTick(p, PlayerStatus.Playing);
 
                 if (p.IsAlive)
-                    AddTick(p, PSTATUS.ALIVE);
+                    AddTick(p, PlayerStatus.Alive);
             }
 
             foreach (Player p in parser.Participants)
             {
                 if (!p.Disconnected)
-                    AddTick(p, PSTATUS.ONSERVER);
+                    AddTick(p, PlayerStatus.OnServer);
             }
         }
 

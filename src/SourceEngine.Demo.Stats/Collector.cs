@@ -7,19 +7,19 @@ using SourceEngine.Demo.Stats.Models;
 
 namespace SourceEngine.Demo.Stats
 {
-    internal enum PSTATUS
+    internal enum PlayerStatus
     {
-        ONSERVER,
-        PLAYING,
-        ALIVE,
+        OnServer,
+        Playing,
+        Alive,
     }
 
     public class TickCounter
     {
-        public string detectedName = "NOT FOUND";
-        public long ticksAlive;
-        public long ticksOnServer;
-        public long ticksPlaying;
+        public string PlayerName = "NOT FOUND";
+        public long TicksAlive;
+        public long TicksOnServer;
+        public long TicksPlaying;
     }
 
     public partial class Collector
@@ -45,20 +45,20 @@ namespace SourceEngine.Demo.Stats
             return data;
         }
 
-        private void AddTick(Player p, PSTATUS status)
+        private void AddTick(Player p, PlayerStatus status)
         {
             bool userIdStored = BindPlayer(p);
 
             if (userIdStored)
             {
-                if (status == PSTATUS.ONSERVER)
-                    data.PlayerTicks[p.UserID].ticksOnServer++;
+                if (status == PlayerStatus.OnServer)
+                    data.PlayerTicks[p.UserID].TicksOnServer++;
 
-                if (status == PSTATUS.ALIVE)
-                    data.PlayerTicks[p.UserID].ticksAlive++;
+                if (status == PlayerStatus.Alive)
+                    data.PlayerTicks[p.UserID].TicksAlive++;
 
-                if (status == PSTATUS.PLAYING)
-                    data.PlayerTicks[p.UserID].ticksPlaying++;
+                if (status == PlayerStatus.Playing)
+                    data.PlayerTicks[p.UserID].TicksPlaying++;
             }
         }
 
@@ -122,7 +122,7 @@ namespace SourceEngine.Demo.Stats
             {
                 // Check if player has been added twice with different user IDs by comparing player names.
                 (int userId, TickCounter counter) =
-                    data.PlayerTicks.FirstOrDefault(x => x.Value.detectedName == p.Name);
+                    data.PlayerTicks.FirstOrDefault(x => x.Value.PlayerName == p.Name);
 
                 // A player with the same name was found in PlayerTicks.
                 if (userId != 0)
@@ -132,10 +132,10 @@ namespace SourceEngine.Demo.Stats
                         p.UserID,
                         new TickCounter
                         {
-                            detectedName = counter.detectedName,
-                            ticksAlive = counter.ticksAlive,
-                            ticksOnServer = counter.ticksOnServer,
-                            ticksPlaying = counter.ticksPlaying,
+                            PlayerName = counter.PlayerName,
+                            TicksAlive = counter.TicksAlive,
+                            TicksOnServer = counter.TicksOnServer,
+                            TicksPlaying = counter.TicksPlaying,
                         }
                     );
 
@@ -144,7 +144,7 @@ namespace SourceEngine.Demo.Stats
                 else
                 {
                     var detectedName = string.IsNullOrWhiteSpace(p.Name) ? "NOT FOUND" : p.Name;
-                    data.PlayerTicks.Add(p.UserID, new TickCounter { detectedName = detectedName });
+                    data.PlayerTicks.Add(p.UserID, new TickCounter { PlayerName = detectedName });
                 }
             }
 

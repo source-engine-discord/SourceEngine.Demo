@@ -32,7 +32,7 @@ namespace SourceEngine.Demo.Stats.Tests
             {
                 foreach (Player player in teamPlayers.Terrorists.Concat(teamPlayers.CounterTerrorists))
                 {
-                    CollectedData.PlayerTicks[player.UserID] = new TickCounter { detectedName = player.Name };
+                    CollectedData.PlayerTicks[player.UserID] = new TickCounter { PlayerName = player.Name };
                     CollectedData.PlayerLookups[player.UserID] = player.SteamID;
                 }
             }
