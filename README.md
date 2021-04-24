@@ -82,10 +82,6 @@ Latest release:
                                       structure inside the root folder for the
                                       output JSON file.
 
-  --lowoutputmode                     (Default: false) Don't output the progress
-                                      bar and 'round completed' messages to the
-                                      console.
-
   --help                              Display this help screen.
 
   --version                           Display version information.

@@ -104,13 +104,6 @@ namespace SourceEngine.Demo.Stats.App
             HelpText = "Use the demo's folder structure inside the root folder for the output JSON file."
         )]
         public bool SameFolderStructure { get; set; }
-
-        [Option(
-            "lowoutputmode",
-            Default = false,
-            HelpText = "Don't output the progress bar and 'round completed' messages to the console."
-        )]
-        public bool LowOutputMode { get; set; }
     }
 
     internal static class Program
