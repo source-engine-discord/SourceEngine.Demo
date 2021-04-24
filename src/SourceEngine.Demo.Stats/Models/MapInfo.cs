@@ -19,5 +19,7 @@
         }
 
         public string DemoName { get; set; }
+
+        public uint Crc { get; set; }
     }
 }

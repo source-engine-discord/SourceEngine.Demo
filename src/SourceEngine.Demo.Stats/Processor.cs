@@ -210,6 +210,7 @@ namespace SourceEngine.Demo.Stats
                 MapName = demoInfo.MapName,
                 TestType = demoInfo.TestType.ToString().ToLower(),
                 TestDate = demoInfo.TestDate,
+                Crc = collectedData.MapCrc,
             };
 
             mapInfo.MapName =
