@@ -72,6 +72,8 @@ namespace SourceEngine.Demo.Stats.Models
 
         public Dictionary<int, TickCounter> PlayerTicks { get; set; } = new();
 
+        public uint MapCrc { get; set; }
+
         public bool WriteTicks { get; set; }
     }
 }

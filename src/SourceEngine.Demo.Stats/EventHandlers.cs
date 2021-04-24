@@ -35,6 +35,11 @@ namespace SourceEngine.Demo.Stats
 
         #region Server Events
 
+        private void ServerInfoEventHandler(object sender, ServerInfoEventArgs e)
+        {
+            data.MapCrc = e.MapCrc;
+        }
+
         private void MatchStartedEventHandler(object sender, MatchStartedEventArgs e)
         {
             // Reset all stats stored except for the feedback messages and some player data.
@@ -44,6 +49,7 @@ namespace SourceEngine.Demo.Stats
                 PlayerLookups = data.PlayerLookups,
                 PlayerReplacements = data.PlayerReplacements,
                 PlayerTicks = data.PlayerTicks,
+                MapCrc = data.MapCrc,
             };
 
             roundEndedEvents.Clear();

@@ -65,6 +65,7 @@ namespace SourceEngine.Demo.Stats
         private void BindEventHandlers()
         {
             // SERVER EVENTS ===================================================
+            parser.ServerInfo += ServerInfoEventHandler;
             parser.MatchStarted += MatchStartedEventHandler;
             parser.ChickenKilled += ChickenKilledEventHandler;
             parser.SayText2 += SayText2EventHandler;
