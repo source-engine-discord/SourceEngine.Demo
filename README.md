@@ -31,66 +31,55 @@ Latest release:
 ### Usage
 
 ```
-  --folders                           Space-delimited list of directories in
-                                      which to search for demos to parse.
+  --demos              Space-delimited list of paths to individual demos to
+                       parse.
 
-  --demos                             Space-delimited list of paths to
-                                      individual demos to parse.
+  --folders            Space-delimited list of directories in which to search
+                       for demos to parse.
 
-  --output                            (Default: parsed) Path to the output
-                                      directory.
+  --recursive          (Default: false) Recursively search for demos.
 
-  --gamemodeoverride                  (Default: Unknown) Assume the demo is for
-                                      this game mode rather than attempting to
-                                      infer the game mode. Valid values:
-                                      DangerZone, Defuse, Hostage,
-                                      WingmanDefuse, WingmanHostage, Unknown
+  --output             (Default: parsed) Path to the output directory.
 
-  --testtype                          (Default: Unknown) The playtest type of
-                                      the recorded match. If unset, attempt to
-                                      parse it from the file name instead
-                                      assuming the format
-                                      date_mapname_testtype. Only relevant for
-                                      defuse and hostage game modes. Valid
-                                      values: Casual, Competitive, Unknown
+  --clear              (Default: false) Clear the output directory.
 
-  --testdateoverride                  Recording date of the match in dd/MM/yyyy
-                                      format. If unset, attempt to parse from
-                                      the file name instead assuming the format
-                                      date_mapname_testtype.
+  --copy-input-dirs    (Default: false) Use the demo's folder structure inside
+                       the root folder for the output JSON file.
 
-  --hostagerescuezonecountoverride    Number of hostage rescue zones in the map.
-                                      If unset, a total of 1 is assumed for the
-                                      hostage game mode and 2 for Danger Zone.
-                                      Valid values: 0-2
+  --copy-input-name    (Default: false) Use the demo's filename as the output
+                       filename.
 
-  --recursive                         (Default: false) Recursively search for
-                                      demos.
+  --date               Recording date of the match in dd/MM/yyyy format. If
+                       unset, attempt to parse from the file name instead
+                       assuming the format date_mapname_testtype.
 
-  --clear                             (Default: false) Clear the data folder.
+  --game-mode          (Default: Unknown) Assume the demo is for this game mode
+                       rather than attempting to infer the game mode. Valid
+                       values: DangerZone, Defuse, Hostage, WingmanDefuse,
+                       WingmanHostage, Unknown
 
-  --nochickens                        (Default: false) Disable counting of
-                                      chicken death stats.
+  --rescue-zones       (Default: 4) Number of hostage rescue zones in the map.
+                       Valid values: 0-4
 
-  --noplayerpositions                 (Default: false) Disable parsing of player
-                                      positions.
+  --test-type          (Default: Unknown) The playtest type of the recorded
+                       match. If unset, attempt to parse it from the file name
+                       instead assuming the format date_mapname_testtype. Only
+                       relevant for defuse and hostage game modes. Valid values:
+                       Casual, Competitive, Unknown
 
-  --samefilename                      (Default: false) Use the demo's filename
-                                      as the output filename.
+  --no-chickens        (Default: false) Disable counting of chicken death stats.
 
-  --samefolderstructure               (Default: false) Use the demo's folder
-                                      structure inside the root folder for the
-                                      output JSON file.
+  --no-pos             (Default: false) Disable parsing of player positions.
 
-  --help                              Display this help screen.
+  --help               Display this help screen.
 
-  --version                           Display version information.
+  --version            Display version information.
 ```
 
 Example:
 
 ```
-IDemO --folders "demos" --output "parsed" --recursive --nochickens --noplayerpositions --samefilename --samefolderstructure
+IDemO --folders "demos" --output "parsed" --recursive --no-chickens --no-pos --copy-input-dirs --copy-input-name
 ```
 
 ## Development
