@@ -445,6 +445,148 @@ namespace SourceEngine.Demo.Parser
         public float RankChange { get; set; }
     }
 
+    /// <summary>
+    /// Data parsed from a <c>CSVCMsg_ServerInfo</c> network message.
+    /// </summary>
+    public class ServerInfoEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Network protocol version.
+        /// </summary>
+        /// <remarks>
+        /// Derived from the <c>PatchVersion</c> in <c>steam.inf</c>.
+        /// </remarks>
+        public int Protocol { get; set; }
+
+        /// <summary>
+        /// Number of servers spawned since the start.
+        /// </summary>
+        /// <remarks>
+        /// A server is spawned when there is a new game or the level changes.
+        /// </remarks>
+        public int ServerCount { get; set; }
+
+        /// <summary>
+        /// <see langword="true"/> if the server is dedicated.
+        /// </summary>
+        public bool IsDedicated { get; set; }
+
+        /// <summary>
+        /// <see langword="true"/> if Valve hosts the server.
+        /// </summary>
+        public bool IsOfficialValveServer { get; set; }
+
+        /// <summary>
+        /// <see langword="true"/> if the server is an HLTV/SourceTV/GOTV proxy.
+        /// </summary>
+        public bool IsHltv { get; set; }
+
+        /// <summary>
+        /// <see langword="true"/> if the server is a replay proxy.
+        /// </summary>
+        public bool IsReplay { get; set; }
+
+        /// <summary>
+        /// Only <see langword="true"/> if the server is an HLTV/SourceTV/GOTV proxy.
+        /// </summary>
+        public bool IsRedirectingToProxyRelay { get; set; }
+
+        /// <summary>
+        /// Operating system (of the server?)
+        /// </summary>
+        /// <remarks>
+        /// Seems to be the ASCII character 'w' for Windows and 'l' for Linux.
+        /// </remarks>
+        public int OperatingSystem { get; set; }
+
+        /// <summary>
+        /// CRC32 of the loaded map (BSP file).
+        /// </summary>
+        public uint MapCrc { get; set; }
+
+        /// <summary>
+        /// CRC32 of client.dll.
+        /// </summary>
+        public uint ClientCrc { get; set; }
+
+        /// <summary>
+        /// CRC32 of the network string table.
+        /// </summary>
+        public uint StringTableCrc { get; set; }
+
+        /// <summary>
+        /// Maximum number of players the server supports.
+        /// </summary>
+        public int MaxClients { get; set; }
+
+        /// <summary>
+        /// Number of unique server classes.
+        /// </summary>
+        public int MaxClasses { get; set; }
+
+        /// <summary>
+        /// Slot number of the client.
+        /// </summary>
+        /// <remarks>
+        /// An index into the <c>CBaseServer.m_Clients</c> array.
+        /// HLTV/SourceTV/GOTV and replay proxies seem to have their own positions.
+        /// </remarks>
+        public int PlayerSlot { get; set; }
+
+        /// <summary>
+        /// Time, in seconds, for one tick to elapse.
+        /// </summary>
+        public float TickInterval { get; set; }
+
+        /// <summary>
+        /// Name of the game's directory.
+        /// </summary>
+        public string GameDir { get; set; }
+
+        /// <summary>
+        /// Name of the loaded map.
+        /// </summary>
+        public string MapName { get; set; }
+
+        /// <summary>
+        /// Name of the in-use map group.
+        /// </summary>
+        /// <remarks>
+        /// The map group is set with the <c>mapgroup</c> option for SRCDS or the <c>mapgroup</c> console command.
+        /// Map groups are defined in <c>gamemodes_server.txt</c>.
+        /// </remarks>
+        public string MapGroupName { get; set; }
+
+        /// <summary>
+        /// Name of the sky texture used by the map.
+        /// </summary>
+        /// <remarks>
+        /// This is the same as the value of the <c>sv_skyname</c> cvar.
+        /// </remarks>
+        public string SkyName { get; set; }
+
+        /// <summary>
+        /// Host name of the server as set by the <c>hostname</c> cvar.
+        /// </summary>
+        /// <remarks>
+        /// If <c>host_name_store</c> is set to 0, the name will instead be 'Counter-Strike: Global Offensive'.
+        /// </remarks>
+        public string HostName { get; set; }
+
+        /// <summary>
+        /// Public IP of the server. Always 0 since the game no longer expose the IP here.
+        /// </summary>
+        public uint PublicIp { get; set; }
+
+        /// <summary>
+        /// Published file ID for the community map that is loaded. 0 if a non-UGC map is loaded.
+        /// </summary>
+        /// <remarks>
+        /// UGC means user-generated content.
+        /// </remarks>
+        public ulong UgcMapId => throw new NotImplementedException();
+    }
+
     public class Equipment
     {
         private const string WEAPON_PREFIX = "weapon_";

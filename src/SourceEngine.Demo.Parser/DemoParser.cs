@@ -292,6 +292,8 @@ namespace SourceEngine.Demo.Parser
         /// </summary>
         public event EventHandler<RankUpdateEventArgs> RankUpdate;
 
+        public event EventHandler<ServerInfoEventArgs> ServerInfo;
+
         #endregion
 
         /// <summary>
@@ -1638,6 +1640,11 @@ namespace SourceEngine.Demo.Parser
         internal void RaiseRankUpdate(RankUpdateEventArgs args)
         {
             RankUpdate?.Invoke(this, args);
+        }
+
+        internal void RaiseServerInfo(ServerInfoEventArgs args)
+        {
+            ServerInfo?.Invoke(this, args);
         }
 
         #endregion

@@ -60,6 +60,9 @@ namespace SourceEngine.Demo.Parser.Packet
                 else if (cmd == (int)SVC_Messages.svc_UserMessage)
                 {
                     new UserMessage().Parse(bitstream, demo);
+                } else if (cmd == (int)SVC_Messages.svc_ServerInfo)
+                {
+                    new ServerInfo().Parse(bitstream, demo);
                 }
                 else
                 {
