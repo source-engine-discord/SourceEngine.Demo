@@ -534,15 +534,7 @@ namespace SourceEngine.Demo.Stats
                     BombDefused bombDefused =
                         collectedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum);
 
-                    if (bombDefused is not null)
-                    {
-                        bombsite ??= bombDefused.Bombsite is null ? null : bombDefused.Bombsite.ToString();
-                    }
-                    else if (bombExploded is not null)
-                    {
-                        bombsite ??= bombExploded.Bombsite is null ? null : bombExploded.Bombsite.ToString();
-                    }
-                    else if (bombPlanted is not null)
+                    if (bombPlanted is not null)
                     {
                         bombsite = bombPlanted.Bombsite.ToString();
 
@@ -574,6 +566,9 @@ namespace SourceEngine.Demo.Stats
                         bombPlanted.YPosition = bombPlanted.Player.LastAlivePosition.Y;
                         bombPlanted.ZPosition = bombPlanted.Player.LastAlivePosition.Z;
                     }
+
+                    bombsite ??= bombDefused?.Bombsite?.ToString();
+                    bombsite ??= bombExploded?.Bombsite?.ToString();
 
                     var timeInRoundPlanted = bombPlanted?.TimeInRound;
                     var timeInRoundExploded = bombExploded?.TimeInRound;
