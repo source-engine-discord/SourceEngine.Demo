@@ -536,7 +536,7 @@ namespace SourceEngine.Demo.Stats
 
                     if (bombPlanted is not null)
                     {
-                        bombsite = bombPlanted.Bombsite.ToString();
+                        bombsite = bombPlanted.Bombsite?.ToString();
 
                         //check to see if either of the bombsites have bugged out
                         if (bombsite == "?")
@@ -547,16 +547,13 @@ namespace SourceEngine.Demo.Stats
                             );
 
                             //update data to ensure that future references to it are also updated
-                            collectedData.BombsitePlantValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
-                                bombPlantedError.Bombsite;
+                            bombPlanted.Bombsite = bombPlantedError.Bombsite;
 
-                            if (collectedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum) != null)
-                                collectedData.BombsiteExplodeValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
-                                    bombPlantedError.Bombsite;
+                            if (bombExploded is not null)
+                                bombExploded.Bombsite = bombPlantedError.Bombsite;
 
-                            if (collectedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum) != null)
-                                collectedData.BombsiteDefuseValues.FirstOrDefault(p => p.Round == roundNum).Bombsite =
-                                    bombPlantedError.Bombsite;
+                            if (bombDefused is not null)
+                                bombDefused.Bombsite = bombPlantedError.Bombsite;
 
                             bombsite = bombPlantedError.Bombsite.ToString();
                         }
@@ -1500,16 +1497,17 @@ namespace SourceEngine.Demo.Stats
 
             if (bombsite == '?')
             {
-                if (bombPlantedArray.Any(x => x.Bombsite == 'A')
-                    && (!bombPlantedArray.Any(x => x.Bombsite == 'B') || changingPlantedRoundsToB))
+                bool hasA = bombPlantedArray.Any(x => x.Bombsite == 'A');
+                bool hasB = bombPlantedArray.Any(x => x.Bombsite == 'B');
+
+                if (hasA && (!hasB || changingPlantedRoundsToB))
                 {
                     //assume B site trigger's bounding box is broken
                     changingPlantedRoundsToB = true;
                     validatedBombsite = 'B';
                     errorMessage = "Assuming plant was at B site.";
                 }
-                else if (!bombPlantedArray.Any(x => x.Bombsite == 'A')
-                    && (bombPlantedArray.Any(x => x.Bombsite == 'B') || changingPlantedRoundsToA))
+                else if (!hasA && (hasB || changingPlantedRoundsToA))
                 {
                     //assume A site trigger's bounding box is broken
                     changingPlantedRoundsToA = true;
