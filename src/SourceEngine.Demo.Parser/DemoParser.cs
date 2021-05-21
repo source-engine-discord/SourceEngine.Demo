@@ -36,7 +36,6 @@ namespace SourceEngine.Demo.Parser
         public bool stopParsingDemo = false;
         public readonly bool ParseChickens;
         public readonly bool ParsePlayerPositions;
-        private string gamemode;
 
         // this MAY work up to 4 (since it uses 000, 001, 002 & 003)
         private readonly uint numOfHostageRescueZonesLookingFor;
