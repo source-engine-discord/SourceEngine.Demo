@@ -1485,7 +1485,7 @@ namespace SourceEngine.Demo.Parser
             ChickenKilled?.Invoke(this, new ChickenKilledEventArgs());
         }
 
-        internal void RaisePlayerKilled(PlayerKilledEventArgs kill)
+        public void RaisePlayerKilled(PlayerKilledEventArgs kill)
         {
             PlayerKilled?.Invoke(this, kill);
         }

@@ -366,24 +366,24 @@ namespace SourceEngine.Demo.Stats
             // a player_death event is not triggered due to death by bomb explosion
             if (e.PossiblyKilledByBombExplosion)
             {
-                var playerKilledEventArgs = new PlayerKilledEventArgs
-                {
-                    Round = round,
-                    TimeInRound = e.TimeInRound,
-                    Killer = e.Attacker,
-                    KillerBotTakeover = false, // ?
-                    Victim = e.Player,
-                    VictimBotTakeover = false, // ?
-                    Assister = null,
-                    AssisterBotTakeover = false, // ?
-                    Suicide = false,
-                    TeamKill = false,
-                    PenetratedObjects = 0,
-                    Headshot = false,
-                    AssistedFlash = false,
-                };
-
-                data.PlayerKilledEventsValues.Add(playerKilledEventArgs);
+                parser.RaisePlayerKilled(
+                    new PlayerKilledEventArgs
+                    {
+                        Round = round,
+                        TimeInRound = e.TimeInRound,
+                        Killer = e.Attacker,
+                        KillerBotTakeover = false, // ?
+                        Victim = e.Player,
+                        VictimBotTakeover = false, // ?
+                        Assister = null,
+                        AssisterBotTakeover = false, // ?
+                        Suicide = false,
+                        TeamKill = false,
+                        PenetratedObjects = 0,
+                        Headshot = false,
+                        AssistedFlash = false,
+                    }
+                );
             }
 
             var player = new Player(e.Player);
