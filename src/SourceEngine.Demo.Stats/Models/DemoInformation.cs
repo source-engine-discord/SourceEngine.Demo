@@ -24,7 +24,7 @@ namespace SourceEngine.Demo.Stats.Models
     public class DemoInformation
     {
         private static Regex sedNamePattern = new(
-            @"^(?<day>\d{2})_(?<month>\d{2})_(?<year>\d{4})_(?<map>[\w.-]+?)_(?<type>casual|comp)$",
+            @"^(?<month>\d{2})_(?<day>\d{2})_(?<year>\d{4})_(?<map>[\w.-]+?)_(?<type>casual|comp)$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
         );
 
