@@ -23,12 +23,12 @@ namespace SourceEngine.Demo.Stats.Models
 
     public class DemoInformation
     {
-        private static Regex sedNamePattern = new(
+        private static readonly Regex SedNamePattern = new(
             @"^(?<month>\d{2})_(?<day>\d{2})_(?<year>\d{4})_(?<map>[\w.-]+?)_(?<type>casual|comp)$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
         );
 
-        private static Regex mapcoreNamePattern = new(
+        private static readonly Regex MapcoreNamePattern = new(
             @"^.+?-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-\d+-\d+-workshop_\d+_(?<map>[\w.-]+?)-MAPCORE\.org.*$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
         );
@@ -64,7 +64,7 @@ namespace SourceEngine.Demo.Stats.Models
             if (Guid.TryParse(fileName, out Guid _))
                 return; // Faceit demo. No further information can be derived from the file name.
 
-            Match sedMatch = sedNamePattern.Match(fileName);
+            Match sedMatch = SedNamePattern.Match(fileName);
 
             if (ParseFileNameMatch(sedMatch))
             {
@@ -73,7 +73,7 @@ namespace SourceEngine.Demo.Stats.Models
             }
             else
             {
-                ParseFileNameMatch(mapcoreNamePattern.Match(fileName));
+                ParseFileNameMatch(MapcoreNamePattern.Match(fileName));
             }
         }
 
