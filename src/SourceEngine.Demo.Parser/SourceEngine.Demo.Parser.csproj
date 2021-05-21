@@ -3,7 +3,7 @@
 
     <PropertyGroup Label="Build Settings">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Configurations>Debug;Release;Bitstream-Debugging;YoloDebug;SavePropValues</Configurations>
+        <Configurations>Debug;DebugBitStream;DebugManaged;Release;ReleaseManaged;SavePropValues</Configurations>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <Platforms>AnyCPU</Platforms>
         <TargetFramework>netstandard2.1</TargetFramework>
@@ -13,26 +13,36 @@
         <Description>A library for parsing Counter-Strike: Global Offensive demos.</Description>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DefineConstants>TRACE;YOLO</DefineConstants>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DefineConstants>TRACE;DEBUG;CHECK_INTEGRITY</DefineConstants>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Bitstream-Debugging' ">
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugBitStream' ">
         <OutputPath>bin\Debug\</OutputPath>
-        <DefineConstants>DEBUG;TRACE;BITSTREAMDEBUG</DefineConstants>
+        <DefineConstants>TRACE;DEBUG;CHECK_INTEGRITY;DEBUG_BITSTREAM</DefineConstants>
         <DebugSymbols>true</DebugSymbols>
+        <Optimize>false</Optimize>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'YoloDebug' ">
-        <OutputPath>bin\Release\</OutputPath>
-        <DefineConstants>TRACE;YOLO;DEBUG</DefineConstants>
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugManaged' ">
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>TRACE;DEBUG;CHECK_INTEGRITY;MANAGED_BITSTREAM</DefineConstants>
         <DebugSymbols>true</DebugSymbols>
+        <Optimize>false</Optimize>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseManaged' ">
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE;MANAGED_BITSTREAM</DefineConstants>
+        <DebugSymbols>false</DebugSymbols>
+        <Optimize>true</Optimize>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'SavePropValues' ">
         <OutputPath>bin\Debug\</OutputPath>
-        <DefineConstants>TRACE;SAVE_PROP_VALUES</DefineConstants>
+        <DefineConstants>TRACE;DEBUG;SAVE_PROP_VALUES</DefineConstants>
         <DebugSymbols>true</DebugSymbols>
+        <Optimize>false</Optimize>
     </PropertyGroup>
 
     <ItemGroup>

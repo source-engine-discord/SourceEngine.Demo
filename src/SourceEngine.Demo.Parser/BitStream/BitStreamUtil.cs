@@ -13,7 +13,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// </summary>
         public static IBitStream Create(Stream stream)
         {
-            #if BITSTREAMDEBUG
+            #if DEBUG_BITSTREAM
             byte[] data;
             using (var memstream = new MemoryStream(checked((int)stream.Length))) {
                 stream.CopyTo(memstream);
@@ -28,10 +28,10 @@ namespace SourceEngine.Demo.Parser.BitStream
             return new DebugBitStream(bs1, new DebugBitStream(bs2, bs3));
             #else
 
-            #if YOLO
-            var bs = new UnsafeBitStream();
-            #else
+            #if MANAGED_BITSTREAM
             var bs = new ManagedBitStream();
+            #else
+            var bs = new UnsafeBitStream();
             #endif
 
             bs.Initialize(stream);
@@ -44,7 +44,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// </summary>
         public static IBitStream Create(byte[] data)
         {
-            #if BITSTREAMDEBUG
+            #if DEBUG_BITSTREAM
             var bs1 = new BitArrayStream(data);
             var bs2 = new ManagedBitStream();
             bs2.Initialize(new MemoryStream(data));
@@ -53,10 +53,10 @@ namespace SourceEngine.Demo.Parser.BitStream
             return new DebugBitStream(bs1, new DebugBitStream(bs2, bs3));
             #else
 
-            #if YOLO
-            var bs = new UnsafeBitStream();
-            #else
+            #if MANAGED_BITSTREAM
             var bs = new ManagedBitStream();
+            #else
+            var bs = new UnsafeBitStream();
             #endif
 
             bs.Initialize(new MemoryStream(data));
@@ -175,7 +175,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             return Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadProtobufVarInt()));
         }
 
-        [Conditional("DEBUG")]
+        [Conditional("INTEGRITY_CHECK")]
         public static void AssertMaxBits(int max, int actual)
         {
             Debug.Assert(

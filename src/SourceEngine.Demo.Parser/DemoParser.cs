@@ -18,12 +18,11 @@ using SourceEngine.Demo.Parser.Structs;
 
 namespace SourceEngine.Demo.Parser
 {
-    #if DEBUG
-    #warning The DemoParser is very slow when compiled in Debug-Mode, since we use it as that: We perform many integrity checks during runtime.
-    #warning Build this in Relase-Mode for more performance if you're not working the internals of the parser. (If you are, create a pull request when you're done!)
+    #if CHECK_INTEGRITY
+    #warning The DemoParser is very slow when compiled with integrity checks enabled. Compile in the Release configuration for performance.
     #endif
     #if SAVE_PROP_VALUES
-    #warning You're compiling in the SavePropValues-Mode. This is a mode intended for Debugging and nothing else. It's cool to take a (entity-)dump here to find out how things work, but don't use this in production
+    #warning Compiling with the SavePropValues configuration. It's intended only for debugging - taking an (entity) dump; don't use it in production.
     #endif
     public class DemoParser : IDisposable
     {

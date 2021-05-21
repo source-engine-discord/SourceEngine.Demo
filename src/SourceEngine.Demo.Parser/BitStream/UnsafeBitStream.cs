@@ -349,6 +349,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         private uint PeekInt(int numBits, bool mayOverflow = false)
         {
             BitStreamUtil.AssertMaxBits(32, numBits);
+            #if CHECK_INTEGRITY
             Debug.Assert(
                 mayOverflow || Offset + numBits <= BitsInBuffer + SLED * 8,
                 "gg",
@@ -357,6 +358,7 @@ namespace SourceEngine.Demo.Parser.BitStream
                 numBits,
                 BitsInBuffer
             );
+            #endif
 
             return (uint)((*(ulong*)(PBuffer + ((Offset >> 3) & ~3)) << (8 * 8 - (Offset & (8 * 4 - 1)) - numBits))
                 >> (8 * 8 - numBits));

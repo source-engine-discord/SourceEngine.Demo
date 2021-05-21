@@ -291,7 +291,7 @@ namespace SourceEngine.Demo.Parser.Packet
             return $"[PropertyEntry: Entry={Entry}]";
         }
 
-        //[Conditional("DEBUG")]
+        //[Conditional("INTEGRITY_CHECK")]
         public void CheckBindings(Entity e)
         {
             if (IntRecived != null && Entry.Prop.Type != SendPropertyType.Int)
