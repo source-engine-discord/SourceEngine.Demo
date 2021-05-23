@@ -201,15 +201,15 @@ namespace SourceEngine.Demo.Parser.BitStream
 
                 if (Underlying.CanSeek)
                 {
-                    int bufferBits = BitsInBuffer - Offset;
+                    int bufferedBitsToSkip = BitsInBuffer - Offset + (SLED * 8);
 
-                    if (bufferBits + SLED * 8 < delta)
+                    if (bufferedBitsToSkip < delta)
                     {
                         if (EndOfStream)
                             throw new EndOfStreamException();
 
-                        int unbufferedSkipBits = delta - bufferBits;
-                        Underlying.Seek((unbufferedSkipBits >> 3) - SLED, SeekOrigin.Current);
+                        int unbufferedBitsToSkip = delta - bufferedBitsToSkip;
+                        Underlying.Seek(unbufferedBitsToSkip >> 3, SeekOrigin.Current);
 
                         // Read at least 8 bytes, because we rely on that
                         int offset, thisTime = 1337; // I'll cry if this ends up in the generated code
@@ -225,7 +225,7 @@ namespace SourceEngine.Demo.Parser.BitStream
                             EndOfStream = true;
                         }
 
-                        Offset = unbufferedSkipBits & 7;
+                        Offset = unbufferedBitsToSkip & 7;
                         LazyGlobalPosition = target - Offset;
                     }
                     else
