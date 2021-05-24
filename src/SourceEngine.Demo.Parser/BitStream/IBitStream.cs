@@ -42,19 +42,19 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// Reads the specified number of bits from the current stream position
         /// as an unsigned integer (<see cref="uint"/>).
         /// </summary>
-        /// <param name="bits">Number of bits to read.</param>
+        /// <param name="bitCount">Number of bits to read.</param>
         /// <returns>The read <see cref="uint"/>.</returns>
         /// <seealso cref="ReadSignedInt"/>
-        uint ReadInt(int bits);
+        uint ReadInt(int bitCount);
 
         /// <summary>
         /// Reads the specified number of bits from the current stream position
         /// as a <see cref="int"/>.
         /// </summary>
-        /// <param name="numBits">Number of bits to read.</param>
+        /// <param name="bitCount">Number of bits to read.</param>
         /// <returns>The read <see cref="int"/>.</returns>
         /// <seealso cref="ReadInt"/>
-        int ReadSignedInt(int numBits);
+        int ReadSignedInt(int bitCount);
 
         /// <summary>
         /// Reads a single bit from the current stream position as a
@@ -79,20 +79,20 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// Reads the specified number of bits from the current stream position
         /// as a <see cref="byte"/>.
         /// </summary>
-        /// <param name="bits">Number of bits to read.</param>
+        /// <param name="bitCount">Number of bits to read.</param>
         /// <returns>The read <see cref="byte"/>.</returns>
         /// <seealso cref="ReadByte()"/>
         /// <seealso cref="ReadBytes"/>
-        byte ReadByte(int bits);
+        byte ReadByte(int bitCount);
 
         /// <summary>
         /// Reads the specified amount of bytes from the current stream position.
         /// </summary>
-        /// <param name="bytes">Number of bytes to read.</param>
+        /// <param name="count">Number of bytes to read.</param>
         /// <returns>An array of the read bytes.</returns>
         /// <seealso cref="ReadByte()"/>
         /// <seealso cref="ReadByte(int)"/>
-        byte[] ReadBytes(int bytes);
+        byte[] ReadBytes(int count);
 
         /// <summary>
         /// Reads a 32-bit float (<see cref="float"/>) from the current stream
@@ -105,11 +105,11 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// Reads the specified amount of bits from the current stream position
         /// as bytes.
         /// </summary>
-        /// <param name="bits">Number of bits to read.</param>
+        /// <param name="count">Number of bits to read.</param>
         /// <returns>A <see cref="Byte"/> array of the read bits.</returns>
         /// <seealso cref="ReadBit"/>
         /// <seealso cref="ReadBytes"/>
-        byte[] ReadBits(int bits);
+        byte[] ReadBits(int count);
 
         /// <summary>
         /// Reads a Protobuf varint from the current stream position as a 32-bit
@@ -134,14 +134,14 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// <summary>
         /// Begins a chunk.
         /// </summary>
-        /// <param name="bits">The chunk's length in bits.</param>
+        /// <param name="length">The chunk's length in bits.</param>
         /// <remarks>
         /// You must not try to read beyond the end of a chunk. Doing
         /// so may corrupt the bitstream's state, leading to
         /// implementation-defined behavior of all methods except
         /// <see cref="IDisposable.Dispose"/>.
         /// </remarks>
-        void BeginChunk(int bits);
+        void BeginChunk(int length);
 
         /// <summary>
         /// Ends a chunk.

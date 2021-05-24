@@ -9,8 +9,8 @@ namespace SourceEngine.Demo.Parser.BitStream
 {
     public unsafe class UnsafeBitStream : IBitStream
     {
-        private const int SLED = 4; // 4 bytes
-        private const int BUFSIZE = 2048 + SLED;
+        private const int SLED_SIZE = 4; // 4 bytes
+        private const int BUFFER_SIZE = 2048 + SLED_SIZE;
 
         // MSB masks (protobuf varint end signal)
         private const uint MSB_1 = 0x00000080; // 1 byte
@@ -19,98 +19,98 @@ namespace SourceEngine.Demo.Parser.BitStream
         private const uint MSB_4 = 0x80000000; // 4 bytes
 
         // byte masks (except MSB)
-        private const uint MSK_1 = 0x0000007F; // first 7 bits
-        private const uint MSK_2 = 0x00007F00; // skip 1 byte then mask 7 bits
-        private const uint MSK_3 = 0x007F0000; // skip 2 bytes then mask 7 bits
-        private const uint MSK_4 = 0x7F000000; // skip 3 bytes then mask 7 bits
+        private const uint MASK_1 = 0x0000007F; // first 7 bits
+        private const uint MASK_2 = 0x00007F00; // skip 1 byte then mask 7 bits
+        private const uint MASK_3 = 0x007F0000; // skip 2 bytes then mask 7 bits
+        private const uint MASK_4 = 0x7F000000; // skip 3 bytes then mask 7 bits
 
         /// <summary>
         /// Stack of end positions for chunks currently being read.
         /// </summary>
         /// <seealso cref="BeginChunk"/>
         /// <seealso cref="EndChunk"/>
-        private readonly Stack<long> ChunkTargets = new();
+        private readonly Stack<long> chunkTargets = new();
 
         /// <summary>
-        /// Buffer that stores data read from the <see cref="Underlying"/> stream.
+        /// Buffer that stores data read from the <see cref="stream"/>.
         /// </summary>
         /// <remarks>
         /// The first 4 bytes, referred to as the "sled" (size defined by
-        /// <see cref="SLED"/>) are reserved for storing the last 4 bytes read
-        /// fully from the stream. This guarantees a certain amount of bits
+        /// <see cref="SLED_SIZE"/>) are reserved for storing the last 4 bytes
+        /// read fully from the stream. This guarantees a certain amount of bits
         /// will always be available for a read.
         /// </remarks>
         /// <seealso cref="EndChunk"/>
         /// <seealso cref="RefillBuffer"/>
-        private readonly byte[] Buffer = new byte[BUFSIZE];
+        private readonly byte[] buffer = new byte[BUFFER_SIZE];
 
         /// <summary>
-        /// Pinned handle to the <see cref="Buffer"/>, which protects it from
+        /// Pinned handle to the <see cref="buffer"/>, which protects it from
         /// garbage collection and allows its address to be resolved.
         /// </summary>
         /// <seealso cref="Dispose()"/>
-        private GCHandle HBuffer;
+        private GCHandle bufferHandle;
 
         /// <summary>
-        /// Pointer to the <see cref="Buffer"/>.
+        /// Pointer to the <see cref="buffer"/>.
         /// </summary>
-        private byte* PBuffer;
+        private byte* bufferPtr;
 
         /// <summary>
         /// Underlying stream from which data is read.
         /// </summary>
         /// <seealso cref="EndChunk"/>
         /// <seealso cref="RefillBuffer"/>
-        private Stream Underlying;
+        private Stream stream;
 
         /// <summary>
-        /// <c>true</c> if the end of the <see cref="Underlying"/> stream has been reached.
+        /// <c>true</c> if the end of the <see cref="stream"/> has been reached.
         /// </summary>
-        private bool EndOfStream;
+        private bool reachedEnd;
 
         /// <summary>
-        /// Pointer offset that points to to the first unread bit in the <see cref="Buffer"/>.
+        /// Pointer offset that points to to the first unread bit in the <see cref="buffer"/>.
         /// </summary>
         /// <seealso cref="TryAdvance"/>
-        private int Offset;
+        private int offset;
 
         /// <summary>
-        /// Number of bits currently read into the <see cref="Buffer"/>, excluding the sled bits.
+        /// Number of bits currently read into the <see cref="buffer"/>, excluding the sled bits.
         /// </summary>
         /// <remarks>
-        /// Any <see cref="Offset"/> such that <c>(Offset - SLED * 4) >= BitsInBuffer</c>
+        /// Any <see cref="offset"/> such that <c>(offset - SLED_SIZE * 4) >= bufferedBits</c>
         /// points to invalid or old data.
         /// </remarks>
-        private int BitsInBuffer;
+        private int bufferedBits;
 
         /// <summary>
-        /// Position in the <see cref="Underlying"/> stream which corresponds to
-        /// the start of the <see cref="Buffer"/> (i.e. index 0, the sled start).
+        /// Position in the <see cref="stream"/> which corresponds to
+        /// the start of the <see cref="buffer"/> (i.e. index 0, the sled start).
         /// </summary>
-        private long LazyGlobalPosition;
+        private long globalStartPosition;
 
         /// <summary>
-        /// Position of the first unprocessed bit in the <see cref="Underlying"/> stream.
+        /// Position of the first unprocessed bit in the <see cref="stream"/>.
         /// </summary>
         /// <remarks>
         /// Technically this bit has already been read and placed into the
-        /// <see cref="Buffer"/>, so consider it "unprocessed".
+        /// <see cref="buffer"/>, so consider it "unprocessed".
         /// </remarks>
-        /// <seealso cref="LazyGlobalPosition"/>
-        /// <seealso cref="Offset"/>
-        private long ActualGlobalPosition => LazyGlobalPosition + Offset;
+        /// <seealso cref="globalStartPosition"/>
+        /// <seealso cref="offset"/>
+        private long GlobalPosition => globalStartPosition + offset;
 
-        public void Initialize(Stream underlying)
+        public void Initialize(Stream stream)
         {
-            HBuffer = GCHandle.Alloc(Buffer, GCHandleType.Pinned);
-            PBuffer = (byte*)HBuffer.AddrOfPinnedObject().ToPointer();
+            bufferHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+            bufferPtr = (byte*)bufferHandle.AddrOfPinnedObject().ToPointer();
 
-            Underlying = underlying;
+            this.stream = stream;
             RefillBuffer();
 
             // Move the offset past the sled since its still empty after the first refill.
             // (RefillBuffer copies into the sled and *then* reads, meaning there was nothing to copy the first time)
-            Offset = SLED * 8;
+            offset = SLED_SIZE * 8;
         }
 
         void IDisposable.Dispose()
@@ -119,10 +119,10 @@ namespace SourceEngine.Demo.Parser.BitStream
             GC.SuppressFinalize(this);
         }
 
-        public uint ReadInt(int numBits)
+        public uint ReadInt(int bitCount)
         {
-            uint result = PeekInt(numBits);
-            if (TryAdvance(numBits))
+            uint result = PeekInt(bitCount);
+            if (TryAdvance(bitCount))
                 RefillBuffer();
 
             return result;
@@ -136,7 +136,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             // AND by 7 (modulo 8) to get the amount of bits past the byte boundary (e.g. 4 bits for an offset of 44).
             // Shift left by that amount to create the bit mask (e.g. 4 creates mask 0001 0000 to select the 4th MSB).
             // Finally AND the read byte with the mask.
-            bool bit = (PBuffer[Offset >> 3] & (1 << (Offset & 7))) != 0;
+            bool bit = (bufferPtr[offset >> 3] & (1 << (offset & 7))) != 0;
             if (TryAdvance(1))
                 RefillBuffer();
 
@@ -152,38 +152,38 @@ namespace SourceEngine.Demo.Parser.BitStream
             return ret;
         }
 
-        public byte ReadByte(int bits)
+        public byte ReadByte(int bitCount)
         {
-            BitStreamUtil.AssertMaxBits(8, bits);
+            BitStreamUtil.AssertMaxBits(8, bitCount);
 
-            var ret = (byte)PeekInt(bits);
-            if (TryAdvance(bits))
+            var ret = (byte)PeekInt(bitCount);
+            if (TryAdvance(bitCount))
                 RefillBuffer();
 
             return ret;
         }
 
-        public byte[] ReadBytes(int bytes)
+        public byte[] ReadBytes(int count)
         {
-            var ret = new byte[bytes];
-            ReadBytes(ret, bytes);
+            var ret = new byte[count];
+            ReadBytes(ret, count);
 
             return ret;
         }
 
-        public int ReadSignedInt(int numBits)
+        public int ReadSignedInt(int bitCount)
         {
-            BitStreamUtil.AssertMaxBits(32, numBits);
+            BitStreamUtil.AssertMaxBits(32, bitCount);
 
             // Just like PeekInt, but before the right shift, cast to a signed long for sign extension.
             var result = (int)(
                 (long)(
-                    *(ulong*)(PBuffer + ((Offset >> 3) & ~3))
-                    << (8 * 8 - (Offset & (8 * 4 - 1)) - numBits)
-                ) >> (8 * 8 - numBits)
+                    *(ulong*)(bufferPtr + ((offset >> 3) & ~3))
+                    << (8 * 8 - (offset & (8 * 4 - 1)) - bitCount)
+                ) >> (8 * 8 - bitCount)
             );
 
-            if (TryAdvance(numBits))
+            if (TryAdvance(bitCount))
                 RefillBuffer();
 
             return result;
@@ -198,17 +198,17 @@ namespace SourceEngine.Demo.Parser.BitStream
             return *(float*)&iResult; // standard reinterpret cast
         }
 
-        public byte[] ReadBits(int bits)
+        public byte[] ReadBits(int count)
         {
             // Shifting right by 3 is a division by 8 to convert bits to bytes.
             // Allocate space for an extra byte to store the data that's past the byte boundary.
-            byte[] result = new byte[(bits + 7) >> 3];
-            ReadBytes(result, bits >> 3);
+            byte[] result = new byte[(count + 7) >> 3];
+            ReadBytes(result, count >> 3);
 
             // AND with 7 (modulo 8) to get the amount of bits past the byte boundary.
             // If there are extra bits past the boundary, read them as a byte and add it to the end of the array.
-            if ((bits & 7) != 0)
-                result[bits >> 3] = ReadByte(bits & 7);
+            if ((count & 7) != 0)
+                result[count >> 3] = ReadByte(count & 7);
 
             return result;
         }
@@ -216,7 +216,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         public int ReadProtobufVarInt()
         {
             // Only used for debug assertions.
-            var availableBits = BitsInBuffer + SLED * 8 - Offset;
+            var availableBits = bufferedBits + SLED_SIZE * 8 - offset;
 
             // Start by overflowingly reading 32 bits.
             // Reading beyond the buffer contents is safe in this case,
@@ -226,27 +226,28 @@ namespace SourceEngine.Demo.Parser.BitStream
             // Always take the first byte; read the rest if necessary.
             // Normally, the least significant group of 7 bits is first.
             // However, PeekInt already returns these groups in reverse.
-            uint result = buf & MSK_1;
+            uint result = buf & MASK_1;
             BitStreamUtil.AssertMaxBits(availableBits, 1 * 8);
 
             // The MSB at every byte boundary will be set if there are more bytes that need to be decoded.
             if ((buf & MSB_1) != 0)
             {
                 // Right shift to get rid of the MSBs from the previous bytes (in this case only 1 previous byte).
-                result |= (buf & MSK_2) >> 1;
+                result |= (buf & MASK_2) >> 1;
                 BitStreamUtil.AssertMaxBits(availableBits, 1 * 8);
 
                 if ((buf & MSB_2) != 0)
                 {
-                    result |= (buf & MSK_3) >> 2;
+                    result |= (buf & MASK_3) >> 2;
                     BitStreamUtil.AssertMaxBits(availableBits, 2 * 8);
 
                     if ((buf & MSB_3) != 0)
                     {
-                        result |= (buf & MSK_4) >> 3;
+                        result |= (buf & MASK_4) >> 3;
                         BitStreamUtil.AssertMaxBits(availableBits, 3 * 8);
 
-                        if ((buf & MSB_4) != 0) {
+                        if ((buf & MSB_4) != 0)
+                        {
                             // Unfortunately, it's larger than 4 bytes (it's probably a negative integer). That's rare.
                             // This algorithm is limited to 4 bytes since the peek and masks are 32-bit integers.
                             // Fall back to the slow implementation.
@@ -277,7 +278,7 @@ namespace SourceEngine.Demo.Parser.BitStream
 
         public void BeginChunk(int length)
         {
-            ChunkTargets.Push(ActualGlobalPosition + length);
+            chunkTargets.Push(GlobalPosition + length);
         }
 
         public void EndChunk()
@@ -288,10 +289,10 @@ namespace SourceEngine.Demo.Parser.BitStream
             // read beyond chunk boundaries. Here, we have to calculate the
             // number of read bits anyways so we know how much we need to skip,
             // so we might as well verify that this difference isn't negative.
-            var target = ChunkTargets.Pop();
+            var target = chunkTargets.Pop();
 
             // How many bits remain ahead of the current position until the target is reached.
-            var delta = checked((int)(target - ActualGlobalPosition));
+            var delta = checked((int)(target - GlobalPosition));
 
             if (delta < 0)
             {
@@ -300,47 +301,47 @@ namespace SourceEngine.Demo.Parser.BitStream
             else if (delta > 0)
             {
                 // Prefer seeking to skip to the target if the stream supports seeking.
-                if (Underlying.CanSeek)
+                if (stream.CanSeek)
                 {
                     // Number of bits in the buffer that have not been consumed yet.
                     // Subtract the offset because all bits up to the offset have already been consumed.
-                    int bufferedBitsToSkip = BitsInBuffer - Offset + (SLED * 8);
+                    int bufferedBitsToSkip = bufferedBits - offset + (SLED_SIZE * 8);
 
                     // The number of bits in the buffer is less than the number
                     // of bits that need to be skipped to reach the end of the chunk.
                     // As mentioned above, the sled (converted to bits) needs to be added to get the true value.
                     if (bufferedBitsToSkip < delta)
                     {
-                        if (EndOfStream)
+                        if (reachedEnd)
                             throw new EndOfStreamException();
 
                         // Number of bits between the last valid bit in the buffer and the target.
                         // The shr by 3 is a division by 8 to convert bits to bytes.
                         int unbufferedBitsToSkip = delta - bufferedBitsToSkip;
-                        Underlying.Seek(unbufferedBitsToSkip >> 3, SeekOrigin.Current);
+                        stream.Seek(unbufferedBitsToSkip >> 3, SeekOrigin.Current);
 
                         // Unlike RefillBuffer, which reads 4 bytes,
                         // this reads 8 because the sled also has to be populated.
-                        int offset, bytesRead = 1337; // I'll cry if this ends up in the generated code
-                        for (offset = 0; offset < 8 && bytesRead != 0; offset += bytesRead)
-                            bytesRead = Underlying.Read(Buffer, offset, BUFSIZE - offset);
+                        int readOffset, bytesRead = 1337; // I'll cry if this ends up in the generated code
+                        for (readOffset = 0; readOffset < 8 && bytesRead != 0; readOffset += bytesRead)
+                            bytesRead = stream.Read(buffer, readOffset, BUFFER_SIZE - readOffset);
 
                         // Don't count the sled bytes towards the amount of bits in the buffer.
                         // The reason it has to be done here but not in RefillBuffer is that
                         // this had to fill an empty sled while the latter did not.
-                        BitsInBuffer = 8 * (offset - SLED);
+                        bufferedBits = 8 * (readOffset - SLED_SIZE);
 
                         if (bytesRead == 0)
                         {
                             // The sled can be consumed now since the end of the stream was reached.
-                            BitsInBuffer += SLED * 8;
-                            EndOfStream = true;
+                            bufferedBits += SLED_SIZE * 8;
+                            reachedEnd = true;
                         }
 
                         // Modulo 8 because the stream can only seek to a byte boundary;
                         // there may be up to 7 more bits that need to be skipped.
-                        Offset = unbufferedBitsToSkip & 7;
-                        LazyGlobalPosition = target - Offset;
+                        offset = unbufferedBitsToSkip & 7;
+                        globalStartPosition = target - offset;
                     }
                     else if (TryAdvance(delta))
                     {
@@ -357,7 +358,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             }
         }
 
-        public bool ChunkFinished => ChunkTargets.Peek() == ActualGlobalPosition;
+        public bool ChunkFinished => chunkTargets.Peek() == GlobalPosition;
 
         ~UnsafeBitStream()
         {
@@ -365,30 +366,30 @@ namespace SourceEngine.Demo.Parser.BitStream
         }
 
         /// <summary>
-        /// Frees <see cref="HBuffer"/>, the handle to the <see cref="Buffer"/>.
+        /// Frees <see cref="bufferHandle"/>, the handle to the <see cref="buffer"/>.
         /// </summary>
         private void Dispose()
         {
             var nullptr = (byte*)IntPtr.Zero.ToPointer();
 
-            if (PBuffer != nullptr)
+            if (bufferPtr != nullptr)
             {
                 // GCHandle docs state that Free() must only be called once.
-                // So we use PBuffer to ensure that.
-                PBuffer = nullptr;
-                HBuffer.Free();
+                // So we use bufferPtr to ensure that.
+                bufferPtr = nullptr;
+                bufferHandle.Free();
             }
         }
 
         /// <summary>
-        /// Advances the cursor by <paramref name="howMuch"/> bits.
-        /// Adds <paramref name="howMuch"/> to the current buffer <see cref="Offset"/>.
+        /// Advances the cursor by <paramref name="count"/> bits.
+        /// Adds <paramref name="count"/> to the current buffer <see cref="offset"/>.
         /// </summary>
         /// <remarks>
-        /// Note that <see cref="Offset"/> is relative to the start of the sled rather than the end of the sled. If the
-        /// offset is allowed to reach and consume the last <see cref="SLED"/> bytes of the <see cref="Buffer"/>, then
+        /// Note that <see cref="offset"/> is relative to the start of the sled rather than the end of the sled. If the
+        /// offset is allowed to reach and consume the last <see cref="SLED_SIZE"/> bytes of the <see cref="buffer"/>,
         /// the next <see cref="RefillBuffer"/> call will copy already-consumed bytes into the sled. Therefore, a refill
-        /// is required when there are <see cref="SLED"/> or less bytes remaining after the advanced position.
+        /// is required when there are <see cref="SLED_SIZE"/> or less bytes remaining after the advanced position.
         /// <p>
         /// Apparently mono can't inline the old <c>Advance()</c> because that would mess up the call stack:
         /// <c>Advance->RefillBuffer->Stream.Read</c> which could then throw. <c>Advance</c>'s stack frame would be
@@ -399,30 +400,30 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// if (TryAdvance(howMuch))
         ///     RefillBuffer();
         /// </c></example>
-        /// <param name="howMuch">The number of bits by which to advance the cursor.</param>
+        /// <param name="count">The number of bits by which to advance the cursor.</param>
         /// <returns>
         /// True if the advanced position surpassed the last valid bit in the buffer or there are &lt;=
-        /// <see cref="SLED"/> bytes remaining in the buffer after the advanced position.
+        /// <see cref="SLED_SIZE"/> bytes remaining in the buffer after the advanced position.
         /// In such cases, <see cref="RefillBuffer"/> needs to be called right after this function.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryAdvance(int howMuch)
+        private bool TryAdvance(int count)
         {
-            return (Offset += howMuch) >= BitsInBuffer;
+            return (offset += count) >= bufferedBits;
         }
 
         /// <summary>
-        /// Fills the <see cref="Buffer"/> with data from the <see cref="Underlying"/> stream until the bit pointed to
-        /// by the <see cref="Offset"/> is within the buffer.
+        /// Fills the <see cref="buffer"/> with data from the <see cref="stream"/> until the bit pointed to
+        /// by the <see cref="offset"/> is within the buffer.
         /// </summary>
         /// <remarks>
-        /// Copies the last <see cref="SLED"/> bytes into the first four bytes of the <see cref="Buffer"/>, called the
-        /// "sled", before overwriting the buffer with new data. The sled should always contain unconsumed bits.
-        /// Furthermore, the buffer should always contain at least <see cref="SLED"/> bytes in addition to the bytes in
-        /// the sled. Maintaining a sled means that the buffer guarantees a certain amount of bits will always be
-        /// available for a read.
+        /// Copies the last <see cref="SLED_SIZE"/> bytes into the first four bytes of the <see cref="buffer"/>, called
+        /// the "sled", before overwriting the buffer with new data. The sled should always contain unconsumed bits.
+        /// Furthermore, the buffer should always contain at least <see cref="SLED_SIZE"/> bytes in addition to the
+        /// bytes in the sled. Maintaining a sled means that the buffer guarantees a certain amount of bits will always
+        /// be available for a read.
         /// </remarks>
-        /// <exception cref="EndOfStreamException">The <see cref="Underlying"/> stream has no more data.</exception>
+        /// <exception cref="EndOfStreamException">The <see cref="stream"/> has no more data.</exception>
         /// <seealso cref="TryAdvance"/>
         private void RefillBuffer()
         {
@@ -443,9 +444,9 @@ namespace SourceEngine.Demo.Parser.BitStream
                 // Just like chunking, this safety net has as little performance overhead as possible,
                 // at the cost of throwing later than it could (which can be too late in some
                 // scenarios; as in: you stop using the bitstream before it throws).
-                if (EndOfStream)
+                if (reachedEnd)
                 {
-                    if (BitsInBuffer == 0)
+                    if (bufferedBits == 0)
                         throw new EndOfStreamException();
 
                     // Another late overrun detection:
@@ -454,10 +455,10 @@ namespace SourceEngine.Demo.Parser.BitStream
                     // So we don't loop again.
                     // If it's not, we'll loop again which is exactly what we want
                     // as we overran the stream and wanna hit the throw above.
-                    Offset -= BitsInBuffer + 1;
-                    LazyGlobalPosition += BitsInBuffer + 1;
-                    *(uint*)PBuffer = 0; // safety
-                    BitsInBuffer = 0;
+                    offset -= bufferedBits + 1;
+                    globalStartPosition += bufferedBits + 1;
+                    *(uint*)bufferPtr = 0; // safety
+                    bufferedBits = 0;
                     continue;
                 }
 
@@ -471,11 +472,11 @@ namespace SourceEngine.Demo.Parser.BitStream
                 // (BitsInBuffer >> 3) is really (BitsInBuffer / 8), which just converts bits to bytes.
                 // While this is a floored division, it doesn't matter because BitsInBuffer is guaranteed to be a
                 // multiple of a byte; its value comes from Stream.Read, which can only read entire bytes.
-                *(uint*)PBuffer = *(uint*)(PBuffer + (BitsInBuffer >> 3));
+                *(uint*)bufferPtr = *(uint*)(bufferPtr + (bufferedBits >> 3));
 
                 // The reads below overwrite the current bits in the buffer, therefore advancing the buffer forward.
-                Offset -= BitsInBuffer; // Offset moves backward (moving the buffer forward makes the target closer).
-                LazyGlobalPosition += BitsInBuffer; // Start position of the buffer moves forward.
+                offset -= bufferedBits; // Offset moves backward (moving the buffer forward makes the target closer).
+                globalStartPosition += bufferedBits; // Start position of the buffer moves forward.
 
                 // Read until at least 4 bytes are read or the end of the stream is reached (when bytesRead == 0).
                 // It needs at least 4 bytes because that's the sled size, and subsequent refills expect to be able
@@ -486,12 +487,12 @@ namespace SourceEngine.Demo.Parser.BitStream
                 //
                 // The buffer starts being filled past the sled, which are be the first four bytes in the buffer.
                 // Each read, the offset is updated with the number of bytes read.
-                int offset, bytesRead = 1337; // I'll cry if this ends up in the generated code
-                for (offset = 0; offset < 4 && bytesRead != 0; offset += bytesRead)
-                    bytesRead = Underlying.Read(Buffer, SLED + offset, BUFSIZE - SLED - offset);
+                int readOffset, bytesRead = 1337; // I'll cry if this ends up in the generated code
+                for (readOffset = 0; readOffset < 4 && bytesRead != 0; readOffset += bytesRead)
+                    bytesRead = stream.Read(buffer, SLED_SIZE + readOffset, BUFFER_SIZE - SLED_SIZE - readOffset);
 
-                // offset is the sum of the bytes read from all Read() calls in the loop above.
-                BitsInBuffer = 8 * offset;
+                // readOffset is the sum of the bytes read from all Read() calls in the loop above.
+                bufferedBits = 8 * readOffset;
 
                 // 0 bytes read means the end of the stream was reached.
                 if (bytesRead == 0)
@@ -500,53 +501,53 @@ namespace SourceEngine.Demo.Parser.BitStream
                     // However, since the end of the stream was reached, these last bytes no longer need to be reserved.
                     // Therefore, count the sled bits towards the total number of bits in the buffer.
                     // TryAdvance will return false now if the new position has <= 4 bytes after it in the buffer.
-                    BitsInBuffer += SLED * 8;
-                    EndOfStream = true;
+                    bufferedBits += SLED_SIZE * 8;
+                    reachedEnd = true;
                 }
             }
             // Keep reading until enough bits are read to reach the offset.
             // If the offset is too far ahead from the original position,
             // data at the start of the buffer will get discarded since it can't all fit.
             // See TryAdvance for details on why this doesn't account for the size of the sled.
-            while (Offset >= BitsInBuffer);
+            while (offset >= bufferedBits);
         }
 
         /// <summary>
-        /// Retrieves up to 32 bits from the <see cref="Buffer"/>.
+        /// Retrieves up to 32 bits from the <see cref="buffer"/>.
         /// </summary>
-        /// <param name="numBits">The number of bits to read, up to a maximum of 32.</param>
+        /// <param name="bitCount">The number of bits to read, up to a maximum of 32.</param>
         /// <param name="mayOverflow">
-        /// <c>true</c> if more bits can be read than are available in the <see cref="Buffer"/>.
+        /// <c>true</c> if more bits can be read than are available in the <see cref="buffer"/>.
         /// This only affects a debug assertion.
         /// </param>
         /// <returns>The bits read in the form of an unsigned integer.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private uint PeekInt(int numBits, bool mayOverflow = false)
+        private uint PeekInt(int bitCount, bool mayOverflow = false)
         {
-            BitStreamUtil.AssertMaxBits(32, numBits);
+            BitStreamUtil.AssertMaxBits(32, bitCount);
             #if CHECK_INTEGRITY
             Debug.Assert(
-                mayOverflow || Offset + numBits <= BitsInBuffer + SLED * 8,
+                mayOverflow || offset + bitCount <= bufferedBits + SLED_SIZE * 8,
                 "gg",
-                "This code just fell apart. We're all dead. Offset={0} numBits={1} BitsInBuffer={2}",
-                Offset,
-                numBits,
-                BitsInBuffer
+                "This code just fell apart. We're all dead. offset={0} bitCount={1} bufferedBits={2}",
+                offset,
+                bitCount,
+                bufferedBits
             );
             #endif
 
             // Summary:
             // Read 8 bytes after aligning the offset to a 4-byte boundary.
-            // Shift left to discard bits from numBits + 1 to 32 & MSBs that are past the non-aligned offset + 4 bytes.
+            // Shift left to discard bits from bitCount + 1 to 32 & MSBs that are past the non-aligned offset + 4 bytes.
             // Shift back to the right to discard the LSBs that are before the non-aligned offset.
             return (uint)(
                 (
                     // Read 8 bytes (64 bits) and dereference into a ulong.
                     // It's a ulong so there's extra space to shift to the left later.
                     *(ulong*)(
-                        PBuffer + (
+                        bufferPtr + (
                             // Shifting to the left by 3 divides by 8 to convert the offset from bits to bytes.
-                            (Offset >> 3)
+                            (offset >> 3)
                             // Align the offset to a 4-byte boundary rather than 1-byte as a micro-optimisation.
                             // AND with the complement of 3 sets the 2 least significant bits to 0.
                             //
@@ -562,42 +563,42 @@ namespace SourceEngine.Demo.Parser.BitStream
                         8 * 8
                         // Subtract the number of bits over the 4 byte-boundary, calculated with (Offset % (8 * 4)).
                         // All the most-significant bits past the offset + boundary get discarded.
-                        - (Offset & (8 * 4 - 1))
+                        - (offset & (8 * 4 - 1))
                         // Lastly, subtract the number of bits to read.
-                        // Any bits between numBits + 1 and 32 will also get discarded.
-                        - numBits
+                        // Any bits between bitCount + 1 and 32 will also get discarded.
+                        - bitCount
                     )
                 )
                 // Shift back to the right.
                 // This time, don't include the alignment remainder.
                 // The least significant bytes will be discarded e.g. bytes 56 and 57 when offset is 58 bytes.
-                >> (8 * 8 - numBits)
+                >> (8 * 8 - bitCount)
             );
         }
 
         /// <summary>
-        /// Reads bytes into <paramref name="ret"/>.
+        /// Reads bytes into <paramref name="outBuffer"/>.
         /// </summary>
-        /// <param name="ret">Pointer to the buffer to read the bytes into.</param>
-        /// <param name="bytes">Amount of bytes to read.</param>
-        private void ReadBytes(byte[] ret, int bytes)
+        /// <param name="outBuffer">The buffer to read the bytes into.</param>
+        /// <param name="count">Amount of bytes to read.</param>
+        private void ReadBytes(byte[] outBuffer, int count)
         {
-            if (bytes < 3)
+            if (count < 3)
             {
-                for (int i = 0; i < bytes; i++)
-                    ret[i] = ReadByte();
+                for (int i = 0; i < count; i++)
+                    outBuffer[i] = ReadByte();
             }
-            else if ((Offset & 7) == 0) // Modulo 8; no remainder means the offset is aligned to a byte boundary.
+            else if ((offset & 7) == 0) // Modulo 8; no remainder means the offset is aligned to a byte boundary.
             {
-                int offset = 0; // Amount of bytes that have been copied.
+                int outOffset = 0; // Amount of bytes that have been copied.
 
-                while (offset < bytes)
+                while (outOffset < count)
                 {
                     // Read until the end of the input buffer if the remaining amount to read exceeds the buffer.
                     // Note: Offset is never greater than BitsInBuffer (otherwise the buffer would've been refilled).
-                    int remainingBytes = Math.Min((BitsInBuffer - Offset) >> 3, bytes - offset);
-                    System.Buffer.BlockCopy(Buffer, Offset >> 3, ret, offset, remainingBytes);
-                    offset += remainingBytes;
+                    int remainingBytes = Math.Min((bufferedBits - offset) >> 3, count - outOffset);
+                    Buffer.BlockCopy(buffer, offset >> 3, outBuffer, outOffset, remainingBytes);
+                    outOffset += remainingBytes;
 
                     if (TryAdvance(remainingBytes * 8))
                         RefillBuffer();
@@ -605,68 +606,68 @@ namespace SourceEngine.Demo.Parser.BitStream
             }
             else
             {
-                // Offset is not aligned, so use HyperspeedCopyRound because it can handle misalignment.
-                fixed (byte* retptr = ret)
+                // Offset is not aligned, so use CopyBytes because it can handle misalignment.
+                fixed (byte* outPtr = outBuffer)
                 {
-                    int offset = 0;
+                    int outOffset = 0;
 
-                    while (offset < bytes)
+                    while (outOffset < count)
                     {
-                        int remainingBytes = Math.Min(((BitsInBuffer - Offset) >> 3) + 1, bytes - offset);
-                        HyperspeedCopyRound(remainingBytes, retptr + offset);
-                        offset += remainingBytes;
+                        int remainingBytes = Math.Min(((bufferedBits - offset) >> 3) + 1, count - outOffset);
+                        CopyBytes(outPtr + outOffset, remainingBytes);
+                        outOffset += remainingBytes;
 
-                        // HyperspeedCopyRound takes care of refilling the buffer as necessary.
+                        // CopyBytes takes care of refilling the buffer as necessary.
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Copies bytes from <see cref="Buffer"/> to <paramref name="retptr"/>,
-        /// supporting a misaligned <see cref="Offset"/>.
+        /// Copies bytes from <see cref="buffer"/> to <paramref name="outBuffer"/>,
+        /// supporting a misaligned <see cref="offset"/>.
         /// </summary>
         /// <remarks>
         /// This is probably the most significant unsafe speedup: copying about 64 bits at a time instead of 8 bits.
         /// </remarks>
-        /// <param name="bytes">Amount of bytes to copy.</param>
-        /// <param name="retptr">Pointer to the buffer to copy the bytes into.</param>
-        private void HyperspeedCopyRound(int bytes, byte* retptr) // you spin me right round baby right round...
+        /// <param name="outBuffer">Pointer to the buffer to copy the bytes into.</param>
+        /// <param name="count">Amount of bytes to copy.</param>
+        private void CopyBytes(byte* outBuffer, int count)
         {
             // Begin by aligning to the first byte.
             // These values will make more sense after looking at the loop below.
-            int misalign = 8 - (Offset & 7); // Modulo 8; calculate the amount of bits until the *next* boundary.
+            int misalign = 8 - (offset & 7); // Modulo 8; calculate the amount of bits until the *next* boundary.
             int realign = sizeof(ulong) * 8 - misalign; // How many bits from the current value will be copied.
             ulong step = ReadByte(misalign); // Read until the next byte boundary is reached.
 
             // Pointers are ulongs instead of bytes to allow copying 8 bytes at a time.
-            var inptr = (ulong*)(PBuffer + (Offset >> 3)); // Pointer to input buffer, starting at the aligned offset.
-            var outptr = (ulong*)retptr;
+            var inPtr = (ulong*)(bufferPtr + (offset >> 3)); // Pointer to input buffer, starting at the aligned offset.
+            var outPtr = (ulong*)outBuffer;
 
             // Main loop - copy 8 bytes at a time.
             // Subtract 1 byte because it was already read above (exactly 1 byte was read if it was already aligned).
-            for (int i = 0; i < (bytes - 1) / sizeof(ulong); i++)
+            for (int i = 0; i < (count - 1) / sizeof(ulong); i++)
             {
                 // Get 8 bytes and advance the input pointer.
-                ulong current = *inptr++;
+                ulong current = *inPtr++;
 
                 // LSBs in `step` contain the remaining bytes from the previous read that are nonaligned.
                 // Shift the current value past those nonaligned bytes. The MSBs of `current` are truncated.
                 step |= current << misalign;
 
                 // Copy the 8 bytes into the output and advance the output pointer.
-                *outptr++ = step;
+                *outPtr++ = step;
 
                 // Store the MSBs that were truncated above. They'll be copied in the next iteration.
                 step = current >> realign;
             }
 
             // Now process the rest. They're not aligned to an 8-byte boundary, so they have to be read 1 at a time.
-            int rest = (bytes - 1) % sizeof(ulong); // Amount of bytes not copied by the loop above.
-            Offset += (bytes - rest - 1) * 8; // Adjust the offset to account for the bytes read above.
+            int rest = (count - 1) % sizeof(ulong); // Amount of bytes not copied by the loop above.
+            offset += (count - rest - 1) * 8; // Adjust the offset to account for the bytes read above.
 
             // Output pointer as bytes, starting at the position the loop left it at.
-            var bout = (byte*)outptr;
+            var outBytePtr = (byte*)outPtr;
 
             // The read at the start aligned the offset to a byte boundary. However, this caused the amount of bits
             // to read to become nonaligned. Now, the opposite needs to be true: the number of bits to read has to be
@@ -681,11 +682,11 @@ namespace SourceEngine.Demo.Parser.BitStream
             // Note that `step` still contains the truncated MSBs from the final read in the loop.
             // It contains exactly `misalign` number of bits, and 8 - misalign will be the bits to the next boundary.
             // As done in the loop above, shift the read value past the LSBs of `step`.
-            bout[0] = (byte)((ReadInt(8 - misalign) << misalign) | step);
+            outBytePtr[0] = (byte)((ReadInt(8 - misalign) << misalign) | step);
 
             // Now it's aligned. Simply read the remaining bytes 1-by-1 into the output buffer.
             for (int i = 1; i < rest + 1; i++)
-                bout[i] |= ReadByte();
+                outBytePtr[i] |= ReadByte();
         }
     }
 }
