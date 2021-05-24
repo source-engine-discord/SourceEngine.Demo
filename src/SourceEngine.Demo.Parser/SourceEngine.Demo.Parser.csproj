@@ -17,27 +17,6 @@
         <DefineConstants>TRACE;DEBUG;CHECK_INTEGRITY</DefineConstants>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'DebugBitStream' ">
-        <OutputPath>bin\Debug\</OutputPath>
-        <DefineConstants>TRACE;DEBUG;CHECK_INTEGRITY;DEBUG_BITSTREAM</DefineConstants>
-        <DebugSymbols>true</DebugSymbols>
-        <Optimize>false</Optimize>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'DebugManaged' ">
-        <OutputPath>bin\Debug\</OutputPath>
-        <DefineConstants>TRACE;DEBUG;CHECK_INTEGRITY;MANAGED_BITSTREAM</DefineConstants>
-        <DebugSymbols>true</DebugSymbols>
-        <Optimize>false</Optimize>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseManaged' ">
-        <OutputPath>bin\Release\</OutputPath>
-        <DefineConstants>TRACE;MANAGED_BITSTREAM</DefineConstants>
-        <DebugSymbols>false</DebugSymbols>
-        <Optimize>true</Optimize>
-    </PropertyGroup>
-
     <PropertyGroup Condition=" '$(Configuration)' == 'SavePropValues' ">
         <OutputPath>bin\Debug\</OutputPath>
         <DefineConstants>TRACE;DEBUG;SAVE_PROP_VALUES</DefineConstants>

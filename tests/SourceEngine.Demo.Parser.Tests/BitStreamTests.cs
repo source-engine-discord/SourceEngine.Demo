@@ -36,10 +36,9 @@ namespace SourceEngine.Demo.Parser.Tests
 
         private IBitStream CreateBS(byte[] streamData)
         {
-            IBitStream managed = new ManagedBitStream(), @unsafe = new UnsafeBitStream();
-            managed.Initialize(new AwkwardStream(new MemoryStream(streamData), rng));
-            @unsafe.Initialize(new AwkwardStream(new MemoryStream(streamData), rng));
-            return new DebugBitStream(new BitArrayStream(streamData), new DebugBitStream(managed, @unsafe));
+            IBitStream bs = new UnsafeBitStream();
+            bs.Initialize(new AwkwardStream(new MemoryStream(streamData), rng));
+            return bs;
         }
 
         [Test]

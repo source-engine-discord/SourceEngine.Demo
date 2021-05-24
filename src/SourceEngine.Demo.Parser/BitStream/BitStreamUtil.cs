@@ -13,30 +13,9 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// </summary>
         public static IBitStream Create(Stream stream)
         {
-            #if DEBUG_BITSTREAM
-            byte[] data;
-            using (var memstream = new MemoryStream(checked((int)stream.Length))) {
-                stream.CopyTo(memstream);
-                data = memstream.GetBuffer();
-            }
-
-            var bs1 = new BitArrayStream(data);
-            var bs2 = new ManagedBitStream();
-            bs2.Initialize(new MemoryStream(data));
-            var bs3 = new UnsafeBitStream();
-            bs3.Initialize(new MemoryStream(data));
-            return new DebugBitStream(bs1, new DebugBitStream(bs2, bs3));
-            #else
-
-            #if MANAGED_BITSTREAM
-            var bs = new ManagedBitStream();
-            #else
             var bs = new UnsafeBitStream();
-            #endif
-
             bs.Initialize(stream);
             return bs;
-            #endif
         }
 
         /// <summary>
@@ -44,24 +23,10 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// </summary>
         public static IBitStream Create(byte[] data)
         {
-            #if DEBUG_BITSTREAM
-            var bs1 = new BitArrayStream(data);
-            var bs2 = new ManagedBitStream();
-            bs2.Initialize(new MemoryStream(data));
-            var bs3 = new UnsafeBitStream();
-            bs3.Initialize(new MemoryStream(data));
-            return new DebugBitStream(bs1, new DebugBitStream(bs2, bs3));
-            #else
-
-            #if MANAGED_BITSTREAM
-            var bs = new ManagedBitStream();
-            #else
             var bs = new UnsafeBitStream();
-            #endif
-
             bs.Initialize(new MemoryStream(data));
+
             return bs;
-            #endif
         }
 
         public static uint ReadUBitInt(this IBitStream bs)
