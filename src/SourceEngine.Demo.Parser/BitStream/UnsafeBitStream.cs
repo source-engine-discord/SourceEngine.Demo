@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -71,7 +71,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// <summary>
         /// Pointer offset that points to to the first unread bit in the <see cref="buffer"/>.
         /// </summary>
-        /// <seealso cref="TryAdvance"/>
+        /// <seealso cref="Advance"/>
         private int offset;
 
         /// <summary>
@@ -122,8 +122,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         public uint ReadInt(int bitCount)
         {
             uint result = PeekInt(bitCount);
-            if (TryAdvance(bitCount))
-                RefillBuffer();
+            Advance(bitCount);
 
             return result;
         }
@@ -137,8 +136,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             // Shift left by that amount to create the bit mask (e.g. 4 creates mask 0001 0000 to select the 4th MSB).
             // Finally AND the read byte with the mask.
             bool bit = (bufferPtr[offset >> 3] & (1 << (offset & 7))) != 0;
-            if (TryAdvance(1))
-                RefillBuffer();
+            Advance(1);
 
             return bit;
         }
@@ -146,8 +144,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         public byte ReadByte()
         {
             var ret = (byte)PeekInt(8);
-            if (TryAdvance(8))
-                RefillBuffer();
+            Advance(8);
 
             return ret;
         }
@@ -157,8 +154,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             BitStreamUtil.AssertMaxBits(8, bitCount);
 
             var ret = (byte)PeekInt(bitCount);
-            if (TryAdvance(bitCount))
-                RefillBuffer();
+            Advance(bitCount);
 
             return ret;
         }
@@ -183,19 +179,17 @@ namespace SourceEngine.Demo.Parser.BitStream
                 ) >> (8 * 8 - bitCount)
             );
 
-            if (TryAdvance(bitCount))
-                RefillBuffer();
+            Advance(bitCount);
 
             return result;
         }
 
         public float ReadFloat()
         {
-            uint iResult = PeekInt(32); // omfg please inline this
-            if (TryAdvance(32))
-                RefillBuffer();
+            uint iResult = PeekInt(32);
+            Advance(32);
 
-            return *(float*)&iResult; // standard reinterpret cast
+            return *(float*)&iResult; // Standard reinterpret cast.
         }
 
         public byte[] ReadBits(int count)
@@ -253,24 +247,24 @@ namespace SourceEngine.Demo.Parser.BitStream
                             // Fall back to the slow implementation.
                             return BitStreamUtil.ReadProtobufVarIntStub(this);
                         }
-                        else if (TryAdvance(4 * 8))
+                        else
                         {
-                            RefillBuffer();
+                            Advance(4 * 8);
                         }
                     }
-                    else if (TryAdvance(3 * 8))
+                    else
                     {
-                        RefillBuffer();
+                        Advance(3 * 8);
                     }
                 }
-                else if (TryAdvance(2 * 8))
+                else
                 {
-                    RefillBuffer();
+                    Advance(2 * 8);
                 }
             }
-            else if (TryAdvance(1 * 8))
+            else
             {
-                RefillBuffer();
+                Advance(1 * 8);
             }
 
             return unchecked((int)result);
@@ -343,17 +337,17 @@ namespace SourceEngine.Demo.Parser.BitStream
                         offset = unbufferedBitsToSkip & 7;
                         globalStartPosition = target - offset;
                     }
-                    else if (TryAdvance(delta))
+                    else
                     {
-                        // The target is within the range of valid bits in the buffer. However, TryAdvance is true, so
-                        // there are 4 or less bytes remaining in the buffer after the target, and a refill is needed.
-                        RefillBuffer();
+                        // The target is within the range of valid bits in the buffer. However, a refill may be required
+                        // if there are 4 or fewer bytes remaining in the buffer after the target.
+                        Advance(delta);
                     }
                 }
-                else if (TryAdvance(delta))
+                else
                 {
                     // The stream doesn't support seeking unfortunately; read and discard instead.
-                    RefillBuffer();
+                    Advance(delta);
                 }
             }
         }
@@ -382,7 +376,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         }
 
         /// <summary>
-        /// Advances the cursor by <paramref name="count"/> bits.
+        /// Advances the cursor by <paramref name="count"/> bits and refills the buffer as necessary.
         /// Adds <paramref name="count"/> to the current buffer <see cref="offset"/>.
         /// </summary>
         /// <remarks>
@@ -390,26 +384,13 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// offset is allowed to reach and consume the last <see cref="SLED_SIZE"/> bytes of the <see cref="buffer"/>,
         /// the next <see cref="RefillBuffer"/> call will copy already-consumed bytes into the sled. Therefore, a refill
         /// is required when there are <see cref="SLED_SIZE"/> or less bytes remaining after the advanced position.
-        /// <p>
-        /// Apparently mono can't inline the old <c>Advance()</c> because that would mess up the call stack:
-        /// <c>Advance->RefillBuffer->Stream.Read</c> which could then throw. <c>Advance</c>'s stack frame would be
-        /// missing. Because of that, the call to <see cref="RefillBuffer"/> has to be inlined manually.
-        /// </p>
         /// </remarks>
-        /// <example><c>
-        /// if (TryAdvance(howMuch))
-        ///     RefillBuffer();
-        /// </c></example>
         /// <param name="count">The number of bits by which to advance the cursor.</param>
-        /// <returns>
-        /// True if the advanced position surpassed the last valid bit in the buffer or there are &lt;=
-        /// <see cref="SLED_SIZE"/> bytes remaining in the buffer after the advanced position.
-        /// In such cases, <see cref="RefillBuffer"/> needs to be called right after this function.
-        /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryAdvance(int count)
+        private void Advance(int count)
         {
-            return (offset += count) >= bufferedBits;
+            if ((offset += count) >= bufferedBits)
+                RefillBuffer();
         }
 
         /// <summary>
@@ -424,7 +405,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// be available for a read.
         /// </remarks>
         /// <exception cref="EndOfStreamException">The <see cref="stream"/> has no more data.</exception>
-        /// <seealso cref="TryAdvance"/>
+        /// <seealso cref="Advance"/>
         private void RefillBuffer()
         {
             do
@@ -500,7 +481,7 @@ namespace SourceEngine.Demo.Parser.BitStream
                     // The last 4 bytes are normally reserved to be copied over to the front by the next refill.
                     // However, since the end of the stream was reached, these last bytes no longer need to be reserved.
                     // Therefore, count the sled bits towards the total number of bits in the buffer.
-                    // TryAdvance will return false now if the new position has <= 4 bytes after it in the buffer.
+                    // Advance will now refill now if the new position has <= 4 bytes after it in the buffer.
                     bufferedBits += SLED_SIZE * 8;
                     reachedEnd = true;
                 }
@@ -508,7 +489,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             // Keep reading until enough bits are read to reach the offset.
             // If the offset is too far ahead from the original position,
             // data at the start of the buffer will get discarded since it can't all fit.
-            // See TryAdvance for details on why this doesn't account for the size of the sled.
+            // See Advance for details on why this doesn't account for the size of the sled.
             while (offset >= bufferedBits);
         }
 
@@ -600,8 +581,7 @@ namespace SourceEngine.Demo.Parser.BitStream
                     Buffer.BlockCopy(buffer, offset >> 3, outBuffer, outOffset, remainingBytes);
                     outOffset += remainingBytes;
 
-                    if (TryAdvance(remainingBytes * 8))
-                        RefillBuffer();
+                    Advance(remainingBytes * 8);
                 }
             }
             else
