@@ -143,20 +143,14 @@ namespace SourceEngine.Demo.Parser.BitStream
 
         public byte ReadByte()
         {
-            var ret = (byte)PeekInt(8);
-            Advance(8);
-
-            return ret;
+            return ReadByte(8);
         }
 
         public byte ReadByte(int bitCount)
         {
             BitStreamUtil.AssertMaxBits(8, bitCount);
 
-            var ret = (byte)PeekInt(bitCount);
-            Advance(bitCount);
-
-            return ret;
+            return (byte)ReadInt(bitCount);
         }
 
         public byte[] ReadBytes(int count)
@@ -186,8 +180,7 @@ namespace SourceEngine.Demo.Parser.BitStream
 
         public float ReadFloat()
         {
-            uint iResult = PeekInt(32);
-            Advance(32);
+            uint iResult = ReadInt(32);
 
             return *(float*)&iResult; // Standard reinterpret cast.
         }
