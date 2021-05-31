@@ -67,19 +67,7 @@ namespace SourceEngine.Demo.Parser.BitStream
 
         public static uint ReadProtoUInt32(this IBitStream bs)
         {
-            uint tmpByte = 0x80;
-            uint result = 0;
-
-            for (int count = 0; (tmpByte & 0x80) != 0; count++)
-            {
-                if (count > 5)
-                    throw new InvalidDataException("VarInt32 out of range");
-
-                tmpByte = bs.ReadByte();
-                result |= (tmpByte & 0x7F) << (7 * count);
-            }
-
-            return result;
+            return unchecked((uint)bs.ReadProtoUInt64());
         }
 
         public static int ReadProtoInt32(this IBitStream bs)
@@ -89,7 +77,7 @@ namespace SourceEngine.Demo.Parser.BitStream
 
         public static int ReadProtoSInt32(this IBitStream bs)
         {
-            uint result = bs.ReadProtoUInt32();
+            ulong result = bs.ReadProtoUInt64();
             return (int)(result >> 1) ^ -(int)(result & 1);
         }
 
