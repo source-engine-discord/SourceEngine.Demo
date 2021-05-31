@@ -82,10 +82,10 @@ namespace SourceEngine.Demo.Parser.BitStream
             return result;
         }
 
-        public static uint ReadProtoSInt32(this IBitStream bs)
+        public static int ReadProtoSInt32(this IBitStream bs)
         {
             uint result = bs.ReadProtoUInt32();
-            return (uint)((result >> 1) ^ -(result & 1));
+            return (int)(result >> 1) ^ -(int)(result & 1);
         }
 
         public static string ReadProtoString(this IBitStream reader)

@@ -42,7 +42,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 if (prop.Flags.HasFlagFast(SendPropertyFlags.Unsigned))
                     return (int)reader.ReadProtoUInt32();
                 else
-                    return (int)reader.ReadProtoSInt32();
+                    return reader.ReadProtoSInt32();
             }
             else
             {
