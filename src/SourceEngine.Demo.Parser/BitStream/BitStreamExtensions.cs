@@ -75,10 +75,21 @@ namespace SourceEngine.Demo.Parser.BitStream
             return unchecked((int)bs.ReadProtoUInt64());
         }
 
+        public static long ReadProtoInt64(this IBitStream bs)
+        {
+            return unchecked((long)bs.ReadProtoUInt64());
+        }
+
         public static int ReadProtoSInt32(this IBitStream bs)
         {
             ulong result = bs.ReadProtoUInt64();
             return (int)(result >> 1) ^ -(int)(result & 1);
+        }
+
+        public static long ReadProtoSInt64(this IBitStream bs)
+        {
+            ulong result = bs.ReadProtoUInt64();
+            return (long)(result >> 1) ^ -(long)(result & 1);
         }
 
         public static string ReadProtoString(this IBitStream reader)
