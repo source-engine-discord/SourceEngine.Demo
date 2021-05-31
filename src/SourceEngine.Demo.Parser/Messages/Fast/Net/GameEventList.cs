@@ -17,14 +17,14 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
             {
                 while (!bitstream.ChunkFinished)
                 {
-                    var desc = bitstream.ReadProtobufVarInt();
+                    var desc = bitstream.ReadProtoInt32();
                     var wireType = desc & 7;
                     var fieldnum = desc >> 3;
 
                     if (wireType == 0 && fieldnum == 1)
-                        Type = bitstream.ReadProtobufVarInt();
+                        Type = bitstream.ReadProtoInt32();
                     else if (wireType == 2 && fieldnum == 2)
-                        Name = bitstream.ReadProtobufString();
+                        Name = bitstream.ReadProtoString();
                     else
                         throw new InvalidDataException();
                 }
@@ -43,21 +43,21 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
                 while (!bitstream.ChunkFinished)
                 {
-                    var desc = bitstream.ReadProtobufVarInt();
+                    var desc = bitstream.ReadProtoInt32();
                     var wireType = desc & 7;
                     var fieldnum = desc >> 3;
 
                     if (wireType == 0 && fieldnum == 1)
                     {
-                        EventId = bitstream.ReadProtobufVarInt();
+                        EventId = bitstream.ReadProtoInt32();
                     }
                     else if (wireType == 2 && fieldnum == 2)
                     {
-                        Name = bitstream.ReadProtobufString();
+                        Name = bitstream.ReadProtoString();
                     }
                     else if (wireType == 2 && fieldnum == 3)
                     {
-                        var length = bitstream.ReadProtobufVarInt();
+                        var length = bitstream.ReadProtoInt32();
                         bitstream.BeginChunk(length * 8);
                         var key = new Key();
                         key.Parse(bitstream);
@@ -83,13 +83,13 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         {
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
                 if (wireType != 2 || fieldnum != 1)
                     throw new InvalidDataException();
 
-                var length = bitstream.ReadProtobufVarInt();
+                var length = bitstream.ReadProtoInt32();
                 bitstream.BeginChunk(length * 8);
                 var descriptor = new Descriptor();
                 descriptor.Parse(bitstream);

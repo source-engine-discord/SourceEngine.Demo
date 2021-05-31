@@ -19,18 +19,18 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         {
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
                 if (wireType == 0 && fieldnum == 1)
-                    AccountId = bitstream.ReadProtobufVarInt();
+                    AccountId = bitstream.ReadProtoInt32();
                 else if (wireType == 0 && fieldnum == 2)
-                    RankOld = bitstream.ReadProtobufVarInt();
+                    RankOld = bitstream.ReadProtoInt32();
                 else if (wireType == 0 && fieldnum == 3)
-                    RankNew = bitstream.ReadProtobufVarInt();
+                    RankNew = bitstream.ReadProtoInt32();
                 else if (wireType == 0 && fieldnum == 4)
-                    NumWins = bitstream.ReadProtobufVarInt();
+                    NumWins = bitstream.ReadProtoInt32();
                 else if (wireType == 5 && fieldnum == 5)
                     RankChange = bitstream.ReadFloat();
             }

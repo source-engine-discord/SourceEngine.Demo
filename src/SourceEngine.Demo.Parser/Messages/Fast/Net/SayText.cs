@@ -23,18 +23,18 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         {
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
                 if (wireType == 0 && fieldnum == 1)
-                    EntityIndex = bitstream.ReadProtobufVarInt();
+                    EntityIndex = bitstream.ReadProtoInt32();
                 else if (wireType == 2 && fieldnum == 2)
-                    Text = bitstream.ReadProtobufString();
+                    Text = bitstream.ReadProtoString();
                 else if (wireType == 0 && fieldnum == 3)
-                    _chat = bitstream.ReadProtobufVarInt();
+                    _chat = bitstream.ReadProtoInt32();
                 else if (wireType == 0 && fieldnum == 4)
-                    _textAllChat = bitstream.ReadProtobufVarInt();
+                    _textAllChat = bitstream.ReadProtoInt32();
                 else
                     throw new InvalidDataException();
             }

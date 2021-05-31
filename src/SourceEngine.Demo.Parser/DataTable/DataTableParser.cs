@@ -21,11 +21,11 @@ namespace SourceEngine.Demo.Parser.DataTable
         {
             while (true)
             {
-                var type = (SVC_Messages)bitstream.ReadProtobufVarInt();
+                var type = (SVC_Messages)bitstream.ReadProtoInt32();
                 if (type != SVC_Messages.svc_SendTable)
                     throw new Exception("Expected SendTable, got " + type);
 
-                var size = bitstream.ReadProtobufVarInt();
+                var size = bitstream.ReadProtoInt32();
                 bitstream.BeginChunk(size * 8);
                 var sendTable = new SendTable(bitstream);
                 bitstream.EndChunk();

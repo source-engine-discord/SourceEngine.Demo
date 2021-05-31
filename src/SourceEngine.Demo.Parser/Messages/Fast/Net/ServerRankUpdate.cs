@@ -14,13 +14,13 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         {
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
                 if (wireType == 2 && fieldnum == 1)
                 {
-                    bitstream.BeginChunk(bitstream.ReadProtobufVarInt() * 8);
+                    bitstream.BeginChunk(bitstream.ReadProtoInt32() * 8);
                     new RankUpdate().Parse(bitstream, parser);
                     bitstream.EndChunk();
                 }

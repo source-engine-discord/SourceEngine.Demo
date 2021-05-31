@@ -23,16 +23,16 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
             {
                 while (!bitstream.ChunkFinished)
                 {
-                    var desc = bitstream.ReadProtobufVarInt();
+                    var desc = bitstream.ReadProtoInt32();
                     var wireType = desc & 7;
                     var fieldnum = desc >> 3;
 
                     if (wireType == 2)
                     {
                         if (fieldnum == 2)
-                            VarName = bitstream.ReadProtobufString();
+                            VarName = bitstream.ReadProtoString();
                         else if (fieldnum == 5)
-                            DtName = bitstream.ReadProtobufString();
+                            DtName = bitstream.ReadProtoString();
                         else
                             throw new InvalidDataException(
                                 "yes I know we should drop this but we"
@@ -41,7 +41,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     }
                     else if (wireType == 0)
                     {
-                        var val = bitstream.ReadProtobufVarInt();
+                        var val = bitstream.ReadProtoInt32();
 
                         // Silently drop other cases.
                         switch (fieldnum)
@@ -101,7 +101,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
@@ -109,14 +109,14 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 {
                     if (fieldnum == 2)
                     {
-                        NetTableName = bitstream.ReadProtobufString();
+                        NetTableName = bitstream.ReadProtoString();
                     }
                     else if (fieldnum == 4)
                     {
                         // Props are special.
                         // We'll simply hope that gaben is nice and sends
                         // props last, just like he should.
-                        var len = bitstream.ReadProtobufVarInt();
+                        var len = bitstream.ReadProtoInt32();
                         bitstream.BeginChunk(len * 8);
                         var sendprop = new SendProp();
                         sendprop.Parse(bitstream);
@@ -133,7 +133,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 }
                 else if (wireType == 0)
                 {
-                    var val = bitstream.ReadProtobufVarInt();
+                    var val = bitstream.ReadProtoInt32();
 
                     // Silently drop other cases.
                     switch (fieldnum)

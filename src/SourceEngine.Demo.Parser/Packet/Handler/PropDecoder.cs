@@ -40,9 +40,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (prop.Flags.HasFlagFast(SendPropertyFlags.VarInt))
             {
                 if (prop.Flags.HasFlagFast(SendPropertyFlags.Unsigned))
-                    return (int)reader.ReadVarInt();
+                    return (int)reader.ReadProtoUInt32();
                 else
-                    return (int)reader.ReadSignedVarInt();
+                    return (int)reader.ReadProtoSInt32();
             }
             else
             {
@@ -58,9 +58,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (prop.Flags.HasFlagFast(SendPropertyFlags.VarInt))
             {
                 if (prop.Flags.HasFlagFast(SendPropertyFlags.Unsigned))
-                    return reader.ReadVarInt();
+                    return reader.ReadProtoUInt32();
                 else
-                    return reader.ReadSignedVarInt();
+                    return reader.ReadProtoSInt32();
             }
             else
             {

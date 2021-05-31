@@ -200,7 +200,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             return result;
         }
 
-        public int ReadProtobufVarInt()
+        public int ReadProtoInt32()
         {
             // Only used for debug assertions.
             var availableBits = bufferedBits + SLED_SIZE * 8 - offset;
@@ -238,7 +238,7 @@ namespace SourceEngine.Demo.Parser.BitStream
                             // Unfortunately, it's larger than 4 bytes (it's probably a negative integer). That's rare.
                             // This algorithm is limited to 4 bytes since the peek and masks are 32-bit integers.
                             // Fall back to the slow implementation.
-                            return BitStreamUtil.ReadProtobufVarIntStub(this);
+                            return BitStreamUtil.ReadProtoInt32Stub(this);
                         }
                         else
                         {

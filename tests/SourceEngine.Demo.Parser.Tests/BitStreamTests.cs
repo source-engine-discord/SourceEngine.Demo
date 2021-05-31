@@ -113,12 +113,12 @@ namespace SourceEngine.Demo.Parser.Tests
         [Test]
         public void TestVarintDecodingPositive()
         {
-            Assert.AreEqual(0, CreateBS(new byte[] { 0 }).ReadProtobufVarInt());
-            Assert.AreEqual(1, CreateBS(new byte[] { 1 }).ReadProtobufVarInt());
-            Assert.AreEqual(150, CreateBS(new byte[] { 0x96, 0x01 }).ReadProtobufVarInt());
-            Assert.AreEqual(300, CreateBS(new byte[] { 172, 2 }).ReadProtobufVarInt());
-            Assert.AreEqual(200000000, CreateBS(new byte[] { 0x80, 0x84, 0xaf, 0x5f }).ReadProtobufVarInt());
-            Assert.AreEqual(2000000000, CreateBS(new byte[] { 0x80, 0xa8, 0xd6, 0xb9, 7 }).ReadProtobufVarInt());
+            Assert.AreEqual(0, CreateBS(new byte[] { 0 }).ReadProtoInt32());
+            Assert.AreEqual(1, CreateBS(new byte[] { 1 }).ReadProtoInt32());
+            Assert.AreEqual(150, CreateBS(new byte[] { 0x96, 0x01 }).ReadProtoInt32());
+            Assert.AreEqual(300, CreateBS(new byte[] { 172, 2 }).ReadProtoInt32());
+            Assert.AreEqual(200000000, CreateBS(new byte[] { 0x80, 0x84, 0xaf, 0x5f }).ReadProtoInt32());
+            Assert.AreEqual(2000000000, CreateBS(new byte[] { 0x80, 0xa8, 0xd6, 0xb9, 7 }).ReadProtoInt32());
         }
 
         [Test]
@@ -126,17 +126,17 @@ namespace SourceEngine.Demo.Parser.Tests
         {
             Assert.AreEqual(
                 -1,
-                CreateBS(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtobufVarInt()
+                CreateBS(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtoInt32()
             );
 
             Assert.AreEqual(
                 -200000000,
-                CreateBS(new byte[] { 0x80, 0xfc, 0xd0, 0xa0, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtobufVarInt()
+                CreateBS(new byte[] { 0x80, 0xfc, 0xd0, 0xa0, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtoInt32()
             );
 
             Assert.AreEqual(
                 -2000000000,
-                CreateBS(new byte[] { 0x80, 0xd8, 0xa9, 0xc6, 0xf8, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtobufVarInt()
+                CreateBS(new byte[] { 0x80, 0xd8, 0xa9, 0xc6, 0xf8, 0xff, 0xff, 0xff, 0xff, 1 }).ReadProtoInt32()
             );
         }
 

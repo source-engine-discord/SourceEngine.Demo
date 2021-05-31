@@ -63,7 +63,9 @@ namespace SourceEngine.Demo.Parser.BitStream
             return Encoding.Default.GetString(reader.ReadBytes(length)).Split(new[] { '\0' }, 2)[0];
         }
 
-        public static uint ReadVarInt(this IBitStream bs)
+        #region Protobuf
+
+        public static uint ReadProtoUInt32(this IBitStream bs)
         {
             uint tmpByte = 0x80;
             uint result = 0;
@@ -80,15 +82,17 @@ namespace SourceEngine.Demo.Parser.BitStream
             return result;
         }
 
-        public static uint ReadSignedVarInt(this IBitStream bs)
+        public static uint ReadProtoSInt32(this IBitStream bs)
         {
-            uint result = bs.ReadVarInt();
+            uint result = bs.ReadProtoUInt32();
             return (uint)((result >> 1) ^ -(result & 1));
         }
 
-        public static string ReadProtobufString(this IBitStream reader)
+        public static string ReadProtoString(this IBitStream reader)
         {
-            return Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadProtobufVarInt()));
+            return Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadProtoInt32()));
         }
+
+        #endregion
     }
 }

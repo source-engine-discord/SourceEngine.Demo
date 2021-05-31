@@ -23,20 +23,20 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         {
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
                 if (wireType == 0 && fieldnum == 1)
-                    MsgType = bitstream.ReadProtobufVarInt();
+                    MsgType = bitstream.ReadProtoInt32();
                 else if (wireType == 0 && fieldnum == 3)
-                    PassThrough = bitstream.ReadProtobufVarInt();
+                    PassThrough = bitstream.ReadProtoInt32();
                 else if (fieldnum == 2)
 
                     // msg data
                     if (wireType == 2)
                     {
-                        bitstream.BeginChunk(bitstream.ReadProtobufVarInt() * 8);
+                        bitstream.BeginChunk(bitstream.ReadProtoInt32() * 8);
 
                         switch (MsgType)
                         {

@@ -18,33 +18,33 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
                 if (wireType == 2 && fieldnum == 1)
                 {
-                    EventName = bitstream.ReadProtobufString();
+                    EventName = bitstream.ReadProtoString();
                 }
                 else if (wireType == 0 && fieldnum == 2)
                 {
-                    EventId = bitstream.ReadProtobufVarInt();
+                    EventId = bitstream.ReadProtoInt32();
                 }
                 else if (wireType == 2 && fieldnum == 3)
                 {
-                    bitstream.BeginChunk(bitstream.ReadProtobufVarInt() * 8);
+                    bitstream.BeginChunk(bitstream.ReadProtoInt32() * 8);
                     /*
                      * Hope and pray that gaben is once again nice to us and
                      * sends 'type' first, then the respective member, then NOTHING.
                      */
-                    desc = bitstream.ReadProtobufVarInt();
+                    desc = bitstream.ReadProtoInt32();
                     wireType = desc & 7;
                     fieldnum = desc >> 3;
                     if (wireType != 0 || fieldnum != 1)
                         throw new InvalidDataException("Lord Gaben wasn't nice to us :/");
 
-                    var typeMember = bitstream.ReadProtobufVarInt();
-                    desc = bitstream.ReadProtobufVarInt();
+                    var typeMember = bitstream.ReadProtoInt32();
+                    desc = bitstream.ReadProtoInt32();
                     wireType = desc & 7;
                     fieldnum = desc >> 3;
 
@@ -57,7 +57,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                             if (wireType != 2)
                                 throw new InvalidDataException("proto definition differs");
 
-                            Keys.Add(bitstream.ReadProtobufString());
+                            Keys.Add(bitstream.ReadProtoString());
                             break;
                         case 2: // float
                             if (wireType != 5)
@@ -71,13 +71,13 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                             if (wireType != 0)
                                 throw new InvalidDataException("proto definition differs");
 
-                            Keys.Add(bitstream.ReadProtobufVarInt());
+                            Keys.Add(bitstream.ReadProtoInt32());
                             break;
                         case 6: // bool
                             if (wireType != 0)
                                 throw new InvalidDataException("proto definition differs");
 
-                            Keys.Add(bitstream.ReadProtobufVarInt() != 0);
+                            Keys.Add(bitstream.ReadProtoInt32() != 0);
                             break;
                         default:
                             throw new InvalidDataException("Looks like they introduced a new type");

@@ -15,13 +15,13 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         {
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
                 if (wireType != 0)
                     throw new InvalidDataException();
 
-                var val = (uint)bitstream.ReadProtobufVarInt();
+                var val = (uint)bitstream.ReadProtoInt32();
 
                 // Silently drop other cases.
                 switch (fieldnum)

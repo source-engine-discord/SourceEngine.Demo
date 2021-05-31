@@ -27,7 +27,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             return bs;
         }
 
-        public static int ReadProtobufVarIntStub(IBitStream reader)
+        public static int ReadProtoInt32Stub(IBitStream reader)
         {
             byte b = 0x80;
             int result = 0;

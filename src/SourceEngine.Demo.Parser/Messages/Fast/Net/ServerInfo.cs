@@ -20,7 +20,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
@@ -28,37 +28,37 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 {
                     case 1:
                         if (wireType == 0)
-                            e.Protocol = bitstream.ReadProtobufVarInt();
+                            e.Protocol = bitstream.ReadProtoInt32();
 
                         break;
                     case 2:
                         if (wireType == 0)
-                            e.ServerCount = bitstream.ReadProtobufVarInt();
+                            e.ServerCount = bitstream.ReadProtoInt32();
 
                         break;
                     case 3:
                         if (wireType == 0)
-                            e.IsDedicated = bitstream.ReadProtobufVarInt() != 0;
+                            e.IsDedicated = bitstream.ReadProtoInt32() != 0;
 
                         break;
                     case 4:
                         if (wireType == 0)
-                            e.IsOfficialValveServer = bitstream.ReadProtobufVarInt() != 0;
+                            e.IsOfficialValveServer = bitstream.ReadProtoInt32() != 0;
 
                         break;
                     case 5:
                         if (wireType == 0)
-                            e.IsHltv = bitstream.ReadProtobufVarInt() != 0;
+                            e.IsHltv = bitstream.ReadProtoInt32() != 0;
 
                         break;
                     case 6:
                         if (wireType == 0)
-                            e.IsReplay = bitstream.ReadProtobufVarInt() != 0;
+                            e.IsReplay = bitstream.ReadProtoInt32() != 0;
 
                         break;
                     case 7:
                         if (wireType == 0)
-                            e.OperatingSystem = bitstream.ReadProtobufVarInt();
+                            e.OperatingSystem = bitstream.ReadProtoInt32();
 
                         break;
                     case 8:
@@ -78,17 +78,17 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                         break;
                     case 11:
                         if (wireType == 0)
-                            e.MaxClients = bitstream.ReadProtobufVarInt();
+                            e.MaxClients = bitstream.ReadProtoInt32();
 
                         break;
                     case 12:
                         if (wireType == 0)
-                            e.MaxClasses = bitstream.ReadProtobufVarInt();
+                            e.MaxClasses = bitstream.ReadProtoInt32();
 
                         break;
                     case 13:
                         if (wireType == 0)
-                            e.PlayerSlot = bitstream.ReadProtobufVarInt();
+                            e.PlayerSlot = bitstream.ReadProtoInt32();
 
                         break;
                     case 14:
@@ -98,37 +98,37 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                         break;
                     case 15:
                         if (wireType == 2)
-                            e.GameDir = bitstream.ReadProtobufString();
+                            e.GameDir = bitstream.ReadProtoString();
 
                         break;
                     case 16:
                         if (wireType == 2)
-                            e.MapName = bitstream.ReadProtobufString();
+                            e.MapName = bitstream.ReadProtoString();
 
                         break;
                     case 17:
                         if (wireType == 2)
-                            e.MapGroupName = bitstream.ReadProtobufString();
+                            e.MapGroupName = bitstream.ReadProtoString();
 
                         break;
                     case 18:
                         if (wireType == 2)
-                            e.SkyName = bitstream.ReadProtobufString();
+                            e.SkyName = bitstream.ReadProtoString();
 
                         break;
                     case 19:
                         if (wireType == 2)
-                            e.HostName = bitstream.ReadProtobufString();
+                            e.HostName = bitstream.ReadProtoString();
 
                         break;
                     case 20:
                         if (wireType == 0)
-                            e.PublicIp = (uint)bitstream.ReadProtobufVarInt();
+                            e.PublicIp = (uint)bitstream.ReadProtoInt32();
 
                         break;
                     case 21:
                         if (wireType == 0)
-                            e.IsRedirectingToProxyRelay = bitstream.ReadProtobufVarInt() != 0;
+                            e.IsRedirectingToProxyRelay = bitstream.ReadProtoInt32() != 0;
 
                         break;
                     case 22:

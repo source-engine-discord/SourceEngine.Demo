@@ -129,7 +129,7 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// </remarks>
         /// <returns>The read varint as an <see cref="int"/>.</returns>
         /// <seealso href="https://developers.google.com/protocol-buffers/docs/encoding#varints"/>
-        int ReadProtobufVarInt();
+        int ReadProtoInt32();
 
         /// <summary>
         /// Begins a chunk.

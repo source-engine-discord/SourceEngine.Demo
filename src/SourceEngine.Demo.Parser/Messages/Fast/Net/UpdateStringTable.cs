@@ -15,7 +15,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
         {
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
@@ -24,7 +24,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                     // String data is special.
                     // We'll simply hope that gaben is nice and sends
                     // string_data last, just like he should.
-                    var len = bitstream.ReadProtobufVarInt();
+                    var len = bitstream.ReadProtoInt32();
                     bitstream.BeginChunk(len * 8);
                     UpdateStringTableUserInfoHandler.Apply(this, bitstream, parser);
                     bitstream.EndChunk();
@@ -37,7 +37,7 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
                 if (wireType != 0)
                     throw new InvalidDataException();
 
-                var val = bitstream.ReadProtobufVarInt();
+                var val = bitstream.ReadProtoInt32();
 
                 // Silently drop other cases.
                 switch (fieldnum)

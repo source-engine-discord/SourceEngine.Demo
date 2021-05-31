@@ -26,8 +26,8 @@ namespace SourceEngine.Demo.Parser.Packet
             //As long as there is stuff to read
             while (!bitstream.ChunkFinished)
             {
-                int cmd = bitstream.ReadProtobufVarInt(); //What type of packet is this?
-                int length = bitstream.ReadProtobufVarInt(); //And how long is it?
+                int cmd = bitstream.ReadProtoInt32(); //What type of packet is this?
+                int length = bitstream.ReadProtoInt32(); //And how long is it?
                 bitstream.BeginChunk(length * 8); //read length bytes
 
                 if (cmd == (int)SVC_Messages.svc_PacketEntities)

@@ -30,20 +30,20 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
             while (!bitstream.ChunkFinished)
             {
-                var desc = bitstream.ReadProtobufVarInt();
+                var desc = bitstream.ReadProtoInt32();
                 var wireType = desc & 7;
                 var fieldnum = desc >> 3;
 
                 if (wireType == 0 && fieldnum == 1)
-                    EntIdx = bitstream.ReadProtobufVarInt();
+                    EntIdx = bitstream.ReadProtoInt32();
                 else if (wireType == 0 && fieldnum == 2)
-                    _chat = bitstream.ReadProtobufVarInt();
+                    _chat = bitstream.ReadProtoInt32();
                 else if (wireType == 2 && fieldnum == 3)
-                    MsgName = bitstream.ReadProtobufString();
+                    MsgName = bitstream.ReadProtoString();
                 else if (wireType == 0 && fieldnum == 5)
-                    _textAllChat = bitstream.ReadProtobufVarInt();
+                    _textAllChat = bitstream.ReadProtoInt32();
                 else if (wireType == 2 && fieldnum == 4)
-                    Params.Add(bitstream.ReadProtobufString());
+                    Params.Add(bitstream.ReadProtoString());
                 else
                     throw new InvalidDataException();
             }
