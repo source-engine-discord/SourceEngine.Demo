@@ -82,6 +82,11 @@ namespace SourceEngine.Demo.Parser.BitStream
             return result;
         }
 
+        public static int ReadProtoInt32(this IBitStream bs)
+        {
+            return unchecked((int)bs.ReadProtoUInt64());
+        }
+
         public static int ReadProtoSInt32(this IBitStream bs)
         {
             uint result = bs.ReadProtoUInt32();

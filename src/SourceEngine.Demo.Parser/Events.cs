@@ -584,7 +584,7 @@ namespace SourceEngine.Demo.Parser
         /// <remarks>
         /// UGC means user-generated content.
         /// </remarks>
-        public ulong UgcMapId => throw new NotImplementedException();
+        public ulong UgcMapId { get; set; }
     }
 
     public class Equipment

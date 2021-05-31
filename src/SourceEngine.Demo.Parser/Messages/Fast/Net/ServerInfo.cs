@@ -132,7 +132,9 @@ namespace SourceEngine.Demo.Parser.Messages.Fast.Net
 
                         break;
                     case 22:
-                        // TODO: there don't seem to be any facilities for reading uint64
+                        if (wireType == 0)
+                            e.UgcMapId = bitstream.ReadProtoUInt64();
+
                         break;
                 }
             }

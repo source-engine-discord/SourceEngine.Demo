@@ -112,24 +112,26 @@ namespace SourceEngine.Demo.Parser.BitStream
         byte[] ReadBits(int count);
 
         /// <summary>
-        /// Reads a Protobuf varint from the current stream position as a 32-bit
-        /// signed integer (<see cref="int"/>).
+        /// Reads a Protobuf varint from the current stream position as a 64-bit
+        /// unsigned integer (<see cref="ulong"/>).
         /// </summary>
         /// <remarks>
         /// Can be used to read the following Protobuf types:
         /// <list type="bullet">
-        /// <item><c>int32</c></item>
-        /// <item><c>uint32</c> (cast the return value to <see cref="uint"/>)</item>
-        /// <item><c>bool</c> (cast the return value to <see cref="bool"/>)</item>
-        /// <item><c>enum</c> (32-bit only)</item>
+        /// <item><c>int32</c> (cast to <see cref="int"/>)</item>
+        /// <item><c>int64</c> (cast to <see cref="long"/>)</item>
+        /// <item><c>uint32</c> (cast to <see cref="uint"/>)</item>
+        /// <item><c>uint64</c></item>
+        /// <item><c>bool</c> (cast to <see cref="bool"/>)</item>
+        /// <item><c>enum</c></item>
         /// </list>
-        /// While <c>sint32</c> is a varint, it is different from the types
-        /// above since it uses ZigZag encoding. Hence, this function cannot
-        /// decode that type.
+        /// While <c>sint32</c> and <c>sint32</c> are varints, they're different from the types
+        /// above since they use ZigZag encoding. Hence, this function cannot
+        /// decode those types.
         /// </remarks>
-        /// <returns>The read varint as an <see cref="int"/>.</returns>
+        /// <returns>The read varint as a <see cref="ulong"/>.</returns>
         /// <seealso href="https://developers.google.com/protocol-buffers/docs/encoding#varints"/>
-        int ReadProtoInt32();
+        ulong ReadProtoUInt64();
 
         /// <summary>
         /// Begins a chunk.

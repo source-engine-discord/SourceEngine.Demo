@@ -200,7 +200,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             return result;
         }
 
-        public int ReadProtoInt32()
+        public ulong ReadProtoUInt64()
         {
             // Only used for debug assertions.
             var availableBits = bufferedBits + SLED_SIZE * 8 - offset;
@@ -213,7 +213,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             // Always take the first byte; read the rest if necessary.
             // Normally, the least significant group of 7 bits is first.
             // However, PeekInt already returns these groups in reverse.
-            uint result = buf & MASK_1;
+            ulong result = buf & MASK_1;
             BitStreamUtil.AssertMaxBits(availableBits, 1 * 8);
 
             // The MSB at every byte boundary will be set if there are more bytes that need to be decoded.
@@ -233,16 +233,96 @@ namespace SourceEngine.Demo.Parser.BitStream
                         result |= (buf & MASK_4) >> 3;
                         BitStreamUtil.AssertMaxBits(availableBits, 3 * 8);
 
+                        // All the peeked bytes have been consumed.
+                        Advance(4 * 8);
+                        availableBits = bufferedBits + SLED_SIZE * 8 - offset;
+
                         if ((buf & MSB_4) != 0)
                         {
-                            // Unfortunately, it's larger than 4 bytes (it's probably a negative integer). That's rare.
-                            // This algorithm is limited to 4 bytes since the peek and masks are 32-bit integers.
-                            // Fall back to the slow implementation.
-                            return BitStreamUtil.ReadProtoInt32Stub(this);
-                        }
-                        else
-                        {
-                            Advance(4 * 8);
+                            // Have to peek again since only 4 bytes at a time can be returned.
+                            buf = PeekInt(32, true);
+
+                            // 32 bits have already been read, minus 4 for the MSBs that were dropped.
+                            result |= (ulong)(buf & MASK_1) << (32 - 4);
+                            BitStreamUtil.AssertMaxBits(availableBits, 1 * 8);
+
+                            if ((buf & MSB_1) != 0)
+                            {
+                                result |= (ulong)(buf & MASK_2) << (32 - 5);
+                                BitStreamUtil.AssertMaxBits(availableBits, 1 * 8);
+
+                                if ((buf & MSB_2) != 0)
+                                {
+                                    result |= (ulong)(buf & MASK_3) << (32 - 6);
+                                    BitStreamUtil.AssertMaxBits(availableBits, 2 * 8);
+
+                                    if ((buf & MSB_3) != 0)
+                                    {
+                                        result |= (ulong)(buf & MASK_4) << (32 - 7);
+                                        BitStreamUtil.AssertMaxBits(availableBits, 3 * 8);
+
+                                        // All the peeked bytes have been consumed.
+                                        Advance(4 * 8);
+                                        availableBits = bufferedBits + SLED_SIZE * 8 - offset;
+
+                                        if ((buf & MSB_4) != 0)
+                                        {
+                                            // Have to peek again since only 4 bytes at a time can be returned.
+                                            // Technically, the largest ulong would be satisfied by 9 more bits, but
+                                            // reading 16 allows for overflow checks. The bits are in the sled anyway,
+                                            // so it's not costly to read them.
+                                            buf = PeekInt(16, true);
+
+                                            // 64 bits have already been read, minus 8 for the MSBs that were dropped.
+                                            result |= (ulong)(buf & MASK_1) << (64 - 8);
+                                            BitStreamUtil.AssertMaxBits(availableBits, 1 * 8);
+
+                                            if ((buf & MSB_1) != 0)
+                                            {
+                                                result |= (ulong)(buf & MASK_2) << (64 - 9);
+                                                BitStreamUtil.AssertMaxBits(availableBits, 1 * 8);
+
+                                                // Advance even if an exception will be thrown.
+                                                // Either way, the byte has technically been consumed already.
+                                                Advance(2 * 8);
+
+                                                // At this point, there's only 1 free bit remaining.
+                                                // If it's greater than 256, it means more than 1 bit is set.
+                                                // 256 cause it's shifted left by 1 byte since it's the 2nd byte.
+                                                if ((buf & MASK_2) > 256)
+                                                {
+                                                    throw new OverflowException(
+                                                        "Cannot fit all of the set bits in the 10th byte into a ulong."
+                                                    );
+                                                }
+
+                                                if ((buf & MSB_2) != 0)
+                                                {
+                                                    throw new OverflowException(
+                                                        "Cannot read more than 10 bytes into a ulong."
+                                                    );
+                                                }
+                                            }
+                                            else
+                                            {
+                                                Advance(1 * 8);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Advance(3 * 8);
+                                    }
+                                }
+                                else
+                                {
+                                    Advance(2 * 8);
+                                }
+                            }
+                            else
+                            {
+                                Advance(1 * 8);
+                            }
                         }
                     }
                     else
@@ -260,7 +340,7 @@ namespace SourceEngine.Demo.Parser.BitStream
                 Advance(1 * 8);
             }
 
-            return unchecked((int)result);
+            return result;
         }
 
         public void BeginChunk(int length)
