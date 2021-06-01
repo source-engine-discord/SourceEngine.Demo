@@ -85,6 +85,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             return unchecked((long)bs.ReadProtoUInt64());
         }
 
+        // It refuses to inline this...
         public static int ReadProtoSInt32(this IBitStream bs)
         {
             ulong result = bs.ReadProtoUInt64();
@@ -97,6 +98,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             return (long)(result >> 1) ^ -(long)(result & 1);
         }
 
+        // TODO: possible candidate for inlining.
         public static ulong ReadProtoFixed64(this IBitStream bs)
         {
             uint low = bs.ReadProtoFixed32();

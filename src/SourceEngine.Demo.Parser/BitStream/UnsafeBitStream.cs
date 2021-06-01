@@ -7,7 +7,8 @@ using System.Runtime.InteropServices;
 
 namespace SourceEngine.Demo.Parser.BitStream
 {
-    public unsafe class UnsafeBitStream : IBitStream
+    // Sealing it helps with the inlining of extension methods.
+    public sealed unsafe class UnsafeBitStream : IBitStream
     {
         private const int SLED_SIZE = 4; // 4 bytes
         private const int BUFFER_SIZE = 2048 + SLED_SIZE;
@@ -180,14 +181,14 @@ namespace SourceEngine.Demo.Parser.BitStream
 
         public float ReadFloat()
         {
-            uint iResult = ReadInt(32);
+            uint iResult = this.ReadProtoFixed32();
 
             return *(float*)&iResult; // Standard reinterpret cast.
         }
 
         public double ReadDouble()
         {
-            ulong iResult = this.ReadProtoFixed64();
+            ulong iResult = this.ReadProtoFixed64(); // It refuses to inline this :(
 
             return *(double*)&iResult; // Standard reinterpret cast.
         }
