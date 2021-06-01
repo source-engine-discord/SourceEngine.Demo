@@ -123,20 +123,10 @@ namespace SourceEngine.Demo.Parser.BitStream
         /// unsigned integer (<see cref="ulong"/>).
         /// </summary>
         /// <remarks>
-        /// Can be used to read the following Protobuf types:
-        /// <list type="bullet">
-        /// <item><c>int32</c> (cast to <see cref="int"/>)</item>
-        /// <item><c>int64</c> (cast to <see cref="long"/>)</item>
-        /// <item><c>uint32</c> (cast to <see cref="uint"/>)</item>
-        /// <item><c>uint64</c></item>
-        /// <item><c>bool</c> (cast to <see cref="bool"/>)</item>
-        /// <item><c>enum</c></item>
-        /// </list>
-        /// While <c>sint32</c> and <c>sint32</c> are varints, they're different from the types
-        /// above since they use ZigZag encoding. Hence, this function cannot
-        /// decode those types.
+        /// Known as <c>uint64</c> in the Protobuf language.
         /// </remarks>
         /// <returns>The read varint as a <see cref="ulong"/>.</returns>
+        /// <seealso cref="BitStreamExtensions.ReadProtoInt64"/>
         /// <seealso href="https://developers.google.com/protocol-buffers/docs/encoding#varints"/>
         ulong ReadProtoUInt64();
 
