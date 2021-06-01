@@ -65,6 +65,11 @@ namespace SourceEngine.Demo.Parser.BitStream
 
         #region Protobuf
 
+        public static bool ReadProtoBool(this IBitStream bs)
+        {
+            return bs.ReadProtoUInt64() != 0;
+        }
+
         public static uint ReadProtoUInt32(this IBitStream bs)
         {
             return unchecked((uint)bs.ReadProtoUInt64());
@@ -90,6 +95,29 @@ namespace SourceEngine.Demo.Parser.BitStream
         {
             ulong result = bs.ReadProtoUInt64();
             return (long)(result >> 1) ^ -(long)(result & 1);
+        }
+
+        public static ulong ReadProtoFixed64(this IBitStream bs)
+        {
+            uint low = bs.ReadProtoFixed32();
+            ulong high = bs.ReadProtoFixed32();
+
+            return (high << 32) | low;
+        }
+
+        public static long ReadProtoSFixed64(this IBitStream bs)
+        {
+            return unchecked((long)bs.ReadProtoFixed64());
+        }
+
+        public static uint ReadProtoFixed32(this IBitStream bs)
+        {
+            return bs.ReadInt(32);
+        }
+
+        public static int ReadProtoSFixed32(this IBitStream bs)
+        {
+            return unchecked((int)bs.ReadInt(32));
         }
 
         public static string ReadProtoString(this IBitStream reader)
