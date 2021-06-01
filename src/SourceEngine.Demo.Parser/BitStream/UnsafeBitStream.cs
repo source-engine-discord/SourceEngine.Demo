@@ -185,6 +185,13 @@ namespace SourceEngine.Demo.Parser.BitStream
             return *(float*)&iResult; // Standard reinterpret cast.
         }
 
+        public double ReadDouble()
+        {
+            ulong iResult = this.ReadProtoFixed64();
+
+            return *(double*)&iResult; // Standard reinterpret cast.
+        }
+
         public byte[] ReadBits(int count)
         {
             // Shifting right by 3 is a division by 8 to convert bits to bytes.

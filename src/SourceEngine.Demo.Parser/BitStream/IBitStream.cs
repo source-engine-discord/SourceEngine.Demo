@@ -102,6 +102,13 @@ namespace SourceEngine.Demo.Parser.BitStream
         float ReadFloat();
 
         /// <summary>
+        /// Reads a 64-bit float (<see cref="double"/>) from the current stream
+        /// position.
+        /// </summary>
+        /// <returns>The read <see cref="double"/>.</returns>
+        double ReadDouble();
+
+        /// <summary>
         /// Reads the specified amount of bits from the current stream position
         /// as bytes.
         /// </summary>
