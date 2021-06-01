@@ -40,7 +40,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (prop.Flags.HasFlagFast(SendPropertyFlags.VarInt))
             {
                 if (prop.Flags.HasFlagFast(SendPropertyFlags.Unsigned))
-                    return (int)reader.ReadProtoUInt32();
+                    return reader.ReadProtoInt32(); // Valve doesn't check for overflow either.
                 else
                     return reader.ReadProtoSInt32();
             }
@@ -58,9 +58,9 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
             if (prop.Flags.HasFlagFast(SendPropertyFlags.VarInt))
             {
                 if (prop.Flags.HasFlagFast(SendPropertyFlags.Unsigned))
-                    return reader.ReadProtoUInt32();
+                    return reader.ReadProtoInt64(); // Valve doesn't check for overflow either.
                 else
-                    return reader.ReadProtoSInt32();
+                    return reader.ReadProtoSInt64();
             }
             else
             {
@@ -68,7 +68,7 @@ namespace SourceEngine.Demo.Parser.Packet.Handler
                 uint low;
                 uint high;
 
-                if (prop.Flags.HasFlag(SendPropertyFlags.Unsigned))
+                if (prop.Flags.HasFlagFast(SendPropertyFlags.Unsigned))
                 {
                     low = reader.ReadInt(32);
                     high = reader.ReadInt(prop.NumberOfBits - 32);
