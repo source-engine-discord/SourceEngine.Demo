@@ -26,12 +26,7 @@ namespace SourceEngine.Demo.Parser.BitStream
             return ret;
         }
 
-        public static string ReadString(this IBitStream bs)
-        {
-            return bs.ReadString(int.MaxValue);
-        }
-
-        public static string ReadString(this IBitStream bs, int limit)
+        public static string ReadString(this IBitStream bs, int limit = int.MaxValue)
         {
             var result = new List<byte>(512);
 
