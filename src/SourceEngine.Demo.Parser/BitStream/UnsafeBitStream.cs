@@ -747,7 +747,7 @@ namespace SourceEngine.Demo.Parser.BitStream
 
             // Now it's aligned. Simply read the remaining bytes 1-by-1 into the output buffer.
             for (int i = 1; i < rest + 1; i++)
-                outBytePtr[i] |= ReadByte();
+                outBytePtr[i] = ReadByte();
         }
     }
 }
