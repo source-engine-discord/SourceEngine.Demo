@@ -194,6 +194,8 @@ namespace SourceEngine.Demo.Stats.App
             using var pBar = new ProgressBar(info.Count, "Processing demos");
             var barOptions = new ProgressBarOptions { ForegroundColor = ConsoleColor.Blue };
 
+            var writer = new Writer(opts.Output, opts.CopyInputName, opts.CopyInputDirectories);
+
             // Process all the found demos.
             foreach (DemoInformation demoInfo in info)
             {
@@ -201,7 +203,7 @@ namespace SourceEngine.Demo.Stats.App
 
                 try
                 {
-                    ParseSingle(opts, demoInfo, childBar);
+                    ParseSingle(opts, demoInfo, childBar, writer);
 
                     childBar.Message = $"{demoInfo.DemoName}: Finished";
                     childBar.AsProgress<float>().Report(1); // Force to 100%.
@@ -225,7 +227,7 @@ namespace SourceEngine.Demo.Stats.App
             pBar.Message = $"Finished with {passCount} passes and {failCount} fails";
         }
 
-        private static void ParseSingle(Options opts, DemoInformation demoInfo, ChildProgressBar pBar)
+        private static void ParseSingle(Options opts, DemoInformation demoInfo, ChildProgressBar pBar, Writer writer)
         {
             // Create the demo and stats parsers.
             using FileStream file = File.OpenRead(demoInfo.DemoName);
@@ -241,7 +243,16 @@ namespace SourceEngine.Demo.Stats.App
 
             // Start parsing.
             var processor = new Processor(parser, demoInfo, collector.Collect());
-            processor.CreateFiles(opts.Output, opts.Folders.ToList(), opts.CopyInputName, opts.CopyInputDirectories);
+
+            // Write the output.
+            AllStats stats = processor.GetAllStats();
+            writer.Write(stats, demoInfo, stats.mapInfo.MapName);
+
+            if (!opts.NoPlayerPositions)
+            {
+                PlayerPositionsStats positions = processor.GetPlayerPositionsStats(stats.mapInfo.DemoName);
+                writer.Write(positions, demoInfo, stats.mapInfo.MapName, "_playerpositions");
+            }
         }
 
         private static List<DemoInformation> GetDemoInfo(Options opts)

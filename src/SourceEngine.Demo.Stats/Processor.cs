@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-using Newtonsoft.Json;
-
 using SourceEngine.Demo.Parser;
 using SourceEngine.Demo.Parser.Entities;
 using SourceEngine.Demo.Parser.Structs;
@@ -102,48 +100,6 @@ namespace SourceEngine.Demo.Stats
                 allStats.firstDamageStats = GetFirstDamageStats(data);
 
             return allStats;
-        }
-
-        public AllOutputData CreateFiles(string outputRoot,
-            List<string> foldersToProcess,
-            bool sameFileName,
-            bool sameFolderStructure,
-            bool createJsonFile = true)
-        {
-            AllStats allStats = GetAllStats();
-            PlayerPositionsStats playerPositionsStats = null;
-
-            if (parser.ParsePlayerPositions && CheckIfStatsShouldBeCreated(
-                "playerPositionsStats",
-                demoInfo.GameMode
-            ))
-            {
-                playerPositionsStats = GetPlayerPositionsStats(data, allStats);
-            }
-
-            if (createJsonFile)
-            {
-                string path = GetOutputPathWithoutExtension(
-                    outputRoot,
-                    foldersToProcess,
-                    demoInfo,
-                    allStats.mapInfo.MapName,
-                    sameFileName,
-                    sameFolderStructure
-                );
-
-                WriteJson(allStats, path + ".json");
-
-                if (playerPositionsStats is not null)
-                    WriteJson(playerPositionsStats, path + "_playerpositions.json");
-            }
-
-            // return for testing purposes
-            return new AllOutputData
-            {
-                AllStats = allStats,
-                PlayerPositionsStats = playerPositionsStats,
-            };
         }
 
         public DataAndPlayerNames GetDataAndPlayerNames(CollectedData collectedData)
@@ -1278,16 +1234,16 @@ namespace SourceEngine.Demo.Stats
             return firstDamageStats;
         }
 
-        public static PlayerPositionsStats GetPlayerPositionsStats(CollectedData collectedData, AllStats allStats)
+        public PlayerPositionsStats GetPlayerPositionsStats(string demoName)
         {
             var playerPositionByRound = new List<PlayerPositionByRound>();
 
             // create playerPositionByRound with empty PlayerPositionByTimeInRound
-            foreach (IGrouping<int, PlayerPositionsInstance> roundsGroup in collectedData.PlayerPositionsValues.GroupBy(
+            foreach (IGrouping<int, PlayerPositionsInstance> roundsGroup in data.PlayerPositionsValues.GroupBy(
                 x => x.Round
             ))
             {
-                int lastRound = collectedData.RoundEndReasonValues.Count();
+                int lastRound = data.RoundEndReasonValues.Count();
 
                 foreach (var round in roundsGroup.Where(x => x.Round > 0 && x.Round <= lastRound).Select(x => x.Round)
                     .Distinct())
@@ -1305,7 +1261,7 @@ namespace SourceEngine.Demo.Stats
             //create PlayerPositionByTimeInRound with empty PlayerPositionBySteamId
             foreach (PlayerPositionByRound playerPositionsStat in playerPositionByRound)
             {
-                foreach (IGrouping<int, PlayerPositionsInstance> timeInRoundsGroup in collectedData
+                foreach (IGrouping<int, PlayerPositionsInstance> timeInRoundsGroup in data
                     .PlayerPositionsValues.Where(x => x.Round == playerPositionsStat.Round).GroupBy(x => x.TimeInRound))
                 {
                     foreach (var timeInRound in timeInRoundsGroup.Select(x => x.TimeInRound).Distinct())
@@ -1327,7 +1283,7 @@ namespace SourceEngine.Demo.Stats
                 foreach (PlayerPositionByTimeInRound playerPositionByTimeInRound in playerPositionsStat
                     .PlayerPositionByTimeInRound)
                 {
-                    foreach (IGrouping<long, PlayerPositionsInstance> steamIdsGroup in collectedData
+                    foreach (IGrouping<long, PlayerPositionsInstance> steamIdsGroup in data
                         .PlayerPositionsValues
                         .Where(
                             x => x.Round == playerPositionsStat.Round
@@ -1337,7 +1293,7 @@ namespace SourceEngine.Demo.Stats
                         foreach (PlayerPositionsInstance playerPositionsInstance in steamIdsGroup)
                         {
                             // skip players who have died this round
-                            if (!collectedData.PlayerKilledEventsValues.Any(
+                            if (!data.PlayerKilledEventsValues.Any(
                                 x => x.Round == playerPositionsStat.Round && x.Victim?.SteamID != 0
                                     && x.Victim.SteamID == playerPositionsInstance.SteamID
                                     && x.TimeInRound <= playerPositionByTimeInRound.TimeInRound
@@ -1359,75 +1315,11 @@ namespace SourceEngine.Demo.Stats
 
             var playerPositionsStats = new PlayerPositionsStats
             {
-                DemoName = allStats.mapInfo.DemoName,
+                DemoName = demoName,
                 PlayerPositionByRound = playerPositionByRound,
             };
 
             return playerPositionsStats;
-        }
-
-        public static string GetOutputPathWithoutExtension(
-            string outputRoot,
-            List<string> foldersToProcess,
-            DemoInformation demoInfo,
-            string mapName,
-            bool sameFileName,
-            bool sameFolderStructure)
-        {
-            string filename = sameFileName
-                ? Path.GetFileNameWithoutExtension(demoInfo.DemoName)
-                : Guid.NewGuid().ToString();
-
-            string mapDateString = demoInfo.TestDate is null
-                ? string.Empty
-                : demoInfo.TestDate.Replace('/', '_');
-
-            string path = string.Empty;
-
-            if (foldersToProcess.Count > 0 && sameFolderStructure)
-                foreach (var folder in foldersToProcess)
-                {
-                    string[] splitPath = Path.GetDirectoryName(demoInfo.DemoName).Split(
-                        new[] { string.Concat(folder, "\\") },
-                        StringSplitOptions.None
-                    );
-
-                    path = splitPath.Length > 1
-                        ? string.Concat(outputRoot, "\\", splitPath.LastOrDefault(), "\\")
-                        : string.Concat(outputRoot, "\\");
-
-                    if (!string.IsNullOrWhiteSpace(path))
-                    {
-                        if (!Directory.Exists(path))
-                            Directory.CreateDirectory(path);
-
-                        break;
-                    }
-                }
-            else
-                path = string.Concat(outputRoot, "\\");
-
-            if (mapDateString != string.Empty)
-                path += mapDateString + "_";
-
-            path += mapName + "_" + filename;
-
-            return path;
-        }
-
-        public static void WriteJson(object stats, string path)
-        {
-            try
-            {
-                using var sw = new StreamWriter(path, false);
-                string json = JsonConvert.SerializeObject(stats, Formatting.Indented);
-                sw.WriteLine(json);
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Could not create json file.");
-                Console.WriteLine(string.Concat("Filename: ", path));
-            }
         }
 
         public static long GetSteamIdByPlayerName(Dictionary<long, Dictionary<string, string>> playerNames, string name)
