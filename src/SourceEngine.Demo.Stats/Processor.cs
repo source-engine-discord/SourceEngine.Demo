@@ -31,17 +31,13 @@ namespace SourceEngine.Demo.Stats
 
         public AllStats GetAllStats()
         {
-            var mapNameSplit = data.MatchStartValues.Any()
-                ? data.MatchStartValues.ElementAt(0).Mapname.Split('/')
-                : new[] { demoInfo.MapName };
-
             DataAndPlayerNames dataAndPlayerNames = GetDataAndPlayerNames(data);
 
             var allStats = new AllStats
             {
                 versionNumber = GetVersionNumber(),
                 supportedGamemodes = Enum.GetNames(typeof(GameMode)).Select(gm => gm.ToLower()).ToList(),
-                mapInfo = GetMapInfo(data, mapNameSplit),
+                mapInfo = GetMapInfo(),
                 tanookiStats = data.tanookiStats,
             };
 
@@ -203,79 +199,64 @@ namespace SourceEngine.Demo.Stats
             return new() { Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3) };
         }
 
-        public mapInfo GetMapInfo(CollectedData collectedData, string[] mapNameSplit)
+        public mapInfo GetMapInfo()
         {
             var mapInfo = new mapInfo
             {
+                DemoName = Path.GetFileNameWithoutExtension(demoInfo.DemoName),
+                GameMode = GetGameMode().ToString().ToLower(),
                 MapName = demoInfo.MapName,
                 TestType = demoInfo.TestType.ToString().ToLower(),
                 TestDate = demoInfo.TestDate,
-                Crc = collectedData.MapCrc,
+                WorkshopID = "unknown",
+                Crc = data.MapCrc,
             };
 
-            mapInfo.MapName =
-                mapNameSplit.Length > 2
-                    ? mapNameSplit[2]
-                    : mapInfo.MapName; // use the map name from inside the demo itself if possible, otherwise use the map name from the demo file's name
+            // If possible, use the map name parsed from the demo for more accuracy.
+            var mapNameSplit = parser.Map?.Split('/');
 
-            mapInfo.WorkshopID = mapNameSplit.Length > 2 ? mapNameSplit[1] : "unknown";
-            mapInfo.DemoName =
-                demoInfo.DemoName.Split('\\').Last()
-                    .Replace(
-                        ".dem",
-                        string.Empty
-                    ); // the filename of the demo, for Faceit games this is also in the "demo_url" value
-
-            // attempts to get the game mode
-            GetRoundsWonReasons(collectedData.RoundEndReasonValues);
-
-            // use the provided game mode if given as a parameter
-            if (demoInfo.GameMode is not GameMode.Unknown)
+            if (mapNameSplit?.Length > 2)
             {
-                mapInfo.GameMode = demoInfo.GameMode.ToString().ToLower();
-
-                return mapInfo;
-            }
-
-            // work out the game mode if it wasn't provided as a parameter
-            if (collectedData.TeamPlayersValues.Any(
-                    t => t.Terrorists.Count > 10
-                        && collectedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count == 0)
-                ) || // assume danger zone if more than 10 Terrorists and 0 CounterTerrorists
-                parser.hostageAIndex > -1 && parser.hostageBIndex > -1
-                && !collectedData.MatchStartValues.Any(
-                    m => m.HasBombsites
-                ) // assume danger zone if more than one hostage rescue zone
-            )
-            {
-                mapInfo.GameMode = nameof(GameMode.DangerZone).ToLower();
-            }
-            else if (collectedData.TeamPlayersValues.Any(
-                t => t.Terrorists.Count > 2 && collectedData.TeamPlayersValues.Any(ct => ct.CounterTerrorists.Count > 2)
-            ))
-            {
-                if (parser.bombsiteAIndex > -1 || parser.bombsiteBIndex > -1
-                    || collectedData.MatchStartValues.Any(m => m.HasBombsites))
-                    mapInfo.GameMode = nameof(GameMode.Defuse).ToLower();
-                else if ((parser.hostageAIndex > -1 || parser.hostageBIndex > -1)
-                    && !collectedData.MatchStartValues.Any(m => m.HasBombsites))
-                    mapInfo.GameMode = nameof(GameMode.Hostage).ToLower();
-                else // what the hell is this game mode ??
-                    mapInfo.GameMode = nameof(GameMode.Unknown).ToLower();
-            }
-            else
-            {
-                if (parser.bombsiteAIndex > -1 || parser.bombsiteBIndex > -1
-                    || collectedData.MatchStartValues.Any(m => m.HasBombsites))
-                    mapInfo.GameMode = nameof(GameMode.WingmanDefuse).ToLower();
-                else if ((parser.hostageAIndex > -1 || parser.hostageBIndex > -1)
-                    && !collectedData.MatchStartValues.Any(m => m.HasBombsites))
-                    mapInfo.GameMode = nameof(GameMode.WingmanHostage).ToLower();
-                else // what the hell is this game mode ??
-                    mapInfo.GameMode = nameof(GameMode.Unknown).ToLower();
+                mapInfo.MapName = mapNameSplit[2];
+                mapInfo.WorkshopID = mapNameSplit[1];
             }
 
             return mapInfo;
+        }
+
+        public GameMode GetGameMode()
+        {
+            // If given, use the game mode explicitly provided.
+            if (demoInfo.GameMode is not GameMode.Unknown)
+                return demoInfo.GameMode;
+
+            // Otherwise, deduce the game mode based on stats parsed from the demo.
+            int maxTerrorists = 0;
+            int maxCounterTerrorists = 0;
+
+            // Calculate the maximums.
+            foreach (TeamPlayers players in data.TeamPlayersValues)
+            {
+                maxTerrorists = Math.Max(maxTerrorists, players.Terrorists.Count);
+                maxCounterTerrorists = Math.Max(maxCounterTerrorists, players.CounterTerrorists.Count);
+            }
+
+            var hasBombsites = data.MatchStartValues.Any(m => m.HasBombsites);
+            var isWingman = maxTerrorists <= 2 || maxCounterTerrorists <= 2;
+
+            // Assume Danger Zone if there are many T's and no CT's, or if there's more than one hostage rescue zone.
+            if (maxTerrorists > 10 && maxCounterTerrorists == 0
+                || parser.hostageAIndex > -1 && parser.hostageBIndex > -1 && !hasBombsites)
+            {
+                return GameMode.DangerZone;
+            }
+
+            if (parser.bombsiteAIndex > -1 || parser.bombsiteBIndex > -1 || hasBombsites)
+                return isWingman ? GameMode.WingmanDefuse : GameMode.Defuse;
+            else if (parser.hostageAIndex > -1 || parser.hostageBIndex > -1)
+                return isWingman ? GameMode.WingmanHostage : GameMode.Hostage;
+            else
+                return GameMode.Unknown; // What the hell is this game mode??
         }
 
         public List<playerStats> GetPlayerStats(
