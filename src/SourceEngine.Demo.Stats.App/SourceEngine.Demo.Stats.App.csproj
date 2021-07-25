@@ -4,7 +4,7 @@
         <AssemblyName>IDemO</AssemblyName>
         <OutputType>Exe</OutputType>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <StartupObject>SourceEngine.Demo.Stats.App.Program</StartupObject>
+        <StartupObject>SourceEngine.Demo.Stats.App.CommandLineInterface</StartupObject>
         <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
 
