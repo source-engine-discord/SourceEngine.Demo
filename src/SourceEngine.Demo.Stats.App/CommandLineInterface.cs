@@ -113,7 +113,7 @@ namespace SourceEngine.Demo.Stats.App
         [Value(
             0,
             MetaName = "inputs",
-            HelpText = "Space-delimited list of paths to demo files or directories in which to search for demo files."
+            HelpText = "Space-delimited list of paths to demo files and directories in which to search for demo files."
         )]
         public IEnumerable<string> InputPaths { get; set; }
 

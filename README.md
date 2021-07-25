@@ -31,28 +31,16 @@ Latest release:
 ### Usage
 
 ```
-  --demos              Space-delimited list of paths to individual demos to
-                       parse.
-
-  --folders            Space-delimited list of directories in which to search
-                       for demos to parse.
-
   --recursive          (Default: false) Recursively search for demos.
-
   --output             (Default: parsed) Path to the output directory.
-
   --clear              (Default: false) Clear the output directory.
-
   --copy-input-dirs    (Default: false) Use the demo's folder structure inside
                        the root folder for the output JSON file.
-
   --copy-input-name    (Default: false) Use the demo's filename as the output
                        filename.
-
   --date               Recording date of the match in dd/MM/yyyy format. If
                        unset, attempt to parse from the file name instead
                        assuming the format date_mapname_testtype.
-
   --game-mode          (Default: Unknown) Assume the demo is for this game mode
                        rather than attempting to infer the game mode. Valid
                        values: DangerZone, Defuse, Hostage, WingmanDefuse,
@@ -74,12 +62,15 @@ Latest release:
   --help               Display this help screen.
 
   --version            Display version information.
+
+  inputs (pos. 0)      Space-delimited list of paths to demo files and
+                       directories in which to search for demo files.
 ```
 
 Example:
 
 ```
-IDemO --folders "demos" --output "parsed" --recursive --no-chickens --no-pos --copy-input-dirs --copy-input-name
+IDemO --output "parsed" --recursive --no-chickens --no-pos --copy-input-dirs --copy-input-name "demos"
 ```
 
 ## Development
