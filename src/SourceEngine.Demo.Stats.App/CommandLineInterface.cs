@@ -73,6 +73,41 @@ namespace SourceEngine.Demo.Stats.App
         private string date;
         private uint rescueZones;
 
+        [Usage(ApplicationAlias = "IDemO")]
+        public static IEnumerable<Example> Examples
+        {
+            get
+            {
+                yield return new Example(
+                    "Parse demos recursively from the 'demos' directory into the 'parsed' directory",
+                    new Options
+                    {
+                        InputPaths = new[] { "demos" },
+                        Output = "parsed",
+                        Recursive = true,
+                    }
+                );
+
+                yield return new Example(
+                    "Parse the file 'ace.dem' into the 'parsed' directory",
+                    new Options
+                    {
+                        InputPaths = new[] { "ace.dem" },
+                        Output = "parsed",
+                    }
+                );
+
+                yield return new Example(
+                    "Specify input directories and input files simultaneously",
+                    new Options
+                    {
+                        InputPaths = new[] { "games/csgo/demos/", "ace.dem" },
+                        Output = "parsed",
+                    }
+                );
+            }
+        }
+
         #region Input Options
 
         [Value(
