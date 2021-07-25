@@ -37,6 +37,8 @@ namespace SourceEngine.Demo.Stats.App
                 try
                 {
                     Processor processor = ParseSingle(demoInfo, childBar);
+
+                    childBar.Message = $"{demoInfo.DemoName}: Writing JSON file";
                     WriteJson(demoInfo, processor);
 
                     childBar.Message = $"{demoInfo.DemoName}: Finished";
