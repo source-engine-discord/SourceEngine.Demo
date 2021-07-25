@@ -94,20 +94,26 @@ namespace SourceEngine.Demo.Stats.App
         {
             var info = new List<DemoInformation>();
 
-            foreach (string folder in options.Folders)
+            foreach (string path in options.InputPaths)
             {
-                string[] subDemos = Directory.GetFiles(
-                    Path.GetFullPath(folder),
-                    "*.dem",
-                    options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
-                );
+                FileAttributes attrs = File.GetAttributes(path);
 
-                foreach (string demo in subDemos)
-                    info.Add(new DemoInformation(demo, options.GameMode, options.TestType, options.Date, folder));
+                if (attrs.HasFlag(FileAttributes.Directory))
+                {
+                    string[] subDemos = Directory.GetFiles(
+                        Path.GetFullPath(path),
+                        "*.dem",
+                        options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
+                    );
+
+                    foreach (string demo in subDemos)
+                        info.Add(new DemoInformation(demo, options.GameMode, options.TestType, options.Date, path));
+                }
+                else
+                {
+                    info.Add(new DemoInformation(path, options.GameMode, options.TestType, options.Date));
+                }
             }
-
-            foreach (string demo in options.Demos)
-                info.Add(new DemoInformation(demo, options.GameMode, options.TestType, options.Date));
 
             return info;
         }

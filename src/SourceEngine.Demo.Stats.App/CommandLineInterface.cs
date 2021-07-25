@@ -55,13 +55,6 @@ namespace SourceEngine.Demo.Stats.App
                 return;
             }
 
-            // Ensure all folders to get demos from are created to avoid exceptions.
-            foreach (string folder in opts.Folders)
-            {
-                if (!Directory.Exists(folder))
-                    Directory.CreateDirectory(folder);
-            }
-
             // Clear by recreating folder.
             if (opts.Clear && Directory.Exists(opts.Output))
             {
@@ -82,15 +75,12 @@ namespace SourceEngine.Demo.Stats.App
 
         #region Input Options
 
-        [Option("demos", Separator = ' ', HelpText = "Space-delimited list of paths to individual demos to parse.")]
-        public IEnumerable<string> Demos { get; set; }
-
-        [Option(
-            "folders",
-            Separator = ' ',
-            HelpText = "Space-delimited list of directories in which to search for demos to parse."
+        [Value(
+            0,
+            MetaName = "inputs",
+            HelpText = "Space-delimited list of paths to demo files or directories in which to search for demo files."
         )]
-        public IEnumerable<string> Folders { get; set; }
+        public IEnumerable<string> InputPaths { get; set; }
 
         [Option("recursive", Default = false, HelpText = "Recursively search for demos.")]
         public bool Recursive { get; set; }
