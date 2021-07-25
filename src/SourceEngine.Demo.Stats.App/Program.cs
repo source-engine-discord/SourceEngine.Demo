@@ -257,7 +257,7 @@ namespace SourceEngine.Demo.Stats.App
                 );
 
                 foreach (string demo in subDemos)
-                    info.Add(new DemoInformation(demo, opts.GameMode, opts.TestType, opts.Date));
+                    info.Add(new DemoInformation(demo, opts.GameMode, opts.TestType, opts.Date, folder));
             }
 
             foreach (string demo in opts.Demos)

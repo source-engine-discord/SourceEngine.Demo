@@ -48,11 +48,27 @@ namespace SourceEngine.Demo.Stats.Models
             ParseFileName();
         }
 
+        public DemoInformation(string demoPath, GameMode gameMode, TestType testType, string testDate, string inputDir)
+            : this(demoPath, gameMode, testType, testDate)
+        {
+            RelativePath = Path.GetRelativePath(inputDir, demoPath);
+
+            if (RelativePath == demoPath)
+            {
+                throw new ArgumentException(
+                    "The demo path does not share a root with the input directory.",
+                    nameof(inputDir)
+                );
+            }
+        }
+
         public string DemoName { get; set; }
 
         public string MapName { get; set; } = "unknown";
 
         public GameMode GameMode { get; set; }
+
+        public string RelativePath { get; set; }
 
         public TestType TestType { get; set; }
 
