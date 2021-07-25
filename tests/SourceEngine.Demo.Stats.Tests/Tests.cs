@@ -1038,7 +1038,7 @@ namespace SourceEngine.Demo.Stats.Tests
 
                 // Act
                 AllStats allStats = Processor.GetAllStats();
-                PlayerPositionsStats stats = Processor.GetPlayerPositionsStats(CollectedData, allStats);
+                PlayerPositionsStats stats = Processor.GetPlayerPositionsStats(allStats.mapInfo.DemoName);
 
                 // Assess
                 stats.PlayerPositionByRound.Count.ShouldBe(1);
