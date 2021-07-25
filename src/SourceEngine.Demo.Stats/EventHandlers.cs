@@ -233,7 +233,6 @@ namespace SourceEngine.Demo.Stats
             if (freezetimeEndedCount == RoundOfficiallyEndedCount + 1 && freezetimeEndedCount == roundEndedEvents.Count
                 && roundEndedEvents.Count >= minRoundsForWin)
             {
-                Console.WriteLine("Assuming the parse has finished.");
                 RoundEndedEventArgs roundEndedEvent = roundEndedEvents.ElementAtOrDefault(RoundOfficiallyEndedCount);
 
                 parser.RaiseRoundOfficiallyEnded(
