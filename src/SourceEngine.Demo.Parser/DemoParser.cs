@@ -299,7 +299,7 @@ namespace SourceEngine.Demo.Parser
         /// Is a string like "de_dust2".
         /// </summary>
         /// <value>The map.</value>
-        public string Map => Header.MapName;
+        public string Map => Header?.MapName;
 
         /// <summary>
         /// The header of the demo, containing some useful information.
