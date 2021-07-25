@@ -96,26 +96,38 @@ namespace SourceEngine.Demo.Stats.App
 
             foreach (string path in options.InputPaths)
             {
-                FileAttributes attrs = File.GetAttributes(path);
-
-                if (attrs.HasFlag(FileAttributes.Directory))
+                try
                 {
-                    string[] subDemos = Directory.GetFiles(
-                        Path.GetFullPath(path),
-                        "*.dem",
-                        options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
-                    );
-
-                    foreach (string demo in subDemos)
-                        info.Add(new DemoInformation(demo, options.GameMode, options.TestType, options.Date, path));
+                    info.AddRange(GetDemoInfo(Path.GetFullPath(path)));
                 }
-                else
+                catch (IOException e)
                 {
-                    info.Add(new DemoInformation(path, options.GameMode, options.TestType, options.Date));
+                    Debug.Error("Skipping input file or directory '{0}': {1}", path, e.Message);
                 }
             }
 
             return info;
+        }
+
+        private IEnumerable<DemoInformation> GetDemoInfo(string path)
+        {
+            FileAttributes attrs = File.GetAttributes(path);
+
+            if (attrs.HasFlag(FileAttributes.Directory))
+            {
+                string[] subDemos = Directory.GetFiles(
+                    Path.GetFullPath(path),
+                    "*.dem",
+                    options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
+                );
+
+                foreach (string demo in subDemos)
+                    yield return new DemoInformation(demo, options.GameMode, options.TestType, options.Date, path);
+            }
+            else
+            {
+                yield return new DemoInformation(path, options.GameMode, options.TestType, options.Date);
+            }
         }
 
         private void WriteJson(DemoInformation demoInfo, Processor processor)
