@@ -3,7 +3,7 @@
 
     <PropertyGroup Label="Build Settings">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Configurations>Debug;DebugBitStream;DebugManaged;Release;ReleaseManaged;SavePropValues</Configurations>
+        <Configurations>Debug;DebugIntegrity;Release;SavePropValues</Configurations>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <Platforms>AnyCPU</Platforms>
         <TargetFramework>netstandard2.1</TargetFramework>
@@ -13,8 +13,11 @@
         <Description>A library for parsing Counter-Strike: Global Offensive demos.</Description>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugIntegrity' ">
+        <OutputPath>bin\Debug\</OutputPath>
         <DefineConstants>TRACE;DEBUG;CHECK_INTEGRITY</DefineConstants>
+        <DebugSymbols>true</DebugSymbols>
+        <Optimize>false</Optimize>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'SavePropValues' ">
