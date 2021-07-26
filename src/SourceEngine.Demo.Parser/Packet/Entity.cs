@@ -155,7 +155,7 @@ namespace SourceEngine.Demo.Parser.Packet
         public event EventHandler<PropertyUpdateEventArgs<object>> DataReceived;
         #pragma warning restore 0067
 
-        //[Conditional("DEBUG")]
+        [Conditional("DEBUG")]
         private void FireDataReceived_DebugEvent(object val, Entity e)
         {
             #pragma warning disable 0618
@@ -163,7 +163,7 @@ namespace SourceEngine.Demo.Parser.Packet
             #pragma warning restore 0618
         }
 
-        //[Conditional("DEBUG")]
+        [Conditional("DEBUG")]
         private void DeleteDataReceived()
         {
             #pragma warning disable 0618
