@@ -1262,41 +1262,41 @@ namespace SourceEngine.Demo.Parser
 
                 for (int i = 0; i < numOfHostageRescueZonesLookingFor; i++)
                 {
-                    newResource.Entity.FindProperty("m_hostageRescueX.00" + i).DataRecivedDontUse += (_, center) =>
+                    newResource.Entity.FindProperty("m_hostageRescueX.00" + i).IntRecived += (_, center) =>
                     {
                         if (!rescueZoneCenters.ContainsKey(numOfSortedRescueZonesX))
                             rescueZoneCenters.Add(numOfSortedRescueZonesX, new Vector());
 
                         // make sure that there are values before saying it is sorted, as it will often run through with 0 values first
-                        if (!(rescueZoneCenters[numOfSortedRescueZonesX].X == 0 && Convert.ToSingle(center.Value) == 0))
+                        if (!(rescueZoneCenters[numOfSortedRescueZonesX].X == 0 && center.Value == 0))
                         {
-                            rescueZoneCenters[numOfSortedRescueZonesX].X = Convert.ToSingle(center.Value);
+                            rescueZoneCenters[numOfSortedRescueZonesX].X = center.Value;
                             numOfSortedRescueZonesX++;
                         }
                     };
 
-                    newResource.Entity.FindProperty("m_hostageRescueY.00" + i).DataRecivedDontUse += (_, center) =>
+                    newResource.Entity.FindProperty("m_hostageRescueY.00" + i).IntRecived += (_, center) =>
                     {
                         if (!rescueZoneCenters.ContainsKey(numOfSortedZonesRescueY))
                             rescueZoneCenters.Add(numOfSortedZonesRescueY, new Vector());
 
                         // make sure that there are values before saying it is sorted, as it will often run through with 0 values first
-                        if (!(rescueZoneCenters[numOfSortedZonesRescueY].Y == 0 && Convert.ToSingle(center.Value) == 0))
+                        if (!(rescueZoneCenters[numOfSortedZonesRescueY].Y == 0 && center.Value == 0))
                         {
-                            rescueZoneCenters[numOfSortedZonesRescueY].Y = Convert.ToSingle(center.Value);
+                            rescueZoneCenters[numOfSortedZonesRescueY].Y = center.Value;
                             numOfSortedZonesRescueY++;
                         }
                     };
 
-                    newResource.Entity.FindProperty("m_hostageRescueZ.00" + i).DataRecivedDontUse += (_, center) =>
+                    newResource.Entity.FindProperty("m_hostageRescueZ.00" + i).IntRecived += (_, center) =>
                     {
                         if (!rescueZoneCenters.ContainsKey(numOfSortedZonesRescueZ))
                             rescueZoneCenters.Add(numOfSortedZonesRescueZ, new Vector());
 
                         // make sure that there are values before saying it is sorted, as it will often run through with 0 values first
-                        if (!(rescueZoneCenters[numOfSortedZonesRescueZ].Z == 0 && Convert.ToSingle(center.Value) == 0))
+                        if (!(rescueZoneCenters[numOfSortedZonesRescueZ].Z == 0 && center.Value == 0))
                         {
-                            rescueZoneCenters[numOfSortedZonesRescueZ].Z = Convert.ToSingle(center.Value);
+                            rescueZoneCenters[numOfSortedZonesRescueZ].Z = center.Value;
                             numOfSortedZonesRescueZ++;
                         }
                     };
