@@ -140,7 +140,7 @@ namespace SourceEngine.Demo.Parser.Packet
                 Dictionary<string, object> values = new Dictionary<string, object>();
                 foreach(var res in newResource.Entity.Props)
                 {
-                    res.DataRecived += (sender, e) => values[e.Property.Entry.PropertyName] = e.Value;
+                    res.DataReceived += (sender, e) => values[e.Property.Entry.PropertyName] = e.Value;
                 }
 
          *
@@ -148,26 +148,26 @@ namespace SourceEngine.Demo.Parser.Packet
          * Really, ignore it if you don't know what you're doing.
          */
         [Obsolete(
-            "Don't use this attribute. It is only avaible for debugging. Bind to the correct event instead.",
+            "Don't use this attribute. It is only available for debugging. Bind to the correct event instead.",
             false
         )]
         #pragma warning disable 0067 // this is unused in release builds, just as it should be
-        public event EventHandler<PropertyUpdateEventArgs<object>> DataRecivedDontUse;
+        public event EventHandler<PropertyUpdateEventArgs<object>> DataReceived;
         #pragma warning restore 0067
 
         //[Conditional("DEBUG")]
         private void FireDataReceived_DebugEvent(object val, Entity e)
         {
             #pragma warning disable 0618
-            DataRecivedDontUse?.Invoke(this, new PropertyUpdateEventArgs<object>(val, e, this));
+            DataReceived?.Invoke(this, new PropertyUpdateEventArgs<object>(val, e, this));
             #pragma warning restore 0618
         }
 
         //[Conditional("DEBUG")]
-        private void DeleteDataRecived()
+        private void DeleteDataReceived()
         {
             #pragma warning disable 0618
-            DataRecivedDontUse = null;
+            DataReceived = null;
             #pragma warning restore 0618
         }
 
@@ -275,7 +275,7 @@ namespace SourceEngine.Demo.Parser.Packet
             StringRecived = null;
             VectorRecived = null;
 
-            DeleteDataRecived();
+            DeleteDataReceived();
         }
 
         [Conditional("SAVE_PROP_VALUES")]
